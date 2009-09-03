@@ -234,7 +234,6 @@ ParallelHelperImpl::ParallelHelperImpl()
   neighbourProcRecv.clear();
   neighbourProcSendRemain.clear();
   neighbourProcRecvRemain.clear();
-  vtx_off_proc_list_size.clear();
   vtx_off_proc_list.clear();
   neighbourProc.clear();
 }
@@ -263,7 +262,8 @@ void ParallelHelperImpl::set_generate_random_numbers(int grn, MsqError& ) {
 
 void ParallelHelperImpl::smoothing_init(MsqError& err)
 {
-  int i,j,k,l, rval;
+  int i,j,k, rval;
+  size_t l;
 
   if (!mesh) {
     MSQ_SETERR(err)(MsqError::INVALID_STATE);
@@ -602,13 +602,13 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   }
 
   /* wait until we have heard from all processors how many ghost nodes updates they want from us */
-  std::vector<MPI_Status> status(update_num_procs);
+  std::vector<MPI_Status> status_update(update_num_procs);
   update_procs.resize(update_num_procs);
-  rval = MPI_Waitall(update_num_procs, &requests_updates[0], &status[0]);
+  rval = MPI_Waitall(update_num_procs, &requests_updates[0], &status_update[0]);
   CHECK_MPI(rval,err);
   for (j = 0; j < update_num_procs; j++)
   {
-    update_procs[j] = status[j].MPI_SOURCE;
+    update_procs[j] = status_update[j].MPI_SOURCE;
     // printf("[%d] i have to send %d vertices to processor %d\n", rank, update_procs_num_vtx[j], update_procs[j]);
   }
 
@@ -638,8 +638,6 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
     CHECK_MPI(rval,err);
   }
 
-  // delete [] unghost_gid; unghost_gid = 0;
-
   /* receive from each processor the info which vertices they want from us */
   for (j = 0; j < update_num_procs; j++)
   {
@@ -654,7 +652,12 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   }
 
   /* wait until we have heard from all processors which vertices they want from us */
-  rval = MPI_Waitall(update_num_procs, &requests_updates[0], &status[0]);
+  rval = MPI_Waitall(update_num_procs, &requests_updates[0], &status_update[0]);
+  CHECK_MPI(rval,err);
+
+  /* wait until we have sent to all processors which vertices we want from them */
+  std::vector<MPI_Status> status_unghost(unghost_num_procs);
+  rval = MPI_Waitall(unghost_num_procs, &requests_unghost[0], &status_unghost[0]);
   CHECK_MPI(rval,err);
   
   /*
@@ -675,26 +678,19 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   if (num_vtx_partition_boundary_local == 0)
   {
     /* this processor does not partake in the boundary smoothing */
-    num_neighbourProc = 0;
+    neighbourProc.clear();
     mesh->tag_delete( lid_tag, err );
     vtx_partition_boundary_map_inverse.clear();
     return;
   }
 
   /* init the neighbour processor list */
-  num_neighbourProc = 0;
   neighbourProc.clear();
-  neighbourProc.resize( 10, 0 );
-  neighbourProc.back() = -1;
 
   /* init the neighbour lists */
 
-  int list_size;
-  vtx_off_proc_list_size.resize(num_vtx_partition_boundary_local,0);
   vtx_off_proc_list.clear();
-  std::vector<int> init_val(15,0);
-  init_val.back() = -1;
-  vtx_off_proc_list.resize(num_vtx_partition_boundary_local,init_val);
+  vtx_off_proc_list.resize( num_vtx_partition_boundary_local );
 
   /* get the adjacency arrays that we need */
   msq_std::vector<Mesquite::Mesh::ElementHandle> adj_elements;
@@ -723,51 +719,17 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
 	  /* then map it into our domain */
 	  incident_vtx = vtx_partition_boundary_map_inverse[incident_vtx];
 	  /* is this vertex already in our neighbour list ? */
-	  list_size = vtx_off_proc_list_size[i];
-	  /* check by scanning the list for this vertex */
-	  for (l = 0; l < list_size; l++) {
-	    if (vtx_off_proc_list[i][l] == incident_vtx) {
-	      /* no need to add this vertex to the list ... it is already there */
-	      incident_vtx = -1;
-	      /* end the loop */
-	      l = list_size;
-	    }
-	  }
-	  if (incident_vtx != -1) {
+          if (std::find( vtx_off_proc_list[i].begin(), vtx_off_proc_list[i].end(), incident_vtx)
+            == vtx_off_proc_list[i].end()) {
 	    /* if the vertex is not in the list yet ... add it */
-	    if (vtx_off_proc_list[i][list_size] == -1) {
-	      /* need to make the list longer */
-              vtx_off_proc_list[i].resize(list_size*2);
-	      for (l=list_size;l<list_size*2-1;l++) {
-		vtx_off_proc_list[i][l] = 0;
-	      }
-	      vtx_off_proc_list[i][l] = -1;
-	    }
-	    vtx_off_proc_list[i][list_size] = incident_vtx;
-	    vtx_off_proc_list_size[i]++;
+            vtx_off_proc_list[i].push_back( incident_vtx );
 	    /* is the processor of this vertex already in the processor list */
 	    incident_vtx = part_proc_owner[incident_vtx];
 	    /* check by scanning the list for this processor */
-	    for (l = 0; l < num_neighbourProc; l++) {
-	      if (neighbourProc[l] == incident_vtx) {
-		/* no need to add this processor to the list ... it is already there */
-		incident_vtx = -1;
-		/* end the loop */
-		l = num_neighbourProc;
-	      }
-	    }
-	    if (incident_vtx != -1) {
+	    if (std::find(neighbourProc.begin(), neighbourProc.end(), incident_vtx)
+                ==  neighbourProc.end()) {
 	      /* the processor is not in the list yet ... add it */
-	      if (neighbourProc[num_neighbourProc] == -1) {
-		/* need to make the list longer */
-                neighbourProc.resize(num_neighbourProc*2);
-		for (l=num_neighbourProc;l<num_neighbourProc*2-1;l++) {
-		  neighbourProc[l] = 0;
-		}
-		neighbourProc[l] = -1;
-	      }
-	      neighbourProc[num_neighbourProc] = incident_vtx;
-	      num_neighbourProc++;
+              neighbourProc.push_back( incident_vtx );
 	    }
 	  }
 	}
@@ -777,12 +739,7 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
 
   /* sort the list of neighbour processors */
   
-  std::sort( neighbourProc.begin(), neighbourProc.begin() + num_neighbourProc );
-
-  //delete [] vtx_partition_boundary_map_inverse;
-  //delete [] adj_adj_vertices_lid; adj_adj_vertices_lid = 0;
-  //delete elem_offsets; elem_offsets = 0;
-  //delete adj_vtx_offsets; adj_vtx_offsets = 0;
+  std::sort( neighbourProc.begin(), neighbourProc.end() );
 
   /***********************************************************************
     COMPUTE HOW MANY VERTICES WE NEED TO SEND/RECV FROM EACH PROCESSOR
@@ -796,14 +753,13 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   {
     total_num_vertices_to_smooth = num_vtx_partition_boundary_local;
     total_num_vertices_to_recv = num_vtx_partition_boundary_remote;
-    neighbourProcSend.resize(num_neighbourProc, 0);
-    neighbourProcRecv.resize(num_neighbourProc, 0);
+    neighbourProcSend.resize(neighbourProc.size(), 0);
+    neighbourProcRecv.resize(neighbourProc.size(), 0);
 
     /* for each vertex we smooth find the processors we need to send it too */
     for (i=0;i<num_vtx_partition_boundary_local;i++) {
-	list_size = vtx_off_proc_list_size[i];
 	/* loop over its adjacent off-processor vertices */
-	for (j=0;j<list_size; j++) {
+	for (j=0;j<(long)vtx_off_proc_list[i].size(); j++) {
 	  /* get the processor id of these vertices */
 	  incident_vtx = part_proc_owner[vtx_off_proc_list[i][j]];
 	  /* check if we got this processor id before */
@@ -817,7 +773,7 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
 	  /* if this was a new processor id */
 	  if (incident_vtx != -1) {
 	    /* find the processor in the list and increment its counter */
-	    for (l = 0; l < num_neighbourProc; l++) {
+	    for (l = 0; l < neighbourProc.size(); l++) {
 	      if (neighbourProc[l] == incident_vtx) {
 		neighbourProcSend[l]++;
 		break;
@@ -828,15 +784,15 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
     }
     for (i=num_vtx_partition_boundary_local;i<num_vtx_partition_boundary;i++) {
 	incident_vtx = part_proc_owner[i];
-	for (l = 0; l < num_neighbourProc; l++) {
+	for (l = 0; l < neighbourProc.size(); l++) {
 	  if (neighbourProc[l] == incident_vtx) {
 	    neighbourProcRecv[l]++;
 	    break;
 	  }
 	}
     }
-    neighbourProcSendRemain.resize(num_neighbourProc);
-    neighbourProcRecvRemain.resize(num_neighbourProc);
+    neighbourProcSendRemain.resize(neighbourProc.size());
+    neighbourProcRecvRemain.resize(neighbourProc.size());
   }
 
   exportVtxGIDs.resize(num_vtx_partition_boundary);
@@ -855,7 +811,7 @@ void ParallelHelperImpl::compute_first_independent_set(msq_std::vector<Mesh::Ver
   // to avoid all reduce we need to know how many vertices we send & receive
   if (communication_model & 1) // AVOID_ALL_REDUCE
   {
-    for (i=0;i<num_neighbourProc;i++) {
+    for (i=0;i<(long)neighbourProc.size();i++) {
       neighbourProcSendRemain[i] = neighbourProcSend[i];
       neighbourProcRecvRemain[i] = neighbourProcRecv[i];
     }
@@ -926,7 +882,7 @@ void ParallelHelperImpl::communicate_first_independent_set(MsqError& err)
     num_already_recv_vertices = comm_smoothed_vtx_b_no_all(err);
     break;
   }
-  global_work_remains = (num_neighbourProc ? 1 : 0);
+  global_work_remains = (neighbourProc.size() ? 1 : 0);
   MSQ_CHKERR(err);
 }
 
@@ -1176,10 +1132,10 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb(MsqError& err)
 
   /* compute how many vertices we send to each processor */
 
-  std::vector<int> numVtxPerProcSend(num_neighbourProc, 0);
-  std::vector<int> numVtxPerProcRecv(num_neighbourProc, 0);
+  std::vector<int> numVtxPerProcSend(neighbourProc.size(), 0);
+  std::vector<int> numVtxPerProcRecv(neighbourProc.size(), 0);
   for (i = 0; i < num_exportVtx; i++) {
-    for (j = 0; j < num_neighbourProc; j++) {
+    for (j = 0; j < (long)neighbourProc.size(); j++) {
       if (exportProc[i] == neighbourProc[j]) {
 	/* increment count */
 	numVtxPerProcSend[j]++;
@@ -1188,8 +1144,8 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb(MsqError& err)
       }
     }
     /* did loop end without finding the processor */
-    if (j == num_neighbourProc) {
-      printf("[%d]i%d WARNING: did not find exportProc[%d] = %d in list of %d processors.\n",rank,iteration,i,exportProc[i],num_neighbourProc);
+    if (j == (long)neighbourProc.size()) {
+      printf("[%d]i%d WARNING: did not find exportProc[%d] = %d in list of %lu processors.\n",rank,iteration,i,exportProc[i],(unsigned long)neighbourProc.size());
     }
   }
 
@@ -1198,9 +1154,9 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb(MsqError& err)
 
   int num_neighbourProcSend = 0;
   int num_neighbourProcRecv = 0;
-  std::vector<MPI_Request> requests_send(num_neighbourProc);
-  std::vector<MPI_Request> requests_recv(num_neighbourProc);
-  for (j = 0; j < num_neighbourProc; j++) {
+  std::vector<MPI_Request> requests_send(neighbourProc.size());
+  std::vector<MPI_Request> requests_recv(neighbourProc.size());
+  for (j = 0; j < (long)neighbourProc.size(); j++) {
     /* send the vertex count to this processor */
     if (0) {printf("[%d]i%d Announce send %d vertices from proc %d\n",rank,iteration,numVtxPerProcSend[j],neighbourProc[j]); fflush(NULL);}
     rval = MPI_Isend(&(numVtxPerProcSend[j]),
@@ -1229,21 +1185,21 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb(MsqError& err)
   /* set up memory for the outgoing vertex data blocks */
 
   std::vector<VertexPack> vertex_pack_export(num_exportVtx+10); /* add 10 to have enough memory */
-  std::vector<VertexPack*> packed_vertices_export(num_neighbourProc);
-  if (num_neighbourProc)
+  std::vector<VertexPack*> packed_vertices_export(neighbourProc.size());
+  if (neighbourProc.size())
     packed_vertices_export[0] = &vertex_pack_export[0];
-  for (i = 1; i < num_neighbourProc; i++) {
+  for (i = 1; i < (long)neighbourProc.size(); i++) {
     packed_vertices_export[i] = packed_vertices_export[i-1] + numVtxPerProcSend[i-1];
   }
 
   /* place vertex data going to the same processor into consecutive memory space */
 
-  std::vector<int> numVtxPerProcSendPACKED(num_neighbourProc);
-  for (i = 0; i < num_neighbourProc; i++) {
+  std::vector<int> numVtxPerProcSendPACKED(neighbourProc.size());
+  for (i = 0; i < (long)neighbourProc.size(); i++) {
     numVtxPerProcSendPACKED[i] = 0;
   }
   for (i = 0; i < num_exportVtx; i++) {
-    for (j = 0; j < num_neighbourProc; j++) {
+    for (j = 0; j < (long)neighbourProc.size(); j++) {
       if (exportProc[i] == neighbourProc[j]) {
 	VertexPack* packing_vertex = packed_vertices_export[j] + numVtxPerProcSendPACKED[j];
 	numVtxPerProcSendPACKED[j]++;
@@ -1260,27 +1216,27 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb(MsqError& err)
 
   /* wait until we have heard from all processors how many vertices we will receive from them */
 
-  std::vector<MPI_Status> status(num_neighbourProc);
+  std::vector<MPI_Status> status(neighbourProc.size());
 
   if (num_neighbourProcRecv) {
-    rval = MPI_Waitall(num_neighbourProc, &requests_recv[0], &status[0]);
+    rval = MPI_Waitall(neighbourProc.size(), &requests_recv[0], &status[0]);
     CHECK_MPI_RZERO( rval, err );
   }
 
   /* how many vertices will we receive */
 
   int numVtxImport = 0;
-  for (i = 0; i < num_neighbourProc; i++) {
+  for (i = 0; i < (long)neighbourProc.size(); i++) {
     numVtxImport += numVtxPerProcRecv[i];
   }
 
   /* set up memory for the incoming vertex data blocks */
 
   std::vector<VertexPack> vertex_pack_import(numVtxImport+10); /* add 10 to have enough memory */
-  std::vector<VertexPack*> packed_vertices_import(num_neighbourProc);
-  if (num_neighbourProc)
+  std::vector<VertexPack*> packed_vertices_import(neighbourProc.size());
+  if (neighbourProc.size())
     packed_vertices_import[0] = &vertex_pack_import[0];
-  for (i = 1; i < num_neighbourProc; i++) {
+  for (i = 1; i < (long)neighbourProc.size(); i++) {
     packed_vertices_import[i] = packed_vertices_import[i-1] + numVtxPerProcRecv[i-1];
   }
 
@@ -1289,7 +1245,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb(MsqError& err)
 
   num_neighbourProcRecv = 0;
 
-  for (i = 0; i < num_neighbourProc; i++) {
+  for (i = 0; i < (long)neighbourProc.size(); i++) {
     if (numVtxPerProcRecv[i]) {
       if (0) {printf("[%d]i%d Will recv %d vertices from proc %d\n",rank,iteration,numVtxPerProcRecv[i],neighbourProc[i]); fflush(NULL);}
       rval = MPI_Irecv(packed_vertices_import[i],
@@ -1325,7 +1281,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb(MsqError& err)
   
   int local_id;
   while (num_neighbourProcRecv) {
-    rval = MPI_Waitany(num_neighbourProc, &requests_recv[0], &k, &status[0]);
+    rval = MPI_Waitany(neighbourProc.size(), &requests_recv[0], &k, &status[0]);
     CHECK_MPI_RZERO( rval, err );
     /* unpack all vertices */
     for (i = 0; i < numVtxPerProcRecv[k]; i++) {
@@ -1350,7 +1306,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb(MsqError& err)
   /* wait until the sends have completed */
 
   if (num_neighbourProcSend) {
-    rval = MPI_Waitall(num_neighbourProc, &requests_send[0], &status[0]);
+    rval = MPI_Waitall(neighbourProc.size(), &requests_send[0], &status[0]);
     CHECK_MPI_RZERO( rval, err );
   }
 
@@ -1368,10 +1324,10 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all( MsqError& err )
 
   /* compute how many vertices we send to each processor */
 
-  std::vector<int> numVtxPerProcSend(num_neighbourProc, 0);
-  std::vector<int> numVtxPerProcRecv(num_neighbourProc, 0);
+  std::vector<int> numVtxPerProcSend(neighbourProc.size(), 0);
+  std::vector<int> numVtxPerProcRecv(neighbourProc.size(), 0);
   for (i = 0; i < num_exportVtx; i++) {
-    for (j = 0; j < num_neighbourProc; j++) {
+    for (j = 0; j < (long)neighbourProc.size(); j++) {
       if (exportProc[i] == neighbourProc[j]) {
 	/* increment count */
 	numVtxPerProcSend[j]++;
@@ -1380,8 +1336,8 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all( MsqError& err )
       }
     }
     /* did loop end without finding the processor */
-    if (j == num_neighbourProc) {
-      printf("[%d]i%d WARNING: did not find exportProc[%d] = %d in list of %d processors.\n",rank,iteration,i,exportProc[i],num_neighbourProc);
+    if (j == (long)neighbourProc.size()) {
+      printf("[%d]i%d WARNING: did not find exportProc[%d] = %d in list of %lu processors.\n",rank,iteration,i,exportProc[i],(unsigned long)neighbourProc.size());
     }
   }
 
@@ -1390,9 +1346,9 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all( MsqError& err )
 
   int num_neighbourProcSend = 0;
   int num_neighbourProcRecv = 0;
-  std::vector<MPI_Request> requests_send(num_neighbourProc);
-  std::vector<MPI_Request> requests_recv(num_neighbourProc);
-  for (j = 0; j < num_neighbourProc; j++) {
+  std::vector<MPI_Request> requests_send(neighbourProc.size());
+  std::vector<MPI_Request> requests_recv(neighbourProc.size());
+  for (j = 0; j < (long)neighbourProc.size(); j++) {
     if (neighbourProcSendRemain[j]) {
       /* send the vertex count to this processor */
       if (0) {printf("[%d]i%d Announce send %d vertices to proc %d\n",rank,iteration,numVtxPerProcSend[j],neighbourProc[j]); fflush(NULL);}
@@ -1428,18 +1384,18 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all( MsqError& err )
   /* set up memory for the outgoing vertex data blocks */
 
   std::vector<VertexPack> vertex_pack_export(num_exportVtx+10); /* add 10 to have enough memory */
-  std::vector<VertexPack*> packed_vertices_export(num_neighbourProc);
-  if (num_neighbourProc)
+  std::vector<VertexPack*> packed_vertices_export(neighbourProc.size());
+  if (neighbourProc.size())
     packed_vertices_export[0] = &vertex_pack_export[0];
-  for (i = 1; i < num_neighbourProc; i++) {
+  for (i = 1; i < (long)neighbourProc.size(); i++) {
     packed_vertices_export[i] = packed_vertices_export[i-1] + numVtxPerProcSend[i-1];
   }
 
   /* place vertex data going to the same processor into consecutive memory space */
 
-  std::vector<int> numVtxPerProcSendPACKED(num_neighbourProc,0);
+  std::vector<int> numVtxPerProcSendPACKED(neighbourProc.size(),0);
   for (i = 0; i < num_exportVtx; i++) {
-    for (j = 0; j < num_neighbourProc; j++) {
+    for (j = 0; j < (long)neighbourProc.size(); j++) {
       if (exportProc[i] == neighbourProc[j]) {
 	VertexPack* packing_vertex = packed_vertices_export[j] + numVtxPerProcSendPACKED[j];
 	numVtxPerProcSendPACKED[j]++;
@@ -1457,17 +1413,17 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all( MsqError& err )
 
   /* wait until we have heard from all processors how many vertices we will receive from them */
 
-  std::vector<MPI_Status> status(num_neighbourProc);
+  std::vector<MPI_Status> status(neighbourProc.size());
 
   if (num_neighbourProcRecv) {
-    rval = MPI_Waitall(num_neighbourProc, &requests_recv[0], &status[0]);
+    rval = MPI_Waitall(neighbourProc.size(), &requests_recv[0], &status[0]);
     CHECK_MPI_RZERO( rval, err );
   }
 
   /* how many vertices will we receive */
 
   int numVtxImport = 0;
-  for (i = 0; i < num_neighbourProc; i++) {
+  for (i = 0; i < (long)neighbourProc.size(); i++) {
     numVtxImport += numVtxPerProcRecv[i];
     neighbourProcRecvRemain[i] -= numVtxPerProcRecv[i];
     neighbourProcSendRemain[i] -= numVtxPerProcSend[i];
@@ -1476,10 +1432,10 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all( MsqError& err )
   /* set up memory for the incoming vertex data blocks */
 
   std::vector<VertexPack> vertex_pack_import(numVtxImport+10); /* add 10 to have enough memory */
-  std::vector<VertexPack*> packed_vertices_import(num_neighbourProc);
-  if (num_neighbourProc)
+  std::vector<VertexPack*> packed_vertices_import(neighbourProc.size());
+  if (neighbourProc.size())
     packed_vertices_import[0] = &vertex_pack_import[0];
-  for (i = 1; i < num_neighbourProc; i++) {
+  for (i = 1; i < (long)neighbourProc.size(); i++) {
     packed_vertices_import[i] = packed_vertices_import[i-1] + numVtxPerProcRecv[i-1];
   }
 
@@ -1488,7 +1444,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all( MsqError& err )
 
   num_neighbourProcRecv = 0;
 
-  for (i = 0; i < num_neighbourProc; i++) {
+  for (i = 0; i < (long)neighbourProc.size(); i++) {
     if (0) {printf("[%d]i%d Will recv %d vertices from proc %d\n",rank,iteration,numVtxPerProcRecv[i],neighbourProc[i]); fflush(NULL);}
     if (numVtxPerProcRecv[i]) {
       rval = MPI_Irecv(packed_vertices_import[i],
@@ -1524,7 +1480,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all( MsqError& err )
   
   int local_id;
   while (num_neighbourProcRecv) {
-    rval = MPI_Waitany(num_neighbourProc, &requests_recv[0], &k, &status[0]);
+    rval = MPI_Waitany(neighbourProc.size(), &requests_recv[0], &k, &status[0]);
     CHECK_MPI_RZERO( rval, err );
     /* unpack all vertices */
     for (i = 0; i < numVtxPerProcRecv[k]; i++) {
@@ -1550,7 +1506,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all( MsqError& err )
   /* wait until the sends have completed */
 
   if (num_neighbourProcSend) {
-    rval = MPI_Waitall(num_neighbourProc, &requests_send[0], &status[0]);
+    rval = MPI_Waitall(neighbourProc.size(), &requests_send[0], &status[0]);
     CHECK_MPI_RZERO( rval, err );
   }
 
@@ -1568,12 +1524,12 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb(MsqError& err)
 
   /* how many vertices will we receive */
 
-  std::vector<int> numVtxPerProcSend(num_neighbourProc);
-  for (i = 0; i < num_neighbourProc; i++) {
+  std::vector<int> numVtxPerProcSend(neighbourProc.size());
+  for (i = 0; i < (long)neighbourProc.size(); i++) {
     numVtxPerProcSend[i] = 0;
   }
   for (i = 0; i < num_exportVtx; i++) {
-    for (j = 0; j < num_neighbourProc; j++) {
+    for (j = 0; j < (long)neighbourProc.size(); j++) {
       if (exportProc[i] == neighbourProc[j]) {
 	/* increment count */
 	numVtxPerProcSend[j]++;
@@ -1582,12 +1538,12 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb(MsqError& err)
       }
     }
     /* assert loop did not end without finding processor */
-    assert(j != num_neighbourProc);
+    assert(j != (long)neighbourProc.size());
   }
 
   /* tell each processor how many vertices to expect */
 
-  for (j = 0; j < num_neighbourProc; j++) {
+  for (j = 0; j < (long)neighbourProc.size(); j++) {
     rval = MPI_Send(&(numVtxPerProcSend[j]),
 	     1,
 	     MPI_INT,
@@ -1600,16 +1556,16 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb(MsqError& err)
 
   /* place vertex data going to the same processor into consecutive memory space */
   std::vector<VertexPack> vertex_pack_export(num_exportVtx+10); /* add 10 to have enough memory */
-  std::vector<VertexPack*> packed_vertices_export(num_neighbourProc);
-  if (num_neighbourProc)
+  std::vector<VertexPack*> packed_vertices_export(neighbourProc.size());
+  if (neighbourProc.size())
     packed_vertices_export[0] = &vertex_pack_export[0];
-  for (i = 1; i < num_neighbourProc; i++) {
+  for (i = 1; i < (long)neighbourProc.size(); i++) {
     packed_vertices_export[i] = packed_vertices_export[i-1] + numVtxPerProcSend[i-1];
   }
 
-  std::vector<int> numVtxPerProcSendPACKED(num_neighbourProc,0);
+  std::vector<int> numVtxPerProcSendPACKED(neighbourProc.size(),0);
   for (i = 0; i < num_exportVtx; i++) {
-    for (j = 0; j < num_neighbourProc; j++) {
+    for (j = 0; j < (long)neighbourProc.size(); j++) {
       if (exportProc[i] == neighbourProc[j]) {
 	VertexPack* packing_vertex = packed_vertices_export[j] + numVtxPerProcSendPACKED[j];
 	numVtxPerProcSendPACKED[j]++;
@@ -1631,13 +1587,13 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb(MsqError& err)
   int proc;
   int numVtxImport = 0;
   int num_neighbourProcRecv = 0;
-  std::vector<int> numVtxPerProcRecv(num_neighbourProc);
+  std::vector<int> numVtxPerProcRecv(neighbourProc.size());
   MPI_Status status;
-  for (j = 0; j < num_neighbourProc; j++) {
+  for (j = 0; j < (long)neighbourProc.size(); j++) {
     numVtxPerProcRecv[j] = 0;
   }
 
-  for (j = 0; j < num_neighbourProc; j++) {
+  for (j = 0; j < (long)neighbourProc.size(); j++) {
     /* get the vertex count for some processor */
     rval = MPI_Recv(&num,              /* message buffer */
              1,                 /* one data item */
@@ -1659,21 +1615,21 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb(MsqError& err)
       numVtxImport += num;
     }
     /* find this processor in the list */
-    for (i = 0; i < num_neighbourProc; i++) {
+    for (i = 0; i < (long)neighbourProc.size(); i++) {
       if (neighbourProc[i] == proc) {
 	numVtxPerProcRecv[i] = num;
 	break;
       }
     }
     /* assert loop did not end without finding processor */
-    assert(i != num_neighbourProc);
+    assert(i != (long)neighbourProc.size());
     if (0) printf("[%d]i%d Will receive %d vertices from proc %d\n",rank,iteration,num,proc); fflush(NULL);
   }
 
   /* create list of processors we receive from */
   std::vector<int> neighbourProcRecv(num_neighbourProcRecv);
   std::vector<int> numVtxPerProcRecvRecv(num_neighbourProcRecv);
-  for (i = 0, k = 0; i < num_neighbourProc; i++) {
+  for (i = 0, k = 0; i < (long)neighbourProc.size(); i++) {
     if (0) printf("[%d]i%d Will receive %d vertices from proc %d\n",rank,iteration,numVtxPerProcRecv[i],neighbourProc[i]); fflush(NULL);
     if (numVtxPerProcRecv[i]) {
       neighbourProcRecv[k] = neighbourProc[i];
@@ -1685,7 +1641,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb(MsqError& err)
   /* set up memory for the incoming vertex data blocks */
   std::vector<VertexPack> vertex_pack_import(numVtxImport+10); /* add 10 to have enough memory */
   std::vector<VertexPack*> packed_vertices_import(num_neighbourProcRecv);
-  if (num_neighbourProc)
+  if (neighbourProc.size())
     packed_vertices_import[0] = &vertex_pack_import[0];
   for (i = 1; i < num_neighbourProcRecv; i++) {
     packed_vertices_import[i] = packed_vertices_import[i-1] + numVtxPerProcRecvRecv[i-1];
@@ -1707,8 +1663,8 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb(MsqError& err)
 
   /* now send the data blocks */
 
-  std::vector<MPI_Request> requests_send(num_neighbourProc);
-  for (j = 0; j < num_neighbourProc; j++) {
+  std::vector<MPI_Request> requests_send(neighbourProc.size());
+  for (j = 0; j < (long)neighbourProc.size(); j++) {
     if (numVtxPerProcSend[j]) {
       rval = MPI_Isend(packed_vertices_export[j], 
 		4*numVtxPerProcSend[j],
@@ -1756,8 +1712,8 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb(MsqError& err)
   /* all receives have completed. it is save to release the memory */
   //free(vertex_pack_import);
   /* wait until the sends have completed */
-  std::vector<MPI_Status> stati(num_neighbourProc);
-  rval = MPI_Waitall(num_neighbourProc, &requests_send[0], &stati[0]);
+  std::vector<MPI_Status> stati(neighbourProc.size());
+  rval = MPI_Waitall(neighbourProc.size(), &requests_send[0], &stati[0]);
   CHECK_MPI_RZERO( rval, err );
   /* all sends have completed. it is save to release the memory */
   //free(vertex_pack_export);
@@ -1773,9 +1729,9 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all(MsqError& err)
 
   /* how many vertices will we receive */
 
-  std::vector<int> numVtxPerProcSend(num_neighbourProc,0);
+  std::vector<int> numVtxPerProcSend(neighbourProc.size(),0);
   for (i = 0; i < num_exportVtx; i++) {
-    for (j = 0; j < num_neighbourProc; j++) {
+    for (j = 0; j < (long)neighbourProc.size(); j++) {
       if (exportProc[i] == neighbourProc[j]) {
 	/* increment count */
 	numVtxPerProcSend[j]++;
@@ -1784,12 +1740,12 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all(MsqError& err)
       }
     }
     /* assert loop did not end without finding processor */
-    assert(j != num_neighbourProc);
+    assert(j != (long)neighbourProc.size());
   }
 
   /* tell each processor how many vertices to expect */
 
-  for (j = 0; j < num_neighbourProc; j++) {
+  for (j = 0; j < (long)neighbourProc.size(); j++) {
     if (neighbourProcSendRemain[j]) {
       assert(neighbourProcSendRemain[j] >= numVtxPerProcSend[j]);
       neighbourProcSendRemain[j] -= numVtxPerProcSend[j];
@@ -1809,16 +1765,16 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all(MsqError& err)
 
   /* place vertex data going to the same processor into consecutive memory space */
   std::vector<VertexPack> vertex_pack_export(num_exportVtx+10); /* add 10 to have enough memory */
-  std::vector<VertexPack*> packed_vertices_export(num_neighbourProc);
-  if (num_neighbourProc)
+  std::vector<VertexPack*> packed_vertices_export(neighbourProc.size());
+  if (neighbourProc.size())
     packed_vertices_export[0] = &vertex_pack_export[0];
-  for (i = 1; i < num_neighbourProc; i++) {
+  for (i = 1; i < (long)neighbourProc.size(); i++) {
     packed_vertices_export[i] = packed_vertices_export[i-1] + numVtxPerProcSend[i-1];
   }
 
-  std::vector<int> numVtxPerProcSendPACKED(num_neighbourProc,0);
+  std::vector<int> numVtxPerProcSendPACKED(neighbourProc.size(),0);
   for (i = 0; i < num_exportVtx; i++) {
-    for (j = 0; j < num_neighbourProc; j++) {
+    for (j = 0; j < (long)neighbourProc.size(); j++) {
       if (exportProc[i] == neighbourProc[j]) {
 	VertexPack* packing_vertex = packed_vertices_export[j] + numVtxPerProcSendPACKED[j];
 	numVtxPerProcSendPACKED[j]++;
@@ -1840,11 +1796,11 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all(MsqError& err)
   int proc;
   int numVtxImport = 0;
   int num_neighbourProcRecv = 0;
-  std::vector<int> numVtxPerProcRecv(num_neighbourProc, 0);
+  std::vector<int> numVtxPerProcRecv(neighbourProc.size(), 0);
   MPI_Status status;
 
   int num_neighbourProcRecvRemain = 0;
-  for (j = 0; j < num_neighbourProc; j++) {
+  for (j = 0; j < (long)neighbourProc.size(); j++) {
     if (neighbourProcRecvRemain[j]) {
       num_neighbourProcRecvRemain++;
     }
@@ -1871,7 +1827,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all(MsqError& err)
       numVtxImport += num;
     }
     /* find this processor in the list */
-    for (i = 0; i < num_neighbourProc; i++) {
+    for (i = 0; i < (long)neighbourProc.size(); i++) {
       if (neighbourProc[i] == proc) {
 	numVtxPerProcRecv[i] = num;
 	assert(neighbourProcRecvRemain[i] >= num);
@@ -1880,14 +1836,14 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all(MsqError& err)
       }
     }
     /* assert loop did not end without finding processor */
-    assert(i != num_neighbourProc);
+    assert(i != (long)neighbourProc.size());
     if (0) printf("[%d]i%d Will receive %d vertices from proc %d\n",rank,iteration,num,proc); fflush(NULL);
   }
 
   /* create list of processors we receive from */
   std::vector<int> neighbourProcRecv(num_neighbourProcRecv);
   std::vector<int> numVtxPerProcRecvRecv(num_neighbourProcRecv);
-  for (i = 0, k = 0; i < num_neighbourProc; i++) {
+  for (i = 0, k = 0; i < (long)neighbourProc.size(); i++) {
     if (0) printf("[%d]i%d Will receive %d vertices from proc %d\n",rank,iteration,numVtxPerProcRecv[i],neighbourProc[i]); fflush(NULL);
     if (numVtxPerProcRecv[i]) {
       neighbourProcRecv[k] = neighbourProc[i];
@@ -1899,7 +1855,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all(MsqError& err)
   /* set up memory for the incoming vertex data blocks */
   std::vector<VertexPack> vertex_pack_import(numVtxImport+10); /* add 10 to have enough memory */
   std::vector<VertexPack*> packed_vertices_import(num_neighbourProcRecv);
-  if (num_neighbourProc)
+  if (neighbourProc.size())
     packed_vertices_import[0] = &vertex_pack_import[0];
   for (i = 1; i < num_neighbourProcRecv; i++) {
     packed_vertices_import[i] = packed_vertices_import[i-1] + numVtxPerProcRecvRecv[i-1];
@@ -1921,8 +1877,8 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all(MsqError& err)
 
   /* now send the data blocks */
 
-  std::vector<MPI_Request> requests_send(num_neighbourProc);
-  for (j = 0; j < num_neighbourProc; j++) {
+  std::vector<MPI_Request> requests_send(neighbourProc.size());
+  for (j = 0; j < (long)neighbourProc.size(); j++) {
     if (numVtxPerProcSend[j]) {
       rval = MPI_Isend(packed_vertices_export[j], 
 		4*numVtxPerProcSend[j],
@@ -1970,8 +1926,8 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all(MsqError& err)
   /* all receives have completed. it is save to release the memory */
   //free(vertex_pack_import);
   /* wait until the sends have completed */
-  std::vector<MPI_Status> stati(num_neighbourProc);
-  rval = MPI_Waitall(num_neighbourProc, &requests_send[0], &stati[0]);
+  std::vector<MPI_Status> stati(neighbourProc.size());
+  rval = MPI_Waitall(neighbourProc.size(), &requests_send[0], &stati[0]);
   CHECK_MPI_RZERO( rval, err );
   /* all sends have completed. it is save to release the memory */
   //free(vertex_pack_export);
@@ -1987,9 +1943,9 @@ int ParallelHelperImpl::comm_smoothed_vtx_b(MsqError& err)
 
   /* how many vertices per processor */
 
-  std::vector<int> numVtxPerProc(num_neighbourProc,0);
+  std::vector<int> numVtxPerProc(neighbourProc.size(),0);
   for (i = 0; i < num_exportVtx; i++) {
-    for (j = 0; j < num_neighbourProc; j++) {
+    for (j = 0; j < (long)neighbourProc.size(); j++) {
       if (exportProc[i] == neighbourProc[j]) {
 	/* increment count */
 	numVtxPerProc[j]++;
@@ -1997,24 +1953,24 @@ int ParallelHelperImpl::comm_smoothed_vtx_b(MsqError& err)
 	break;
       }
       /* assert loop did not end without finding the processor */
-      assert (j != num_neighbourProc);
+      assert (j != (long)neighbourProc.size());
     }
   }
 
   /* place vertices going to the same processor into consecutive memory space */
 
   std::vector<VertexPack> vertex_pack(num_exportVtx+10); /* add 10 to have enough memory */
-  std::vector<VertexPack*> packed_vertices(num_neighbourProc);
+  std::vector<VertexPack*> packed_vertices(neighbourProc.size());
   VertexPack* packing_vertex;
   packed_vertices[0] = &vertex_pack[0];
-  for (i = 1; i < num_neighbourProc; i++) {
+  for (i = 1; i < (long)neighbourProc.size(); i++) {
     packed_vertices[i] = packed_vertices[i-1] + numVtxPerProc[i-1];
   }
 
-  std::vector<int> numVtxPackedPerProc(num_neighbourProc, 0);
+  std::vector<int> numVtxPackedPerProc(neighbourProc.size(), 0);
 
   for (i = 0; i < num_exportVtx; i++) {
-    for (j = 0; j < num_neighbourProc; j++) {
+    for (j = 0; j < (long)neighbourProc.size(); j++) {
       if (exportProc[i] == neighbourProc[j]) {
 	packing_vertex = packed_vertices[j] + numVtxPackedPerProc[j];
 	numVtxPackedPerProc[j]++;
@@ -2033,7 +1989,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b(MsqError& err)
 
   /* send each block so the corresponding processor preceeded by the number of vertices */
   
-  for (j = 0; j < num_neighbourProc; j++) {
+  for (j = 0; j < (long)neighbourProc.size(); j++) {
 
     //    printf("[%d]i%dp%d Announcing %d vertices to proc %d\n",rank,iteration,pass,numVtxPerProc[j],neighbourProc[j]); fflush(NULL);
 
@@ -2068,11 +2024,11 @@ int ParallelHelperImpl::comm_smoothed_vtx_b(MsqError& err)
   MPI_Status status;
   int local_id;
 
-  //  printf("[%d]i%dp%d Waiting to receive vertices from %d processors ... \n",rank,iteration,pass,num_neighbourProc); fflush(NULL);
+  //  printf("[%d]i%dp%d Waiting to receive vertices from %d processors ... \n",rank,iteration,pass,neighbourProc.size()); fflush(NULL);
 
   /* receiving blocks from other processors */
 
-  for (j = 0; j < num_neighbourProc; j++) {
+  for (j = 0; j < (long)neighbourProc.size(); j++) {
     rval = MPI_Recv(&num,              /* message buffer */
              1,                 /* one data item */
              MPI_INT,           /* of type int */
@@ -2152,9 +2108,9 @@ int ParallelHelperImpl::comm_smoothed_vtx_b_no_all(MsqError& err)
 
   /* how many vertices per processor */
 
-  std::vector<int> numVtxPerProc(num_neighbourProc, 0);
+  std::vector<int> numVtxPerProc(neighbourProc.size(), 0);
   for (i = 0; i < num_exportVtx; i++) {
-    for (j = 0; j < num_neighbourProc; j++) {
+    for (j = 0; j < (long)neighbourProc.size(); j++) {
       if (exportProc[i] == neighbourProc[j]) {
 	/* increment count */
 	numVtxPerProc[j]++;
@@ -2162,24 +2118,24 @@ int ParallelHelperImpl::comm_smoothed_vtx_b_no_all(MsqError& err)
 	break;
       }
       /* assert loop did not end without finding the processor */
-      assert (j != num_neighbourProc);
+      assert (j != (long)neighbourProc.size());
     }
   }
 
   /* place vertices going to the same processor into consecutive memory space */
 
   std::vector<VertexPack> vertex_pack(num_exportVtx+10); /* add 10 to have enough memory */
-  std::vector<VertexPack*> packed_vertices(num_neighbourProc);
+  std::vector<VertexPack*> packed_vertices(neighbourProc.size());
   VertexPack* packing_vertex;
   packed_vertices[0] = &vertex_pack[0];
-  for (i = 1; i < num_neighbourProc; i++) {
+  for (i = 1; i < (long)neighbourProc.size(); i++) {
     packed_vertices[i] = packed_vertices[i-1] + numVtxPerProc[i-1];
   }
 
-  std::vector<int> numVtxPackedPerProc(num_neighbourProc,0);
+  std::vector<int> numVtxPackedPerProc(neighbourProc.size(),0);
 
   for (i = 0; i < num_exportVtx; i++) {
-    for (j = 0; j < num_neighbourProc; j++) {
+    for (j = 0; j < (long)neighbourProc.size(); j++) {
       if (exportProc[i] == neighbourProc[j]) {
 	packing_vertex = packed_vertices[j] + numVtxPackedPerProc[j];
 	numVtxPackedPerProc[j]++;
@@ -2198,7 +2154,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b_no_all(MsqError& err)
 
   /* send each block so the corresponding processor preceeded by the number of vertices */
   
-  for (j = 0; j < num_neighbourProc; j++) {
+  for (j = 0; j < (long)neighbourProc.size(); j++) {
 
     if (neighbourProcSendRemain[j])
     {
@@ -2245,12 +2201,12 @@ int ParallelHelperImpl::comm_smoothed_vtx_b_no_all(MsqError& err)
   MPI_Status status;
   int local_id;
 
-  //  printf("[%d]i%dp%d Waiting to receive vertices from %d processors ... \n",rank,iteration,pass,num_neighbourProc); fflush(NULL);
+  //  printf("[%d]i%dp%d Waiting to receive vertices from %d processors ... \n",rank,iteration,pass,neighbourProc.size()); fflush(NULL);
 
   /* receiving blocks in any order from other processors */
 
   int num_neighbourProcRecvRemain = 0;
-  for (j = 0; j < num_neighbourProc; j++) {
+  for (j = 0; j < (long)neighbourProc.size(); j++) {
     if (neighbourProcRecvRemain[j]) {
       num_neighbourProcRecvRemain++;
     }
@@ -2321,7 +2277,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b_no_all(MsqError& err)
 	}
       }
     }
-    for (i = 0; i < num_neighbourProc; i++) {
+    for (i = 0; i < (long)neighbourProc.size(); i++) {
       if (proc == neighbourProc[i]) {
 	assert(neighbourProcRecvRemain[i] >= num);
 	neighbourProcRecvRemain[i] -= num;
@@ -2364,7 +2320,7 @@ void ParallelHelperImpl::compute_independent_set()
 	/* assume it's in the independent set */
 	done = false;
 	/* then loop over the neighbors it has on other processors */
-	for (j = 0; !done && j < vtx_off_proc_list_size[i]; j++) {
+	for (j = 0; !done && j < (long)vtx_off_proc_list[i].size(); j++) {
 	  incident_vtx = vtx_off_proc_list[i][j];
           /* if this neighbour has not yet been smoothed and is not covered and ... */
           if ( part_smoothed_flag[incident_vtx] == 0 ) {
@@ -2388,7 +2344,7 @@ void ParallelHelperImpl::compute_independent_set()
 	  //	if (found_iter > 1) printf("[%d]i%d found another one %d in iteration %d\n",rank,iteration,i, found_iter);
 	  in_independent_set[i] = true;
 	  /* mark vertices with lower random numbers as covered */
-	  for (j = 0; j < vtx_off_proc_list_size[i]; j++) {
+	  for (j = 0; j < (long)vtx_off_proc_list[i].size(); j++) {
 	    incident_vtx = vtx_off_proc_list[i][j];
 	    /* if this neighbour has not yet been smoothed or covered mark it as covered */
 	    if ( part_smoothed_flag[incident_vtx] == 0 ) {
@@ -2397,7 +2353,7 @@ void ParallelHelperImpl::compute_independent_set()
 	  }
 	  k = num_exportVtx;
 	  /* then loop over the neighbors it has on other processors */
-	  for (j = 0; j < vtx_off_proc_list_size[i]; j++) {
+	  for (j = 0; j < (long)vtx_off_proc_list[i].size(); j++) {
 	    incident_vtx = vtx_off_proc_list[i][j];
 	    /* check to see if this processor already on the list */
 	    done = false;
