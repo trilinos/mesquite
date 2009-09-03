@@ -143,8 +143,6 @@ namespace MESQUITE_NS
     int num_already_smoothed_vertices;
     int num_already_recv_vertices;
     std::vector< std::vector<int> > vtx_off_proc_list;
-    std::vector< int > vtx_off_proc_list_size;
-    int num_neighbourProc;
     std::vector<int> neighbourProc;
     int iteration;
     int global_work_remains;
