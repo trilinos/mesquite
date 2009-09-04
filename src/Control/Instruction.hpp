@@ -43,8 +43,7 @@ class MeshDomain;
 class MsqError;
 class Settings;
 
-MESQUITE_EXPORT
-class Instruction
+class MESQUITE_EXPORT Instruction
 {
   public:
   

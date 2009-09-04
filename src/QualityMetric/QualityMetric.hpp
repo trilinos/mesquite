@@ -74,7 +74,7 @@ namespace MESQUITE_NS
    class PatchData;
    class MsqMeshEntity;
    
-   MESQUITE_EXPORT class QualityMetric
+   class MESQUITE_EXPORT QualityMetric
    {
    protected:
 

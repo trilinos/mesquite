@@ -51,7 +51,7 @@ namespace MESQUITE_NS
   /*! \class VertexMover
     Base class for all Vertex Movers.
    */  
-  class VertexMover : public QualityImprover 
+  class MESQUITE_EXPORT VertexMover : public QualityImprover 
   {
   protected:
     VertexMover( ObjectiveFunction* OF = NULL, bool Nash = true );

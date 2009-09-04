@@ -46,6 +46,8 @@
       #define MESQUITE_EXPORT __declspec(dllimport)
     #endif
   #endif
+#elif defined(__GNUC__) && __GNUC__ >= 4
+  #define MESQUITE_EXPORT __attribute__ ((visibility("default")))
 #else                    //else not vc
   #define MESQUITE_EXPORT
 #endif
