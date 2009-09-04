@@ -144,7 +144,7 @@ void MeshDecorator::tag_delete( TagHandle handle, MsqError& err )
   { get_mesh()->tag_delete( handle, err ); }
 
 TagHandle MeshDecorator::tag_get( const msq_std::string& name, MsqError& err )
-  { get_mesh()->tag_get( name, err ); }
+  { return get_mesh()->tag_get( name, err ); }
 
 
 void MeshDecorator::tag_properties( TagHandle handle,
