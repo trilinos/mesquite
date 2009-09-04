@@ -64,7 +64,6 @@ msq_test_SOURCES = msq_test_main.cpp \
 	ExtraDataTest.cpp \
 	FileTokenizerTest.cpp \
         GeomPrimTest.cpp \
-	HigherOrderTest.cpp \
 	IdealElementTest.cpp \
 	IdealTargetTest.cpp \
 	IdealWeightMeanRatioTest.cpp \
