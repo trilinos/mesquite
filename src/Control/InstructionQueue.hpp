@@ -75,41 +75,41 @@ namespace MESQUITE_NS {
            -# set_master_quality_improver(...)
            -# run_instructions(...)
   */
-  class InstructionQueue : public Settings
+  class MESQUITE_EXPORT InstructionQueue : public Settings
   {
 
   public:
-    MESQUITE_EXPORT InstructionQueue();
+    InstructionQueue();
     
-    MESQUITE_EXPORT InstructionQueue( const Settings& settings );
+    InstructionQueue( const Settings& settings );
 
-    MESQUITE_EXPORT virtual ~InstructionQueue() {};
+    virtual ~InstructionQueue() {};
     
-    MESQUITE_EXPORT void add_target_calculator( TargetWriter* tc, MsqError& err );
+    void add_target_calculator( TargetWriter* tc, MsqError& err );
     
       //! Add a tool mark higher-order nodes as slaved.
       //! Note:  Implies set_slaved_ho_node_mode( Settings::SLAVE_CALCULATED )
-    MESQUITE_EXPORT void add_vertex_slaver( VertexSlaver* slaver, MsqError& err );
+    void add_vertex_slaver( VertexSlaver* slaver, MsqError& err );
       //! Remove a tool mark higher-order nodes as slaved.
       //! Note:  Implies set_slaved_ho_node_mode( Settings::SLAVE_ALL )
-    MESQUITE_EXPORT void remove_vertex_slaver( VertexSlaver* slaver, MsqError& err );
+    void remove_vertex_slaver( VertexSlaver* slaver, MsqError& err );
     
-    MESQUITE_EXPORT void add_tag_vertex_mesh( TagVertexMesh* m, MsqError& err );
-    MESQUITE_EXPORT void remove_tag_vertex_mesh( TagVertexMesh* m, MsqError& err );
+    void add_tag_vertex_mesh( TagVertexMesh* m, MsqError& err );
+    void remove_tag_vertex_mesh( TagVertexMesh* m, MsqError& err );
     
-    MESQUITE_EXPORT void add_preconditioner(QualityImprover* instr, MsqError &err);
-    MESQUITE_EXPORT void remove_preconditioner(size_t index, MsqError &err);
-    MESQUITE_EXPORT void insert_preconditioner(QualityImprover* instr, size_t index, MsqError &err);
+    void add_preconditioner(QualityImprover* instr, MsqError &err);
+    void remove_preconditioner(size_t index, MsqError &err);
+    void insert_preconditioner(QualityImprover* instr, size_t index, MsqError &err);
     
-    MESQUITE_EXPORT void add_quality_assessor(QualityAssessor* instr, MsqError &err);
-    MESQUITE_EXPORT void remove_quality_assessor(size_t index, MsqError &err);
-    MESQUITE_EXPORT void insert_quality_assessor(QualityAssessor* instr, size_t index, MsqError &err);
+    void add_quality_assessor(QualityAssessor* instr, MsqError &err);
+    void remove_quality_assessor(size_t index, MsqError &err);
+    void insert_quality_assessor(QualityAssessor* instr, size_t index, MsqError &err);
     
-    MESQUITE_EXPORT void set_master_quality_improver(QualityImprover* instr, MsqError &err);
+    void set_master_quality_improver(QualityImprover* instr, MsqError &err);
     
-    MESQUITE_EXPORT void disable_automatic_quality_assessment()
+    void disable_automatic_quality_assessment()
        { autoQualAssess = false; }
-    MESQUITE_EXPORT void enable_automatic_quality_assessment()
+    void enable_automatic_quality_assessment()
        { autoQualAssess = true; }
 
       /**\brief Exectute the instruction queue.
@@ -119,21 +119,21 @@ namespace MESQUITE_NS {
        *\param mesh   The mesh to run each instruction on.
        *\param domain The domain of the mesh -- may be NULL if no domain.
        */
-    MESQUITE_EXPORT virtual void run_instructions( Mesh* mesh,
+    virtual void run_instructions( Mesh* mesh,
                                    MeshDomain* domain,
                                    MsqError &err);
     
     inline void run_instructions( Mesh* mesh, MsqError& err )
       { this->run_instructions( mesh, 0, err ); }
     
-    MESQUITE_EXPORT virtual void run_instructions( ParallelMesh* mesh,
+    virtual void run_instructions( ParallelMesh* mesh,
                                    MeshDomain* domain,
                                    MsqError &err);
     
     inline void run_instructions( ParallelMesh* mesh, MsqError& err )
       { this->run_instructions( mesh, 0, err ); }
 
-    MESQUITE_EXPORT void clear();  
+    void clear();  
     
   protected:
     

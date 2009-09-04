@@ -15,16 +15,16 @@ namespace MESQUITE_NS
 {
   /*\brief Do laplacian smooth, but don't invert elements.
    */  
-  class SmartLaplacianSmoother : public RelaxationSmoother 
+  class MESQUITE_EXPORT SmartLaplacianSmoother : public RelaxationSmoother 
   {
   public:
     /**
      *\param OF ObjectiveFunction used by some termination criteria
      */
-    MESQUITE_EXPORT SmartLaplacianSmoother( ObjectiveFunction* OF = NULL ) 
+    SmartLaplacianSmoother( ObjectiveFunction* OF = NULL ) 
       : RelaxationSmoother(OF) {}
     
-    MESQUITE_EXPORT ~SmartLaplacianSmoother();
+    ~SmartLaplacianSmoother();
     virtual msq_std::string get_name() const;
     
     static size_t num_inverted( PatchData& pd, MsqError& err );

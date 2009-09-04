@@ -43,7 +43,7 @@ class MeshDomain;
 class MsqError;
 class ParallelMesh;
 
-MESQUITE_EXPORT class PaverMinEdgeLengthWrapper : public Settings
+class MESQUITE_EXPORT PaverMinEdgeLengthWrapper : public Settings
 {
   private:
     int iterationLimit;

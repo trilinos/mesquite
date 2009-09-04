@@ -43,7 +43,7 @@ class MappingFunction2D;
 class MappingFunction3D;
 struct SettingData;
 
-MESQUITE_EXPORT class Settings {
+class MESQUITE_EXPORT Settings {
   public:
       //! Initialize to default settings.
     Settings();
