@@ -18,6 +18,7 @@ UG_SRCS = users-guide.tex \
 	support.tex \
 	team.tex \
         trouble.tex \
+	wrappers.tex \
         MesquiteUI.eps \
         hole_in_square.ps \
         msq-paradigm.eps \
