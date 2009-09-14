@@ -990,10 +990,14 @@ void PatchData::generate_vertex_to_element_data()
     // Skip if data already exists
   if (!vertAdjacencyArray.empty())
     return;
+    
+    // Skip if patch is empty
+  if (0 == num_nodes())
+    return;
   
     // Allocate offset array
-  vertAdjacencyOffsets.resize( num_nodes() + 1 );
-  memset( &vertAdjacencyOffsets[0], 0, sizeof(size_t)*vertAdjacencyOffsets.size() );
+  vertAdjacencyOffsets.clear();
+  vertAdjacencyOffsets.resize( num_nodes() + 1, 0 );
   
     // Temporarily use offsets array to hold per-vertex element count
   msq_std::vector<MsqMeshEntity>::iterator elem_iter;
