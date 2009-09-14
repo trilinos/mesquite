@@ -147,6 +147,10 @@ class MeshImplData {
      *  passed data. 
      */
     void reset_element( size_t index, 
+                        const msq_std::vector<long>& vertices,
+                        EntityTopology topology,
+                        MsqError& err  );
+    void reset_element( size_t index, 
                         const msq_std::vector<size_t>& vertices,
                         EntityTopology topology,
                         MsqError& err  );
@@ -154,6 +158,9 @@ class MeshImplData {
       /** Add a new vertex */
     size_t add_vertex( const Vector3D& coords, bool fixed, MsqError& err );
       /** Add a new element */
+    size_t add_element( const msq_std::vector<long>& vertices,
+                        EntityTopology topology,
+                        MsqError& err  );
     size_t add_element( const msq_std::vector<size_t>& vertices,
                         EntityTopology topology,
                         MsqError& err  );
@@ -206,6 +213,12 @@ class MeshImplData {
   
       /** Clear existing element data */
     void clear_element( size_t index, MsqError& err );
+    
+      /** Set cleared element */
+    void set_element( size_t index, 
+                      const msq_std::vector<long>& vertices,
+                      EntityTopology topology,
+                      MsqError& err  );
     
       /** Set cleared element */
     void set_element( size_t index, 
