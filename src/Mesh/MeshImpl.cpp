@@ -148,7 +148,7 @@ MeshImpl::MeshImpl(int num_nodes, int num_elem, EntityTopology entity_topology,
     std::cout << "error... only supporting triangles, quadrangles, tets, and hexes at this time "<< std::endl;
   }
 
-  msq_std::vector<size_t> connect(verts_per_elem);
+  msq_std::vector<long> connect(verts_per_elem);
   for (i = 0; i < num_elem; i++) {
     for (j = 0; j < verts_per_elem; j++) {
       connect[j] = connectivity[i][j];
@@ -206,7 +206,7 @@ MeshImpl::MeshImpl(int num_nodes, int num_elem, const EntityTopology *element_to
       break;
     }
 
-    msq_std::vector<size_t> connect(num_indices);
+    msq_std::vector<long> connect(num_indices);
 
     for (j = 0; j < num_indices; j++) {
       connect[j] = connectivity[i][j];
@@ -1864,15 +1864,14 @@ void MeshImpl::vtk_read_polygons( FileTokenizer& tokens, MsqError& err )
   tokens.get_long_ints( 2, size, err );                     MSQ_ERRRTN(err);
   tokens.get_newline( err );                                MSQ_ERRRTN(err);
   myMesh->allocate_elements( size[0], err );                MSQ_ERRRTN(err);
-  msq_std::vector<size_t> conn;
-  assert(sizeof(long) == sizeof(size_t));
+  msq_std::vector<long> conn;
 
   for (int i = 0; i < size[0]; ++i)
   {
     long count;
     tokens.get_long_ints( 1, &count, err );                 MSQ_ERRRTN(err);
     conn.resize( count );
-    tokens.get_long_ints( count, (long*)&conn[0], err );    MSQ_ERRRTN(err);
+    tokens.get_long_ints( count, &conn[0], err );    MSQ_ERRRTN(err);
     myMesh->reset_element( i, conn, POLYGON, err );         MSQ_ERRRTN(err);
   } 
 }
@@ -1908,14 +1907,13 @@ void MeshImpl::vtk_read_unstructured_grid( FileTokenizer& tokens, MsqError& err 
   tokens.get_newline( err );                                MSQ_ERRRTN(err);
 
   myMesh->allocate_elements( num_elems[0], err );           MSQ_ERRRTN(err);
-  msq_std::vector<size_t> conn;
-  assert(sizeof(long) == sizeof(size_t));
+  msq_std::vector<long> conn;
   for (i = 0; i < num_elems[0]; ++i)
   {
     long count;
     tokens.get_long_ints( 1, &count, err);                  MSQ_ERRRTN(err);
     conn.resize( count );
-    tokens.get_long_ints( count, (long*)&conn[0], err );    MSQ_ERRRTN(err);
+    tokens.get_long_ints( count, &conn[0], err );    MSQ_ERRRTN(err);
     myMesh->reset_element( i, conn, MIXED, err );           MSQ_ERRRTN(err);
   }
  
@@ -2108,11 +2106,9 @@ void MeshImpl::vtk_read_field( FileTokenizer& tokens, MsqError& err )
   {
     TagDescription tag;
     void* ptr = vtk_read_field_data( tokens, 0, 1, "", tag, err );
-    if (!MSQ_CHKERR(err))
-    {
+    if (ptr)
       free( ptr );
-      return;
-    }
+    MSQ_ERRRTN(err);
   }
 }
 

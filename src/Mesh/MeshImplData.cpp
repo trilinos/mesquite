@@ -280,6 +280,15 @@ void MeshImplData::reset_vertex( size_t index,
 }
 
 void MeshImplData::reset_element( size_t index,
+                                  const msq_std::vector<long>& vertices,
+                                  EntityTopology topology,
+                                  MsqError& err )
+{
+  clear_element( index, err );                   MSQ_ERRRTN(err);
+  set_element( index, vertices, topology, err ); MSQ_ERRRTN(err);
+}
+
+void MeshImplData::reset_element( size_t index,
                                   const msq_std::vector<size_t>& vertices,
                                   EntityTopology topology,
                                   MsqError& err )
@@ -321,6 +330,20 @@ void MeshImplData::clear_element( size_t index, MsqError& err )
 }
 
 void MeshImplData::set_element( size_t index,
+                                const msq_std::vector<long>& vertices,
+                                EntityTopology topology,
+                                MsqError& err )
+{
+  if (sizeof(long) == sizeof(size_t)) 
+    set_element( index, *reinterpret_cast<const msq_std::vector<size_t>*>(&vertices), topology, err );
+  else {
+    std::vector<size_t> conn(vertices.size());
+    std::copy( vertices.begin(), vertices.end(), conn.begin() );
+    set_element( index, conn, topology, err );
+  }
+}
+
+void MeshImplData::set_element( size_t index,
                                 const msq_std::vector<size_t>& vertices,
                                 EntityTopology topology,
                                 MsqError& err )
@@ -331,12 +354,11 @@ void MeshImplData::set_element( size_t index,
     return;
   }
 
-  msq_std::vector<size_t>& conn = elementList[index].connectivity;
-  conn = vertices;
+  elementList[index].connectivity = vertices;
   elementList[index].topology = topology;
   
-  for (msq_std::vector<size_t>::iterator iter = conn.begin();
-       iter != conn.end(); ++iter)
+  for (msq_std::vector<size_t>::const_iterator iter = vertices.begin();
+       iter != vertices.end(); ++iter)
   {
     if (!is_vertex_valid( *iter ))
     {
@@ -375,6 +397,26 @@ size_t MeshImplData::add_vertex( const Vector3D& coords, bool fixed, MsqError& e
     vertexList.push_back( Vertex(coords, fixed ) );
   }
   
+  return index;
+}
+
+size_t MeshImplData::add_element( const msq_std::vector<long>& vertices,
+                                  EntityTopology topology,
+                                  MsqError& err )
+{
+  size_t index;
+  if (!deletedElementList.empty())
+  {
+    index = deletedElementList[deletedElementList.size()-1];
+    deletedElementList.pop_back();
+  }
+  else
+  {
+    index = elementList.size();
+    elementList.resize( elementList.size() + 1 );
+  }
+
+  set_element( index, vertices, topology, err ); MSQ_ERRZERO(err);
   return index;
 }
 
