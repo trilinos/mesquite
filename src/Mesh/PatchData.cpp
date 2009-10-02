@@ -1455,7 +1455,7 @@ static int width( double d )
   return w;
 }
 static int width( size_t t )
-  { return t ? (int)ceil(log10(1+t)) : 1; }
+  { return t ? (int)ceil(log10((double)(1+t))) : 1; }
 static int width( const void* ptr)
   { return width((size_t)ptr); }
 
@@ -1491,10 +1491,10 @@ ostream& operator<<( ostream& stream, const PatchData& pd )
      if (name && (int)strlen(name) > tw)
        tw = strlen(name);
    }
-   if (iw < (int)ceil(log10(1+pd.num_nodes())))
-     iw = (int)ceil(log10(1+pd.num_nodes()));
-   if (iw < (int)ceil(log10(1+pd.num_elements())))
-     iw = (int)ceil(log10(1+pd.num_elements()));
+   if (iw < (int)ceil(log10((double)(1+pd.num_nodes()))))
+     iw = (int)ceil(log10((double)(1+pd.num_nodes())));
+   if (iw < (int)ceil(log10((double)(1+pd.num_elements()))))
+     iw = (int)ceil(log10((double)(1+pd.num_elements())));
     
    
    stream << "Vertices: " << endl;

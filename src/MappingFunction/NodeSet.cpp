@@ -52,6 +52,7 @@ msq_stdio::ostream& operator<<( msq_stdio::ostream& s, NodeSet set )
   for (i = 0; i < NodeSet::NUM_REGION_BITS; ++i)
     s << (set.mid_region_node(i) ? '1' : '0');
   s << '}';
+  return s;
 }
 
 
