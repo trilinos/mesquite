@@ -1045,6 +1045,11 @@ bool operator<( const DomainClassifier::DomainBlock& b,
                 const Mesh::EntityHandle h )
   { return b.lastHandle < h; }
 
+static inline
+bool operator<( const DomainClassifier::DomainBlock& b,
+			    const DomainClassifier::DomainBlock& c )
+{ return b.lastHandle < c.firstHandle; }
+
 MeshDomain* DomainClassifier::find_domain(
                Mesh::EntityHandle handle,
                const msq_std::vector<DomainClassifier::DomainBlock>& list )
