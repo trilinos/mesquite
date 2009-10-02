@@ -19,7 +19,12 @@ EXTRA_DIST = lgpl.txt \
              mkconfigure \
              $(OLD_AM_GENERATED_HDRS:=.in) \
              $(OLD_AM_EXTRA_CONFIG) \
-             $(INCLUDED_MAKEFILES)
+             $(INCLUDED_MAKEFILES) \
+	     cmake/*.cmake \
+	     CMakeLists.txt \
+	     src/CMakeLists.txt \
+	     utils/CMakeLists.txt \
+	     itaps/CMakeLists.txt
 
 BUILT_SOURCES = include/Mesquite_all_headers.hpp
 MSQ_SRCS=
