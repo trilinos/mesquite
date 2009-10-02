@@ -107,6 +107,11 @@ namespace Mesquite = MESQUITE_NS;
 */
 namespace MESQUITE_NS
 {
+  // Windows has issues
+#ifndef M_PI
+  const double M_PI = 3.14159265358979323846;
+#endif
+
   typedef int StatusCode;
 
   typedef double real;
