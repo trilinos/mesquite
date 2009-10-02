@@ -1,13 +1,21 @@
+IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
 
-INCLUDE(PackageLibraryMacros)
+  INCLUDE(PackageLibraryMacros)
 
-#
-# A) Package-specific configuration options
-#
+  #
+  # A) Package-specific configuration options
+  #
 
-PACKAGE_CONFIGURE_FILE(mesquite_config.h)
+ELSE()
+  MACRO(APPEND_SET VARNAME)
+    SET(${VARNAME} ${${VARNAME}} ${ARGN})
+  ENDMACRO()
+ENDIF()
 
-PACKAGE_CONFIGURE_FILE(mesquite_version.h)
+autoconf_header( ${CMAKE_CURRENT_SOURCE_DIR}/../include/mesquite_version.h.in
+                 ${CMAKE_CURRENT_BINARY_DIR}/../include/mesquite_version.h )
+autoconf_header( ${CMAKE_CURRENT_SOURCE_DIR}/../include/mesquite_config.h.in
+                 ${CMAKE_CURRENT_BINARY_DIR}/../include/mesquite_config.h )
 
 #
 # B) Define the header and source files (and directories)
@@ -24,8 +32,8 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 APPEND_SET(HEADERS
-  ${CMAKE_CURRENT_BINARY_DIR}/mesquite_config.h
-  ${CMAKE_CURRENT_BINARY_DIR}/mesquite_version.h
+  ${CMAKE_CURRENT_BINARY_DIR}/../include/mesquite_config.h
+  ${CMAKE_CURRENT_BINARY_DIR}/../include/mesquite_version.h
   ../include/Mesquite.hpp
   ../include/MeshInterface.hpp
   ../include/ParallelMeshInterface.hpp
@@ -929,8 +937,6 @@ ENDIF()
 IF(NOT "${old_all_headers_contents}" STREQUAL "${all_headers_contents}")
   MESSAGE("Creating Mesquite_all_headers.hpp")
   FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/Mesquite_all_headers.hpp ${all_headers_contents})
-ELSE()
-  MESSAGE("Mesquite_all_headers.hpp is up-to-date")
 ENDIF()
 
 #last thing to do is add then newly created header
@@ -940,8 +946,33 @@ APPEND_SET(HEADERS ${CMAKE_CURRENT_BINARY_DIR}/Mesquite_all_headers.hpp)
 # C) Define the targets for package's library(s)
 #
 
-PACKAGE_ADD_LIBRARY(
-  mesquite
-  HEADERS ${HEADERS}
-  SOURCES ${SOURCES}
-  )
+IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
+
+  PACKAGE_ADD_LIBRARY(
+    mesquite
+    HEADERS ${HEADERS}
+    SOURCES ${SOURCES}
+    )
+
+ELSE()
+
+  ADD_LIBRARY( mesquite ${SOURCES} )
+
+ENDIF()
+
+SET( MESQUITE_DEFINES "" )
+IF (MSQ_TRAP_FPE)
+  SET( MESQUITE_DEFINES "${MESQUITE_DEFINES} -DMSQ_TRAP_FPE" )
+ENDIF()
+IF (MSQ_ENABLE_DEBUG)
+  SET( MESQUITE_DEFINES "${MESQUITE_DEFINES} -DMSQ_ENABLE_DEBUG" )
+ENDIF()
+IF (NDEBUG)
+  SET( MESQUITE_DEFINES "${MESQUITE_DEFINES} -DNDEBUG" )
+ENDIF()
+IF (MSQ_USE_FUNCTION_TIMERS)
+  SET( MESQUITE_DEFINES "${MESQUITE_DEFINES} -DMSQ_USE_FUNCTION_TIMERS" )
+ENDIF()
+
+SET_SOURCE_FILES_PROPERTIES( ${SOURCES} COMPILE_FLAGS ${MESQUITE_DEFINES} )
+

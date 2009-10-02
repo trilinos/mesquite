@@ -1,5 +1,8 @@
 
-INCLUDE(PackageLibraryMacros)
+IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
+  INCLUDE(PackageLibraryMacros)
+ENDIF()
+  
 
 #
 # A) Package-specific configuration options
@@ -13,4 +16,4 @@ IF(F77_FUNC_)
   SET(FC_FUNC_ 1)
 ENDIF()
 
-PACKAGE_CONFIGURE_FILE(iBase_FCDefs.h)
+autoconf_header(iBase_FCDefs.h.in iBase_FCDefs.h)
