@@ -30,6 +30,7 @@ SET(SOURCES "")
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../include)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../include)
 
 APPEND_SET(HEADERS
   ${CMAKE_CURRENT_BINARY_DIR}/../include/mesquite_config.h
@@ -862,7 +863,7 @@ ADD_CUSTOM_COMMAND(
   ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMesh.h 
           -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h 
           -D prefix:STRING=iMesh 
-          -P ${PACKAGE_SOURCE_DIR}/cmake/ITAPSFortranMangling.cmake
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMesh.h
   COMMENT "Running custom command"
   )
@@ -874,7 +875,7 @@ ADD_CUSTOM_COMMAND(
   ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMeshP.h 
           -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h 
           -D prefix:STRING=iMeshP 
-          -P ${PACKAGE_SOURCE_DIR}/cmake/ITAPSFortranMangling.cmake
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMeshP.h
   COMMENT "Running custom command"
   )
@@ -886,7 +887,7 @@ ADD_CUSTOM_COMMAND(
   ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iGeom.h 
           -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iGeom_protos.h 
           -D prefix:STRING=iGeom 
-          -P ${PACKAGE_SOURCE_DIR}/cmake/ITAPSFortranMangling.cmake
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iGeom.h
   COMMENT "Running custom command"
   )
@@ -898,7 +899,7 @@ ADD_CUSTOM_COMMAND(
   ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iRel.h 
           -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iRel_protos.h 
           -D prefix:STRING=iRel 
-          -P ${PACKAGE_SOURCE_DIR}/cmake/ITAPSFortranMangling.cmake
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iRel.h
   COMMENT "Running custom command"
   )
@@ -961,9 +962,9 @@ IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
 ELSE()
 
   IF(${PACKAGE_NAME}_ENABLE_SHARED)
-    ADD_LIBRARY( mesquite SHARED ${SOURCES} )
+    ADD_LIBRARY( mesquite SHARED ${SOURCES} ${HEADERS} )
   ELSE()
-    ADD_LIBRARY( mesquite STATIC ${SOURCES} )
+    ADD_LIBRARY( mesquite STATIC ${SOURCES} ${HEADERS} )
   ENDIF()
 
 ENDIF()
