@@ -409,7 +409,7 @@ namespace MESQUITE_NS
       It is called during surface meshes optimization to figure out the surface normal,
       how to snap vertices back to the surface, etc... . 
     */
-  class MeshDomain
+  class MESQUITE_EXPORT MeshDomain
   {
   public:
     virtual ~MeshDomain()
