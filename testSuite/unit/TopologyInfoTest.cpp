@@ -25,13 +25,8 @@
   ***************************************************************** */
 
 #include <algorithm>
-
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#include <iostream.h>
-#else
 #include <iostream>
 using std::cout;
-#endif
 #include "cppunit/extensions/HelperMacros.h"
 
 #include "Mesquite.hpp"
@@ -1304,11 +1299,11 @@ void TopologyInfoTest::test_rev_adj( Mesquite::EntityTopology type )
     CPPUNIT_ASSERT( num_adj_idx > 1 );
     
       // make sure adjacent vertex list is unique
-    msq_std::vector<unsigned> adj_idx_copy( num_adj_idx );
-    msq_std::copy( adj_idx, adj_idx+num_adj_idx, adj_idx_copy.begin() );
-    msq_std::sort( adj_idx_copy.begin(), adj_idx_copy.end() );
-    msq_std::vector<unsigned>::iterator iter;
-    iter = msq_std::unique( adj_idx_copy.begin(), adj_idx_copy.end() );
+    std::vector<unsigned> adj_idx_copy( num_adj_idx );
+    std::copy( adj_idx, adj_idx+num_adj_idx, adj_idx_copy.begin() );
+    std::sort( adj_idx_copy.begin(), adj_idx_copy.end() );
+    std::vector<unsigned>::iterator iter;
+    iter = std::unique( adj_idx_copy.begin(), adj_idx_copy.end() );
     CPPUNIT_ASSERT( iter == adj_idx_copy.end() );
     
       // Get reverse mapping indices
@@ -1373,7 +1368,7 @@ const ho_result HEX9[] = { { 3, 0, 8 } };
 
 void TopologyInfoTest::higher_order_from_side()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
     // HEX-27
   for (unsigned i = 0; i < 19; ++i) {
     unsigned result = TopologyInfo::higher_order_from_side( 
@@ -1444,7 +1439,7 @@ void TopologyInfoTest::higher_order_from_side()
 
 void TopologyInfoTest::side_from_higher_order()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   unsigned dim, num;
     // HEX-27
   for (unsigned i = 0; i < 19; ++i) {
@@ -1495,7 +1490,7 @@ void TopologyInfoTest::side_from_higher_order()
 
 void TopologyInfoTest::find_edge()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   bool reversed;
   
   EntityTopology types[] = { TRIANGLE, QUADRILATERAL, TETRAHEDRON, HEXAHEDRON, PRISM, PYRAMID };
@@ -1536,7 +1531,7 @@ static void reverse( const unsigned* in, unsigned* out, unsigned size, unsigned 
 
 void TopologyInfoTest::find_face()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   bool reversed;
   unsigned switched[4], idx;
   
@@ -1612,7 +1607,7 @@ void TopologyInfoTest::find_face()
 
 void TopologyInfoTest::find_side()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   bool reversed;
   unsigned i, dim, switched[4];
   
@@ -1690,7 +1685,7 @@ void TopologyInfoTest::compare_sides()
   const unsigned faces[][2] = { { 1, 3 } };
   const unsigned num_faces = sizeof(faces)/sizeof(faces[0]);
   
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   
     // try every possible edge combination
   for (unsigned e1 = 0; e1 < 12; ++e1) {

@@ -108,11 +108,11 @@ public:
     virtual int get_geometric_dimension(Mesquite::MsqError &/*err*/);
     
     /** \brief Get handles for all elemnents */
-    virtual void get_all_elements( msq_std::vector<ElementHandle>& elements, 
+    virtual void get_all_elements( std::vector<ElementHandle>& elements, 
                                    MsqError& err );
     
     /** \brief Get handles for all vertices */
-    virtual void get_all_vertices( msq_std::vector<VertexHandle>& vertices, 
+    virtual void get_all_vertices( std::vector<VertexHandle>& vertices, 
                                    MsqError& err );
 
       /**\brief Query "fixed" flag for a vertex */
@@ -159,15 +159,15 @@ public:
       /**\brief Get vertex-to-element adjacencies */
     virtual void vertices_get_attached_elements( const VertexHandle* vertex_array,
                                                  size_t num_vertices,
-                                                 msq_std::vector<ElementHandle>& elements,
-                                                 msq_std::vector<size_t>& offsets,
+                                                 std::vector<ElementHandle>& elements,
+                                                 std::vector<size_t>& offsets,
                                                  MsqError& err );
     
       /**\brief Get element connectivity */
     virtual void elements_get_attached_vertices( const ElementHandle *elem_handles,
                                                  size_t num_elems,
-                                                 msq_std::vector<VertexHandle>& vertices,
-                                                 msq_std::vector<size_t>& offsets,
+                                                 std::vector<VertexHandle>& vertices,
+                                                 std::vector<size_t>& offsets,
                                                  MsqError& err );
     
   
@@ -204,7 +204,7 @@ public:
        * \param default_value Default value to assign to all entities - may be NULL
        * \return - Handle for tag definition 
        */
-    virtual TagHandle tag_create( const msq_std::string& tag_name,
+    virtual TagHandle tag_create( const std::string& tag_name,
                                   TagType type, unsigned length,
                                   const void* default_value,
                                   MsqError &err);
@@ -217,7 +217,7 @@ public:
     
     
       /** \brief Get handle for existing tag, by name. */
-    virtual TagHandle tag_get( const msq_std::string& name, 
+    virtual TagHandle tag_get( const std::string& name, 
                                MsqError& err );
      
       /** \brief Get properites of tag
@@ -229,7 +229,7 @@ public:
        * \param length_out Passed back number of values per entity.
        */
     virtual void tag_properties( TagHandle handle,
-                                 msq_std::string& name_out,
+                                 std::string& name_out,
                                  TagType& type_out,
                                  unsigned& length_out,
                                  MsqError& err );
@@ -322,8 +322,8 @@ public:
     void get_adjacent_entities( const iBase_EntityHandle* source,
                                 size_t num_source,
                                 iBase_EntityType target_type,
-                                msq_std::vector<EntityHandle>& target,
-                                msq_std::vector<size_t>& offsets,
+                                std::vector<EntityHandle>& target,
+                                std::vector<size_t>& offsets,
                                 MsqError& err );
 
     /** The IMesh instance */
@@ -354,7 +354,7 @@ public:
      *  to constrain vertex->element adjaceny queries to
      *  only those elements that are in the input element set.
      */
-    //msq_std::vector<iBase_EntityHandle> inputElements;
+    //std::vector<iBase_EntityHandle> inputElements;
     
     /** The type of elements contained in the input element set.
      * Should be one of:

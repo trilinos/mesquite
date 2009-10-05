@@ -448,8 +448,8 @@ void MsqIMesh::vertices_get_byte(
 void MsqIMesh::get_adjacent_entities( const iBase_EntityHandle* source,
                                           size_t num_source,
                                           iBase_EntityType target_type,
-                                          msq_std::vector<EntityHandle>& target,
-                                          msq_std::vector<size_t>& offsets,
+                                          std::vector<EntityHandle>& target,
+                                          std::vector<size_t>& offsets,
                                           MsqError& err )
 {
   if (num_source == 0) {
@@ -539,8 +539,8 @@ void MsqIMesh::get_adjacent_entities( const iBase_EntityHandle* source,
 void MsqIMesh::vertices_get_attached_elements( 
                                      const VertexHandle* vertices,
                                      size_t num_vertex,
-                                     msq_std::vector<ElementHandle>& elements,
-                                     msq_std::vector<size_t>& offsets,
+                                     std::vector<ElementHandle>& elements,
+                                     std::vector<size_t>& offsets,
                                      MsqError& err )
 {
   int ierr, cont;
@@ -558,7 +558,7 @@ void MsqIMesh::vertices_get_attached_elements(
   
     // Remove all elements not in inputSet
   if (root_set != inputSet) {
-    msq_std::vector<size_t>::iterator offset_iter = offsets.begin();
+    std::vector<size_t>::iterator offset_iter = offsets.begin();
     size_t read_idx, write_idx;
     for (read_idx = write_idx = 0; read_idx < elements.size(); ++read_idx)
     {
@@ -596,8 +596,8 @@ void MsqIMesh::vertices_get_attached_elements(
 void MsqIMesh::elements_get_attached_vertices(
   const ElementHandle *elements,
   size_t num_elems,
-  msq_std::vector<VertexHandle>& vertices,
-  msq_std::vector<size_t>& offsets,
+  std::vector<VertexHandle>& vertices,
+  std::vector<size_t>& offsets,
   Mesquite::MsqError &err)
 {
   assert( sizeof(iBase_EntityHandle) == sizeof(EntityHandle) );
@@ -607,7 +607,7 @@ void MsqIMesh::elements_get_attached_vertices(
 }
 
 
-void MsqIMesh::get_all_elements( msq_std::vector<ElementHandle>& elements,
+void MsqIMesh::get_all_elements( std::vector<ElementHandle>& elements,
                                      MsqError& err )
 {
   int ierr, count_in, count_out;
@@ -680,15 +680,15 @@ void MsqIMesh::get_all_elements( msq_std::vector<ElementHandle>& elements,
   }
 }
 
-void MsqIMesh::get_all_vertices( msq_std::vector<VertexHandle>& vertices,
+void MsqIMesh::get_all_vertices( std::vector<VertexHandle>& vertices,
                                      MsqError& err )
 {
-  msq_std::vector<ElementHandle> elems;
+  std::vector<ElementHandle> elems;
   get_all_elements( elems, err ); MSQ_CHKERR(err);
   if (elems.empty())
     return;  
   
-  msq_std::vector<size_t> offsets;
+  std::vector<size_t> offsets;
   elements_get_attached_vertices( &elems[0], elems.size(), vertices, offsets, err );
   MSQ_CHKERR(err);
   
@@ -750,7 +750,7 @@ void MsqIMesh::release()
 }
 
 //**************** Tags ****************
-TagHandle MsqIMesh::tag_create( const msq_std::string& name, 
+TagHandle MsqIMesh::tag_create( const std::string& name, 
                                     TagType type, unsigned length,
                                     const void* ,
                                     MsqError& err )
@@ -791,7 +791,7 @@ void MsqIMesh::tag_delete( TagHandle handle, MsqError& err )
   }
 }
 
-TagHandle MsqIMesh::tag_get( const msq_std::string& name, MsqError& err )
+TagHandle MsqIMesh::tag_get( const std::string& name, MsqError& err )
 {
   iBase_TagHandle handle = 0;
   int ierr;
@@ -809,7 +809,7 @@ TagHandle MsqIMesh::tag_get( const msq_std::string& name, MsqError& err )
 
 
 void MsqIMesh::tag_properties( TagHandle handle,
-                                   msq_std::string& name_out,
+                                   std::string& name_out,
                                    TagType& type_out,
                                    unsigned& length_out,
                                    MsqError& err )

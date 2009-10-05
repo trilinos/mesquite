@@ -48,14 +48,14 @@ NumericalQM::NumericalQM( QualityMetric* real_metric,
 QualityMetric::MetricType NumericalQM::get_metric_type() const
   { return realMetric->get_metric_type(); }
 
-msq_std::string NumericalQM::get_name() const
+std::string NumericalQM::get_name() const
   { return realMetric->get_name(); }
 
 int NumericalQM::get_negate_flag() const
   { return realMetric->get_negate_flag(); }
 
 void NumericalQM::get_evaluations( PatchData& pd, 
-                                   msq_std::vector<size_t>& handles, 
+                                   std::vector<size_t>& handles, 
                                    bool free,
                                    MsqError& err )
   { return realMetric->get_evaluations( pd, handles, free, err ); }
@@ -69,15 +69,15 @@ bool NumericalQM::evaluate( PatchData& pd,
 bool NumericalQM::evaluate_with_indices( PatchData& pd,
                                          size_t handle,
                                          double& value,
-                                         msq_std::vector<size_t>& indices,
+                                         std::vector<size_t>& indices,
                                          MsqError& err )
   { return realMetric->evaluate_with_indices( pd, handle, value, indices, err ); }
 
 bool NumericalQM::evaluate_with_gradient( PatchData& pd,
                                           size_t handle,
                                           double& value,
-                                          msq_std::vector<size_t>& indices,
-                                          msq_std::vector<Vector3D>& gradient,
+                                          std::vector<size_t>& indices,
+                                          std::vector<Vector3D>& gradient,
                                           MsqError& err )
 {
   if (numericGrad) 
@@ -99,9 +99,9 @@ bool NumericalQM::evaluate_with_gradient( PatchData& pd,
 bool NumericalQM::evaluate_with_Hessian_diagonal( PatchData& pd,
                                       size_t handle,
                                       double& value,
-                                      msq_std::vector<size_t>& indices,
-                                      msq_std::vector<Vector3D>& gradient,
-                                      msq_std::vector<SymMatrix3D>& hess,
+                                      std::vector<size_t>& indices,
+                                      std::vector<Vector3D>& gradient,
+                                      std::vector<SymMatrix3D>& hess,
                                       MsqError& err )
 {
   if (numericHess) 
@@ -125,9 +125,9 @@ bool NumericalQM::evaluate_with_Hessian_diagonal( PatchData& pd,
 bool NumericalQM::evaluate_with_Hessian( PatchData& pd,
                                          size_t handle,
                                          double& value,
-                                         msq_std::vector<size_t>& indices,
-                                         msq_std::vector<Vector3D>& gradient,
-                                         msq_std::vector<Matrix3D>& Hessian,
+                                         std::vector<size_t>& indices,
+                                         std::vector<Vector3D>& gradient,
+                                         std::vector<Matrix3D>& Hessian,
                                          MsqError& err )
 
 {

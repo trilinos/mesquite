@@ -37,7 +37,7 @@
 
 namespace MESQUITE_NS {
 
-msq_std::string Target2DSquared::get_name() const
+std::string Target2DSquared::get_name() const
   { return "sqr(" + mMetric->get_name() + ')'; }
 
 bool Target2DSquared::evaluate( const MsqMatrix<2,2>& A, 

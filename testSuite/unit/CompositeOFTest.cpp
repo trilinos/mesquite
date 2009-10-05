@@ -256,7 +256,7 @@ void CompositeOFTest::get_hessians( MsqHessian& LP1_hess,
   LP2_hess.initialize( pd, err ); ASSERT_NO_ERROR(err);
   OF_hess .initialize( pd, err ); ASSERT_NO_ERROR(err);
   
-  msq_std::vector<Vector3D> grad;
+  std::vector<Vector3D> grad;
   bool rval;
   double value;
   rval = LP1.evaluate_with_Hessian( ObjectiveFunction::CALCULATE, pd, value, grad, LP1_hess, err );
@@ -279,14 +279,14 @@ void CompositeOFTest::test_add_hess_diagonal()
 void CompositeOFTest::test_multiply_hess_diagonal()
 {
   CompositeOFMultiply OF( &LP1, &LP2 );
-  msq_std::vector<SymMatrix3D> hess1, hess2, hess;
+  std::vector<SymMatrix3D> hess1, hess2, hess;
   
   MsqPrintError err(cout);
   PatchData pd;
   create_twelve_hex_patch( pd, err ); 
   ASSERT_NO_ERROR( err );
 
-  msq_std::vector<Vector3D> grad1, grad2, grad;
+  std::vector<Vector3D> grad1, grad2, grad;
   bool rval;
   double value1, value2, value;
   rval = LP1.evaluate_with_Hessian_diagonal( ObjectiveFunction::CALCULATE, pd, value1, grad1, hess1, err );

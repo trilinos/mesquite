@@ -111,7 +111,7 @@ bool PMeanPTemplate::evaluate( EvalType type,
   MSQ_ERRFALSE(err);
   
     // calculate OF value for just the patch
-  msq_std::vector<size_t>::const_iterator i;
+  std::vector<size_t>::const_iterator i;
   double value, working_sum = 0.0;
   for (i = qmHandles.begin(); i != qmHandles.end(); ++i)
   {
@@ -132,7 +132,7 @@ bool PMeanPTemplate::evaluate( EvalType type,
 bool PMeanPTemplate::evaluate_with_gradient( EvalType type, 
                                          PatchData& pd,
                                          double& value_out,
-                                         msq_std::vector<Vector3D>& grad_out,
+                                         std::vector<Vector3D>& grad_out,
                                          MsqError& err )
 {
   QualityMetric* qm = get_quality_metric();
@@ -143,7 +143,7 @@ bool PMeanPTemplate::evaluate_with_gradient( EvalType type,
   grad_out.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
   
     // calculate OF value and gradient for just the patch
-  msq_std::vector<size_t>::const_iterator i;
+  std::vector<size_t>::const_iterator i;
   double value, working_sum = 0.0;
   const double f = qm->get_negate_flag() * mPower.value();
   for (i = qmHandles.begin(); i != qmHandles.end(); ++i)
@@ -170,7 +170,7 @@ bool PMeanPTemplate::evaluate_with_gradient( EvalType type,
   value_out = qm->get_negate_flag() 
             * get_value( working_sum, qmHandles.size(), type, global_count );
   const double inv_n = 1.0 / global_count;
-  msq_std::vector<Vector3D>::iterator g;
+  std::vector<Vector3D>::iterator g;
   for (g = grad_out.begin(); g != grad_out.end(); ++g)
     *g *= inv_n;
   return true;
@@ -179,8 +179,8 @@ bool PMeanPTemplate::evaluate_with_gradient( EvalType type,
 bool PMeanPTemplate::evaluate_with_Hessian_diagonal( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
-                                        msq_std::vector<Vector3D>& grad_out,
-                                        msq_std::vector<SymMatrix3D>& hess_diag_out,
+                                        std::vector<Vector3D>& grad_out,
+                                        std::vector<SymMatrix3D>& hess_diag_out,
                                         MsqError& err )
 {
   QualityMetric* qm = get_quality_metric();
@@ -194,7 +194,7 @@ bool PMeanPTemplate::evaluate_with_Hessian_diagonal( EvalType type,
   hess_diag_out.resize( s, 0.0 );
   
     // calculate OF value and gradient for just the patch
-  msq_std::vector<size_t>::const_iterator i;
+  std::vector<size_t>::const_iterator i;
   size_t j;
   double value, working_sum = 0.0;
   const double f1 = qm->get_negate_flag() * mPower.value();
@@ -250,7 +250,7 @@ bool PMeanPTemplate::evaluate_with_Hessian_diagonal( EvalType type,
 bool PMeanPTemplate::evaluate_with_Hessian( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
-                                        msq_std::vector<Vector3D>& grad_out,
+                                        std::vector<Vector3D>& grad_out,
                                         MsqHessian& Hessian_out,
                                         MsqError& err )
 {
@@ -263,7 +263,7 @@ bool PMeanPTemplate::evaluate_with_Hessian( EvalType type,
   Hessian_out.zero_out();
   
     // calculate OF value and gradient for just the patch
-  msq_std::vector<size_t>::const_iterator i;
+  std::vector<size_t>::const_iterator i;
   size_t j, k, n;
   double value, working_sum = 0.0;
   const double f1 = qm->get_negate_flag() * mPower.value();
@@ -319,7 +319,7 @@ bool PMeanPTemplate::evaluate_with_Hessian( EvalType type,
   value_out = qm->get_negate_flag() 
             * get_value( working_sum, qmHandles.size(), type, global_count );
   const double inv_n = 1.0 / global_count;
-  msq_std::vector<Vector3D>::iterator g;
+  std::vector<Vector3D>::iterator g;
   for (g = grad_out.begin(); g != grad_out.end(); ++g)
     *g *= inv_n;
   Hessian_out.scale( inv_n );

@@ -36,7 +36,7 @@
 
 namespace MESQUITE_NS {
 
-msq_std::string Target3DOffset::get_name() const
+std::string Target3DOffset::get_name() const
   { return "offset(" + mMetric->get_name() + ')'; }
 
 bool Target3DOffset::evaluate( const MsqMatrix<3,3>& A, 

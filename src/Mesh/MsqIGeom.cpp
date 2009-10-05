@@ -111,7 +111,7 @@ void MsqIGeom::domain_DoF( const Mesh::VertexHandle* ,
   int ierr = get_dimension( &geomEntHandle, &dim, 1 );
   if (iBase_SUCCESS != ierr)
     MSQ_SETERR(err)(process_itaps_error(ierr), MsqError::INTERNAL_ERROR);
-  msq_std::fill( dof_array, dof_array + num_vertices, dim );
+  std::fill( dof_array, dof_array + num_vertices, dim );
 }
 
 

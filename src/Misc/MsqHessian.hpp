@@ -54,14 +54,7 @@
 #include "PatchData.hpp"
 #include "MsqTimer.hpp"
 
-
-
-#ifdef MSQ_USE_OLD_IO_HEADERS
-class ostream;
-#else
 #include <iosfwd>
-#endif
-
  
 namespace MESQUITE_NS
 {
@@ -104,7 +97,7 @@ namespace MESQUITE_NS
       size_t size() const {return mSize;}
  
       //! returns the diagonal blocks, memory must be allocated before call.
-      void get_diagonal_blocks(msq_std::vector<Matrix3D> &diag, MsqError &err) const;
+      void get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err) const;
 
       Matrix3D* get_block(size_t i, size_t j);
       const Matrix3D* get_block(size_t i, size_t j) const;
@@ -124,7 +117,7 @@ namespace MESQUITE_NS
       //! r = this * x, where r and x are arrays of length size().
       void product( Vector3D* r, const Vector3D* x ) const;
 
-      friend msq_stdio::ostream& operator<<( msq_stdio::ostream&, const MsqHessian& );
+      friend std::ostream& operator<<( std::ostream&, const MsqHessian& );
    
       inline void add( size_t row, size_t col, const Matrix3D& m, MsqError& err );
     
@@ -346,7 +339,7 @@ namespace MESQUITE_NS
 
   /* ------------------ I/O ----------------- */
 
- msq_stdio::ostream& operator<<(msq_stdio::ostream &s, const MsqHessian &h);
+ std::ostream& operator<<(std::ostream &s, const MsqHessian &h);
 
 } // namespace
 

@@ -96,7 +96,7 @@ void TagVertexMeshTest::setUp()
   fclose( file );
   CPPUNIT_ASSERT( r == 1 );
   
-  MsqPrintError err( msq_stdio::cerr );
+  MsqPrintError err( std::cerr );
   realMesh = new MeshImpl;
   realMesh->read_vtk( TEMP_FILE_NAME, err );
   remove( TEMP_FILE_NAME );
@@ -111,7 +111,7 @@ void TagVertexMeshTest::tearDown()
 
 void TagVertexMeshTest::test_vertex_coordinates()
 {
-  MsqPrintError err( msq_stdio::cerr );
+  MsqPrintError err( std::cerr );
   TagVertexMesh tag_mesh( err, realMesh, true );
   ASSERT_NO_ERROR(err);
   
@@ -149,7 +149,7 @@ void TagVertexMeshTest::test_vertex_coordinates()
 
 void TagVertexMeshTest::test_save_coordinates()
 {
-  MsqPrintError err( msq_stdio::cerr );
+  MsqPrintError err( std::cerr );
   Vector3D new_coords(5, 5, 5);
   MsqVertex get_coords;
   
@@ -182,7 +182,7 @@ void TagVertexMeshTest::test_save_coordinates()
 
 void TagVertexMeshTest::test_cleanup()
 {
-  MsqPrintError err( msq_stdio::cerr );
+  MsqPrintError err( std::cerr );
   Vector3D new_coords(5, 5, 5);
   MsqVertex get_coords;
   
@@ -215,7 +215,7 @@ void TagVertexMeshTest::test_cleanup()
 
 void TagVertexMeshTest::test_alternate_name()
 {
-  MsqPrintError err( msq_stdio::cerr );
+  MsqPrintError err( std::cerr );
   Vector3D new_coords(5, 5, 5);
   MsqVertex get_coords;
   
@@ -249,7 +249,7 @@ void TagVertexMeshTest::test_alternate_name()
 
 void TagVertexMeshTest::test_reference_mesh()
 {
-  MsqPrintError err( msq_stdio::cerr );
+  MsqPrintError err( std::cerr );
   TagVertexMesh tag_mesh( err, realMesh, true );
   ASSERT_NO_ERROR(err);
   

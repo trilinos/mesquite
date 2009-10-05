@@ -51,13 +51,13 @@ public:
   /**\brief Returns list of element indices in PatchData */
   MESQUITE_EXPORT virtual 
   void get_evaluations( PatchData& pd, 
-                        msq_std::vector<size_t>& handles,
+                        std::vector<size_t>& handles,
                         bool free_vertices_only, 
                         MsqError& err );
 
   MESQUITE_EXPORT static
   void get_element_evaluations( PatchData& pd, 
-                                msq_std::vector<size_t>& handles,
+                                std::vector<size_t>& handles,
                                 bool free_vertices_only, 
                                 MsqError& err );
 
@@ -70,7 +70,7 @@ public:
   bool evaluate_with_indices( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
+                 std::vector<size_t>& indices,
                  MsqError& err );
 };
 

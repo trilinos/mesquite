@@ -37,7 +37,7 @@
 
 namespace MESQUITE_NS {
 
-msq_std::string Target2DShape::get_name() const
+std::string Target2DShape::get_name() const
   { return "Shape"; }
 
 bool Target2DShape::evaluate( const MsqMatrix<2,2>& A, 

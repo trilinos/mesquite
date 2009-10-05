@@ -36,12 +36,8 @@
 #include "ConditionNumberFunctions.hpp"
 
 #include <math.h>
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-   using std::vector;
-#endif
+#include <vector>
+using std::vector;
 
 using namespace Mesquite;
 
@@ -49,7 +45,7 @@ VertexConditionNumberQualityMetric::VertexConditionNumberQualityMetric()
   : AveragingQM(QualityMetric::LINEAR)
   {}
 
-msq_std::string VertexConditionNumberQualityMetric::get_name() const
+std::string VertexConditionNumberQualityMetric::get_name() const
   { return "Vertex Condition Number"; }
 
 int VertexConditionNumberQualityMetric::get_negate_flag() const
@@ -85,7 +81,7 @@ bool VertexConditionNumberQualityMetric::evaluate( PatchData& pd,
   
     //create an array to store the local metric values before averaging
     //Can we remove this dynamic allocatio?
-  msq_std::vector<double> met_vals(num_elems);
+  std::vector<double> met_vals(num_elems);
     //vector to hold the other verts which form a corner.
   vector<size_t> other_vertices;
   other_vertices.reserve(4);
@@ -160,7 +156,7 @@ bool VertexConditionNumberQualityMetric::evaluate_with_indices(
                                               PatchData& pd,
                                               size_t this_vert,
                                               double& value,
-                                              msq_std::vector<size_t>& indices,
+                                              std::vector<size_t>& indices,
                                               MsqError& err )
 {
   bool rval = evaluate( pd, this_vert, value, err ); MSQ_ERRFALSE(err);
@@ -189,8 +185,8 @@ bool VertexConditionNumberQualityMetric::evaluate_with_indices(
     }
   }
   
-  msq_std::sort( indices.begin(), indices.end() );
-  indices.erase( msq_std::unique( indices.begin(), indices.end() ), indices.end() );
+  std::sort( indices.begin(), indices.end() );
+  indices.erase( std::unique( indices.begin(), indices.end() ), indices.end() );
   if (this_vert < pd.num_free_vertices())
     indices.push_back( this_vert );
   return rval;

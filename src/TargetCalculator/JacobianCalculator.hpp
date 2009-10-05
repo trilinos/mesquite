@@ -38,11 +38,7 @@
 #include "Vector3D.hpp"
 #include "NodeSet.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <vector.h>
-#else
-# include <vector>
-#endif
+#include <vector>
 
 namespace MESQUITE_NS {
 

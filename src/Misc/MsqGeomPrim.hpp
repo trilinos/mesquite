@@ -40,7 +40,7 @@ namespace MESQUITE_NS {
 
 
 /**\brief Line in R^3 */
-class MsqLine 
+class MESQUITE_EXPORT MsqLine 
 {
   private:
     Vector3D mPoint;
@@ -83,7 +83,7 @@ class MsqLine
 };
 
 /**\brief Circle in R^3 */
-class MsqCircle
+class MESQUITE_EXPORT MsqCircle
 {
   private:
     Vector3D mCenter;
@@ -137,7 +137,7 @@ class MsqCircle
 
 
 /**\brief Plane */
-class MsqPlane
+class MESQUITE_EXPORT MsqPlane
 {
   private:
     Vector3D mNormal; //!< unit normal
@@ -177,7 +177,7 @@ class MsqPlane
 };
 
 /**\brief Sphere */
-class MsqSphere
+class MESQUITE_EXPORT MsqSphere
 {
   private:
     Vector3D mCenter;

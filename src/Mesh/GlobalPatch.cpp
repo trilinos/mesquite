@@ -41,7 +41,7 @@ namespace MESQUITE_NS {
 
 const PatchSet::PatchHandle GLOBAL_PATCH_HANDLE = 0;
 
-void GlobalPatch::get_patch_handles( msq_std::vector<PatchHandle>& patch_handles_out,
+void GlobalPatch::get_patch_handles( std::vector<PatchHandle>& patch_handles_out,
                                      MsqError& )
 {
   patch_handles_out.resize(1);
@@ -49,8 +49,8 @@ void GlobalPatch::get_patch_handles( msq_std::vector<PatchHandle>& patch_handles
 }
 
 void GlobalPatch::get_patch( PatchHandle patch_handle,
-                             msq_std::vector<Mesh::ElementHandle>& elem_handles_out,
-                             msq_std::vector<Mesh::VertexHandle>& free_vertices_out,
+                             std::vector<Mesh::ElementHandle>& elem_handles_out,
+                             std::vector<Mesh::VertexHandle>& free_vertices_out,
                              MsqError& err )
 {
   free_vertices_out.clear();

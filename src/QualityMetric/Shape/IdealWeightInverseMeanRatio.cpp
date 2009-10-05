@@ -41,13 +41,8 @@
 #include "MsqError.hpp"
 #include "PatchData.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-   using std::vector;
-#endif
-
+#include <vector>
+using std::vector;
 #include <math.h>
 
 namespace MESQUITE_NS {
@@ -66,7 +61,7 @@ IdealWeightInverseMeanRatio::IdealWeightInverseMeanRatio( )
   assert(!err);
 }
 
-msq_std::string IdealWeightInverseMeanRatio::get_name() const
+std::string IdealWeightInverseMeanRatio::get_name() const
   { return "Inverse Mean Ratio"; }
 
 int IdealWeightInverseMeanRatio::get_negate_flag() const
@@ -198,8 +193,8 @@ bool IdealWeightInverseMeanRatio::evaluate( PatchData& pd,
 bool IdealWeightInverseMeanRatio::evaluate_with_gradient( PatchData& pd,
                     size_t handle,
                     double& m,
-                    msq_std::vector<size_t>& indices,
-                    msq_std::vector<Vector3D>& g,
+                    std::vector<size_t>& indices,
+                    std::vector<Vector3D>& g,
                     MsqError& err )
 {
   const MsqMeshEntity* e = &pd.element_by_index(handle);
@@ -212,7 +207,7 @@ bool IdealWeightInverseMeanRatio::evaluate_with_gradient( PatchData& pd,
     if (print) {
       MSQ_DBGOUT(1) << "Analyical gradient not available for selected averaging scheme. "
                     << "Using (possibly much slower) numerical approximation of gradient"
-                    << " of quality metric. " << msq_stdio::endl;
+                    << " of quality metric. " << std::endl;
       print = false;
     }
     return QualityMetric::evaluate_with_gradient( pd, handle, m, indices, g, err );
@@ -342,9 +337,9 @@ bool IdealWeightInverseMeanRatio::evaluate_with_gradient( PatchData& pd,
 bool IdealWeightInverseMeanRatio::evaluate_with_Hessian_diagonal( PatchData& pd,
                     size_t handle,
                     double& m,
-                    msq_std::vector<size_t>& indices,
-                    msq_std::vector<Vector3D>& g,
-                    msq_std::vector<SymMatrix3D>& h,
+                    std::vector<size_t>& indices,
+                    std::vector<Vector3D>& g,
+                    std::vector<SymMatrix3D>& h,
                     MsqError& err )
 {
   const MsqMeshEntity* e = &pd.element_by_index(handle);
@@ -357,7 +352,7 @@ bool IdealWeightInverseMeanRatio::evaluate_with_Hessian_diagonal( PatchData& pd,
     if (print) {
       MSQ_DBGOUT(1) << "Analyical gradient not available for selected averaging scheme. "
                     << "Using (possibly much slower) numerical approximation of gradient"
-                    << " of quality metric. " << msq_stdio::endl;
+                    << " of quality metric. " << std::endl;
       print = false;
     }
     return QualityMetric::evaluate_with_Hessian_diagonal( pd, handle, m, indices, g, h, err );
@@ -500,9 +495,9 @@ bool IdealWeightInverseMeanRatio::evaluate_with_Hessian_diagonal( PatchData& pd,
 bool IdealWeightInverseMeanRatio::evaluate_with_Hessian( PatchData& pd,
                     size_t handle,
                     double& m,
-                    msq_std::vector<size_t>& indices,
-                    msq_std::vector<Vector3D>& g,
-                    msq_std::vector<Matrix3D>& h,
+                    std::vector<size_t>& indices,
+                    std::vector<Vector3D>& g,
+                    std::vector<Matrix3D>& h,
                     MsqError& err )
 {
   const MsqMeshEntity* e = &pd.element_by_index(handle);
@@ -515,7 +510,7 @@ bool IdealWeightInverseMeanRatio::evaluate_with_Hessian( PatchData& pd,
     if (print) {
       MSQ_DBGOUT(1) << "Analyical gradient not available for selected averaging scheme. "
                     << "Using (possibly much slower) numerical approximation of gradient"
-                    << " of quality metric. " << msq_stdio::endl;
+                    << " of quality metric. " << std::endl;
       print = false;
     }
     return QualityMetric::evaluate_with_Hessian( pd, handle, m, indices, g, h, err );

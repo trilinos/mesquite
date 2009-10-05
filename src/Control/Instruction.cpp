@@ -44,6 +44,6 @@ double Instruction::loop_over_mesh( ParallelMesh* mesh,
 				    const Settings* settings,
 				    MsqError& err )
 {
-  loop_over_mesh((Mesh*)mesh, domain, settings, err);
+  return loop_over_mesh((Mesh*)mesh, domain, settings, err);
 }
 

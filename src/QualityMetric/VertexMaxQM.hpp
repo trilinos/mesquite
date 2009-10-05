@@ -51,7 +51,7 @@ public:
   ElemSampleQM* get_quality_metric() const 
     { return mMetric; }
   
-  virtual msq_std::string get_name() const;
+  virtual std::string get_name() const;
 
   virtual int get_negate_flag() const;
 
@@ -65,13 +65,13 @@ public:
    bool evaluate_with_indices( PatchData& pd,
                   size_t handle,
                   double& value,
-                  msq_std::vector<size_t>& indices,
+                  std::vector<size_t>& indices,
                   MsqError& err );
      
 private:
 
   ElemSampleQM* mMetric;
-  mutable msq_std::vector<size_t> mHandles, mIndices;
+  mutable std::vector<size_t> mHandles, mIndices;
 };
   
 

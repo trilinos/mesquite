@@ -104,7 +104,7 @@ double TetDihedralWeight::get_weight( PatchData& pd,
                   da(n023 % n123) };
   
     // calculate weight from max dihedral handle
-  double d = *msq_std::max_element( ds, ds+6 );
+  double d = *std::max_element( ds, ds+6 );
   return 1/(1 + exp(-mA*(d - mCutoff)));
 }
 

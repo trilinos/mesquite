@@ -45,17 +45,8 @@
 #include "MsqTimer.hpp"
 
 
-#ifdef MSQ_USE_OLD_C_HEADERS
-#  include <math.h>
-#else
-#  include <cmath>
-#endif
-
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#  include <iostream.h>
-#else
-#  include <iostream>
-#endif
+#include <cmath>
+#include <iostream>
 
 namespace MESQUITE_NS {
 
@@ -391,7 +382,7 @@ void MsqHessian::add( const MsqHessian& other )
   
 
 /*! \param diag is an STL vector of size MsqHessian::size() . */
-void MsqHessian::get_diagonal_blocks(msq_std::vector<Matrix3D> &diag,
+void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag,
                                      MsqError &/*err*/) const
 {
   // make sure we have enough memory, so that no reallocation is needed later.
@@ -604,7 +595,7 @@ void MsqHessian::product( Vector3D* v, const Vector3D* x ) const
 /* ------------------ I/O ----------------- */
 
 //! Prints out the MsqHessian blocks.
-msq_stdio::ostream& operator<<(msq_stdio::ostream &s, const MsqHessian &h)
+std::ostream& operator<<(std::ostream &s, const MsqHessian &h)
 {
   size_t i,j;
   s << "MsqHessian of size: " << h.mSize <<"x"<< h.mSize << "\n";

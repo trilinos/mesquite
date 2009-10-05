@@ -43,7 +43,7 @@
 
 namespace MESQUITE_NS {
 
-msq_std::string ConjugateGradient::get_name() const 
+std::string ConjugateGradient::get_name() const 
   { return "ConjugateGradient"; }
   
 PatchSet* ConjugateGradient::get_patch_set()

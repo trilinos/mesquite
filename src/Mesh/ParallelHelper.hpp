@@ -39,13 +39,8 @@
 
 #include "ParallelHelperInterface.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#include <vector.h>
-#include <map.h>
-#else
 #include <vector>
 #include <map>
-#endif
 
 namespace MESQUITE_NS
 {
@@ -86,7 +81,7 @@ namespace MESQUITE_NS
     friend class VertexMover;
     // functions called by VertexMover::loop_over_mesh()
     void smoothing_init( MsqError& err );
-    void compute_first_independent_set(msq_std::vector<Mesh::VertexHandle>& fixed_vertices);
+    void compute_first_independent_set(std::vector<Mesh::VertexHandle>& fixed_vertices);
     void communicate_first_independent_set(MsqError& err);
     bool compute_next_independent_set();
     bool get_next_partition_boundary_vertex(Mesquite::Mesh::VertexHandle& vertex_handle);
@@ -104,7 +99,7 @@ namespace MESQUITE_NS
     void communicate_min_max_to_zero(double* minimum, double* maximum, MsqError&) const;
     void communicate_sums_to_zero(size_t* freeElementCount, int* invertedElementCount, size_t* elementCount, int* invertedSampleCount, size_t* sampleCount, long unsigned int* count, long unsigned int* invalid, double* sum, double *sqrSum, MsqError&) const;
     void communicate_power_sum_to_zero(double* pMean, MsqError&) const;
-    void communicate_histogram_to_zero(msq_std::vector<int> &histogram, MsqError&) const;
+    void communicate_histogram_to_zero(std::vector<int> &histogram, MsqError&) const;
 
   private:
     ParallelMesh* mesh;
@@ -117,13 +112,13 @@ namespace MESQUITE_NS
 
     // variables for VertexMover::loop_over_mesh()
     int generate_random_numbers;
-    msq_std::vector<Mesquite::Mesh::VertexHandle> vertices;
+    std::vector<Mesquite::Mesh::VertexHandle> vertices;
     int num_vertex;
     std::vector<char> vtx_in_partition_boundary;
     int num_vtx_partition_boundary;
     int num_vtx_partition_boundary_local;
     int num_vtx_partition_boundary_remote;
-    msq_std::vector<Mesquite::Mesh::VertexHandle> part_vertices;
+    std::vector<Mesquite::Mesh::VertexHandle> part_vertices;
     std::vector<int> part_proc_owner;
     std::vector<int> part_gid;
     std::vector<int> part_smoothed_flag;
@@ -149,7 +144,7 @@ namespace MESQUITE_NS
     int next_vtx_partition_boundary;
     /* for exchanging unused ghost node information */
     int unghost_num_vtx;
-    msq_std::vector<Mesquite::Mesh::VertexHandle> unghost_vertices;
+    std::vector<Mesquite::Mesh::VertexHandle> unghost_vertices;
     int unghost_num_procs;
     std::vector<int> unghost_procs;
     std::vector<int> unghost_procs_num_vtx;

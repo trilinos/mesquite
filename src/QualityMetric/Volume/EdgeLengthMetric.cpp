@@ -41,7 +41,7 @@ namespace MESQUITE_NS {
 EdgeLengthMetric::EdgeLengthMetric( double gamma )
   : mGamma( gamma ) {}
 
-msq_std::string EdgeLengthMetric::get_name() const
+std::string EdgeLengthMetric::get_name() const
   { return "EdgeLength"; }
 
    //! 1 if metric should be minimized, -1 if metric should be maximized.
@@ -72,8 +72,8 @@ bool EdgeLengthMetric::evaluate( PatchData& pd,
 bool EdgeLengthMetric::evaluate_with_gradient( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
-                 msq_std::vector<Vector3D>& gradient,
+                 std::vector<size_t>& indices,
+                 std::vector<Vector3D>& gradient,
                  MsqError& err )
 {
   MsqMeshEntity& e = pd.element_by_index( elem(handle) );

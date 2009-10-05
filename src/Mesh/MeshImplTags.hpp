@@ -30,11 +30,7 @@
 #include "Mesquite.hpp"
 #include "MeshInterface.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-#endif
+#include <vector>
 
 namespace MESQUITE_NS {
 
@@ -45,17 +41,17 @@ namespace MESQUITE_NS {
       // about it.
     enum VtkType { NONE = 0, SCALAR, COLOR, VECTOR, NORMAL, TEXTURE, TENSOR, FIELD };
 
-    msq_std::string name;   //!< Tag name 
+    std::string name;   //!< Tag name 
     Mesh::TagType type;     //!< Tag data type
     VtkType vtkType;        //!< Attribute type from VTK file
     size_t size;            //!< Size of tag data (sizeof(type)*array_length)
-    msq_std::string member; //!< Field member name for 1-member fields.
+    std::string member; //!< Field member name for 1-member fields.
 
-    inline TagDescription( msq_std::string n, 
+    inline TagDescription( std::string n, 
                            Mesh::TagType t, 
                            VtkType v, 
                            size_t s,
-                           msq_std::string m )
+                           std::string m )
       : name(n), type(t), vtkType(v), size(s), member(m) {}
 
     inline TagDescription( )
@@ -109,11 +105,11 @@ class MeshImplTags {
        *\param default_val Default value for tag
        *\param vtk_type Attribute type in VTK file
        */
-    inline TagData( const msq_std::string& name, 
+    inline TagData( const std::string& name, 
              Mesh::TagType type, unsigned length,
              void* default_val = 0,
              TagDescription::VtkType vtk_type = TagDescription::NONE,
-             const msq_std::string& field_member = "")
+             const std::string& field_member = "")
       : desc(name, type, vtk_type, length*size_from_tag_type(type), field_member),
         elementData(0), elementCount(0),
         vertexData(0), vertexCount(0), 
@@ -137,7 +133,7 @@ class MeshImplTags {
   void clear();
 
     /** \brief Get tag index from name */
-  size_t handle( const msq_std::string& name, MsqError& err ) const;
+  size_t handle( const std::string& name, MsqError& err ) const;
   
     /** \brief Get tag properties */
   const TagDescription& properties( size_t tag_handle, MsqError& err ) const;
@@ -150,7 +146,7 @@ class MeshImplTags {
      *\param length Number of values in tag (array length, 1 for scalar)
      *\param defval Optional default value for tag
      */
-  size_t create( const msq_std::string& name,
+  size_t create( const std::string& name,
                  Mesh::TagType type,
                  unsigned length,
                  const void* defval,
@@ -227,7 +223,7 @@ class MeshImplTags {
 
   friend class MeshImplTags::TagIterator;  
   
-    msq_std::vector<TagData*> tagList;
+    std::vector<TagData*> tagList;
 }; // class MeshImplTags
 
 } // namespace Mesquite

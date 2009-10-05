@@ -39,7 +39,7 @@ namespace MESQUITE_NS {
 
 Target3DShapeSizeAlt2::~Target3DShapeSizeAlt2() {}
 
-msq_std::string Target3DShapeSizeAlt2::get_name() const
+std::string Target3DShapeSizeAlt2::get_name() const
   { return "ShapeSize2"; }
 
 bool Target3DShapeSizeAlt2::evaluate( const MsqMatrix<3,3>& A, 

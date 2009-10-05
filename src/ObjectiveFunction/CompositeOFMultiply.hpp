@@ -71,20 +71,20 @@ namespace MESQUITE_NS
      virtual bool evaluate_with_gradient( EvalType type, 
                                           PatchData& pd,
                                           double& value_out,
-                                          msq_std::vector<Vector3D>& grad_out,
+                                          std::vector<Vector3D>& grad_out,
                                           MsqError& err ); 
 
      virtual bool evaluate_with_Hessian_diagonal( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
-                                        msq_std::vector<Vector3D>& grad_out,
-                                        msq_std::vector<SymMatrix3D>& hess_diag_out,
+                                        std::vector<Vector3D>& grad_out,
+                                        std::vector<SymMatrix3D>& hess_diag_out,
                                         MsqError& err ); 
     
      virtual bool evaluate_with_Hessian( EvalType type, 
                                          PatchData& pd,
                                          double& value_out,
-                                         msq_std::vector<Vector3D>& grad_out,
+                                         std::vector<Vector3D>& grad_out,
                                          MsqHessian& Hessian_out,
                                          MsqError& err ); 
 
@@ -96,9 +96,9 @@ namespace MESQUITE_NS
      
 	private:
      /** Temporary storage for gradient */
-     mutable msq_std::vector<Vector3D> mGradient;
+     mutable std::vector<Vector3D> mGradient;
      /** Temporary storage for hessian diagonal */
-     mutable msq_std::vector<SymMatrix3D> mDiagonal;
+     mutable std::vector<SymMatrix3D> mDiagonal;
      
      ObjectiveFunction* objFunc1;
      ObjectiveFunction* objFunc2;

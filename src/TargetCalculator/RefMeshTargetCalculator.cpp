@@ -83,7 +83,7 @@ NodeSet RefMeshTargetCalculator::get_vertex_coords( PatchData& pd,
   tmpCoords.resize( n );
   tmpHandles.resize( n );
   
-  const msq_std::size_t* vtx_idx = elem.get_vertex_index_array();
+  const std::size_t* vtx_idx = elem.get_vertex_index_array();
   const Mesh::VertexHandle* vtx_hdl = pd.get_vertex_handles_array();
   
   for (unsigned i = 0; i < n; ++i)

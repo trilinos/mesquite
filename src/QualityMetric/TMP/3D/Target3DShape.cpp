@@ -40,7 +40,7 @@ namespace MESQUITE_NS {
 
 Target3DShape::~Target3DShape() {}
 
-msq_std::string Target3DShape::get_name() const
+std::string Target3DShape::get_name() const
   { return "Shape"; }
 
 bool Target3DShape::evaluate( const MsqMatrix<3,3>& A, 

@@ -43,7 +43,7 @@
 
 using namespace Mesquite;
 
-msq_std::string EdgeLengthQualityMetric::get_name() const
+std::string EdgeLengthQualityMetric::get_name() const
   { return "Edge Length"; }
 
 int EdgeLengthQualityMetric::get_negate_flag() const
@@ -52,7 +52,7 @@ int EdgeLengthQualityMetric::get_negate_flag() const
 bool EdgeLengthQualityMetric::evaluate_common(PatchData &pd, 
                                               size_t this_vert,
                                               double &fval, 
-                                              msq_std::vector<size_t>& adj_verts,
+                                              std::vector<size_t>& adj_verts,
                                               MsqError &err)
 {
   fval=0.0;
@@ -73,7 +73,7 @@ bool EdgeLengthQualityMetric::evaluate( PatchData& pd,
                                         double& value, 
                                         MsqError& err )
 {
-  msq_std::vector<size_t> verts;
+  std::vector<size_t> verts;
   bool rval = evaluate_common( pd, vertex, value, verts, err );
   return !MSQ_CHKERR(err) && rval;
 }
@@ -81,13 +81,13 @@ bool EdgeLengthQualityMetric::evaluate( PatchData& pd,
 bool EdgeLengthQualityMetric::evaluate_with_indices( PatchData& pd,
                                                      size_t vertex,
                                                      double& value,
-                                                     msq_std::vector<size_t>& indices,
+                                                     std::vector<size_t>& indices,
                                                      MsqError& err )
 {
   indices.clear();
   bool rval = evaluate_common( pd, vertex, value, indices, err );
   
-  msq_std::vector<size_t>::iterator r, w;
+  std::vector<size_t>::iterator r, w;
   for (r = w = indices.begin(); r != indices.end(); ++r) {
     if (*r < pd.num_free_vertices()) {
       *w = *r;

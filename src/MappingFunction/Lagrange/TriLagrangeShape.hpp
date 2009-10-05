@@ -59,7 +59,7 @@ namespace MESQUITE_NS {
  *
  * \f$t = 1 - r - s\f$
  */
-class TriLagrangeShape : public MappingFunction2D
+class MESQUITE_EXPORT TriLagrangeShape : public MappingFunction2D
 {
 public:
 

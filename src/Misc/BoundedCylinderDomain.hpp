@@ -30,12 +30,7 @@
 #include "CylinderDomain.hpp"
 #include "Vector3D.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <list.h>
-#else
-# include <list>
-#endif
-
+#include <list>
 
 namespace MESQUITE_NS {
 
@@ -67,7 +62,7 @@ class BoundedCylinderDomain : public CylinderDomain
        *                  bound to the curve.
        */
     void create_curve( double distance, 
-                       const msq_std::vector<Mesh::VertexHandle>& handles );
+                       const std::vector<Mesh::VertexHandle>& handles );
                              
       /**\brief define a circular curve bounding the cylinder
        *\param distance  Location on cylinder at which to create

@@ -1,3 +1,0 @@
-#ifndef MESH_FILES_DIR
-# define MESH_FILES_DIR @Mesquite_MESH_FILES_DIR@
-#endif

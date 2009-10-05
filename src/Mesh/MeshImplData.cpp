@@ -34,13 +34,13 @@
 
 namespace MESQUITE_NS {
 
-const msq_std::vector<size_t> dummy_list;
+const std::vector<size_t> dummy_list;
 const Vector3D dummy_vtx;
 
 size_t MeshImplData::num_vertices() const 
 {
   size_t count = 0;
-  for (msq_std::vector<Vertex>::const_iterator iter = vertexList.begin();
+  for (std::vector<Vertex>::const_iterator iter = vertexList.begin();
        iter != vertexList.end(); ++iter)
 #ifdef SEPARATE_MID_NODES
     if (iter->valid && iter->midcount < iter->adjacencies.size())
@@ -57,7 +57,7 @@ size_t MeshImplData::num_elements() const
 size_t MeshImplData::num_vertex_uses() const
 {
   size_t result = 0;
-  for (msq_std::vector<Element>::const_iterator iter = elementList.begin();
+  for (std::vector<Element>::const_iterator iter = elementList.begin();
        iter != elementList.end(); ++iter)
   {
 #ifdef SEPARATE_MID_NODES
@@ -189,7 +189,7 @@ void MeshImplData::element_topology( size_t index, EntityTopology type, MsqError
 }
 
 
-const msq_std::vector<size_t>& MeshImplData::element_connectivity( size_t index, MsqError& err ) const
+const std::vector<size_t>& MeshImplData::element_connectivity( size_t index, MsqError& err ) const
 {
   if (!is_element_valid( index ))
   {
@@ -200,7 +200,7 @@ const msq_std::vector<size_t>& MeshImplData::element_connectivity( size_t index,
   return elementList[index].connectivity;
 }
 
-const msq_std::vector<size_t>& MeshImplData::vertex_adjacencies( size_t index, MsqError& err ) const
+const std::vector<size_t>& MeshImplData::vertex_adjacencies( size_t index, MsqError& err ) const
 {
   if (!is_vertex_valid( index ))
   {
@@ -280,7 +280,7 @@ void MeshImplData::reset_vertex( size_t index,
 }
 
 void MeshImplData::reset_element( size_t index,
-                                  const msq_std::vector<long>& vertices,
+                                  const std::vector<long>& vertices,
                                   EntityTopology topology,
                                   MsqError& err )
 {
@@ -289,7 +289,7 @@ void MeshImplData::reset_element( size_t index,
 }
 
 void MeshImplData::reset_element( size_t index,
-                                  const msq_std::vector<size_t>& vertices,
+                                  const std::vector<size_t>& vertices,
                                   EntityTopology topology,
                                   MsqError& err )
 {
@@ -311,12 +311,12 @@ void MeshImplData::clear_element( size_t index, MsqError& err )
     for (unsigned i = numvert; i < elementList[index].connectivity.size(); ++i)
       --vertexList[elementList[index].connectivity[i]].midcount;
 
-  msq_std::vector<size_t>& conn = elementList[index].connectivity;
-  for (msq_std::vector<size_t>::iterator iter = conn.begin();
+  std::vector<size_t>& conn = elementList[index].connectivity;
+  for (std::vector<size_t>::iterator iter = conn.begin();
        iter != conn.end(); ++iter)
   {
-    msq_std::vector<size_t>& adj = vertexList[*iter].adjacencies;
-    for (msq_std::vector<size_t>::iterator iter2 = adj.begin();
+    std::vector<size_t>& adj = vertexList[*iter].adjacencies;
+    for (std::vector<size_t>::iterator iter2 = adj.begin();
          iter2 != adj.end(); ++iter2)
     {
       if (*iter2 == index)
@@ -330,12 +330,12 @@ void MeshImplData::clear_element( size_t index, MsqError& err )
 }
 
 void MeshImplData::set_element( size_t index,
-                                const msq_std::vector<long>& vertices,
+                                const std::vector<long>& vertices,
                                 EntityTopology topology,
                                 MsqError& err )
 {
   if (sizeof(long) == sizeof(size_t)) 
-    set_element( index, *reinterpret_cast<const msq_std::vector<size_t>*>(&vertices), topology, err );
+    set_element( index, *reinterpret_cast<const std::vector<size_t>*>(&vertices), topology, err );
   else {
     std::vector<size_t> conn(vertices.size());
     std::copy( vertices.begin(), vertices.end(), conn.begin() );
@@ -344,7 +344,7 @@ void MeshImplData::set_element( size_t index,
 }
 
 void MeshImplData::set_element( size_t index,
-                                const msq_std::vector<size_t>& vertices,
+                                const std::vector<size_t>& vertices,
                                 EntityTopology topology,
                                 MsqError& err )
 {
@@ -357,7 +357,7 @@ void MeshImplData::set_element( size_t index,
   elementList[index].connectivity = vertices;
   elementList[index].topology = topology;
   
-  for (msq_std::vector<size_t>::const_iterator iter = vertices.begin();
+  for (std::vector<size_t>::const_iterator iter = vertices.begin();
        iter != vertices.end(); ++iter)
   {
     if (!is_vertex_valid( *iter ))
@@ -366,8 +366,8 @@ void MeshImplData::set_element( size_t index,
       return;
     }
     
-    msq_std::vector<size_t>& adj = vertexList[*iter].adjacencies;
-    for (msq_std::vector<size_t>::iterator iter2 = adj.begin();
+    std::vector<size_t>& adj = vertexList[*iter].adjacencies;
+    for (std::vector<size_t>::iterator iter2 = adj.begin();
          iter2 != adj.end(); ++iter2)
       if (*iter2 == index)
         return;
@@ -400,7 +400,7 @@ size_t MeshImplData::add_vertex( const Vector3D& coords, bool fixed, MsqError& e
   return index;
 }
 
-size_t MeshImplData::add_element( const msq_std::vector<long>& vertices,
+size_t MeshImplData::add_element( const std::vector<long>& vertices,
                                   EntityTopology topology,
                                   MsqError& err )
 {
@@ -420,7 +420,7 @@ size_t MeshImplData::add_element( const msq_std::vector<long>& vertices,
   return index;
 }
 
-size_t MeshImplData::add_element( const msq_std::vector<size_t>& vertices,
+size_t MeshImplData::add_element( const std::vector<size_t>& vertices,
                                   EntityTopology topology,
                                   MsqError& err )
 {
@@ -463,7 +463,7 @@ void MeshImplData::copy_mesh( size_t* vertex_handle_array,
                               size_t* element_conn_offsets,
                               size_t* element_conn_indices )
 {
-  msq_std::vector<size_t> vertex_map( vertexList.size() );
+  std::vector<size_t> vertex_map( vertexList.size() );
   size_t vh_index = 0;
   for (size_t v = 0; v < vertexList.size(); ++v)
   {
@@ -502,8 +502,8 @@ void MeshImplData::copy_mesh( size_t* vertex_handle_array,
       ++element_conn_offsets;
       offset += cl;
     
-      msq_std::vector<size_t>::iterator conn = elem.connectivity.begin();
-      msq_std::vector<size_t>::iterator end = conn + cl;
+      std::vector<size_t>::iterator conn = elem.connectivity.begin();
+      std::vector<size_t>::iterator end = conn + cl;
       while (conn != end)
       {
         *element_conn_indices = vertex_map[*conn];
@@ -515,10 +515,10 @@ void MeshImplData::copy_mesh( size_t* vertex_handle_array,
   *element_conn_offsets = offset;
 }
 
-void MeshImplData::copy_higher_order( msq_std::vector<size_t>& mid_nodes,
-                                      msq_std::vector<size_t>& vertices,
-                                      msq_std::vector<size_t>& vertex_indices,
-                                      msq_std::vector<size_t>& index_offsets,
+void MeshImplData::copy_higher_order( std::vector<size_t>& mid_nodes,
+                                      std::vector<size_t>& vertices,
+                                      std::vector<size_t>& vertex_indices,
+                                      std::vector<size_t>& index_offsets,
                                       MsqError& err )
 {
   mid_nodes.clear();
@@ -529,7 +529,7 @@ void MeshImplData::copy_higher_order( msq_std::vector<size_t>& mid_nodes,
     // Create a map of from vertex handle to index in "vertices"
     // Use vertexList.size() to mean uninitialized.
   size_t v;
-  msq_std::vector<size_t> vert_map( vertexList.size() );
+  std::vector<size_t> vert_map( vertexList.size() );
   for (v = 0; v < vertexList.size(); ++v)
     vert_map[v] = vertexList.size();
 
@@ -612,7 +612,7 @@ bool MeshImplData::is_corner_node( size_t index ) const
 
 
 
-void MeshImplData::all_vertices( msq_std::vector<size_t>& list, MsqError& ) const
+void MeshImplData::all_vertices( std::vector<size_t>& list, MsqError& ) const
 {
   list.clear();
   for (size_t idx = 0; idx < vertexList.size(); ++idx)
@@ -620,7 +620,7 @@ void MeshImplData::all_vertices( msq_std::vector<size_t>& list, MsqError& ) cons
       list.push_back( idx );
 }
 
-void MeshImplData::all_elements( msq_std::vector<size_t>& list, MsqError& err ) const
+void MeshImplData::all_elements( std::vector<size_t>& list, MsqError& err ) const
 {
   list.clear();
   for (size_t idx = 0; idx < elementList.size(); ++idx)
@@ -629,9 +629,9 @@ void MeshImplData::all_elements( msq_std::vector<size_t>& list, MsqError& err ) 
 }
 
 void MeshImplData::get_adjacent_elements( 
-                        msq_std::vector<size_t>::const_iterator node_iter,
-                        msq_std::vector<size_t>::const_iterator node_end,
-                        msq_std::vector<size_t>& elems, MsqError& err )
+                        std::vector<size_t>::const_iterator node_iter,
+                        std::vector<size_t>::const_iterator node_end,
+                        std::vector<size_t>& elems, MsqError& err )
 {
   if (node_iter == node_end || !is_vertex_valid( *node_iter ))
   {
@@ -645,11 +645,11 @@ void MeshImplData::get_adjacent_elements(
     // For each aditional node, intersect elems with elements adjacent to node
   for (++node_iter; node_iter != node_end; ++node_iter)
   {
-    msq_std::vector<size_t>::iterator elem_iter = elems.begin();
+    std::vector<size_t>::iterator elem_iter = elems.begin();
     while (elem_iter != elems.end())
     {
-      msq_std::vector<size_t>::const_iterator adj_iter = vertexList[*node_iter].adjacencies.begin();
-      const msq_std::vector<size_t>::const_iterator adj_end = vertexList[*node_iter].adjacencies.end();
+      std::vector<size_t>::const_iterator adj_iter = vertexList[*node_iter].adjacencies.begin();
+      const std::vector<size_t>::const_iterator adj_end = vertexList[*node_iter].adjacencies.end();
       for (; adj_iter != adj_end; ++adj_iter)
         if (*elem_iter == *adj_iter)
           break;
@@ -669,14 +669,14 @@ void MeshImplData::get_adjacent_elements(
 
 bool MeshImplData::has_adjacent_elements( 
                         size_t elem,
-                        const msq_std::vector<size_t>& nodes,
+                        const std::vector<size_t>& nodes,
                         MsqError& err )
 {
-  msq_std::vector<size_t> adj_elems;
+  std::vector<size_t> adj_elems;
   const unsigned dim = TopologyInfo::dimension( elementList[elem].topology );
   get_adjacent_elements( nodes.begin(), nodes.end(), adj_elems, err );
   
-  msq_std::vector<size_t>::iterator iter;
+  std::vector<size_t>::iterator iter;
   for (iter = adj_elems.begin(); iter != adj_elems.end(); ++iter)
     if (*iter != elem && 
         TopologyInfo::dimension( elementList[*iter].topology ) == dim )
@@ -685,9 +685,9 @@ bool MeshImplData::has_adjacent_elements(
   return iter != adj_elems.end();
 }                 
 
-void MeshImplData::skin( msq_std::vector<size_t>& sides, MsqError& err ) 
+void MeshImplData::skin( std::vector<size_t>& sides, MsqError& err ) 
 {
-  msq_std::vector<size_t> side_nodes;
+  std::vector<size_t> side_nodes;
   
     // For each element in mesh
   for (size_t elem = 0; elem < elementList.size(); ++elem)
@@ -698,7 +698,7 @@ void MeshImplData::skin( msq_std::vector<size_t>& sides, MsqError& err )
       // For each side of the element, check if there
       // are any adjacent elements.
     const EntityTopology topo = elementList[elem].topology;
-    msq_std::vector<size_t>& conn = elementList[elem].connectivity;
+    std::vector<size_t>& conn = elementList[elem].connectivity;
     switch (topo)
     {
         // For normal elements (not poly****)

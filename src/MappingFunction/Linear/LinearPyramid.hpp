@@ -66,7 +66,7 @@ namespace MESQUITE_NS {
  * and the mid-element coorindates are
  * - \f$\vec{\xi}_m=( 0, 0,-\frac{1}{2})\f$
  */ 
-class LinearPyramid : public MappingFunction3D
+class MESQUITE_EXPORT LinearPyramid : public MappingFunction3D
 {
 public:
 

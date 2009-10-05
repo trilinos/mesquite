@@ -41,7 +41,7 @@ namespace MESQUITE_NS {
 
 
 
-class PointDomain : public MeshDomain
+class MESQUITE_EXPORT PointDomain : public MeshDomain
 {
   private:
     Vector3D mGeom;
@@ -78,7 +78,7 @@ class PointDomain : public MeshDomain
                              MsqError& err ) const;
 };
 
-class LineDomain : public MeshDomain
+class MESQUITE_EXPORT LineDomain : public MeshDomain
 {
   private:
     MsqLine mGeom;
@@ -123,7 +123,7 @@ class LineDomain : public MeshDomain
     
 };
 
-class CircleDomain : public MeshDomain
+class MESQUITE_EXPORT CircleDomain : public MeshDomain
 {
   private:
     MsqCircle mGeom;

@@ -101,7 +101,7 @@ private:
   CPPUNIT_TEST_SUITE_END();
 
   MeshImpl myMesh, refMesh;
-  msq_std::vector<MsqVertex> savedCoords;
+  std::vector<MsqVertex> savedCoords;
   
   void load_plane_mesh();
   void load_sphere_mesh();
@@ -220,8 +220,8 @@ void Target2DSurfOrientTest::compare_neg_xy( int metric_3D, const char* output_f
   MsqPrintError err(cerr);
   PlanarDomain xy(PlanarDomain::XY);
   PlanarDomain pl(Vector3D(0,0,-1),Vector3D(0,0,0));
-  msq_std::vector<Mesh::VertexHandle> vertices;
-  msq_std::vector<MsqVertex> coords;
+  std::vector<Mesh::VertexHandle> vertices;
+  std::vector<MsqVertex> coords;
   size_t i;
 
   load_plane_mesh();
@@ -325,8 +325,8 @@ void Target2DSurfOrientTest::load_plane_mesh()
   ASSERT_NO_ERROR(err);
   
     // move mesh into XY plane
-  msq_std::vector<Mesh::VertexHandle> vertices;
-  msq_std::vector<MsqVertex> coords;
+  std::vector<Mesh::VertexHandle> vertices;
+  std::vector<MsqVertex> coords;
   myMesh.get_all_vertices( vertices, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!vertices.empty());
@@ -356,8 +356,8 @@ void Target2DSurfOrientTest::rotate_mesh( PlanarDomain::Plane from,
   size_t i;
   
     // get coordinates
-  msq_std::vector<Mesh::VertexHandle> vertices;
-  msq_std::vector<MsqVertex> coords;
+  std::vector<Mesh::VertexHandle> vertices;
+  std::vector<MsqVertex> coords;
   myMesh.get_all_vertices( vertices, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!vertices.empty());
@@ -453,7 +453,7 @@ void Target2DSurfOrientTest::smooth( int metric_3D, bool ref_mesh, MeshDomain* d
 void Target2DSurfOrientTest::store_coordinates()
 {
   MsqPrintError err(cerr);
-  msq_std::vector<Mesh::VertexHandle> vertices;
+  std::vector<Mesh::VertexHandle> vertices;
   myMesh.get_all_vertices( vertices, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!vertices.empty());
@@ -465,8 +465,8 @@ void Target2DSurfOrientTest::store_coordinates()
 void Target2DSurfOrientTest::compare_coordinates( double epsilon )
 {
   MsqPrintError err(cerr);
-  msq_std::vector<Mesh::VertexHandle> vertices;
-  msq_std::vector<MsqVertex> coords;
+  std::vector<Mesh::VertexHandle> vertices;
+  std::vector<MsqVertex> coords;
   myMesh.get_all_vertices( vertices, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!vertices.empty());

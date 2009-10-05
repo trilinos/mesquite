@@ -29,6 +29,7 @@
 
 #ifdef _MSC_VER
 #  pragma warning ( 4 : 4786)
+#  pragma warning ( 4 : 4996)
 #  include "mesquite_config.win.h"
 #else
 #  include "mesquite_config.h"
@@ -52,36 +53,11 @@
   #define MESQUITE_EXPORT
 #endif
 
-#ifdef MSQ_USE_OLD_C_HEADERS
-#  define msq_stdc 
-#else
-#  define msq_stdc std
-#endif
-
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#  define msq_stdio
-#else
-#  define msq_stdio std
-#endif
-
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  define msq_std
-#else
-#  define msq_std std
-#endif
-
-
-#ifdef MSQ_USE_OLD_C_INCLUDES
+#include <cmath>
+#include <cfloat>
+#include <climits>
+#ifdef HAVE_CBRT
 #  include <math.h>
-#  include <float.h>
-#  include <limits.h>
-#else
-#  include <cmath>
-#  include <cfloat>
-#  include <climits>
-#  ifdef HAVE_CBRT
-#    include <math.h>
-#  endif
 #endif
 
 #include <limits>
@@ -107,6 +83,11 @@ namespace Mesquite = MESQUITE_NS;
 */
 namespace MESQUITE_NS
 {
+  // Windows has issues
+#ifndef M_PI
+  const double M_PI = 3.14159265358979323846;
+#endif
+
   typedef int StatusCode;
 
   typedef double real;
@@ -149,15 +130,15 @@ namespace MESQUITE_NS
     //GLOBAL variables
   const int MSQ_MAX_NUM_VERT_PER_ENT=8;
   const int MSQ_HIST_SIZE=7;//number of division in histogram
-  static const double MSQ_SQRT_TWO = msq_stdc::sqrt(2.0);
-  static const double MSQ_SQRT_THREE = msq_stdc::sqrt(3.0);
+  static const double MSQ_SQRT_TWO = std::sqrt(2.0);
+  static const double MSQ_SQRT_THREE = std::sqrt(3.0);
   static const double MSQ_SQRT_THREE_DIV_TWO=MSQ_SQRT_THREE/2.0;
   static const double MSQ_SQRT_THREE_INV=1.0/MSQ_SQRT_THREE;
   static const double MSQ_SQRT_TWO_INV=1.0/MSQ_SQRT_TWO;
   static const double MSQ_SQRT_TWO_DIV_SQRT_THREE=MSQ_SQRT_TWO/MSQ_SQRT_THREE;
   static const double MSQ_ONE_THIRD = 1.0 / 3.0;
   static const double MSQ_TWO_THIRDS = 2.0 / 3.0;
-  static const double MSQ_3RT_2_OVER_6RT_3 = msq_stdc::pow( 2/MSQ_SQRT_THREE, MSQ_ONE_THIRD );
+  static const double MSQ_3RT_2_OVER_6RT_3 = std::pow( 2/MSQ_SQRT_THREE, MSQ_ONE_THIRD );
 
 #ifdef UINT_MAX
   const unsigned MSQ_UINT_MAX = UINT_MAX;
@@ -214,7 +195,7 @@ inline double cbrt( double d )
 #ifdef HAVE_CBRT
   return ::cbrt( d );
 #else
-  return msq_stdc::pow( d, MSQ_ONE_THIRD );
+  return std::pow( d, MSQ_ONE_THIRD );
 #endif
 }
 
@@ -223,7 +204,7 @@ inline double cbrt_sqr( double d )
 #ifdef HAVE_CBRT
   return ::cbrt(d*d);
 #else
-  return msq_stdc::pow( d, MSQ_TWO_THIRDS );
+  return std::pow( d, MSQ_TWO_THIRDS );
 #endif
 }
 

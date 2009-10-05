@@ -164,13 +164,13 @@ int ParallelMeshImpl::get_geometric_dimension(MsqError& err)
   return myMesh->get_geometric_dimension(err);
 }
 
-void ParallelMeshImpl::get_all_elements(msq_std::vector<ElementHandle>& elems,
+void ParallelMeshImpl::get_all_elements(std::vector<ElementHandle>& elems,
 					MsqError& err)
 {
   myMesh->get_all_elements(elems, err);
 }
 
-void ParallelMeshImpl::get_all_vertices(msq_std::vector<VertexHandle>& verts,
+void ParallelMeshImpl::get_all_vertices(std::vector<VertexHandle>& verts,
 					MsqError& err)
 {
   myMesh->get_all_vertices(verts, err);
@@ -260,8 +260,8 @@ void ParallelMeshImpl::vertices_get_byte(const VertexHandle *vert_array,
 
 void ParallelMeshImpl::vertices_get_attached_elements(const VertexHandle* vertices,
 						      size_t num_vertices,
-						      msq_std::vector<ElementHandle>& elements,
-						      msq_std::vector<size_t>& offsets,
+						      std::vector<ElementHandle>& elements,
+						      std::vector<size_t>& offsets,
 						      MsqError& err)
 {
   myMesh->vertices_get_attached_elements(vertices,
@@ -273,8 +273,8 @@ void ParallelMeshImpl::vertices_get_attached_elements(const VertexHandle* vertic
 
 void ParallelMeshImpl::elements_get_attached_vertices(const ElementHandle *elements,
 						      size_t num_elems,
-						      msq_std::vector<VertexHandle>& vertices,
-						      msq_std::vector<size_t>& offsets,
+						      std::vector<VertexHandle>& vertices,
+						      std::vector<size_t>& offsets,
 						      MsqError &err) 
 {
   myMesh->elements_get_attached_vertices(elements,
@@ -295,7 +295,7 @@ void ParallelMeshImpl::elements_get_topologies(const ElementHandle *element_hand
 				  err);
 }
 
-TagHandle ParallelMeshImpl::tag_create(const msq_std::string& name,
+TagHandle ParallelMeshImpl::tag_create(const std::string& name,
 				       TagType type,
 				       unsigned length,
 				       const void* defval,
@@ -313,13 +313,13 @@ void ParallelMeshImpl::tag_delete(TagHandle handle, MsqError& err)
   myMesh->tag_delete(handle, err);
 }
 
-TagHandle ParallelMeshImpl::tag_get(const msq_std::string& name, MsqError& err)
+TagHandle ParallelMeshImpl::tag_get(const std::string& name, MsqError& err)
 {
   return myMesh->tag_get(name, err);
 }
 
 void ParallelMeshImpl::tag_properties(TagHandle handle,
-				      msq_std::string& name,
+				      std::string& name,
 				      TagType& type,
 				      unsigned& length,
 				      MsqError& err)

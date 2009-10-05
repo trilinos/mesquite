@@ -29,12 +29,8 @@
 
 #include "meshfiles.h"
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#include <iostream.h>
-#else
 #include <iostream>
 using std::cout;
-#endif
 
 #ifndef DEBUG
 #  include "Mesquite.hpp"
@@ -639,7 +635,7 @@ public:
     remove( temp_file_name );
     CPPUNIT_ASSERT(!err);
     
-    msq_std::vector<Mesh::ElementHandle> elems;
+    std::vector<Mesh::ElementHandle> elems;
     mesh.get_all_elements( elems, err );
     CPPUNIT_ASSERT( !err );
     CPPUNIT_ASSERT_EQUAL( elems.size(), (size_t)8 );
@@ -647,7 +643,7 @@ public:
     void* th = mesh.tag_get( "global_id", err );
     CPPUNIT_ASSERT( !err );
 
-    msq_std::string name;
+    std::string name;
     Mesh::TagType type;
     unsigned tagsize;
     mesh.tag_properties( th, name, type, tagsize, err );
@@ -677,7 +673,7 @@ public:
     remove( temp_file_name );
     CPPUNIT_ASSERT(!err);
     
-    msq_std::vector<Mesh::ElementHandle> elems;
+    std::vector<Mesh::ElementHandle> elems;
     mesh.get_all_elements( elems, err );
     CPPUNIT_ASSERT( !err );
     CPPUNIT_ASSERT_EQUAL( elems.size(), (size_t)8 );
@@ -685,7 +681,7 @@ public:
     void* th = mesh.tag_get( "hexvect", err );
     CPPUNIT_ASSERT( !err );
 
-    msq_std::string name;
+    std::string name;
     Mesh::TagType type;
     unsigned tagsize;
     mesh.tag_properties( th, name, type, tagsize, err );
@@ -719,12 +715,12 @@ public:
     remove( temp_file_name );
     CPPUNIT_ASSERT(!err);
     
-    msq_std::vector<Mesh::ElementHandle> elems;
+    std::vector<Mesh::ElementHandle> elems;
     mesh.get_all_elements( elems, err );
     CPPUNIT_ASSERT( !err );
     CPPUNIT_ASSERT_EQUAL( elems.size(), (size_t)8 );
    
-    msq_std::string name;
+    std::string name;
     Mesh::TagType type;
     unsigned tagsize;
 
@@ -814,20 +810,20 @@ public:
     remove( temp_file_name );
     CPPUNIT_ASSERT(!err);
 
-    msq_std::vector<Mesh::ElementHandle> elems;
+    std::vector<Mesh::ElementHandle> elems;
     mesh.get_all_elements( elems, err );
     CPPUNIT_ASSERT( !err );
     CPPUNIT_ASSERT_EQUAL( elems.size(), (size_t)8 );
     
-    msq_std::vector<Mesh::VertexHandle> verts;
-    msq_std::vector<size_t> offsets;
+    std::vector<Mesh::VertexHandle> verts;
+    std::vector<size_t> offsets;
     mesh.elements_get_attached_vertices( &elems[0], elems.size(), verts, offsets, err );
     CPPUNIT_ASSERT(!err);
     
     // get unique list of vertices
-    msq_std::vector<Mesh::VertexHandle>::iterator new_end;
-    msq_std::sort( verts.begin(), verts.end() );
-    new_end = msq_std::unique( verts.begin(), verts.end() );
+    std::vector<Mesh::VertexHandle>::iterator new_end;
+    std::sort( verts.begin(), verts.end() );
+    new_end = std::unique( verts.begin(), verts.end() );
     verts.resize( new_end - verts.begin() );
     CPPUNIT_ASSERT_EQUAL( verts.size(), (size_t)27 );
 
@@ -896,13 +892,13 @@ public:
     mesh.read_vtk( filename, err );
     CPPUNIT_ASSERT(!err);
     
-    msq_std::vector<Mesh::ElementHandle> elems(4);
+    std::vector<Mesh::ElementHandle> elems(4);
     mesh.get_all_elements( elems, err );
     CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT_EQUAL(elems.size(), (size_t)4 );
     
-    msq_std::vector<Mesh::VertexHandle> conn;
-    msq_std::vector<size_t> offsets;
+    std::vector<Mesh::VertexHandle> conn;
+    std::vector<size_t> offsets;
     mesh.elements_get_attached_vertices( &elems[0], elems.size(), conn, offsets, err );
     CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT_EQUAL( conn.size(), (size_t)44 );

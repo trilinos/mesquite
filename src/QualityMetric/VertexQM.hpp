@@ -51,19 +51,19 @@ public:
   /**\brief Returns list of vertex indices in PatchData */
   MESQUITE_EXPORT virtual 
   void get_evaluations( PatchData& pd, 
-                        msq_std::vector<size_t>& handles,
+                        std::vector<size_t>& handles,
                         bool free_vertices_only, 
                         MsqError& err );
 
   MESQUITE_EXPORT static 
   void get_vertex_evaluations( PatchData& pd, 
-                               msq_std::vector<size_t>& handles,
+                               std::vector<size_t>& handles,
                                bool free_vertices_only, 
                                MsqError& err );
 
   MESQUITE_EXPORT static
   void get_vertex_corner_handles( PatchData& pd, size_t vertex_index,
-                                  msq_std::vector<size_t>& handles_out,
+                                  std::vector<size_t>& handles_out,
                                   MsqError& err );
 };
 

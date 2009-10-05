@@ -61,13 +61,13 @@ class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator, public Instruction
 {
   private:
   
-    msq_std::string tagName; //< Name of tag storing vertex coordinates
+    std::string tagName; //< Name of tag storing vertex coordinates
     TagHandle tagHandle;     //< Handle of tag storing vertex coordinates
     bool haveTagHandle;      //< True if tagHandle is set
     bool cleanUpTag;         //< If true, destroy tag in destructor
   
       /**\brief common code for constructor, set_mesh, and set_tag_name */
-    void initialize( Mesh* mesh, msq_std::string name, MsqError& );
+    void initialize( Mesh* mesh, std::string name, MsqError& );
       /**\brief copy real coordinate values into tag data */
     void copy_all_coordinates( MsqError& err );
       /**\brief if cleanUpTag, delete tag and clear handle */
@@ -87,7 +87,7 @@ class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator, public Instruction
     TagVertexMesh( MsqError& err,
                    Mesh* real_mesh,
                    bool clean_up_tag_data = true,
-                   msq_std::string tag_name = "" );
+                   std::string tag_name = "" );
     
       /** Destroy tag data for alternate coordinates if
        *  clean_up_tag_data is true. 
@@ -119,7 +119,7 @@ class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator, public Instruction
     bool will_clean_up_tag_data() const { return cleanUpTag; }
     
     /**\brief Get name of tag used to store alternate vertex coordinates. */
-    msq_std::string get_tag_name() const { return tagName; }
+    std::string get_tag_name() const { return tagName; }
 
     /**\brief Set tag name used to store alternate vertex coordinates
      *
@@ -136,7 +136,7 @@ class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator, public Instruction
      *        alternate coordinate values will be initialized to
      *        the true coordinate values in the real Mesh.
      */
-    void set_tag_name( msq_std::string name, MsqError& err );
+    void set_tag_name( std::string name, MsqError& err );
   
     /**\brief clear all alternate vertex coordinate values
      *
@@ -159,12 +159,12 @@ class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator, public Instruction
 
 //***************  Tags  ***********
 
-    virtual TagHandle tag_create( const msq_std::string& tag_name,
+    virtual TagHandle tag_create( const std::string& tag_name,
                                   TagType type, unsigned length,
                                   const void* default_value,
                                   MsqError &err);
 
-    virtual TagHandle tag_get( const msq_std::string& name, 
+    virtual TagHandle tag_get( const std::string& name, 
                                MsqError& err );
     
 //**************** Memory Management ****************
@@ -179,7 +179,7 @@ class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator, public Instruction
                                    const Settings* settings,
                                    MsqError& err );
 
-    virtual msq_std::string get_name() const;
+    virtual std::string get_name() const;
 };
 
 

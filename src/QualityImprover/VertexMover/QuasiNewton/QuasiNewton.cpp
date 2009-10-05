@@ -40,13 +40,13 @@ namespace MESQUITE_NS {
 
 // Force std::vector to release allocated memory
 template <typename T>
-static inline void free_vector( msq_std::vector<T>& v )
+static inline void free_vector( std::vector<T>& v )
 {
-  msq_std::vector<T> temp;
+  std::vector<T> temp;
   temp.swap( v );
 }
 
-msq_std::string QuasiNewton::get_name() const { return "QuasiNewton"; }
+std::string QuasiNewton::get_name() const { return "QuasiNewton"; }
 
 PatchSet* QuasiNewton::get_patch_set()
   { return PatchSetUser::get_patch_set(); }

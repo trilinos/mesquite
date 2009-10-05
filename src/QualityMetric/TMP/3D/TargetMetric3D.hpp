@@ -54,7 +54,7 @@ public:
   ~TargetMetric3D();
 
   MESQUITE_EXPORT virtual
-  msq_std::string get_name() const = 0;
+  std::string get_name() const = 0;
 
     /**\brief Evaluate \f$\mu(A,W)\f$
      *

@@ -36,7 +36,7 @@
 
 namespace MESQUITE_NS {
 
-msq_std::string Target2DShapeSizeBarrierAlt1::get_name() const
+std::string Target2DShapeSizeBarrierAlt1::get_name() const
   { return "ShapeSizeBarrier"; }
 
 bool Target2DShapeSizeBarrierAlt1::evaluate( const MsqMatrix<2,2>& A, 

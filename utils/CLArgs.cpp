@@ -46,10 +46,10 @@ class CLArgImpl
 {
   private:
 
-    msq_std::vector<CLArgFlag*> mFlags;
-    msq_std::vector< std::string > reqArgNames, optArgNames;
-    msq_std::vector< std::string > reqArg, optArg;
-    msq_std::string progName, shortDesc, longDesc;
+    std::vector<CLArgFlag*> mFlags;
+    std::vector< std::string > reqArgNames, optArgNames;
+    std::vector< std::string > reqArg, optArg;
+    std::string progName, shortDesc, longDesc;
     
   public:
   
@@ -74,17 +74,17 @@ class CLArgImpl
     bool have_required_args() const
       { return reqArgNames.size() == reqArg.size(); }
       
-    void get_args( msq_std::vector< std::string >& result ) 
+    void get_args( std::vector< std::string >& result ) 
       { result = reqArg;
         result.resize( reqArg.size() + optArg.size() );
-        msq_std::copy( optArg.begin(), optArg.end(), result.begin()+reqArg.size() );
+        std::copy( optArg.begin(), optArg.end(), result.begin()+reqArg.size() );
       }
       
-    void print_help( msq_stdio::ostream& stream );
-    void print_brief_help( msq_stdio::ostream& stream );
-    void print_man( msq_stdio::ostream& stream );
+    void print_help( std::ostream& stream );
+    void print_brief_help( std::ostream& stream );
+    void print_man( std::ostream& stream );
     
-    void print_arg_names( msq_stdio::ostream& stream );
+    void print_arg_names( std::ostream& stream );
 };
 
 bool CLArgImpl::add_flag( CLArgFlag* arg )
@@ -116,31 +116,31 @@ CLArgFlag* CLArgImpl::find_flag( char flag )
   return 0;
 }
 
-void CLArgImpl::print_help( msq_stdio::ostream& stream )
+void CLArgImpl::print_help( std::ostream& stream )
 {
-  stream << progName << " : " << shortDesc << msq_stdio::endl;
-  stream  << msq_stdio::endl << longDesc << msq_stdio::endl << msq_stdio::endl;
+  stream << progName << " : " << shortDesc << std::endl;
+  stream  << std::endl << longDesc << std::endl << std::endl;
   print_brief_help( stream );
-  stream << '-' << HELP_FLAG << " : Print this help text." << msq_stdio::endl;
-  stream << '-' << MAN_FLAG << " : Print man page text to standard output stream." << msq_stdio::endl;
-  stream << "--" << " : Treat all subsequent arguments as non-flag arguments." << msq_stdio::endl;
+  stream << '-' << HELP_FLAG << " : Print this help text." << std::endl;
+  stream << '-' << MAN_FLAG << " : Print man page text to standard output stream." << std::endl;
+  stream << "--" << " : Treat all subsequent arguments as non-flag arguments." << std::endl;
   for (unsigned i = 0; i < mFlags.size(); ++i) {
     stream << '-' << mFlags[i]->flag() << " : " << mFlags[i]->desc();
-    msq_std::string extra = mFlags[i]->callback()->desc_append();
+    std::string extra = mFlags[i]->callback()->desc_append();
     if (!extra.empty()) 
       stream << " " << extra;
-    msq_std::string defval = mFlags[i]->callback()->default_str();
+    std::string defval = mFlags[i]->callback()->default_str();
     if (!defval.empty()) 
       stream << " (default: " << defval << ")";
-    stream << msq_stdio::endl;
+    stream << std::endl;
   }
 }
 
-void CLArgImpl::print_brief_help( msq_stdio::ostream& stream )
+void CLArgImpl::print_brief_help( std::ostream& stream )
 {
   stream << progName;
   for (unsigned i = 0; i < mFlags.size(); ++i) {
-    msq_std::string str = mFlags[i]->callback()->brief();
+    std::string str = mFlags[i]->callback()->brief();
     if (!str.empty()) {
       stream << "[-" << mFlags[i]->flag() << ' ' << str << "]";
     }
@@ -151,24 +151,24 @@ void CLArgImpl::print_brief_help( msq_stdio::ostream& stream )
     }
   }
   print_arg_names( stream );
-  stream << msq_stdio::endl;
-  stream << progName << " -" << HELP_FLAG << msq_stdio::endl;
-  stream << progName << " -" <<  MAN_FLAG << msq_stdio::endl;
+  stream << std::endl;
+  stream << progName << " -" << HELP_FLAG << std::endl;
+  stream << progName << " -" <<  MAN_FLAG << std::endl;
 }
 
-void CLArgImpl::print_man( msq_stdio::ostream& stream )
+void CLArgImpl::print_man( std::ostream& stream )
 {
   ManPage::begin_manpage( stream, progName, 1 );
   
   ManPage::begin_section( stream, "NAME" );
   ManPage::begin_paragraph( stream );
-  stream << progName << " - " << shortDesc << msq_stdio::endl << msq_stdio::endl;
+  stream << progName << " - " << shortDesc << std::endl << std::endl;
   
   ManPage::begin_section( stream, "SYNOPSIS" );
   ManPage::begin_hanging_paragraph( stream );
   ManPage::bold( stream, progName );
   for (unsigned i = 0; i < mFlags.size(); ++i) {
-    msq_std::string s = mFlags[i]->callback()->manstr();
+    std::string s = mFlags[i]->callback()->manstr();
     if (!s.empty()) {
       stream << '[';
       ManPage::begin_bold( stream );
@@ -183,7 +183,7 @@ void CLArgImpl::print_man( msq_stdio::ostream& stream )
     }
   }
   print_arg_names( stream );
-  stream << msq_std::endl;
+  stream << std::endl;
   ManPage::begin_hanging_paragraph( stream );
   ManPage::bold( stream, progName + " -h" );
   ManPage::begin_hanging_paragraph( stream );
@@ -194,10 +194,10 @@ void CLArgImpl::print_man( msq_stdio::ostream& stream )
   
   ManPage::begin_section( stream, "OPTIONS" );
   for (unsigned i = 0; i < mFlags.size(); ++i) {
-    msq_std::string s = mFlags[i]->callback()->manstr();
+    std::string s = mFlags[i]->callback()->manstr();
     if (!s.empty()) {
       char tmp[] = { '-', mFlags[i]->flag(), ' ', '\0' };
-      s = msq_std::string(tmp) + s;
+      s = std::string(tmp) + s;
     }
     else {
       s = mFlags[i]->manstr();
@@ -213,7 +213,7 @@ void CLArgImpl::print_man( msq_stdio::ostream& stream )
     s = mFlags[i]->callback()->desc_append();
     if (!s.empty())
       stream << " " << s;
-    msq_std::string defval = mFlags[i]->callback()->default_str();
+    std::string defval = mFlags[i]->callback()->default_str();
     if (!defval.empty()) 
       stream << " (default: " << defval << ")";
     ManPage::end_indent( stream );
@@ -221,7 +221,7 @@ void CLArgImpl::print_man( msq_stdio::ostream& stream )
   
 }
 
-void CLArgImpl::print_arg_names( msq_stdio::ostream& stream )
+void CLArgImpl::print_arg_names( std::ostream& stream )
 {
   unsigned i;
   for (i = 0; i < reqArgNames.size(); ++i)
@@ -349,8 +349,8 @@ void CLArgs::add_optional_arg( const char* name )
 
 bool CLArgs::parse_options( int argc, 
                             char** argv,
-                            msq_std::vector< msq_std::string >& args_out,
-                            msq_stdio::ostream& error_stream )
+                            std::vector< std::string >& args_out,
+                            std::ostream& error_stream )
 {
   std::vector<CLArgFlag*> pending;
   bool no_more_flags = false;
@@ -359,37 +359,37 @@ bool CLArgs::parse_options( int argc,
       CLArgFlag* flag = pending.front();
       pending.erase( pending.begin() );
       if (!flag->parse( argv[i] )) {
-        error_stream << argv[0] << ": invalid value for flag: -" << flag->flag() << " \"" << argv[i] << '"' << msq_stdio::endl;
+        error_stream << argv[0] << ": invalid value for flag: -" << flag->flag() << " \"" << argv[i] << '"' << std::endl;
         return false;
       }
     }
     else if (!no_more_flags && argv[i][0] == '-' && argv[i][1] !='\0') {
       for (int j = 1; argv[i][j]; ++j) {
         if (argv[i][j] == HELP_FLAG) {
-          print_help( msq_stdio::cout );
+          print_help( std::cout );
           exit( 0 );
         }
         else if (argv[i][j] == MAN_FLAG) {
-          print_man_page( msq_stdio::cout );
+          print_man_page( std::cout );
           exit( 0 );
         }
       
         CLArgFlag* flag = impl->find_flag( argv[i][j] );
         if (!flag) {
-          error_stream << argv[0] << ": invalid flag: -" << argv[i][j] << msq_stdio::endl;
+          error_stream << argv[0] << ": invalid flag: -" << argv[i][j] << std::endl;
           return false;
         }
         else if (!flag->is_toggle()) {
           pending.push_back( flag );
         }
         else if (!flag->parse( NULL )) {
-          error_stream << argv[0] << ": conflicting flag: -" << argv[i][j] << msq_stdio::endl;
+          error_stream << argv[0] << ": conflicting flag: -" << argv[i][j] << std::endl;
           return false;
         }
       }
     }
     else if (!impl->add_parsed_arg( argv[i] )) {
-      error_stream << argv[0] << ": unexpected argument: \"" <<argv[i] << '"' << msq_stdio::endl;
+      error_stream << argv[0] << ": unexpected argument: \"" <<argv[i] << '"' << std::endl;
       return false;
     }
   }
@@ -397,28 +397,28 @@ bool CLArgs::parse_options( int argc,
   impl->get_args( args_out );
   
   if (!pending.empty()) {
-    error_stream << argv[0] << ": expected argument following flag: -" << pending.front()->flag() << msq_stdio::endl;
+    error_stream << argv[0] << ": expected argument following flag: -" << pending.front()->flag() << std::endl;
     return false;
   }
   if (!impl->have_required_args()) {
-    error_stream << argv[0] << ": insufficient arguments" << msq_stdio::endl;
+    error_stream << argv[0] << ": insufficient arguments" << std::endl;
     return false;
   }
   
   return true;
 }
 
-void CLArgs::print_help( msq_stdio::ostream& stream ) const
+void CLArgs::print_help( std::ostream& stream ) const
 {
   impl->print_help( stream );
 }
 
-void CLArgs::print_man_page( msq_stdio::ostream& stream ) const
+void CLArgs::print_man_page( std::ostream& stream ) const
 {
   impl->print_man( stream );
 }
 
-void CLArgs::print_usage( msq_stdio::ostream& stream ) const
+void CLArgs::print_usage( std::ostream& stream ) const
 {
   impl->print_brief_help( stream );
 }
@@ -431,9 +431,9 @@ void CLArgs::KeyWordArg::initialize( const char* keyword_list[], int list_length
   std::copy( keyword_list, keyword_list + list_length, mKeyWords.begin() );
 }
 
-bool CLArgs::KeyWordArg::value( const msq_std::string& val )
+bool CLArgs::KeyWordArg::value( const std::string& val )
 {
-  msq_std::vector< msq_std::string >::const_iterator i;
+  std::vector< std::string >::const_iterator i;
   for (i = mKeyWords.begin(); i != mKeyWords.end(); ++i) 
     if (compare_no_case( i->c_str(), val.c_str() )) {
       return value(*i);
@@ -442,12 +442,12 @@ bool CLArgs::KeyWordArg::value( const msq_std::string& val )
   return false;
 }
 
-msq_std::string CLArgs::KeyWordArg::brief() const
+std::string CLArgs::KeyWordArg::brief() const
 {
-  msq_stdio::ostringstream ss;
-  msq_std::vector< msq_std::string >::const_iterator i = mKeyWords.begin();
+  std::ostringstream ss;
+  std::vector< std::string >::const_iterator i = mKeyWords.begin();
   if (i == mKeyWords.end())
-    return msq_std::string();
+    return std::string();
   
   ss << '{' << *i;
   for (++i; i != mKeyWords.end(); ++i)
@@ -456,12 +456,12 @@ msq_std::string CLArgs::KeyWordArg::brief() const
   return ss.str();
 }
 
-msq_std::string CLArgs::KeyWordArg::manstr() const
+std::string CLArgs::KeyWordArg::manstr() const
 {
   if (mKeyWords.empty())
-    return msq_std::string();
+    return std::string();
 
-  msq_stdio::ostringstream ss;
+  std::ostringstream ss;
   ManPage::bold( ss, mKeyWords[0].c_str() );
   for (unsigned i = 1; i < mKeyWords.size(); ++i) {
     ss << "|";
@@ -479,16 +479,16 @@ bool CLArgs::KeyWordArg::compare_no_case( const char* s1, const char* s2 )
 }
 
 CLArgs::IntRange::IntRange( const int* min, const int* max )
-  : mMin( min ? *min : msq_std::numeric_limits<int>::min() ),
-    mMax( max ? *max : msq_std::numeric_limits<int>::max() )
+  : mMin( min ? *min : std::numeric_limits<int>::min() ),
+    mMax( max ? *max : std::numeric_limits<int>::max() )
   {}
 
 bool CLArgs::IntRange::is_valid( int val ) const
   { return val >= mMin && val <= mMax; }
 
-msq_std::string CLArgs::IntRange::desc_append()  const
+std::string CLArgs::IntRange::desc_append()  const
 {
-  msq_stdio::ostringstream ss;
+  std::ostringstream ss;
   ss << "[" << mMin << "," << mMax << "]";
   return ss.str();
 }
@@ -500,9 +500,9 @@ bool CLArgs::IntRangeArg::value( const int& val )
   return IntArg::value(val);
 }
 
-bool CLArgs::IntListRangeArg::value( const msq_std::vector<int>&  val )
+bool CLArgs::IntListRangeArg::value( const std::vector<int>&  val )
 {
-  for (msq_std::vector<int>::const_iterator i = val.begin(); i != val.end(); ++i)
+  for (std::vector<int>::const_iterator i = val.begin(); i != val.end(); ++i)
     if (!mRange.is_valid(*i))
       return false;
   return IntListArg::value(val);
@@ -529,9 +529,9 @@ bool CLArgs::DoubleRange::is_valid( double val ) const
         && (!haveMax || val <  mMax);
 }
 
-msq_std::string CLArgs::DoubleRange::desc_append()  const
+std::string CLArgs::DoubleRange::desc_append()  const
 {
-  msq_stdio::ostringstream ss;
+  std::ostringstream ss;
   if (mInclusive && haveMin)
     ss << '[';
   else 
@@ -559,9 +559,9 @@ bool CLArgs::DoubleRangeArg::value( const double& val )
   return DoubleArg::value(val);
 }
 
-bool CLArgs::DoubleListRangeArg::value( const msq_std::vector<double>&  val )
+bool CLArgs::DoubleListRangeArg::value( const std::vector<double>&  val )
 {
-  for (msq_std::vector<double>::const_iterator i = val.begin(); i != val.end(); ++i)
+  for (std::vector<double>::const_iterator i = val.begin(); i != val.end(); ++i)
     if (!mRange.is_valid(*i))
       return false;
   return DoubleListArg::value(val);

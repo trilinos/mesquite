@@ -46,7 +46,7 @@ do_finite_difference( int r, int c, TargetMetric* metric,
                       const MsqMatrix<Dim, Dim>& W,
                       double value, MsqError& err )
 {
-  const double INITAL_STEP = msq_std::max( 1e-6, fabs(1e-9*value) );
+  const double INITAL_STEP = std::max( 1e-6, fabs(1e-9*value) );
   const double init = A(r,c);
   bool valid;
   double diff_value;
@@ -93,7 +93,7 @@ do_numerical_hessian( TargetMetric* metric,
     return false;
   
     // do finite difference for each term of A
-  const double INITAL_STEP = msq_std::max( 1e-6, fabs(1e-9*value) );
+  const double INITAL_STEP = std::max( 1e-6, fabs(1e-9*value) );
   double value2;
   MsqMatrix<Dim,Dim> grad2;
   for (int r = 0; r < Dim; ++r) {  // for each row of A

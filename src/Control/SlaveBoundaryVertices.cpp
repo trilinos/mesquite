@@ -45,7 +45,7 @@ SlaveBoundaryVertices::SlaveBoundaryVertices( unsigned depth, unsigned dim )
   : elemDepth(depth), domainDoF(dim)
   {}
 
-msq_std::string SlaveBoundaryVertices::get_name() const
+std::string SlaveBoundaryVertices::get_name() const
   { return "SlaveBoundaryVertices"; }
 
 struct BoolArr { // vector<bool> cannot be treated as an array of bool
@@ -77,12 +77,12 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
   
     // Create a map to contain vertex depth.  Intiliaze all to 
     // elemDepth+1.
-  msq_std::vector<Mesh::VertexHandle> vertices;
+  std::vector<Mesh::VertexHandle> vertices;
   mesh->get_all_vertices( vertices, err );  MSQ_ERRZERO(err);
   if (vertices.empty())
     return 0.0;
-  msq_std::sort( vertices.begin(), vertices.end() );
-  msq_std::vector<unsigned short> depth( vertices.size(), elemDepth+1 );
+  std::sort( vertices.begin(), vertices.end() );
+  std::vector<unsigned short> depth( vertices.size(), elemDepth+1 );
   BoolArr fixed( vertices.size() );
   mesh->vertices_get_fixed_flag( &vertices[0], fixed.mArray, vertices.size(), err );
   MSQ_ERRZERO(err);
@@ -101,7 +101,7 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
       return 0.0;
     }
     
-    msq_std::vector<unsigned short> dof( vertices.size() );
+    std::vector<unsigned short> dof( vertices.size() );
     domain->domain_DoF( &vertices[0], &dof[0], vertices.size(), err ); MSQ_ERRZERO(err);
     for (size_t i = 0; i < vertices.size(); ++i)
       if (dof[i] <= dim)
@@ -113,10 +113,10 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
     // using vertex-to-element adjacencies, but it is to common for 
     // applications not to implement that unless doing relaxation smoothing.
     // This is O(elemDepth * elements.size() * ln(vertices.size()));
-  msq_std::vector<Mesh::ElementHandle> elements;
-  msq_std::vector<Mesh::ElementHandle>::const_iterator j, k;
-  msq_std::vector<Mesh::VertexHandle> conn;
-  msq_std::vector<size_t> junk(2);
+  std::vector<Mesh::ElementHandle> elements;
+  std::vector<Mesh::ElementHandle>::const_iterator j, k;
+  std::vector<Mesh::VertexHandle> conn;
+  std::vector<size_t> junk(2);
   mesh->get_all_elements( elements, err );  MSQ_ERRZERO(err);
   if (elements.empty())
     return 0.0;
@@ -128,7 +128,7 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
       mesh->elements_get_attached_vertices( &*j, 1, conn, junk, err ); MSQ_ERRZERO(err);
       unsigned short elem_depth = elemDepth+1;
       for (k = conn.begin(); k != conn.end(); ++k) {
-        size_t i = msq_std::lower_bound( vertices.begin(), vertices.end(), *k ) - vertices.begin();
+        size_t i = std::lower_bound( vertices.begin(), vertices.end(), *k ) - vertices.begin();
         if (i == vertices.size()) {
           MSQ_SETERR(err)("Invalid vertex handle in element connectivity list.", 
                           MsqError::INVALID_MESH);
@@ -142,7 +142,7 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
       
       ++elem_depth;
       for (k = conn.begin(); k != conn.end(); ++k) {
-        size_t i = msq_std::lower_bound( vertices.begin(), vertices.end(), *k ) - vertices.begin();
+        size_t i = std::lower_bound( vertices.begin(), vertices.end(), *k ) - vertices.begin();
         if (depth[i] > elem_depth) {
           depth[i] = elem_depth;
           some_changed = true;
@@ -152,21 +152,21 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
   } while (some_changed);
   
     // Now remove any corner vertices from the slaved set
-  msq_std::vector<Mesh::VertexHandle>::iterator p;
-  msq_std::vector<EntityTopology> types(elements.size());
+  std::vector<Mesh::VertexHandle>::iterator p;
+  std::vector<EntityTopology> types(elements.size());
   mesh->elements_get_topologies( &elements[0], &types[0], elements.size(), err ); MSQ_ERRZERO(err);
   for (j = elements.begin(); j != elements.end(); ++j) {
     const unsigned corners = TopologyInfo::corners(types[j-elements.begin()]);
     conn.clear(); junk.clear();
     mesh->elements_get_attached_vertices( &*j, 1, conn, junk, err ); MSQ_ERRZERO(err);
     for (unsigned i = 0; i < corners; ++i) {
-      p = msq_std::lower_bound( vertices.begin(), vertices.end(), conn[i] );
+      p = std::lower_bound( vertices.begin(), vertices.end(), conn[i] );
       depth[p-vertices.begin()] = 0;
     }
   }
   
     // Now mark all vertices *not* within specified depth as slave vertices.
-  msq_std::vector<unsigned char> bytes( vertices.size() );
+  std::vector<unsigned char> bytes( vertices.size() );
   mesh->vertices_get_byte( &vertices[0], &bytes[0], vertices.size(), err ); MSQ_ERRZERO(err);
   for (size_t i = 0; i < vertices.size(); ++i) {
     if (depth[i] <= elemDepth || fixed[i])

@@ -90,7 +90,7 @@ bool OFEvaluator::update( PatchData& pd, double& value, MsqError& err )
 
 
 bool OFEvaluator::update( PatchData& pd, double& value, 
-                          msq_std::vector<Vector3D>& grad,
+                          std::vector<Vector3D>& grad,
                           MsqError& err )
 {
   if (!have_objective_function()) 
@@ -103,8 +103,8 @@ bool OFEvaluator::update( PatchData& pd, double& value,
 
 
 bool OFEvaluator::update( PatchData& pd, double& value, 
-                          msq_std::vector<Vector3D>& grad,
-                          msq_std::vector<SymMatrix3D>& hess_diag,
+                          std::vector<Vector3D>& grad,
+                          std::vector<SymMatrix3D>& hess_diag,
                           MsqError& err )
 {
   if (!have_objective_function()) 
@@ -117,7 +117,7 @@ bool OFEvaluator::update( PatchData& pd, double& value,
 
 
 bool OFEvaluator::update( PatchData& pd, double& value, 
-                          msq_std::vector<Vector3D>& grad,
+                          std::vector<Vector3D>& grad,
                           MsqHessian& Hessian,
                           MsqError& err )
 {
@@ -140,7 +140,7 @@ bool OFEvaluator::evaluate( PatchData& pd, double& value, MsqError& err ) const
 
 
 bool OFEvaluator::evaluate( PatchData& pd, double& value, 
-                            msq_std::vector<Vector3D>& grad,
+                            std::vector<Vector3D>& grad,
                             MsqError& err ) const
 { 
   if (!have_objective_function()) 
@@ -152,8 +152,8 @@ bool OFEvaluator::evaluate( PatchData& pd, double& value,
 
 
 bool OFEvaluator::evaluate( PatchData& pd, double& value, 
-                            msq_std::vector<Vector3D>& grad,
-                            msq_std::vector<SymMatrix3D>& hess_diag,
+                            std::vector<Vector3D>& grad,
+                            std::vector<SymMatrix3D>& hess_diag,
                             MsqError& err ) const
 { 
   if (!have_objective_function()) 
@@ -165,7 +165,7 @@ bool OFEvaluator::evaluate( PatchData& pd, double& value,
 
 
 bool OFEvaluator::evaluate( PatchData& pd, double& value, 
-                            msq_std::vector<Vector3D>& grad,
+                            std::vector<Vector3D>& grad,
                             MsqHessian& Hessian,
                             MsqError& err ) const
 { 

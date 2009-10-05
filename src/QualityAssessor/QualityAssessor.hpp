@@ -48,22 +48,10 @@ Header file for the Mesquite::QualityAssessor class
 #include "Instruction.hpp"
 #include "MeshInterface.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <list.h>
-#  include <string.h>
-#  include <vector.h>
-#else
-#  include <list>
-#  include <string>
-#  include <vector>
-#endif
-
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#  include <ostream.h>
-#else
-#  include <iosfwd>
-#endif
-
+#include <list>
+#include <string>
+#include <vector>
+#include <iosfwd>
 
 namespace MESQUITE_NS 
 {
@@ -124,7 +112,7 @@ namespace MESQUITE_NS
     QualityAssessor( bool print_summary_to_std_out = true,
                      bool free_elements_only = true,
                      const char* inverted_element_tag_name = 0,
-                     msq_std::string name = msq_std::string() );
+                     std::string name = std::string() );
 
     /**\brief Simple consturctor.  Metrics registered separately.
      *\param output_stream IO stream to which to write a summary of the 
@@ -139,10 +127,10 @@ namespace MESQUITE_NS
      *                are in use at the same time.
      */
     MESQUITE_EXPORT 
-    QualityAssessor( msq_stdio::ostream& output_stream,
+    QualityAssessor( std::ostream& output_stream,
                      bool free_elements_only = true,
                      const char* inverted_element_tag_name = 0,
-                     msq_std::string name = msq_std::string() );
+                     std::string name = std::string() );
                      
     /**\brief Construct and register a QualityMetric
      *\param output_stream IO stream to which to write a summary of the 
@@ -172,14 +160,14 @@ namespace MESQUITE_NS
      *                are in use at the same time.
      */
     MESQUITE_EXPORT 
-    QualityAssessor( msq_stdio::ostream& output_stream,
+    QualityAssessor( std::ostream& output_stream,
                      QualityMetric* metric, 
                      int histogram_intervals = 0,
                      double power_mean = 0.0,
                      bool free_elements_only = true,
                      const char* metric_value_tag_name = 0,
                      const char* inverted_element_tag_name = 0,
-                     msq_std::string name = msq_std::string() );
+                     std::string name = std::string() );
 
                      
     /**\brief Construct and register a QualityMetric
@@ -219,14 +207,14 @@ namespace MESQUITE_NS
                      const char* metric_value_tag_name = 0,
                      bool print_summary_to_std_out = true,
                      const char* inverted_element_tag_name = 0,
-                     msq_std::string name = msq_std::string() );
+                     std::string name = std::string() );
 
     MESQUITE_EXPORT virtual ~QualityAssessor();
     
       //! Provides a name to the QualityAssessor (use it for default name in constructor).
-    MESQUITE_EXPORT void set_name(msq_std::string name) { qualityAssessorName = name; };
+    MESQUITE_EXPORT void set_name(std::string name) { qualityAssessorName = name; };
       //! Retrieves the QualityAssessor name. A default name should be set in the constructor.
-    MESQUITE_EXPORT virtual msq_std::string get_name() const { return qualityAssessorName; }
+    MESQUITE_EXPORT virtual std::string get_name() const { return qualityAssessorName; }
     
       /**\brief All elements or only improvable ones.
        *
@@ -351,7 +339,7 @@ namespace MESQUITE_NS
        }
       
       //! Print accumulated summary data to specified stream. 
-    MESQUITE_EXPORT void print_summary( msq_stdio::ostream& stream ) const;
+    MESQUITE_EXPORT void print_summary( std::ostream& stream ) const;
     
       //! True if any metric evaluated to an invalid value
       //! for any element
@@ -426,14 +414,14 @@ namespace MESQUITE_NS
          */
         void get_histogram( double& lower_bound_out,
                             double& upper_bound_out,
-                            msq_std::vector<int>& counts_out,
+                            std::vector<int>& counts_out,
                             MsqError& err ) const;
                             
         /** Reset all calculated data */
         void reset_data();
        
         /** Print the histogram */
-        void print_histogram( msq_stdio::ostream&, int width = 0 ) const;
+        void print_histogram( std::ostream&, int width = 0 ) const;
 
         /** Get the QualityMetric */
         QualityMetric* get_metric() const { return qualMetric; }
@@ -491,7 +479,7 @@ namespace MESQUITE_NS
         bool haveHistRange;
         double histMin;   //< Lower bound of histogram
         double histMax;   //< Upper bound of histogram
-        msq_std::vector<int> histogram;
+        std::vector<int> histogram;
         
         std::string tagName; //< Tag to which to write metric values.
         /** Cached tag handle */
@@ -501,7 +489,7 @@ namespace MESQUITE_NS
         bool stoppingFunction;
     };    
         
-    typedef msq_std::list<Assessor> list_type;
+    typedef std::list<Assessor> list_type;
         
     /** \brief Request summary data for a specific QualityMetric 
      * This method allows the application to request the summary
@@ -552,7 +540,7 @@ namespace MESQUITE_NS
     int get_terminal_width() const;
    
     /** Name */
-    msq_std::string qualityAssessorName;  
+    std::string qualityAssessorName;  
     
     /** List of quality metrics and corresponding data */
     list_type assessList;
@@ -573,7 +561,7 @@ namespace MESQUITE_NS
     size_t freeElementCount;
    
     /** Stream to which to write summary of metric data */
-    msq_stdio::ostream& outputStream;
+    std::ostream& outputStream;
     /** Disable printing */
     bool printSummary;
     

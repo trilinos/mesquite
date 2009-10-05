@@ -62,8 +62,8 @@ private:
   
   ArrayMesh myMesh;
   XYRectangle myDomain;
-  msq_std::vector<double> mCoords;
-  msq_std::vector<int> mFlags;
+  std::vector<double> mCoords;
+  std::vector<int> mFlags;
   
 public:
   void setUp();
@@ -123,7 +123,7 @@ void XYRectangleTest::setUp()
 {
   MsqError err;
   mCoords.resize( 3*NUM_TEST_MESH_VERTS );
-  msq_std::copy( TEST_MESH_COORDS, TEST_MESH_COORDS + 3*NUM_TEST_MESH_VERTS, mCoords.begin() );
+  std::copy( TEST_MESH_COORDS, TEST_MESH_COORDS + 3*NUM_TEST_MESH_VERTS, mCoords.begin() );
   mFlags.clear();
   mFlags.resize( NUM_TEST_MESH_VERTS, 0 );
   myMesh.set_mesh( 3, NUM_TEST_MESH_VERTS, &mCoords[0], &mFlags[0],
@@ -169,11 +169,11 @@ void XYRectangleTest::test_snap_to()
   const Vector3D d4( 0.0, 0.0, 5.0 );
   const Vector3D d5( 0.5, 0.5, 0.5 );
 
-  msq_std::vector<Mesh::VertexHandle> verts;
+  std::vector<Mesh::VertexHandle> verts;
   myMesh.get_all_vertices( verts, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!verts.empty());
-  msq_std::vector<MsqVertex> coords( verts.size() );
+  std::vector<MsqVertex> coords( verts.size() );
   myMesh.vertices_get_coordinates( &verts[0], &coords[0], verts.size(), err );
   ASSERT_NO_ERROR(err);
   
@@ -214,16 +214,16 @@ void XYRectangleTest::test_snap_to()
 void XYRectangleTest::test_normal_at()
 {
   MsqError err;
-  msq_std::vector<Mesh::VertexHandle> vertices;
+  std::vector<Mesh::VertexHandle> vertices;
   myMesh.get_all_vertices( vertices, err );
   ASSERT_NO_ERROR(err);
   
-  msq_std::vector<MsqVertex> coords(vertices.size());
+  std::vector<MsqVertex> coords(vertices.size());
   myMesh.vertices_get_coordinates( &vertices[0], &coords[0], vertices.size(), err );
   ASSERT_NO_ERROR(err);
   
-  msq_std::vector<Vector3D> normals(vertices.size());
-  msq_std::copy( coords.begin(), coords.end(), normals.begin() );
+  std::vector<Vector3D> normals(vertices.size());
+  std::copy( coords.begin(), coords.end(), normals.begin() );
   myDomain.vertex_normal_at( &vertices[0], &normals[0], vertices.size(), err );
   ASSERT_NO_ERROR(err);
   
@@ -235,13 +235,13 @@ void XYRectangleTest::test_normal_at()
 void XYRectangleTest::test_closest_point()
 {
   MsqError err;
-  msq_std::vector<Mesh::ElementHandle> elems;
+  std::vector<Mesh::ElementHandle> elems;
   myMesh.get_all_elements( elems, err );
   ASSERT_NO_ERROR(err);
   
   for (size_t i = 0; i < elems.size(); ++i) {
-    msq_std::vector<Mesh::VertexHandle> verts;
-    msq_std::vector<size_t> junk;
+    std::vector<Mesh::VertexHandle> verts;
+    std::vector<size_t> junk;
     MsqVertex coords;
     myMesh.elements_get_attached_vertices( &elems[i], 1, verts, junk, err );
     ASSERT_NO_ERROR(err);
@@ -270,10 +270,10 @@ void XYRectangleTest::test_domain_DoF()
 {
   MsqError err;
 
-  msq_std::vector<Mesh::VertexHandle> verts;
+  std::vector<Mesh::VertexHandle> verts;
   myMesh.get_all_vertices( verts, err );
   ASSERT_NO_ERROR(err);
-  msq_std::vector<MsqVertex> coords( verts.size() );
+  std::vector<MsqVertex> coords( verts.size() );
   myMesh.vertices_get_coordinates( &verts[0], &coords[0], verts.size(), err );
   ASSERT_NO_ERROR(err);
   

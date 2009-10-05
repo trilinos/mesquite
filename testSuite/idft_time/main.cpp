@@ -26,16 +26,11 @@
 
 #include "meshfiles.h"
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#  include <iostream.h>
-#  include <strtream.h>
-#else
-#  include <iostream>
-#  include <sstream>
-   using std::cout;
-   using std::cerr;
-   using std::endl;
-#endif
+#include <iostream>
+#include <sstream>
+using std::cout;
+using std::cerr;
+using std::endl;
 
 #include <stdlib.h>
 
@@ -69,7 +64,7 @@ const char* DEFAULT_INPUT = MESH_FILES_DIR "2D/VTK/equil_tri2.vtk";
 /* Print usage or help information: exits if err == true */
 void usage( const char* argv0 = 0, bool err = true )
 {
-  msq_stdio::ostream& s = err ? cerr : cout;
+  std::ostream& s = err ? cerr : cout;
   const char* defname = "main";
   if (!argv0)
     argv0 = defname;
@@ -118,10 +113,10 @@ class NumericQM : public QualityMetric {
   public:
     NumericQM( QualityMetric* real_metric ) : realMetric(real_metric) {}
     virtual MetricType get_metric_type() const;
-    virtual msq_std::string get_name() const;
+    virtual std::string get_name() const;
     virtual int get_negate_flag() const;
     virtual void get_evaluations( PatchData& pd,
-                          msq_std::vector<size_t>& handles, 
+                          std::vector<size_t>& handles, 
                           bool free_vertices_only,
                           MsqError& err );
     virtual bool evaluate( PatchData& pd, 
@@ -131,13 +126,13 @@ class NumericQM : public QualityMetric {
     virtual bool evaluate_with_indices( PatchData& pd,
                    size_t handle,
                    double& value,
-                   msq_std::vector<size_t>& indices,
+                   std::vector<size_t>& indices,
                    MsqError& err );
 };
 QualityMetric::MetricType NumericQM::get_metric_type() const
   { return realMetric->get_metric_type(); }
-msq_std::string NumericQM::get_name() const{
-  msq_std::string r = realMetric->get_name();
+std::string NumericQM::get_name() const{
+  std::string r = realMetric->get_name();
   r += " (FD)";
   return r;
 }
@@ -151,10 +146,10 @@ private:
   QualityMetric *metric1, *metric2;
   bool maskPlane;
   int maskAxis;
-  msq_std::vector<size_t> m2Handles;
-  msq_std::vector<Vector3D> m2Grad;
-  msq_std::vector<SymMatrix3D> m2Diag;
-  msq_std::vector<Matrix3D> m2Hess;
+  std::vector<size_t> m2Handles;
+  std::vector<Vector3D> m2Grad;
+  std::vector<SymMatrix3D> m2Diag;
+  std::vector<Matrix3D> m2Hess;
   static const double epsilon;
 public:
   CompareMetric( QualityMetric* qm1, 
@@ -165,12 +160,12 @@ public:
   
   MetricType get_metric_type() const;
   
-  msq_std::string get_name() const;
+  std::string get_name() const;
   
   int get_negate_flag() const;
   
   void get_evaluations( PatchData& pd, 
-                        msq_std::vector<size_t>& handles, 
+                        std::vector<size_t>& handles, 
                         bool free_vertices_only,
                         MsqError& err );
                         
@@ -182,30 +177,30 @@ public:
   bool evaluate_with_indices( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
+                 std::vector<size_t>& indices,
                  MsqError& err );
                  
   bool evaluate_with_gradient( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
-                 msq_std::vector<Vector3D>& gradient,
+                 std::vector<size_t>& indices,
+                 std::vector<Vector3D>& gradient,
                  MsqError& err );
                  
   bool evaluate_with_Hessian_diagonal( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
-                 msq_std::vector<Vector3D>& gradient,
-                 msq_std::vector<SymMatrix3D>& Hessian_diagonal,
+                 std::vector<size_t>& indices,
+                 std::vector<Vector3D>& gradient,
+                 std::vector<SymMatrix3D>& Hessian_diagonal,
                  MsqError& err );
                  
   bool evaluate_with_Hessian( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
-                 msq_std::vector<Vector3D>& gradient,
-                 msq_std::vector<Matrix3D>& Hessian,
+                 std::vector<size_t>& indices,
+                 std::vector<Vector3D>& gradient,
+                 std::vector<Matrix3D>& Hessian,
                  MsqError& err );
                  
   void get_mask_axis( PatchData& pd );
@@ -299,7 +294,7 @@ int main( int argc, char* argv[] )
   NumericQM new_target_numeric( &new_target_metric );
   CompareMetric comp_metric( &non_target_metric, &new_target_average, true );
   
-  msq_stdio::ostringstream os;
+  std::ostringstream os;
   double secs,qual;
   if (do_non_target_metric) {
     qual = run( &non_target_metric, solver, input_file, secs, count );
@@ -369,13 +364,13 @@ double run( QualityMetric* metric,
     exit(1);
   }
   
-  msq_std::vector<Mesh::VertexHandle> handles;
+  std::vector<Mesh::VertexHandle> handles;
   mesh.get_all_vertices( handles, err );
   if (handles.empty()) {
     cerr << "no veritces in mesh" << endl;
     exit(1);
   }
-  msq_std::vector<MsqVertex> coords(handles.size());
+  std::vector<MsqVertex> coords(handles.size());
   mesh.vertices_get_coordinates( &handles[0], &coords[0], handles.size(), err );
   Vector3D min(HUGE_VAL), max(-HUGE_VAL);
   for (size_t i = 0; i < coords.size(); ++i) {
@@ -434,7 +429,7 @@ int NumericQM::get_negate_flag() const
 { return realMetric->get_negate_flag(); }
 
 void NumericQM::get_evaluations( PatchData& pd,
-                      msq_std::vector<size_t>& handles, 
+                      std::vector<size_t>& handles, 
                       bool free_vertices_only,
                       MsqError& err )
 { realMetric->get_evaluations( pd, handles, free_vertices_only, err ); }
@@ -448,7 +443,7 @@ bool NumericQM::evaluate( PatchData& pd,
 bool NumericQM::evaluate_with_indices( PatchData& pd,
                size_t handle,
                double& value,
-               msq_std::vector<size_t>& indices,
+               std::vector<size_t>& indices,
                MsqError& err )
 { return realMetric->evaluate_with_indices( pd, handle, value, indices, err ); }
 
@@ -460,9 +455,9 @@ QualityMetric::MetricType CompareMetric::get_metric_type() const
   return t1;
 }
   
-msq_std::string CompareMetric::get_name() const
+std::string CompareMetric::get_name() const
 {
-  msq_std::string n = metric1->get_name();
+  std::string n = metric1->get_name();
   n += " =? ";
   n += metric2->get_name();
   return n;
@@ -475,7 +470,7 @@ int CompareMetric::get_negate_flag() const
 }
   
 void CompareMetric::get_evaluations( PatchData& pd, 
-                                     msq_std::vector<size_t>& handles, 
+                                     std::vector<size_t>& handles, 
                                      bool free_vertices_only,
                                      MsqError& err )
 {
@@ -486,9 +481,9 @@ void CompareMetric::get_evaluations( PatchData& pd,
   metric1->get_evaluations( pd, handles, free_vertices_only, err ); MSQ_ERRRTN(err);
   metric2->get_evaluations( pd, m2Handles, free_vertices_only, err ); MSQ_ERRRTN(err);
   bool same = (handles.size() == m2Handles.size());
-  msq_std::sort( m2Handles.begin(), m2Handles.end() );
-  for (msq_std::vector<size_t>::iterator i = handles.begin(); i != handles.end(); ++i) 
-    if (!msq_std::binary_search( m2Handles.begin(), m2Handles.end(), *i ))
+  std::sort( m2Handles.begin(), m2Handles.end() );
+  for (std::vector<size_t>::iterator i = handles.begin(); i != handles.end(); ++i) 
+    if (!std::binary_search( m2Handles.begin(), m2Handles.end(), *i ))
       same = false;
   if (!same) {
     MSQ_SETERR(err)("Metrics have incompatible lists of evaluation handles.\n",
@@ -521,7 +516,7 @@ bool CompareMetric::evaluate( PatchData& pd,
 bool CompareMetric::evaluate_with_indices( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
+                 std::vector<size_t>& indices,
                  MsqError& err )
 {
   double m2val;
@@ -538,9 +533,9 @@ bool CompareMetric::evaluate_with_indices( PatchData& pd,
   }
   else {
     bool same = (indices.size() == m2Handles.size());
-    msq_std::sort( m2Handles.begin(), m2Handles.end() );
-    for (msq_std::vector<size_t>::iterator i = indices.begin(); i != indices.end(); ++i) 
-      if (!msq_std::binary_search( m2Handles.begin(), m2Handles.end(), *i ))
+    std::sort( m2Handles.begin(), m2Handles.end() );
+    for (std::vector<size_t>::iterator i = indices.begin(); i != indices.end(); ++i) 
+      if (!std::binary_search( m2Handles.begin(), m2Handles.end(), *i ))
         same = false;
     if (!same) {
       MSQ_SETERR(err)(MsqError::INVALID_STATE,
@@ -557,8 +552,8 @@ bool CompareMetric::evaluate_with_indices( PatchData& pd,
 bool CompareMetric::evaluate_with_gradient( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
-                 msq_std::vector<Vector3D>& gradient,
+                 std::vector<size_t>& indices,
+                 std::vector<Vector3D>& gradient,
                  MsqError& err )
 {
   double m2val;
@@ -575,13 +570,13 @@ bool CompareMetric::evaluate_with_gradient( PatchData& pd,
                     r1?"true":"false",value,r2?"true":"false",m2val);
   }
   else {
-    msq_std::vector<size_t>::const_iterator i, j;
-    msq_std::vector<Vector3D>::const_iterator r, s;
+    std::vector<size_t>::const_iterator i, j;
+    std::vector<Vector3D>::const_iterator r, s;
     int grad_diff = 0;
     bool same = (indices.size() == m2Handles.size());
-    msq_std::sort( m2Handles.begin(), m2Handles.end() );
+    std::sort( m2Handles.begin(), m2Handles.end() );
     for (i = indices.begin(); i != indices.end(); ++i) {
-      j = msq_std::lower_bound( m2Handles.begin(), m2Handles.end(), *i );
+      j = std::lower_bound( m2Handles.begin(), m2Handles.end(), *i );
       if (j == m2Handles.end() || *j != *i) {
         same = false;
         continue;
@@ -615,9 +610,9 @@ bool CompareMetric::evaluate_with_gradient( PatchData& pd,
 bool CompareMetric::evaluate_with_Hessian_diagonal( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
-                 msq_std::vector<Vector3D>& gradient,
-                 msq_std::vector<SymMatrix3D>& diagonal,
+                 std::vector<size_t>& indices,
+                 std::vector<Vector3D>& gradient,
+                 std::vector<SymMatrix3D>& diagonal,
                  MsqError& err )
 {
   double m2val;
@@ -635,14 +630,14 @@ bool CompareMetric::evaluate_with_Hessian_diagonal( PatchData& pd,
                     r1?"true":"false",value,r2?"true":"false",m2val);
   }
   else {
-    msq_std::vector<size_t>::const_iterator i, j;
-    msq_std::vector<Vector3D>::const_iterator r, s;
-    msq_std::vector<SymMatrix3D>::const_iterator u, v;
+    std::vector<size_t>::const_iterator i, j;
+    std::vector<Vector3D>::const_iterator r, s;
+    std::vector<SymMatrix3D>::const_iterator u, v;
     int grad_diff = 0, hess_diff = 0;
     bool same = (indices.size() == m2Handles.size());
-    msq_std::sort( m2Handles.begin(), m2Handles.end() );
+    std::sort( m2Handles.begin(), m2Handles.end() );
     for (i = indices.begin(); i != indices.end(); ++i) {
-      j = msq_std::lower_bound( m2Handles.begin(), m2Handles.end(), *i );
+      j = std::lower_bound( m2Handles.begin(), m2Handles.end(), *i );
       if (j == m2Handles.end() || *j != *i) {
         same = false;
         continue;
@@ -689,9 +684,9 @@ bool CompareMetric::evaluate_with_Hessian_diagonal( PatchData& pd,
 bool CompareMetric::evaluate_with_Hessian( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
-                 msq_std::vector<Vector3D>& gradient,
-                 msq_std::vector<Matrix3D>& Hessian,
+                 std::vector<size_t>& indices,
+                 std::vector<Vector3D>& gradient,
+                 std::vector<Matrix3D>& Hessian,
                  MsqError& err )
 {
   double m2val;
@@ -709,13 +704,13 @@ bool CompareMetric::evaluate_with_Hessian( PatchData& pd,
                     r1?"true":"false",value,r2?"true":"false",m2val);
   }
   else {
-    msq_std::vector<size_t>::const_iterator i, j;
-    msq_std::vector<Vector3D>::const_iterator r, s;
+    std::vector<size_t>::const_iterator i, j;
+    std::vector<Vector3D>::const_iterator r, s;
     int grad_diff = 0, hess_diff = 0;
     bool same = (indices.size() == m2Handles.size());
-    msq_std::sort( m2Handles.begin(), m2Handles.end() );
+    std::sort( m2Handles.begin(), m2Handles.end() );
     for (i = indices.begin(); i != indices.end(); ++i) {
-      j = msq_std::lower_bound( m2Handles.begin(), m2Handles.end(), *i );
+      j = std::lower_bound( m2Handles.begin(), m2Handles.end(), *i );
       if (j == m2Handles.end() || *j != *i) {
         same = false;
         continue;
@@ -726,9 +721,9 @@ bool CompareMetric::evaluate_with_Hessian( PatchData& pd,
       if (!equal(*r,*s)) {
         ++grad_diff;
           // call again for so debugger can step into it after failure is found
-        msq_std::vector<size_t> i2;
-        msq_std::vector<Vector3D> g2;
-        msq_std::vector<Matrix3D> h2;
+        std::vector<size_t> i2;
+        std::vector<Vector3D> g2;
+        std::vector<Matrix3D> h2;
         metric2->evaluate_with_Hessian(pd, handle, m2val, i2, g2, h2, err );
       }
     }  
@@ -750,9 +745,9 @@ bool CompareMetric::evaluate_with_Hessian( PatchData& pd,
     else {
       size_t row, col, row2, col2, idx, idx2;
       for (row = idx = 0; row < indices.size(); ++row) {
-        row2 = msq_std::lower_bound( m2Handles.begin(), m2Handles.end(), indices[row] ) - m2Handles.begin();
+        row2 = std::lower_bound( m2Handles.begin(), m2Handles.end(), indices[row] ) - m2Handles.begin();
         for (col = row; col < indices.size(); ++col, ++idx) {
-          col2 = msq_std::lower_bound( m2Handles.begin(), m2Handles.end(), indices[col] ) - m2Handles.begin();
+          col2 = std::lower_bound( m2Handles.begin(), m2Handles.end(), indices[col] ) - m2Handles.begin();
           if (row2 <= col2) {
             idx2 = indices.size()*row2 - row2*(row2+1)/2 + col2;
             if (!equal(Hessian[idx], m2Hess[idx2]))

@@ -85,7 +85,7 @@ UntangleBetaQualityMetric::UntangleBetaQualityMetric(double bet)
     mBeta( bet )
   { }
 
-msq_std::string UntangleBetaQualityMetric::get_name() const
+std::string UntangleBetaQualityMetric::get_name() const
   { return "Untangle Beta"; }
 
 int UntangleBetaQualityMetric::get_negate_flag() const

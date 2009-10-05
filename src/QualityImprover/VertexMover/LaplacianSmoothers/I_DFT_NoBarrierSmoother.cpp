@@ -39,17 +39,12 @@
 
 #include "I_DFT_NoBarrierSmoother.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
+#include <vector>
 using std::vector;
-#endif
-
 
 namespace MESQUITE_NS {
 
-  msq_std::string I_DFT_NoBarrierSmoother::get_name() const 
+  std::string I_DFT_NoBarrierSmoother::get_name() const 
     { return "I_DFT_NoBarrierSmoother"; }
 
     /*!

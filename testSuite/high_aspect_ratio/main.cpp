@@ -47,27 +47,16 @@
 #include "ConjugateGradient.hpp"
 #include "InstructionQueue.hpp"
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#  include <iostream.h>
-#  include <fstream.h>
-#else
-#  include <iostream>
-#  include <fstream>
-#endif
-
-#ifdef MSQ_USE_OLD_C_HEADERS
-# include <stdlib.h>
-# include <stdio.h>
-#else
-# include <cstdlib>
-# include <cstdio>
-#endif
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <cstdio>
 
 using namespace Mesquite;
 
 //! Struct in which to store mesh description
 struct MeshParams { double x, y, w, h; };
-msq_stdio::ostream& operator<<( msq_stdio::ostream& str, const MeshParams& p )
+std::ostream& operator<<( std::ostream& str, const MeshParams& p )
   { return str << p.x << ',' << p.y << ',' << p.w << ',' << p.h; }
 
 //! Default values for parameters.
@@ -91,39 +80,39 @@ enum ExitCodes {
 
 void usage( const char* argv0, bool brief = true )
 {
-  msq_stdio::ostream& str = brief ? msq_stdio::cerr : msq_stdio::cout;
+  std::ostream& str = brief ? std::cerr : std::cout;
   
   str << "Usage: " << argv0 
       << " [-o <output_file>]"
       << " [-f|-F] [-t|-T] [-n|-c] [-i <n>]"
       << " [-m <x>,<y>[,<w>,<h>]]"
       << " [-r <x>,<y>[,<w>,<h>]]"
-      << msq_stdio::endl;
+      << std::endl;
   if (brief) {
-    str << "       " << argv0 << " -h" << msq_stdio::endl;
-    msq_std::exit(USAGE_ERROR);
+    str << "       " << argv0 << " -h" << std::endl;
+    std::exit(USAGE_ERROR);
   }
   
-  str << "  -o  Specify output file (default is \"" << default_out_file << "\")" << msq_stdio::endl
-      << "  -f  Fixed boundary vertices" << msq_stdio::endl
-      << "  -F  Free boundary vertices (default)" << msq_stdio::endl
-      << "  -t  Write VTK timesteps" << msq_stdio::endl
-      << "  -T  Write GNUPlot timesteps" << msq_stdio::endl
-      << "  -m  Specify input mesh parameters (default " << default_mesh << ")" << msq_stdio::endl
-      << "  -r  Specify reference mesh parameters (default " << default_ref << ")" << msq_stdio::endl
-      << "  -n  Use FeasibleNewton solver" << msq_stdio::endl
-      << "  -c  Use ConjugateGradient solver (default)" << msq_stdio::endl
-      << "  -i  Specify number of iterations (default:" << OUTER_ITERATES << ")" << msq_stdio::endl
-      << msq_stdio::endl;
+  str << "  -o  Specify output file (default is \"" << default_out_file << "\")" << std::endl
+      << "  -f  Fixed boundary vertices" << std::endl
+      << "  -F  Free boundary vertices (default)" << std::endl
+      << "  -t  Write VTK timesteps" << std::endl
+      << "  -T  Write GNUPlot timesteps" << std::endl
+      << "  -m  Specify input mesh parameters (default " << default_mesh << ")" << std::endl
+      << "  -r  Specify reference mesh parameters (default " << default_ref << ")" << std::endl
+      << "  -n  Use FeasibleNewton solver" << std::endl
+      << "  -c  Use ConjugateGradient solver (default)" << std::endl
+      << "  -i  Specify number of iterations (default:" << OUTER_ITERATES << ")" << std::endl
+      << std::endl;
   
-  msq_std::exit(NO_ERROR);
+  std::exit(NO_ERROR);
 }
 
 #define CHECKERR \
   if (err) { \
-    msq_stdio::cerr << "Internal error at line " << __LINE__ << ":" << msq_stdio::endl \
-                    << (err) << msq_stdio::endl; \
-    msq_std::exit( LAST_EXIT_CODE + (err).error_code() );  \
+    std::cerr << "Internal error at line " << __LINE__ << ":" << std::endl \
+                    << (err) << std::endl; \
+    std::exit( LAST_EXIT_CODE + (err).error_code() );  \
   } 
 
 
@@ -154,20 +143,20 @@ void parse_options( char* argv[],
                     int argc,
                     MeshParams& mesh,
                     MeshParams& ref,
-                    msq_std::string& output_file,
+                    std::string& output_file,
                     bool& fixed_boundary,
                     TerminationCriterion::TimeStepFileType& write_timesteps,
                     bool& use_feas_newt,
                     int& num_iterations );
 
-msq_std::string base_name( msq_std::string filename );
+std::string base_name( std::string filename );
 
 int main( int argc, char* argv[] )
 {
   MeshParams input_params, reference_params;
   bool fixed_boundary_vertices, feas_newt_solver;
   TerminationCriterion::TimeStepFileType write_timestep_files;
-  msq_std::string output_file_name;
+  std::string output_file_name;
   int num_iterations;
   
   parse_options( argv, argc,
@@ -219,22 +208,22 @@ int main( int argc, char* argv[] )
   int inv, unk;
   qa.get_inverted_element_count( inv, unk, err );
   if (inv) {
-    msq_stdio::cerr << inv << " inverted elements in final mesh" << msq_stdio::endl;
+    std::cerr << inv << " inverted elements in final mesh" << std::endl;
     return INVERTED_ELEMENT;
   }
   else if (unk) {
-    msq_stdio::cerr << unk << " degenerate elements in final mesh" << msq_stdio::endl;
+    std::cerr << unk << " degenerate elements in final mesh" << std::endl;
     return DEGENERATE_ELEMENT;
   }
     
     // find the free vertex
-  msq_std::vector<Mesh::VertexHandle> vertices;
+  std::vector<Mesh::VertexHandle> vertices;
   mesh.get_all_vertices( vertices, err );
   if (vertices.empty()) {
     std::cerr << "Mesh contains no vertices" << std::endl;
     return USAGE_ERROR;
   }
-  msq_std::vector<unsigned short> dof( vertices.size(), -1 );
+  std::vector<unsigned short> dof( vertices.size(), -1 );
   domain.domain_DoF( &vertices[0], &dof[0], vertices.size(), err ); CHECKERR
   int idx = std::find(dof.begin(), dof.end(), 2) - dof.begin();
   const Mesh::VertexHandle free_vertex = vertices[idx];
@@ -250,8 +239,8 @@ int main( int argc, char* argv[] )
   // than when we started. 
   const Vector3D init( input_params.x, input_params.y, 0 );
   if ((coords - expect).length() > (init - expect).length()) {
-    msq_stdio::cerr << "Vertex moved away from expected optimal position: "
-                    << "(" << coords[0] << ", " << coords[1] << msq_stdio::endl;
+    std::cerr << "Vertex moved away from expected optimal position: "
+                    << "(" << coords[0] << ", " << coords[1] << std::endl;
     return WRONG_DIRECTION;
   }
   
@@ -260,9 +249,9 @@ int main( int argc, char* argv[] )
   const double MIN_FRACT = 0.2; // 20% of the way in 10 iterations
   const double fract = (coords - init).length() / (expect - init).length();
   if (fract < MIN_FRACT) {
-    msq_stdio::cerr << "Vertex far from optimimal location" << msq_stdio::endl
-                    << "  Expected: (" << expect[0] << ", " << expect[1] << ", " << expect[2] << ")" << msq_stdio::endl
-                    << "  Actual:   (" << coords[0] << ", " << coords[1] << ", " << coords[2] << ")" << msq_stdio::endl;
+    std::cerr << "Vertex far from optimimal location" << std::endl
+                    << "  Expected: (" << expect[0] << ", " << expect[1] << ", " << expect[2] << ")" << std::endl
+                    << "  Actual:   (" << coords[0] << ", " << coords[1] << ", " << coords[2] << ")" << std::endl;
     return FAR_FROM_TARGET;
   }
   
@@ -271,9 +260,9 @@ int main( int argc, char* argv[] )
   if (fabs(coords[0] - expect[0]) > EPS * input_params.w ||
       fabs(coords[1] - expect[1]) > EPS * input_params.h ||
       fabs(expect[2]            ) > EPS                  ) {
-    msq_stdio::cerr << "Vertex not at optimimal location" << msq_stdio::endl
-                    << "  Expected: (" << expect[0] << ", " << expect[1] << ", " << expect[2] << ")" << msq_stdio::endl
-                    << "  Actual:   (" << coords[0] << ", " << coords[1] << ", " << coords[2] << ")" << msq_stdio::endl;
+    std::cerr << "Vertex not at optimimal location" << std::endl
+                    << "  Expected: (" << expect[0] << ", " << expect[1] << ", " << expect[2] << ")" << std::endl
+                    << "  Actual:   (" << coords[0] << ", " << coords[1] << ", " << coords[2] << ")" << std::endl;
     return NOT_AT_TARGET;
   }
   
@@ -283,9 +272,9 @@ int main( int argc, char* argv[] )
 
 void parse_mesh_params( const char* argv, const char* arg, MeshParams& result )
 {
-  int c = msq_std::sscanf( arg, "%lf,%lf,%lf,%lf", &result.x, &result.y, &result.w, &result.h );
+  int c = std::sscanf( arg, "%lf,%lf,%lf,%lf", &result.x, &result.y, &result.w, &result.h );
   if (c != 2 && c != 4) {
-    msq_stdio::cerr << "Error parsing mesh dimensions: \"" << arg << '"' << msq_stdio::endl;
+    std::cerr << "Error parsing mesh dimensions: \"" << arg << '"' << std::endl;
     usage(argv);
   }
 }
@@ -296,7 +285,7 @@ void parse_options( char* argv[],
                     int argc,
                     MeshParams& mesh,
                     MeshParams& ref,
-                    msq_std::string& output_file,
+                    std::string& output_file,
                     bool& fixed_boundary,
                     TerminationCriterion::TimeStepFileType& write_timesteps,
                     bool& feas_newt_solver,
@@ -333,7 +322,7 @@ void parse_options( char* argv[],
         break;
       case OPEN:
         if (argv[i][0] != '-' || argv[i][1] == '\0' || argv[i][2] != '\0') {
-          msq_stdio::cerr << "Unexpected argument: \"" << argv[i] << '"' << msq_stdio::endl;
+          std::cerr << "Unexpected argument: \"" << argv[i] << '"' << std::endl;
           usage(argv[0]);
         }
         
@@ -363,47 +352,47 @@ void create_input_mesh( const MeshParams& p,
 {
   const double z = 0;
   const int F = all_fixed;
-  msq_stdio::ofstream vtkfile( temp_file );
+  std::ofstream vtkfile( temp_file );
   double bx = all_fixed ? 0.5 * p.w : p.x;
   double by = all_fixed ? 0.5 * p.h : p.y;
-  vtkfile << "# vtk DataFile Version 3.0" << msq_stdio::endl
-          << "Mesquite High Aspect Ratio test" << msq_stdio::endl
-          << "ASCII" << msq_stdio::endl
-          << "DATASET UNSTRUCTURED_GRID" << msq_stdio::endl
-          << "POINTS 9 float" << msq_stdio::endl
-          << 0.0 << ' ' << 0.0 << ' ' << z << msq_stdio::endl
-          << bx  << ' ' << 0.0 << ' ' << z << msq_stdio::endl
-          << p.w << ' ' << 0.0 << ' ' << z << msq_stdio::endl
-          << 0.0 << ' ' << by  << ' ' << z << msq_stdio::endl
-          << p.x << ' ' << p.y << ' ' << z << msq_stdio::endl
-          << p.w << ' ' << by  << ' ' << z << msq_stdio::endl
-          << 0.0 << ' ' << p.h << ' ' << z << msq_stdio::endl
-          << bx  << ' ' << p.h << ' ' << z << msq_stdio::endl
-          << p.w << ' ' << p.h << ' ' << z << msq_stdio::endl
-          << "CELLS 4 20" << msq_stdio::endl
-          << "4 0 1 4 3" << msq_stdio::endl
-          << "4 1 2 5 4" << msq_stdio::endl
-          << "4 4 5 8 7" << msq_stdio::endl
-          << "4 3 4 7 6" << msq_stdio::endl
-          << "CELL_TYPES 4" << msq_stdio::endl
-          << "9 9 9 9" << msq_stdio::endl
-          << "POINT_DATA 9" << msq_stdio::endl
-          << "SCALARS fixed int" << msq_stdio::endl
-          << "LOOKUP_TABLE default" << msq_stdio::endl
-          << "1 " << F << " 1" << msq_stdio::endl
-          <<  F << " 0 " << F  << msq_stdio::endl
-          << "1 " << F << " 1" << msq_stdio::endl
+  vtkfile << "# vtk DataFile Version 3.0" << std::endl
+          << "Mesquite High Aspect Ratio test" << std::endl
+          << "ASCII" << std::endl
+          << "DATASET UNSTRUCTURED_GRID" << std::endl
+          << "POINTS 9 float" << std::endl
+          << 0.0 << ' ' << 0.0 << ' ' << z << std::endl
+          << bx  << ' ' << 0.0 << ' ' << z << std::endl
+          << p.w << ' ' << 0.0 << ' ' << z << std::endl
+          << 0.0 << ' ' << by  << ' ' << z << std::endl
+          << p.x << ' ' << p.y << ' ' << z << std::endl
+          << p.w << ' ' << by  << ' ' << z << std::endl
+          << 0.0 << ' ' << p.h << ' ' << z << std::endl
+          << bx  << ' ' << p.h << ' ' << z << std::endl
+          << p.w << ' ' << p.h << ' ' << z << std::endl
+          << "CELLS 4 20" << std::endl
+          << "4 0 1 4 3" << std::endl
+          << "4 1 2 5 4" << std::endl
+          << "4 4 5 8 7" << std::endl
+          << "4 3 4 7 6" << std::endl
+          << "CELL_TYPES 4" << std::endl
+          << "9 9 9 9" << std::endl
+          << "POINT_DATA 9" << std::endl
+          << "SCALARS fixed int" << std::endl
+          << "LOOKUP_TABLE default" << std::endl
+          << "1 " << F << " 1" << std::endl
+          <<  F << " 0 " << F  << std::endl
+          << "1 " << F << " 1" << std::endl
           ;
           
   mesh.read_vtk( temp_file, err );
-  msq_std::remove( temp_file );
+  std::remove( temp_file );
   MSQ_CHKERR(err);
 }
   
-msq_std::string base_name( msq_std::string filename )
+std::string base_name( std::string filename )
 {
-  msq_std::string::size_type i = filename.rfind(".");
-  if (!i || i == msq_std::string::npos)
+  std::string::size_type i = filename.rfind(".");
+  if (!i || i == std::string::npos)
     return filename;
   else
     return filename.substr( 0, i );

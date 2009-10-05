@@ -37,7 +37,7 @@ namespace MESQUITE_NS
   /*! \class CylinderDomain
        Define the geometry of an unbounded cylinder.
     */
-  class CylinderDomain : public Mesquite::MeshDomain
+  class MESQUITE_EXPORT CylinderDomain : public Mesquite::MeshDomain
   {
   public:
       /**

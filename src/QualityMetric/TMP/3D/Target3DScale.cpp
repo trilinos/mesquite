@@ -36,7 +36,7 @@
 
 namespace MESQUITE_NS {
 
-msq_std::string Target3DScale::get_name() const
+std::string Target3DScale::get_name() const
   { return "scale(" + mMetric->get_name() + ')'; }
 
 bool Target3DScale::evaluate( const MsqMatrix<3,3>& A, 

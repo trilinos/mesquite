@@ -189,7 +189,7 @@ void PatchDataTestNormals::test_get_corner_normals_infinite_domain()
     // All corners of the element lie on the unit sphere and
     // thus the normal should be the same as the location.
   const size_t elem_index = 0;
-  msq_std::vector<Vector3D> coords;
+  std::vector<Vector3D> coords;
   Vector3D normals[4];
   unboundedMesh.get_element_vertex_coordinates( elem_index, coords, err );
   CPPUNIT_ASSERT( !err );
@@ -206,7 +206,7 @@ void PatchDataTestNormals::test_get_corner_normals_infinite_domain()
 void PatchDataTestNormals::test_get_corner_normals_bounded_domain()
 {
   MsqPrintError err(cout);
-  msq_std::vector<Vector3D> coords;
+  std::vector<Vector3D> coords;
   Vector3D normals[4];
   
     // Element 0 is a quad in the plane X=1/sqrt(2).  Two of

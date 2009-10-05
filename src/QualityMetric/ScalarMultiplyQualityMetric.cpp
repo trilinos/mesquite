@@ -39,13 +39,13 @@
 
 using namespace Mesquite;
 
-msq_std::string ScalarMultiplyQualityMetric::get_name() const
+std::string ScalarMultiplyQualityMetric::get_name() const
 {
-  return msq_std::string("Scale(") + mMetric->get_name() + ")";
+  return std::string("Scale(") + mMetric->get_name() + ")";
 }
 
 void ScalarMultiplyQualityMetric::get_evaluations( PatchData& pd, 
-                                              msq_std::vector<size_t>& handles, 
+                                              std::vector<size_t>& handles, 
                                               bool free_vertices_only,
                                               MsqError& err )
 { 
@@ -63,7 +63,7 @@ bool ScalarMultiplyQualityMetric::evaluate( PatchData& pd, size_t handle, double
 bool ScalarMultiplyQualityMetric::evaluate_with_indices( PatchData& pd,
                                                     size_t handle,
                                                     double& value,
-                                                    msq_std::vector<size_t>& indices,
+                                                    std::vector<size_t>& indices,
                                                     MsqError& err )
 {
   bool rval = mMetric->evaluate_with_indices( pd, handle, value, indices, err );
@@ -74,13 +74,13 @@ bool ScalarMultiplyQualityMetric::evaluate_with_indices( PatchData& pd,
 bool ScalarMultiplyQualityMetric::evaluate_with_gradient( PatchData& pd,
                                                    size_t handle,
                                                    double& value,
-                                                   msq_std::vector<size_t>& indices,
-                                                   msq_std::vector<Vector3D>& gradient,
+                                                   std::vector<size_t>& indices,
+                                                   std::vector<Vector3D>& gradient,
                                                    MsqError& err )
 {
   bool rval = mMetric->evaluate_with_gradient( pd, handle, value, indices, gradient, err );
   value *= mScale;
-  for (msq_std::vector<Vector3D>::iterator i = gradient.begin();
+  for (std::vector<Vector3D>::iterator i = gradient.begin();
        i != gradient.end(); ++i)
     *i *= mScale;
   return !MSQ_CHKERR(err) && rval;
@@ -90,17 +90,17 @@ bool ScalarMultiplyQualityMetric::evaluate_with_gradient( PatchData& pd,
 bool ScalarMultiplyQualityMetric::evaluate_with_Hessian( PatchData& pd,
                                                   size_t handle,
                                                   double& value,
-                                                  msq_std::vector<size_t>& indices,
-                                                  msq_std::vector<Vector3D>& gradient,
-                                                  msq_std::vector<Matrix3D>& Hessian,
+                                                  std::vector<size_t>& indices,
+                                                  std::vector<Vector3D>& gradient,
+                                                  std::vector<Matrix3D>& Hessian,
                                                   MsqError& err )
 {
   bool rval = mMetric->evaluate_with_Hessian( pd, handle, value, indices, gradient, Hessian, err );
   value *= mScale;
-  for (msq_std::vector<Vector3D>::iterator i = gradient.begin();
+  for (std::vector<Vector3D>::iterator i = gradient.begin();
        i != gradient.end(); ++i)
     *i *= mScale;
-  for (msq_std::vector<Matrix3D>::iterator j = Hessian.begin();
+  for (std::vector<Matrix3D>::iterator j = Hessian.begin();
        j != Hessian.end(); ++j)
     *j *= mScale;
   return !MSQ_CHKERR(err) && rval;

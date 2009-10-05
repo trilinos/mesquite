@@ -112,7 +112,7 @@ void MeshImplTest::dump_mesh( const char* filename, MeshImpl& mesh, MsqError& er
 
 void MeshImplTest::skin_mesh_2D()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   const char vtk_file[] = 
     "#vtk DataFile Version 2.0\n"
     "test data for MeshImplTest::skin_mesh_2D\n"
@@ -127,12 +127,12 @@ void MeshImplTest::skin_mesh_2D()
   CPPUNIT_ASSERT(!err);
   dump_mesh( "MeshSkin2D.vtk", mesh, err );
   
-  msq_std::vector<Mesh::VertexHandle> verts;
+  std::vector<Mesh::VertexHandle> verts;
   mesh.get_all_vertices( verts, err );
   CPPUNIT_ASSERT(!err);
   
-  msq_std::vector<Mesh::VertexHandle> elems;
-  msq_std::vector<size_t> offsets;
+  std::vector<Mesh::VertexHandle> elems;
+  std::vector<size_t> offsets;
   
   
   for (unsigned i = 0; i < verts.size(); ++i) {
@@ -154,7 +154,7 @@ void MeshImplTest::skin_mesh_2D()
 
 void MeshImplTest::skin_mesh_3D()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   const char vtk_file[] = 
     "#vtk DataFile Version 2.0\n"
     "test data for MeshImplTest::skin_mesh_3D\n"
@@ -169,12 +169,12 @@ void MeshImplTest::skin_mesh_3D()
   CPPUNIT_ASSERT(!err);
   dump_mesh( "MeshSkin3D.vtk", mesh, err );
   
-  msq_std::vector<Mesh::VertexHandle> verts;
+  std::vector<Mesh::VertexHandle> verts;
   mesh.get_all_vertices( verts, err );
   CPPUNIT_ASSERT(!err);
   
-  msq_std::vector<Mesh::VertexHandle> elems;
-  msq_std::vector<size_t> offsets;
+  std::vector<Mesh::VertexHandle> elems;
+  std::vector<size_t> offsets;
   
   
   for (unsigned i = 0; i < verts.size(); ++i) {
@@ -201,7 +201,7 @@ void MeshImplTest::skin_mesh_3D()
 // side of a volume element.
 void MeshImplTest::skin_mesh_mixed()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
     // define the mesh of a tetrahedron centered
     // at the origin as four tetrahedral elements
     // sharing a vertex at the origin.
@@ -230,7 +230,7 @@ void MeshImplTest::skin_mesh_mixed()
   CPPUNIT_ASSERT(!err);
   dump_mesh( "MeshSkinMixed.vtk", mesh, err );
   
-  msq_std::vector<Mesh::VertexHandle> verts;
+  std::vector<Mesh::VertexHandle> verts;
   mesh.get_all_vertices( verts, err );
   CPPUNIT_ASSERT(!err);
   CPPUNIT_ASSERT_EQUAL(5u, (unsigned)verts.size());
@@ -257,7 +257,7 @@ void MeshImplTest::skin_mesh_mixed()
 
 void MeshImplTest::skin_mesh_higher_order()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
     // define a simple 2-quad mesh:
     //
     //  0    1    2    3    4
@@ -303,7 +303,7 @@ void MeshImplTest::skin_mesh_higher_order()
   CPPUNIT_ASSERT(!err);
   dump_mesh( "MeshSkinHO.vtk", mesh, err );
   
-  msq_std::vector<Mesh::VertexHandle> verts;
+  std::vector<Mesh::VertexHandle> verts;
   mesh.get_all_vertices( verts, err );
   CPPUNIT_ASSERT(!err);
   CPPUNIT_ASSERT_EQUAL(13u, (unsigned)verts.size());

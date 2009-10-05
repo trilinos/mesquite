@@ -34,15 +34,15 @@
 namespace MESQUITE_NS {
 
 void ElementPatches::get_patch_handles( 
-                             msq_std::vector<PatchHandle>& patch_handles_out,
+                             std::vector<PatchHandle>& patch_handles_out,
                              MsqError& err )
 {
   get_mesh()->get_all_elements( patch_handles_out, err ); MSQ_CHKERR(err);
 }
 
 void ElementPatches::get_patch( PatchHandle patch_handle,
-                     msq_std::vector<Mesh::ElementHandle>& elem_handles_out,
-                     msq_std::vector<Mesh::VertexHandle>& free_vertices_out,
+                     std::vector<Mesh::ElementHandle>& elem_handles_out,
+                     std::vector<Mesh::VertexHandle>& free_vertices_out,
                      MsqError& )
 {
   elem_handles_out.clear();

@@ -41,10 +41,14 @@
 #include "Bits.hpp"
 #include "Sample.hpp"
 
+#ifdef _MSC_VER
+# pragma warning( 4 : 4715 )
+#endif
+
 namespace MESQUITE_NS {
 
 /** Utility class for storing one boolean mark/flag for each node in an element */
-class NodeSet {
+class MESQUITE_EXPORT NodeSet {
   public:
     typedef unsigned BitSet;
     
@@ -294,7 +298,7 @@ class NodeSet {
 
 //! Print bits in reverse order (least-signficant to most-significant,
 //! or corner 0 to mid-region).
-msq_stdio::ostream& operator<<( msq_stdio::ostream& s, NodeSet set );
+std::ostream& operator<<( std::ostream& s, NodeSet set );
       
     //! Set all corner nodes
 void NodeSet::set_all_corner_nodes( EntityTopology type )

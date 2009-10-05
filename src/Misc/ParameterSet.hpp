@@ -28,11 +28,7 @@
 #define MESQUITE_PARAMETER_SET_HPP
 
 
-#ifdef MSQ_USE_OLD_C_HEADERS
-#  include <stddef.h>
-#else
-#  include <cstddef>
-#endif
+#include <cstddef>
 
 #include "Mesquite.hpp"
 #include "MsqError.hpp"
@@ -83,12 +79,12 @@ namespace MESQUITE_NS
     };
     
     ParameterRecord* mParameterArray;
-    msq_stdc::size_t mNumParameters;
+    std::size_t mNumParameters;
     
       // returns the 0-based index of where the parameter
       // with the given name can be found in mParameterArray,
       // or mNumParameters if it can't be found.
-    msq_stdc::size_t get_parameter_index(const char* name, MsqError &err);
+    std::size_t get_parameter_index(const char* name, MsqError &err);
     
     void generic_add_parameter(const char* name, MsqError &err);
   };

@@ -39,9 +39,9 @@
 
 namespace MESQUITE_NS {
 
-msq_std::string process_itaps_error( int ierr )
+std::string process_itaps_error( int ierr )
 {
-  msq_std::string result( "ITAPS ERROR: " );
+  std::string result( "ITAPS ERROR: " );
   switch (ierr) {
     case iBase_MESH_ALREADY_LOADED:      result += "File Already Loaded";   break;
     case iBase_NO_MESH_DATA:             result += "No Mesh";               break;
@@ -67,7 +67,7 @@ msq_std::string process_itaps_error( int ierr )
     case iBase_NOT_SUPPORTED:            result += "Not Supported";         break;
     default:                             result += "Uknown/Internal Error"; break;
   }
-  MSQ_DBGOUT(1) << result << msq_stdio::endl;
+  MSQ_DBGOUT(1) << result << std::endl;
   return result;
 }
 

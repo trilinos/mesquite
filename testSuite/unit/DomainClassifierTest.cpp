@@ -61,10 +61,10 @@ private:
 public:
 
   typedef DomainClassifier::DomainSet DomSet;
-  typedef msq_std::vector<DomSet> DomSetList;
+  typedef std::vector<DomSet> DomSetList;
   MeshImpl myMesh;
   DomSetList myDomains;
-  msq_std::vector<int> domainDims;
+  std::vector<int> domainDims;
   
   void setUp();
   void tearDown();
@@ -111,14 +111,14 @@ static void print_domain( int i, DomainClassifier::DomainSet& set )
   
   if (!set.vertices.empty()) {
     printf("  vertices: ");
-    msq_std::vector<Mesh::VertexHandle>::iterator vi = set.vertices.begin();
+    std::vector<Mesh::VertexHandle>::iterator vi = set.vertices.begin();
     for (; vi != set.vertices.end(); ++vi)
       printf( "%lu, ", (unsigned long)*vi);
     printf("\n");
   }
   if (!set.elements.empty()) {
     printf("  elements: ");
-    msq_std::vector<Mesh::ElementHandle>::iterator ei = set.elements.begin();
+    std::vector<Mesh::ElementHandle>::iterator ei = set.elements.begin();
     for (; ei != set.elements.end(); ++ei)
       printf( "%lu, ", (unsigned long)*ei);
     printf("\n");
@@ -283,13 +283,13 @@ void DomainClassifierTest::setUp()
     fputs( "9\n", file );
   
   fclose( file );
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   myMesh.read_vtk( filename, err );
   remove( filename );
   CPPUNIT_ASSERT(!err);
 
-  msq_std::vector<Mesh::VertexHandle> verts;
-  msq_std::vector<Mesh::ElementHandle> elems;
+  std::vector<Mesh::VertexHandle> verts;
+  std::vector<Mesh::ElementHandle> elems;
   myMesh.get_all_vertices(verts, err);
   CPPUNIT_ASSERT(!err);
   CPPUNIT_ASSERT_EQUAL( (size_t)64, verts.size() );
@@ -394,8 +394,8 @@ void DomainClassifierTest::tearDown()
 
 void DomainClassifierTest::check_domain( DomainClassifier& domain )
 {
-  msq_std::vector<Mesh::VertexHandle> vertices, cverts;
-  msq_std::vector<Mesh::ElementHandle> elements, celems;
+  std::vector<Mesh::VertexHandle> vertices, cverts;
+  std::vector<Mesh::ElementHandle> elements, celems;
   
     // Check that, for each entity with a domain, the 
     // DomainClassifier instance returns that domain.
@@ -417,10 +417,10 @@ void DomainClassifierTest::check_domain( DomainClassifier& domain )
   }
   
     // sort cverts and celems so we can do binary_search later
-  msq_std::sort( cverts.begin(), cverts.end() );
-  msq_std::sort( celems.begin(), celems.end() );
+  std::sort( cverts.begin(), cverts.end() );
+  std::sort( celems.begin(), celems.end() );
     // get all vertices and elements in mesh
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   myMesh.get_all_vertices( vertices, err );
   CPPUNIT_ASSERT(!err);
   myMesh.get_all_elements( elements, err );
@@ -429,7 +429,7 @@ void DomainClassifierTest::check_domain( DomainClassifier& domain )
     // For each vertex not in a domain (not in cverts), make sure
     // that the domain is NULL.
   for (size_t i = 0; i < vertices.size(); ++i) {
-    if (msq_std::binary_search( cverts.begin(), cverts.end(), vertices[i] ))
+    if (std::binary_search( cverts.begin(), cverts.end(), vertices[i] ))
       continue;
     
     const MeshDomain* ptr = domain.find_vertex_domain( vertices[i] );
@@ -438,7 +438,7 @@ void DomainClassifierTest::check_domain( DomainClassifier& domain )
     // For each element not in a domain (not in celems), make sure
     // that the domain is NULL.
   for (size_t i = 0; i < elements.size(); ++i) {
-    if (msq_std::binary_search( celems.begin(), celems.end(), elements[i] ))
+    if (std::binary_search( celems.begin(), celems.end(), elements[i] ))
       continue;
     
     const MeshDomain* ptr = domain.find_element_domain( elements[i] );
@@ -448,7 +448,7 @@ void DomainClassifierTest::check_domain( DomainClassifier& domain )
 
 void DomainClassifierTest::test_classify_by_handle()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   DomainClassifier domain;
   DomainClassifier::classify_by_handle( domain, &myMesh,
                                         &myDomains[0], myDomains.size(),
@@ -460,7 +460,7 @@ void DomainClassifierTest::test_classify_by_handle()
 
 void DomainClassifierTest::test_valid_classification()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   DomainClassifier domain;
   DomainClassifier::classify_by_handle( domain, &myMesh,
                                         &myDomains[0], myDomains.size(),
@@ -475,16 +475,16 @@ void DomainClassifierTest::test_classify_by_tag()
 {
   CPPUNIT_ASSERT( !myDomains.empty() );
   
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   int def = myDomains.size();
   TagHandle tag = myMesh.tag_create( "domain", Mesh::INT, 1, &def, err );
   CPPUNIT_ASSERT(!err);
   
-  msq_std::vector<MeshDomain*> dom_list;
-  msq_std::vector<int> id_list;
+  std::vector<MeshDomain*> dom_list;
+  std::vector<int> id_list;
   for (unsigned i = 0; i < myDomains.size(); ++i) {
-    msq_std::vector<int> vtx_data( myDomains[i].vertices.size(), i );
-    msq_std::vector<int> elm_data( myDomains[i].elements.size(), i );
+    std::vector<int> vtx_data( myDomains[i].vertices.size(), i );
+    std::vector<int> elm_data( myDomains[i].elements.size(), i );
     if (!vtx_data.empty()) {
       myMesh.tag_set_vertex_data( tag, vtx_data.size(), 
                                   &(myDomains[i].vertices[0]),
@@ -518,8 +518,8 @@ void DomainClassifierTest::test_classify_skin()
 {
   CPPUNIT_ASSERT( !myDomains.empty() );
 
-  MsqPrintError err(msq_stdio::cerr);
-  msq_std::vector<MeshDomain*> arr( myDomains.size() );
+  MsqPrintError err(std::cerr);
+  std::vector<MeshDomain*> arr( myDomains.size() );
   for (size_t i = 0; i < myDomains.size(); ++i)
     arr[i] = myDomains[i].domain;
     
@@ -537,8 +537,8 @@ void DomainClassifierTest::test_classify_by_geometry()
 {
   CPPUNIT_ASSERT( !myDomains.empty() );
 
-  MsqPrintError err(msq_stdio::cerr);
-  msq_std::vector<MeshDomain*> arr( myDomains.size() );
+  MsqPrintError err(std::cerr);
+  std::vector<MeshDomain*> arr( myDomains.size() );
   for (size_t i = 0; i < myDomains.size(); ++i)
     arr[i] = myDomains[i].domain;
     

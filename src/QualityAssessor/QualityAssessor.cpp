@@ -44,25 +44,12 @@
 #include "ParallelMeshInterface.hpp"
 #include "ParallelHelperInterface.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <list.h>
-#  include <vector.h>
-#else
-#  include <list>
-#  include <vector>
-#endif
-
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#  include <iostream.h>
-#  include <fstream.h>
-#  include <iomanip.h>
-#  include <set.h>
-#else
-#  include <iostream>
-#  include <fstream>
-#  include <iomanip>
-#  include <set>
-#endif
+#include <list>
+#include <vector>
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <set>
 
 #ifdef HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
@@ -86,11 +73,11 @@ const char* default_name( bool free_only )
 QualityAssessor::QualityAssessor( bool print_summary,
                                   bool free_only,
                                   const char* inverted_tag_name,
-                                  msq_std::string name) :
+                                  std::string name) :
   qualityAssessorName(name),
   invertedElementCount(-1),
   invertedSampleCount(-1),
-  outputStream( msq_stdio::cout ),
+  outputStream( std::cout ),
   printSummary( print_summary ),
   skipFixedSamples(free_only)
 {
@@ -101,10 +88,10 @@ QualityAssessor::QualityAssessor( bool print_summary,
     qualityAssessorName = default_name( free_only );
 }
 
-QualityAssessor::QualityAssessor( msq_stdio::ostream& stream,
+QualityAssessor::QualityAssessor( std::ostream& stream,
                                   bool free_only,
                                   const char* inverted_tag_name,
-                                  msq_std::string name) :
+                                  std::string name) :
   qualityAssessorName(name),
   invertedElementCount(-1),
   invertedSampleCount(-1),
@@ -119,14 +106,14 @@ QualityAssessor::QualityAssessor( msq_stdio::ostream& stream,
     qualityAssessorName = default_name( free_only );
 }
 
-QualityAssessor::QualityAssessor( msq_stdio::ostream& output_stream,
+QualityAssessor::QualityAssessor( std::ostream& output_stream,
                                   QualityMetric* metric, 
                                   int histogram_intervals,
                                   double power_mean,
                                   bool free_only,
                                   const char* metric_value_tag_name,
                                   const char* inverted_tag_name,
-                                  msq_std::string name ) :
+                                  std::string name ) :
   qualityAssessorName(name),
   invertedElementCount(-1),
   invertedSampleCount(-1),
@@ -150,11 +137,11 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
                                   const char* metric_value_tag_name,
                                   bool print_summary,
                                   const char* inverted_tag_name,
-                                  msq_std::string name) :
+                                  std::string name) :
   qualityAssessorName(name),
   invertedElementCount(-1),
   invertedSampleCount(-1),
-  outputStream( msq_stdio::cout ),
+  outputStream( std::cout ),
   printSummary( print_summary ),
   skipFixedSamples(free_only)
 {
@@ -335,7 +322,7 @@ TagHandle QualityAssessor::get_tag( Mesh* mesh,
   TagHandle tag  = mesh->tag_get( name, err );
   if (!err) {
     Mesh::TagType exist_type;
-    msq_std::string junk;
+    std::string junk;
     unsigned exist_size;
     mesh->tag_properties( tag, junk, exist_type, exist_size, err ); MSQ_ERRZERO(err);
     if (type != exist_type || size != exist_size) {
@@ -415,11 +402,11 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
   VertexPatches vert_patches(1,false);
   vert_patches.set_mesh( mesh );
   
-  msq_std::vector<PatchSet::PatchHandle> patches;
-  msq_std::vector<PatchSet::PatchHandle>::iterator p;
-  msq_std::vector<Mesh::VertexHandle> patch_verts;
-  msq_std::vector<Mesh::ElementHandle> patch_elems;
-  msq_std::vector<size_t> metric_handles;
+  std::vector<PatchSet::PatchHandle> patches;
+  std::vector<PatchSet::PatchHandle>::iterator p;
+  std::vector<Mesh::VertexHandle> patch_verts;
+  std::vector<Mesh::ElementHandle> patch_elems;
+  std::vector<size_t> metric_handles;
 
     // Check if we really need the helper
   if (helper && helper->get_nprocs() == 1) helper = 0;
@@ -537,7 +524,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
           metric_handles.clear();
           QualityMetric* qm = iter->get_metric();
           qm->get_single_pass( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
-          for (msq_std::vector<size_t>::iterator j = metric_handles.begin(); 
+          for (std::vector<size_t>::iterator j = metric_handles.begin(); 
                j != metric_handles.end(); ++j) 
           {
             bool valid = iter->get_metric()->evaluate( patch, *j, value, err ); MSQ_ERRZERO(err);
@@ -559,7 +546,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
           metric_handles.clear();
           QualityMetric* qm = iter->get_metric();
           qm->get_evaluations( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
-          for (msq_std::vector<size_t>::iterator j = metric_handles.begin(); 
+          for (std::vector<size_t>::iterator j = metric_handles.begin(); 
                j != metric_handles.end(); ++j) 
           {
             double value;
@@ -618,7 +605,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
             metric_handles.clear();
             QualityMetric* qm = iter->get_metric();
             qm->get_single_pass( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
-            for (msq_std::vector<size_t>::iterator j = metric_handles.begin(); 
+            for (std::vector<size_t>::iterator j = metric_handles.begin(); 
                  j != metric_handles.end(); ++j) 
             {
               bool valid = iter->get_metric()->evaluate( patch, *j, value, err ); MSQ_ERRZERO(err);
@@ -639,7 +626,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
             metric_handles.clear();
             QualityMetric* qm = iter->get_metric();
             qm->get_evaluations( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
-            for (msq_std::vector<size_t>::iterator j = metric_handles.begin(); 
+            for (std::vector<size_t>::iterator j = metric_handles.begin(); 
                  j != metric_handles.end(); ++j) 
             {
               double value;
@@ -740,7 +727,7 @@ const QualityAssessor::Assessor* QualityAssessor::get_results( QualityMetric* me
 
 void QualityAssessor::Assessor:: get_histogram( double& lower_bound_out,
                                                 double& upper_bound_out,
-                                                msq_std::vector<int>& counts_out,
+                                                std::vector<int>& counts_out,
                                                 MsqError& err ) const 
 {
   if ( !have_histogram() )
@@ -833,42 +820,42 @@ void QualityAssessor::Assessor::calculate_histogram_range()
   histMax = size *  ceil( maximum / size );
 }  
 
-void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
+void QualityAssessor::print_summary( std::ostream& stream ) const
 {
   const int NAMEW = 19;  // Width of name column in table output
   const int NUMW = 12;   // Width of value columns in table output
   
     // Print title
-  stream << msq_stdio::endl 
+  stream << std::endl 
          << "************** " 
          << qualityAssessorName
          << " Summary **************"
-         << msq_stdio::endl
-         << msq_stdio::endl;
+         << std::endl
+         << std::endl;
          
   if (freeElementCount != elementCount)
     stream << "  Evaluating quality for " << freeElementCount 
            << " free elements of " << elementCount 
-           << " total elements." << msq_stdio::endl;
+           << " total elements." << std::endl;
   else
     stream << "  Evaluating quality for " << elementCount 
-           << " elements." << msq_stdio::endl;
+           << " elements." << std::endl;
   
   if (invertedElementCount) {
     stream << "  THERE ARE "
            << invertedElementCount
            << " INVERTED ELEMENTS. "
-           << msq_stdio::endl
+           << std::endl
            << "  (Elements invalid at "
            << invertedSampleCount
            << " of " << sampleCount
            << " sample locations.)"
-           << msq_stdio::endl
-           << msq_stdio::endl;
+           << std::endl
+           << std::endl;
   }
   else {
     stream << "  There were no inverted elements detected. "
-           << msq_stdio::endl;
+           << std::endl;
   }
   
     // Check if there are invalid values for any metric
@@ -881,16 +868,16 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
              << " OF " << iter->get_count()
              << " ENTITIES EVALUATED TO AN UNDEFINED VALUE FOR " 
              << iter->get_metric()->get_name()
-             << msq_stdio::endl << msq_stdio::endl;
+             << std::endl << std::endl;
     }
   }
   if (!some_invalid) {
     stream << "  No entities had undefined values for any computed metric." 
-           << msq_stdio::endl << msq_stdio::endl;
+           << std::endl << std::endl;
   }
          
     // Check if a user-define power-mean was calculated for any of the metrics
-  msq_std::set<double> pmeans;
+  std::set<double> pmeans;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
     if (iter->have_power_mean())
       pmeans.insert( iter->get_power() );
@@ -928,57 +915,57 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
     
     // print comlumn label line
   std::set<double>::const_iterator piter;
-  stream << msq_stdio::setw(namewidth) << "metric";
-  stream << msq_stdio::setw(NUMW)      << "minimum";
+  stream << std::setw(namewidth) << "metric";
+  stream << std::setw(NUMW)      << "minimum";
   for (piter = pmeans.begin(); piter != pmeans.end() && *piter < 1.0; ++piter)
-    stream << msq_stdio::setw(NUMW-6) << *piter << "-mean ";
-  stream << msq_stdio::setw(NUMW)      << average_str;
+    stream << std::setw(NUMW-6) << *piter << "-mean ";
+  stream << std::setw(NUMW)      << average_str;
   for (; piter != pmeans.end() && *piter < 2.0; ++piter)
-    stream << msq_stdio::setw(NUMW-6) << *piter << "-mean ";
-  stream << msq_stdio::setw(NUMW)      << rms_str;
+    stream << std::setw(NUMW-6) << *piter << "-mean ";
+  stream << std::setw(NUMW)      << rms_str;
   for (; piter != pmeans.end(); ++piter)
-    stream << msq_stdio::setw(NUMW-6) << *piter << "-mean ";
-  stream << msq_stdio::setw(NUMW)      << "maximum";
-  stream << msq_stdio::setw(NUMW)      << "std.dev.";
-  stream << msq_stdio::endl;
+    stream << std::setw(NUMW-6) << *piter << "-mean ";
+  stream << std::setw(NUMW)      << "maximum";
+  stream << std::setw(NUMW)      << "std.dev.";
+  stream << std::endl;
   
     // print metric values
   for (iter = assessList.begin(); iter != assessList.end(); ++iter) {
       // print name
-    stream << msq_stdio::setw(namewidth) << iter->get_metric()->get_name();
+    stream << std::setw(namewidth) << iter->get_metric()->get_name();
     if (iter->get_metric()->get_name().size() > namewidth) 
-      stream << std::endl << msq_stdio::setw(namewidth) << " ";
+      stream << std::endl << std::setw(namewidth) << " ";
       // print minimum
-    stream << msq_stdio::setw(NUMW) << iter->get_minimum();
+    stream << std::setw(NUMW) << iter->get_minimum();
       // print power-means with P less than 1.0
     for (piter = pmeans.begin(); piter != pmeans.end() && *piter < 1.0; ++piter) {
       if (iter->have_power_mean() && iter->get_power() == *piter) 
-        stream << msq_stdio::setw(NUMW) << iter->get_power_mean();
+        stream << std::setw(NUMW) << iter->get_power_mean();
       else
-        stream << msq_stdio::setw(NUMW) << " ";
+        stream << std::setw(NUMW) << " ";
     }
       // print average
-    stream << msq_stdio::setw(NUMW) << iter->get_average();
+    stream << std::setw(NUMW) << iter->get_average();
       // print power-means with P less than 2.0
     for ( ; piter != pmeans.end() && *piter < 2.0; ++piter) {
       if (iter->have_power_mean() && iter->get_power() == *piter) 
-        stream << msq_stdio::setw(NUMW) << iter->get_power_mean();
+        stream << std::setw(NUMW) << iter->get_power_mean();
       else
-        stream << msq_stdio::setw(NUMW) << " ";
+        stream << std::setw(NUMW) << " ";
     }
       // print RMS
-    stream << msq_stdio::setw(NUMW) << iter->get_rms();
+    stream << std::setw(NUMW) << iter->get_rms();
       // print power-means with P greater than 2.0
     for ( ; piter != pmeans.end(); ++piter) {
       if (iter->have_power_mean() && iter->get_power() == *piter) 
-        stream << msq_stdio::setw(NUMW) << iter->get_power_mean();
+        stream << std::setw(NUMW) << iter->get_power_mean();
       else
-        stream << msq_stdio::setw(NUMW) << " ";
+        stream << std::setw(NUMW) << " ";
     }
       // print maximum and standard deviation
-    stream << msq_stdio::setw(NUMW) << iter->get_maximum();
-    stream << msq_stdio::setw(NUMW) << iter->get_stddev();
-    stream << msq_stdio::endl;
+    stream << std::setw(NUMW) << iter->get_maximum();
+    stream << std::setw(NUMW) << iter->get_stddev();
+    stream << std::endl;
   }
   
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
@@ -987,7 +974,7 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
 }
 
 
-void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream,
+void QualityAssessor::Assessor::print_histogram( std::ostream& stream,
                                                  int termwidth ) const
 {
   // Portability notes:
@@ -1029,7 +1016,7 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream,
   GRAPHW -= num_width;
 
     // Create an array of bar graph characters for use in output
-  msq_std::vector<char> graph_chars(GRAPHW+1, GRAPH_CHAR);
+  std::vector<char> graph_chars(GRAPHW+1, GRAPH_CHAR);
   
     // Check if bar-graph should be linear or log10 plot
     // Do log plot if standard deviation is less that 1.5
@@ -1047,10 +1034,10 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream,
 
   
     // Write title
-  stream << msq_stdio::endl << indent << get_metric()->get_name() << " histogram:";
+  stream << std::endl << indent << get_metric()->get_name() << " histogram:";
   if (log_plot)
     stream << " (log10 plot)";
-  stream << msq_stdio::endl;
+  stream << std::endl;
 
   
     // For each interval of histogram
@@ -1062,7 +1049,7 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream,
     {
       if (0 == histogram[i])
         continue;
-      stream << indent << msq_stdio::setw(FLOATW) << "under min";
+      stream << indent << std::setw(FLOATW) << "under min";
     }
       // Last value is the count of the number of values that
       // were above the maximum value of the histogram.
@@ -1070,17 +1057,17 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream,
     {
       if (0 == histogram[i])
         continue;
-      stream << indent << msq_stdio::setw(FLOATW) << "over max";
+      stream << indent << std::setw(FLOATW) << "over max";
     }
       // Anything else is a valid interval of the histogram.
       // Print the lower bound for each interval.
     else
     {
-      stream << indent << msq_stdio::setw(FLOATW) << min + (i-1)*step;
+      stream << indent << std::setw(FLOATW) << min + (i-1)*step;
     }
     
       // Print interval count.
-    stream << ": " << msq_stdio::setw(num_width) << histogram[i] << ": ";
+    stream << ": " << std::setw(num_width) << histogram[i] << ": ";
     
       // Print bar graph
     
@@ -1093,11 +1080,11 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream,
       
       // print num_graph characters using array of fill characters.
     graph_chars[num_graph] = '\0';
-    stream << &graph_chars[0] << msq_stdio::endl;
+    stream << &graph_chars[0] << std::endl;
     graph_chars[num_graph] = GRAPH_CHAR;
   }
   
-  stream << msq_stdio::endl;
+  stream << std::endl;
 }
 
 #ifdef _MSC_VER

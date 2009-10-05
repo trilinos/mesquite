@@ -21,7 +21,7 @@ size_t SmartLaplacianSmoother::num_inverted( PatchData& pd, MsqError& err )
 }
 
 
-msq_std::string SmartLaplacianSmoother::get_name() const
+std::string SmartLaplacianSmoother::get_name() const
   { return "SmartLaplacianSmoother"; }
 
 SmartLaplacianSmoother::~SmartLaplacianSmoother() 

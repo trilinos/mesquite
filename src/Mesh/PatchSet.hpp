@@ -32,11 +32,7 @@
  *  \author Jason Kraftcheck
  */
 
-#ifdef MSQ_USE_OLD_C_HEADERS 
-# include <vector.h>
-#else
-# include <vector>
-#endif
+#include <vector>
 
 #include "Mesquite.hpp"
 #include "MeshInterface.hpp"
@@ -68,7 +64,8 @@ class PatchSet
     inline void set_mesh( Mesh* mesh ) { myMesh = mesh; }
     
     /**\brief Get a list of handles, one for each patch */
-    virtual void get_patch_handles( msq_std::vector<PatchHandle>& patch_handles_out,
+    MESQUITE_EXPORT 
+    virtual void get_patch_handles( std::vector<PatchHandle>& patch_handles_out,
                                     MsqError& err ) = 0;
     
     /**\brief Get the mesh entities in a patch
@@ -82,12 +79,14 @@ class PatchSet
      *                         vertices in the closure of the elements are 
      *                         free.  
      */
+    MESQUITE_EXPORT 
     virtual void get_patch( PatchHandle patch_handle,
-                            msq_std::vector<Mesh::ElementHandle>& elem_handles_out,
-                            msq_std::vector<Mesh::VertexHandle>& free_vertices_out,
+                            std::vector<Mesh::ElementHandle>& elem_handles_out,
+                            std::vector<Mesh::VertexHandle>& free_vertices_out,
                             MsqError& err ) = 0;
     
       /**\brief get the Mesh object passed to set_mesh() */                        
+    MESQUITE_EXPORT 
     Mesh* get_mesh() const { return myMesh; }
     
   private:

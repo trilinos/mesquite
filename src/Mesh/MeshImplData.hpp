@@ -31,12 +31,7 @@
 #include "Vector3D.hpp"
 #include "MeshInterface.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-#endif
-
+#include <vector>
 #include <sys/types.h>
 
 namespace MESQUITE_NS {
@@ -72,10 +67,10 @@ class MeshImplData {
                     size_t* element_conn_indices );
     
     /** Get all vertices, including mid-nodes */                
-    void all_vertices( msq_std::vector<size_t>& list, MsqError& err ) const;
+    void all_vertices( std::vector<size_t>& list, MsqError& err ) const;
     
     /** Get all elements */
-    void all_elements( msq_std::vector<size_t>& list, MsqError& err ) const;
+    void all_elements( std::vector<size_t>& list, MsqError& err ) const;
     
     /** Check if passed vertex index is valid */
     inline bool is_vertex_valid( size_t index ) const
@@ -124,10 +119,10 @@ class MeshImplData {
     void element_topology( size_t index, EntityTopology type, MsqError& err );
     
     /** Get element connectivity list, including mid-nodes */
-    const msq_std::vector<size_t>& element_connectivity( size_t index, MsqError& err ) const;
+    const std::vector<size_t>& element_connectivity( size_t index, MsqError& err ) const;
     
     /** Get vertex adjacency list */
-    const msq_std::vector<size_t>& vertex_adjacencies( size_t index, MsqError& err ) const;
+    const std::vector<size_t>& vertex_adjacencies( size_t index, MsqError& err ) const;
     
     /** Allocate space for specified number of vertices */
     void allocate_vertices( size_t count, MsqError& err );
@@ -147,21 +142,21 @@ class MeshImplData {
      *  passed data. 
      */
     void reset_element( size_t index, 
-                        const msq_std::vector<long>& vertices,
+                        const std::vector<long>& vertices,
                         EntityTopology topology,
                         MsqError& err  );
     void reset_element( size_t index, 
-                        const msq_std::vector<size_t>& vertices,
+                        const std::vector<size_t>& vertices,
                         EntityTopology topology,
                         MsqError& err  );
     
       /** Add a new vertex */
     size_t add_vertex( const Vector3D& coords, bool fixed, MsqError& err );
       /** Add a new element */
-    size_t add_element( const msq_std::vector<long>& vertices,
+    size_t add_element( const std::vector<long>& vertices,
                         EntityTopology topology,
                         MsqError& err  );
-    size_t add_element( const msq_std::vector<size_t>& vertices,
+    size_t add_element( const std::vector<size_t>& vertices,
                         EntityTopology topology,
                         MsqError& err  );
     
@@ -171,10 +166,10 @@ class MeshImplData {
     void delete_element( size_t index, MsqError& err );
     
     /** Get all mid-nodes and their adjacent corner vertices */
-    void copy_higher_order( msq_std::vector<size_t>& mid_nodes,
-                            msq_std::vector<size_t>& vertices,
-                            msq_std::vector<size_t>& vertex_indices,
-                            msq_std::vector<size_t>& index_offsets,
+    void copy_higher_order( std::vector<size_t>& mid_nodes,
+                            std::vector<size_t>& vertices,
+                            std::vector<size_t>& vertex_indices,
+                            std::vector<size_t>& index_offsets,
                             MsqError& err );
     
     /** \brief Get elements adjacent to ALL of the passed nodes.
@@ -182,9 +177,9 @@ class MeshImplData {
      * Return the list of elements that is the intersection of the
      * adjacency lists of the specified vertices.
      */
-    void get_adjacent_elements( msq_std::vector<size_t>::const_iterator nodes,
-                                msq_std::vector<size_t>::const_iterator nodes_end,
-                                msq_std::vector<size_t>& elems_out,
+    void get_adjacent_elements( std::vector<size_t>::const_iterator nodes,
+                                std::vector<size_t>::const_iterator nodes_end,
+                                std::vector<size_t>& elems_out,
                                 MsqError& err );
     
     /**\brief Skin mesh
@@ -193,7 +188,7 @@ class MeshImplData {
      *
      *\param sides Element sides as pairs of values : { elem_index, side_number }
      */
-    void skin( msq_std::vector<size_t>& sides, MsqError& err );
+    void skin( std::vector<size_t>& sides, MsqError& err );
     
     bool have_slaved_flags() const
       { return haveSlavedFlags; }
@@ -207,7 +202,7 @@ class MeshImplData {
      *\param nodes The nodes composing the side of the element
      */
     bool has_adjacent_elements( size_t elem,
-                                const msq_std::vector<size_t>& nodes,
+                                const std::vector<size_t>& nodes,
                                 MsqError& err );
      
   
@@ -216,13 +211,13 @@ class MeshImplData {
     
       /** Set cleared element */
     void set_element( size_t index, 
-                      const msq_std::vector<long>& vertices,
+                      const std::vector<long>& vertices,
                       EntityTopology topology,
                       MsqError& err  );
     
       /** Set cleared element */
     void set_element( size_t index, 
-                      const msq_std::vector<size_t>& vertices,
+                      const std::vector<size_t>& vertices,
                       EntityTopology topology,
                       MsqError& err  );
   
@@ -234,7 +229,7 @@ class MeshImplData {
       Vertex() : midcount(0), valid(false), byte('\0') {}
     
       Vector3D coords;                     /**< location */
-      msq_std::vector<size_t> adjacencies; /**< indices of adjacent elements */
+      std::vector<size_t> adjacencies; /**< indices of adjacent elements */
       unsigned midcount;                   /**< num elements referencing this as a mid-node */
       bool fixed;                          /**< is fixed */
       bool slaved;
@@ -244,7 +239,7 @@ class MeshImplData {
     
       /** Struct holding an element */
     struct Element {
-      msq_std::vector<size_t> connectivity; /**< list of vertex indices */
+      std::vector<size_t> connectivity; /**< list of vertex indices */
       EntityTopology topology;             /**< element type */
       Element()
           : topology(MIXED)
@@ -252,13 +247,13 @@ class MeshImplData {
       
     };
     
-    msq_std::vector<Vertex> vertexList;     /**< Array of vertices */
-    msq_std::vector<Element> elementList;   /**< Array of elements */
+    std::vector<Vertex> vertexList;     /**< Array of vertices */
+    std::vector<Element> elementList;   /**< Array of elements */
     
     /** List of unused indices in vertex list */
-    msq_std::vector<size_t> deletedVertexList;
+    std::vector<size_t> deletedVertexList;
     /** List of unused indices in element list */
-    msq_std::vector<size_t> deletedElementList;
+    std::vector<size_t> deletedElementList;
     
     bool haveSlavedFlags;
 };

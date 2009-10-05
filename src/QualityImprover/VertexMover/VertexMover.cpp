@@ -127,8 +127,8 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   if (settings)
     patch.attach_settings( settings );
   bool one_patch = false, did_some, all_culled;
-  msq_std::vector<Mesh::VertexHandle> patch_vertices;
-  msq_std::vector<Mesh::ElementHandle> patch_elements;
+  std::vector<Mesh::VertexHandle> patch_vertices;
+  std::vector<Mesh::ElementHandle> patch_elements;
   
   PatchSet* patch_set = get_patch_set();
   if (!patch_set) {
@@ -137,7 +137,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   }
   patch_set->set_mesh( mesh );
   
-  msq_std::vector<PatchSet::PatchHandle> patch_list;
+  std::vector<PatchSet::PatchHandle> patch_list;
   patch_set->get_patch_handles( patch_list, err ); MSQ_ERRZERO(err);
   
     // Get termination criteria
@@ -192,7 +192,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
     all_culled = true;
 
       // Loop over each patch
-    msq_std::vector<PatchSet::PatchHandle>::iterator p_iter = patch_list.begin();
+    std::vector<PatchSet::PatchHandle>::iterator p_iter = patch_list.begin();
     while( p_iter != patch_list.end() )
     {
       if (!one_patch) { // if only one patch (global) re-use the previous one
@@ -289,7 +289,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
                                     const Settings* settings,
                                     MsqError& err )
 {
-  msq_std::vector<size_t> junk;
+  std::vector<size_t> junk;
   Mesh::VertexHandle vertex_handle;
 
     // Get the patch data to use for the first iteration
@@ -309,10 +309,10 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
   helper->smoothing_init(err);  MSQ_ERRZERO(err);
 
   bool did_some, all_culled;
-  msq_std::vector<Mesh::VertexHandle> patch_vertices;
-  msq_std::vector<Mesh::ElementHandle> patch_elements;
-  msq_std::vector<Mesh::VertexHandle> fixed_vertices;
-  msq_std::vector<Mesh::VertexHandle> free_vertices;
+  std::vector<Mesh::VertexHandle> patch_vertices;
+  std::vector<Mesh::ElementHandle> patch_elements;
+  std::vector<Mesh::VertexHandle> fixed_vertices;
+  std::vector<Mesh::VertexHandle> free_vertices;
    
     // Get termination criteria
   TerminationCriterion* outer_crit=this->get_outer_termination_criterion();
@@ -333,7 +333,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
   }
   patch_set->set_mesh( (Mesh*)mesh );
 
-  msq_std::vector<PatchSet::PatchHandle> patch_list;
+  std::vector<PatchSet::PatchHandle> patch_list;
   patch_set->get_patch_handles( patch_list, err ); MSQ_ERRZERO(err);
   
     // Initialize outer loop
@@ -366,10 +366,10 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
     helper->compute_first_independent_set(fixed_vertices); 
 
     // sort the fixed vertices
-    msq_std::sort(fixed_vertices.begin(), fixed_vertices.end());
+    std::sort(fixed_vertices.begin(), fixed_vertices.end());
 
       // Loop over each patch
-    msq_std::vector<PatchSet::PatchHandle>::iterator p_iter = patch_list.begin();
+    std::vector<PatchSet::PatchHandle>::iterator p_iter = patch_list.begin();
     while( p_iter != patch_list.end() )
     {
       // loop until we get a non-empty patch.  patch will be empty
@@ -392,7 +392,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
       free_vertices.clear();
 
       for (size_t i = 0; i < patch_vertices.size(); ++i) 
-	if (!msq_std::binary_search(fixed_vertices.begin(), fixed_vertices.end(), patch_vertices[i]))
+	if (!std::binary_search(fixed_vertices.begin(), fixed_vertices.end(), patch_vertices[i]))
 	  free_vertices.push_back(patch_vertices[i]);
 
       if (free_vertices.empty()) { // all vertices were fixed -> skip patch

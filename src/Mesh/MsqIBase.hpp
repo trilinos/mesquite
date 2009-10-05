@@ -41,7 +41,7 @@
 
 namespace MESQUITE_NS {
 
-msq_std::string process_itaps_error( int itaps_err );
+std::string process_itaps_error( int itaps_err );
 
 } // namespace Mesquite
 

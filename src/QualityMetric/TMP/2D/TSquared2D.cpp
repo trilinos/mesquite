@@ -36,7 +36,7 @@
 
 namespace MESQUITE_NS {
 
-msq_std::string TSquared2D::get_name() const
+std::string TSquared2D::get_name() const
   { return "TSquared"; }
 
 bool TSquared2D::evaluate( const MsqMatrix<2,2>& A, 

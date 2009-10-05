@@ -39,19 +39,9 @@ Header file for the Mesquite::QualityMetric class
 #ifndef QualityMetric_hpp
 #define QualityMetric_hpp
 
-#ifndef MSQ_USE_OLD_C_HEADERS
-#  include <cmath>
-#else
-#  include <math.h>
-#endif
-
-#ifndef MSQ_USE_OLD_STD_HEADERS
-#  include <vector>
-#  include <algorithm>
-#else
-#  include <vector.h>
-#  include <algorithm.h>
-#endif 
+#include <cmath>
+#include <vector>
+#include <algorithm>
 
 #include "Mesquite.hpp"
 #include "Vector3D.hpp"
@@ -74,7 +64,7 @@ namespace MESQUITE_NS
    class PatchData;
    class MsqMeshEntity;
    
-   class MESQUITE_EXPORT QualityMetric
+   class QualityMetric
    {
    protected:
 
@@ -88,15 +78,15 @@ namespace MESQUITE_NS
         ELEMENT_BASED  /**< Iterate over elements to evaluate metric. */
      };
 
-     virtual ~QualityMetric()
+     MESQUITE_EXPORT virtual ~QualityMetric()
       {}
      
-     virtual MetricType get_metric_type() const = 0;
+     MESQUITE_EXPORT virtual MetricType get_metric_type() const = 0;
      
-     virtual msq_std::string get_name() const = 0;
+     MESQUITE_EXPORT virtual std::string get_name() const = 0;
 
       //! 1 if metric should be minimized, -1 if metric should be maximized.
-     virtual int get_negate_flag() const = 0;
+     MESQUITE_EXPORT virtual int get_negate_flag() const = 0;
      
       /**\brief Get locations at which metric can be evaluated
        *
@@ -113,9 +103,9 @@ namespace MESQUITE_NS
        *\param free_vertices_only If true, only pass back evaluation points
        *         that depend on at least one free vertex.
        */
-     virtual
+     MESQUITE_EXPORT virtual
      void get_evaluations( PatchData& pd, 
-                           msq_std::vector<size_t>& handles, 
+                           std::vector<size_t>& handles, 
                            bool free_vertices_only,
                            MsqError& err ) = 0;
      
@@ -136,9 +126,9 @@ namespace MESQUITE_NS
        *\param free_vertices_only If true, only pass back evaluation points
        *         that depend on at least one free vertex.
        */
-     virtual
+     MESQUITE_EXPORT virtual
      void get_single_pass( PatchData& pd,
-                           msq_std::vector<size_t>& handles, 
+                           std::vector<size_t>& handles, 
                            bool free_vertices_only,
                            MsqError& err );
      
@@ -149,7 +139,7 @@ namespace MESQUITE_NS
       *\param handle The location in the patch (as passed back from get_evaluations).
       *\param value  The output metric value.
       */
-     virtual
+     MESQUITE_EXPORT virtual
      bool evaluate( PatchData& pd, 
                     size_t handle, 
                     double& value, 
@@ -164,11 +154,11 @@ namespace MESQUITE_NS
       *\param indices The free vertices that the evaluation is a function
       *               of, specified as vertex indices in the PatchData.
       */
-     virtual
+     MESQUITE_EXPORT virtual
      bool evaluate_with_indices( PatchData& pd,
                     size_t handle,
                     double& value,
-                    msq_std::vector<size_t>& indices,
+                    std::vector<size_t>& indices,
                     MsqError& err ) = 0;
      
      /**\brief Get metric value and gradient at a logical location in the patch.
@@ -183,12 +173,12 @@ namespace MESQUITE_NS
       *               coordinates of the free vertices passed back in
       *               the indices list.
       */
-     virtual
+     MESQUITE_EXPORT virtual
      bool evaluate_with_gradient( PatchData& pd,
                     size_t handle,
                     double& value,
-                    msq_std::vector<size_t>& indices,
-                    msq_std::vector<Vector3D>& gradient,
+                    std::vector<size_t>& indices,
+                    std::vector<Vector3D>& gradient,
                     MsqError& err );
      
      /**\brief Get metric value and gradient at a logical location in the patch.
@@ -205,13 +195,13 @@ namespace MESQUITE_NS
       *\param Hessian_diagonal The 3x3 blocks along the diagonal of
       *               the Hessian matrix.
       */
-     virtual
+     MESQUITE_EXPORT virtual
      bool evaluate_with_Hessian_diagonal( PatchData& pd,
                     size_t handle,
                     double& value,
-                    msq_std::vector<size_t>& indices,
-                    msq_std::vector<Vector3D>& gradient,
-                    msq_std::vector<SymMatrix3D>& Hessian_diagonal,
+                    std::vector<size_t>& indices,
+                    std::vector<Vector3D>& gradient,
+                    std::vector<SymMatrix3D>& Hessian_diagonal,
                     MsqError& err );
      
      /**\brief Get metric value and deravitives at a logical location in the patch.
@@ -232,13 +222,13 @@ namespace MESQUITE_NS
       *               Hessian with respect to the vertices at the
       *               corresponding positions in the indices list.
       */
-     virtual
+     MESQUITE_EXPORT virtual
      bool evaluate_with_Hessian( PatchData& pd,
                     size_t handle,
                     double& value,
-                    msq_std::vector<size_t>& indices,
-                    msq_std::vector<Vector3D>& gradient,
-                    msq_std::vector<Matrix3D>& Hessian,
+                    std::vector<size_t>& indices,
+                    std::vector<Vector3D>& gradient,
+                    std::vector<Matrix3D>& Hessian,
                     MsqError& err );
 
        //!Escobar Barrier Function for Shape and Other Metrics
@@ -257,9 +247,10 @@ namespace MESQUITE_NS
        *                       vertex is fixed.
        *\param gradients       Array of gradients
        */
-      static void remove_fixed_gradients( EntityTopology type, 
+     MESQUITE_EXPORT  
+	 static void remove_fixed_gradients( EntityTopology type, 
                                           uint32_t fixed_vertices, 
-                                          msq_std::vector<Vector3D>& gradients );
+                                          std::vector<Vector3D>& gradients );
 
       /** \brief Remove from vectors any gradient terms and hessian
        *         diagonal blcoks corresponding to a fixed vertex.
@@ -271,10 +262,11 @@ namespace MESQUITE_NS
        *\param gradients       Array of gradients
        *\param hess_diagonal_blocks   Array of diagonal blocks of Hessian matrix.
        */
-      static void remove_fixed_diagonals( EntityTopology type, 
+     MESQUITE_EXPORT  
+	 static void remove_fixed_diagonals( EntityTopology type, 
                                           uint32_t fixed_vertices, 
-                                          msq_std::vector<Vector3D>& gradients,
-                                          msq_std::vector<SymMatrix3D>& hess_diagonal_blocks );
+                                          std::vector<Vector3D>& gradients,
+                                          std::vector<SymMatrix3D>& hess_diagonal_blocks );
 
       /** \brief Remove from vector any Hessian blocks corresponding 
        *         to a fixed vertex.
@@ -285,9 +277,10 @@ namespace MESQUITE_NS
        *                       vertex is fixed.
        *\param hessians        Array of Hessian blocks (upper trianguler, row-major)
        */
-      static void remove_fixed_hessians ( EntityTopology type, 
+     MESQUITE_EXPORT  
+	 static void remove_fixed_hessians ( EntityTopology type, 
                                           uint32_t fixed_vertices, 
-                                          msq_std::vector<Matrix3D>& hessians );
+                                          std::vector<Matrix3D>& hessians );
      
      /** \brief Convert fixed vertex format from list to bit flags
       *
@@ -298,14 +291,16 @@ namespace MESQUITE_NS
       * the least-significant bit.  The bit is cleared for free
       * vertices and set (1) for fixed vertices.
       */
-      static uint32_t fixed_vertex_bitmap( PatchData& pd, 
+     MESQUITE_EXPORT  
+	 static uint32_t fixed_vertex_bitmap( PatchData& pd, 
                                            const MsqMeshEntity* elem,
-                                           msq_std::vector<size_t>& free_indices );
+                                           std::vector<size_t>& free_indices );
       
      
      //! takes an array of coefficients and an array of metrics (both of length num_value)
      //! and averages the contents using averaging method 'method'.
-      double weighted_average_metrics(const double coef[],
+     MESQUITE_EXPORT 
+	 double weighted_average_metrics(const double coef[],
                                     const double metric_values[],
                                     const int& num_values, MsqError &err);
 
@@ -335,7 +330,7 @@ namespace MESQUITE_NS
   private:
      int feasible;
      
-     msq_std::vector<Matrix3D> tmpHess;
+     std::vector<Matrix3D> tmpHess;
    };
 
 

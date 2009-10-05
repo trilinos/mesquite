@@ -33,11 +33,7 @@
 #  include <ieeefp.h>
 #endif
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <algorithm.h>
-#else
-# include <algorithm>
-#endif
+#include <algorithm>
 
 void Mesquite::SphericalDomain::snap_to(Mesh::VertexHandle /*entity_handle*/,
                                         Vector3D &coordinate) const
@@ -104,7 +100,7 @@ void Mesquite::SphericalDomain::domain_DoF( const Mesh::VertexHandle* ,
                                             size_t num_vertices,
                                             MsqError&  ) const
 {
-  msq_std::fill( dof_array, dof_array + num_vertices, 2 );
+  std::fill( dof_array, dof_array + num_vertices, 2 );
 }
 
   

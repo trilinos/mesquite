@@ -41,18 +41,14 @@
 #include "MsqError.hpp"
 #include "ElementPatches.hpp"
 #include "ElemSampleQM.hpp"
-#ifdef MSQ_USE_OLD_IO_HEADERS
-# include <sstream.h>
-#else
-# include <sstream>
-#endif
+#include <sstream>
 
 namespace MESQUITE_NS {
 
 TargetWriter::TargetWriter(  TargetCalculator* tc,
                              WeightCalculator* wc,
-                             msq_std::string target_base_name,
-                             msq_std::string weight_base_name )
+                             std::string target_base_name,
+                             std::string weight_base_name )
   : targetCalc(tc), 
     weightCalc(wc), 
     targetName(target_base_name), 
@@ -61,7 +57,7 @@ TargetWriter::TargetWriter(  TargetCalculator* tc,
 
 TargetWriter::~TargetWriter() {}
 
-msq_std::string TargetWriter::get_name() const
+std::string TargetWriter::get_name() const
   { return "TargetWriter"; }
 
 double TargetWriter::loop_over_mesh( Mesh* mesh, 
@@ -77,17 +73,17 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
   
   ElementPatches patch_set;
   patch_set.set_mesh( mesh );
-  msq_std::vector<PatchSet::PatchHandle> patches;
-  msq_std::vector<PatchSet::PatchHandle>::iterator p;
-  msq_std::vector<Mesh::VertexHandle> patch_verts;
-  msq_std::vector<Mesh::ElementHandle> patch_elems;
+  std::vector<PatchSet::PatchHandle> patches;
+  std::vector<PatchSet::PatchHandle>::iterator p;
+  std::vector<Mesh::VertexHandle> patch_verts;
+  std::vector<Mesh::ElementHandle> patch_elems;
   
   patch_set.get_patch_handles( patches, err ); MSQ_ERRZERO(err);
   
-  msq_std::vector< MsqMatrix<3,3> > targets3d;
-  msq_std::vector< MsqMatrix<3,2> > targets2d;
-  msq_std::vector< double > weights;
-  msq_std::vector< Sample > samples;
+  std::vector< MsqMatrix<3,3> > targets3d;
+  std::vector< MsqMatrix<3,2> > targets2d;
+  std::vector< double > weights;
+  std::vector< Sample > samples;
   for (p = patches.begin(); p != patches.end(); ++p)
   {
     patch_verts.clear();
@@ -183,16 +179,16 @@ TagHandle TargetWriter::get_weight_tag( unsigned count, Mesh* mesh, MsqError& er
   return weightTags[count];
 }
 
-TagHandle TargetWriter::get_tag_handle( const msq_std::string& base_name,
+TagHandle TargetWriter::get_tag_handle( const std::string& base_name,
                                         unsigned num_dbl, Mesh* mesh, MsqError& err )
 {
-  msq_stdio::ostringstream sstr;
+  std::ostringstream sstr;
   sstr << base_name << num_dbl;
   
   TagHandle handle = mesh->tag_get( sstr.str().c_str(), err );
   if (!MSQ_CHKERR(err))
   {
-    msq_std::string temp_name;
+    std::string temp_name;
     Mesh::TagType temp_type;
     unsigned temp_length;
     mesh->tag_properties( handle, temp_name, temp_type, temp_length, err );

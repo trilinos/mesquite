@@ -1,13 +1,21 @@
+IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
 
-INCLUDE(PackageLibraryMacros)
+  INCLUDE(PackageLibraryMacros)
 
-#
-# A) Package-specific configuration options
-#
+  #
+  # A) Package-specific configuration options
+  #
 
-PACKAGE_CONFIGURE_FILE(mesquite_config.h)
+ELSE()
+  MACRO(APPEND_SET VARNAME)
+    SET(${VARNAME} ${${VARNAME}} ${ARGN})
+  ENDMACRO()
+ENDIF()
 
-PACKAGE_CONFIGURE_FILE(mesquite_version.h)
+autoconf_header( ${CMAKE_CURRENT_SOURCE_DIR}/../include/mesquite_version.h.in
+                 ${CMAKE_CURRENT_BINARY_DIR}/../include/mesquite_version.h )
+autoconf_header( ${CMAKE_CURRENT_SOURCE_DIR}/../include/mesquite_config.h.in
+                 ${CMAKE_CURRENT_BINARY_DIR}/../include/mesquite_config.h )
 
 #
 # B) Define the header and source files (and directories)
@@ -22,10 +30,11 @@ SET(SOURCES "")
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../include)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../include)
 
 APPEND_SET(HEADERS
-  ${CMAKE_CURRENT_BINARY_DIR}/mesquite_config.h
-  ${CMAKE_CURRENT_BINARY_DIR}/mesquite_version.h
+  ${CMAKE_CURRENT_BINARY_DIR}/../include/mesquite_config.h
+  ${CMAKE_CURRENT_BINARY_DIR}/../include/mesquite_version.h
   ../include/Mesquite.hpp
   ../include/MeshInterface.hpp
   ../include/ParallelMeshInterface.hpp
@@ -521,6 +530,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric)
 APPEND_SET(HEADERS
   QualityMetric/AddQualityMetric.hpp
   QualityMetric/AveragingQM.hpp
+  QualityMetric/EdgeQM.hpp
   QualityMetric/ElemSampleQM.hpp
   QualityMetric/ElementMaxQM.hpp
   QualityMetric/ElementPMeanP.hpp
@@ -540,6 +550,7 @@ APPEND_SET(HEADERS
 APPEND_SET(SOURCES
   QualityMetric/AddQualityMetric.cpp
   QualityMetric/AveragingQM.cpp
+  QualityMetric/EdgeQM.cpp
   QualityMetric/ElementMaxQM.cpp
   QualityMetric/ElementPMeanP.cpp
   QualityMetric/ElementQM.cpp
@@ -773,11 +784,13 @@ APPEND_SET(SOURCES
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/Volume)
 
 APPEND_SET(HEADERS
+  QualityMetric/Volume/EdgeLengthMetric.hpp
   QualityMetric/Volume/LocalSizeQualityMetric.hpp
   QualityMetric/Volume/SizeMetric.hpp
   )
 
 APPEND_SET(SOURCES
+  QualityMetric/Volume/EdgeLengthMetric.cpp
   QualityMetric/Volume/LocalSizeQualityMetric.cpp
   QualityMetric/Volume/SizeMetric.cpp
   )
@@ -835,40 +848,75 @@ APPEND_SET(SOURCES
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../itaps)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps)
 
 
-#Currently disabled because these add_custom_commands are apparently silently
-#ignored if nothing depends on the output. Since the Mesquite package does not
-#directly rely on these files they are always skipped and then there are alway
-#errors when we try to add the generated headers into the library
-#I'm leaving this in though as this is on the right track, we just need to find
-#a way to force the command to run everytime.
+
+#the key here is that the generated files have to be marked as generated using the SET_SOURCE_FILES_PROPERTIES
+#command. 
 #
 # Generate Fortran name mangling headers
-#MESSAGE("About to execute custom command")
-#ADD_CUSTOM_COMMAND( 
-#  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h
-#  COMMAND ${CMAKE_COMMAND} 
-#          -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMesh.h 
-#          -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h 
-#          -D prefix:STRING=iMesh 
-#          -P ${PACKAGE_SOURCE_DIR}/cmake/ITAPSFortranMangling.cmake
-#  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMesh.h
-#  )
-#MESSAGE("Finished executing custom command")
+#
+ADD_CUSTOM_COMMAND( 
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h
+  COMMAND ${CMAKE_COMMAND}
+  ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMesh.h 
+          -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h 
+          -D prefix:STRING=iMesh 
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMesh.h
+  COMMENT "Running custom command"
+  )
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h PROPERTIES GENERATED true)
+
+ADD_CUSTOM_COMMAND( 
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h
+  COMMAND ${CMAKE_COMMAND}
+  ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMeshP.h 
+          -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h 
+          -D prefix:STRING=iMeshP 
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMeshP.h
+  COMMENT "Running custom command"
+  )
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h PROPERTIES GENERATED true)
+
+ADD_CUSTOM_COMMAND( 
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iGeom_protos.h
+  COMMAND ${CMAKE_COMMAND}
+  ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iGeom.h 
+          -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iGeom_protos.h 
+          -D prefix:STRING=iGeom 
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iGeom.h
+  COMMENT "Running custom command"
+  )
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h PROPERTIES GENERATED true)
+
+ADD_CUSTOM_COMMAND( 
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iRel_protos.h
+  COMMAND ${CMAKE_COMMAND}
+  ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iRel.h 
+          -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iRel_protos.h 
+          -D prefix:STRING=iRel 
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iRel.h
+  COMMENT "Running custom command"
+  )
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h PROPERTIES GENERATED true)
 
 
 APPEND_SET(HEADERS
   ../itaps/iBase.h
   ../itaps/iBase_FCDefs.h
   ../itaps/iMesh.h
-#  ../itaps/iMesh_protos.h
+  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h
   ../itaps/iMeshP.h
-#  ../itaps/iMeshP_protos.h
+  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h
   ../itaps/iGeom.h
-#  ../itaps/iGeom_protos.h
+  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iGeom_protos.h
   ../itaps/iRel.h
-#  ../itaps/iRel_protos.h 
+  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iRel_protos.h 
   )
 
 
@@ -894,8 +942,6 @@ ENDIF()
 IF(NOT "${old_all_headers_contents}" STREQUAL "${all_headers_contents}")
   MESSAGE("Creating Mesquite_all_headers.hpp")
   FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/Mesquite_all_headers.hpp ${all_headers_contents})
-ELSE()
-  MESSAGE("Mesquite_all_headers.hpp is up-to-date")
 ENDIF()
 
 #last thing to do is add then newly created header
@@ -905,8 +951,35 @@ APPEND_SET(HEADERS ${CMAKE_CURRENT_BINARY_DIR}/Mesquite_all_headers.hpp)
 # C) Define the targets for package's library(s)
 #
 
-PACKAGE_ADD_LIBRARY(
-  mesquite
-  HEADERS ${HEADERS}
-  SOURCES ${SOURCES}
-  )
+IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
+
+  PACKAGE_ADD_LIBRARY(
+    mesquite
+    HEADERS ${HEADERS}
+    SOURCES ${SOURCES}
+    )
+
+ELSE()
+
+  IF(${PACKAGE_NAME}_ENABLE_SHARED)
+    ADD_LIBRARY( mesquite SHARED ${SOURCES} ${HEADERS} )
+  ELSE()
+    ADD_LIBRARY( mesquite STATIC ${SOURCES} ${HEADERS} )
+  ENDIF()
+
+ENDIF()
+
+MACRO(APPEND_DEFINE VARNAME OPT_FLAG)
+  IF (${OPT_FLAG})
+    SET(${VARNAME} "${${VARNAME}} -D${OPT_FLAG}")
+  ENDIF()
+ENDMACRO()
+
+# s/MESQUITE_DLL_EXPORTS/MESQUITE_STATIC_LIB/ if building static library
+IF(${PACKAGE_NAME}_ENABLE_SHARED)
+  SET( MESQUITE_LIB_DEFINES "${MESQUITE_DEFINES} -DMESQUITE_DLL_EXPORTS" )
+ELSE()
+  SET( MESQUITE_LIB_DEFINES "${MESQUITE_DEFINES} -DMESQUITE_STATIC_LIB" )
+ENDIF()
+SET_SOURCE_FILES_PROPERTIES( ${SOURCES} COMPILE_FLAGS ${MESQUITE_LIB_DEFINES} )
+

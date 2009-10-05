@@ -49,11 +49,7 @@ Unit testing for the TMPQualityMetric class
 #include "ElementPMeanP.hpp"
 #include "IdealWeightInverseMeanRatio.hpp"
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#include <iostream.h>
-#else
 #include <iostream>
-#endif
 
 using namespace Mesquite;
 using std::cout;
@@ -75,7 +71,7 @@ public:
 
   FauxTarget(double v) : count(0), value(v), rval(true) {}
   
-  msq_std::string get_name() const { return "Faux"; }
+  std::string get_name() const { return "Faux"; }
   
   bool evaluate( const MsqMatrix<B::MATRIX_DIM,B::MATRIX_DIM>& A, 
                  const MsqMatrix<B::MATRIX_DIM,B::MATRIX_DIM>& W, 
@@ -109,7 +105,7 @@ public:
 
   ~NumericalTarget() {}
 
-  msq_std::string get_name() const 
+  std::string get_name() const 
     { return "Numerical " + mMetric->get_name(); }
 
   bool evaluate( const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& A, 
@@ -130,7 +126,7 @@ class TestGradTargetMetric3D : public TargetMetric3D
 {
   public:
     
-    msq_std::string get_name() const { return "TestGrad"; }
+    std::string get_name() const { return "TestGrad"; }
   
     bool evaluate( const MsqMatrix<3,3>& A, const MsqMatrix<3,3>&, double& result, MsqError& err )
       { result = sqr_Frobenius(A); return true; }
@@ -150,7 +146,7 @@ class TestGradTargetMetric2D : public TargetMetric2D
 {
   public:
     
-    msq_std::string get_name() const { return "TestGrad"; }
+    std::string get_name() const { return "TestGrad"; }
   
     bool evaluate( const MsqMatrix<2,2>& A, const MsqMatrix<2,2>&, double& result, MsqError& err )
       { result = sqr_Frobenius(A); return true; }
@@ -579,7 +575,7 @@ void TMPQualityMetricTest::test_3d_eval_ortho_hex()
 
 void TMPQualityMetricTest::test_gradient_2D()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   
     // check for expected value at center of flattened hex
   
@@ -621,8 +617,8 @@ void TMPQualityMetricTest::test_gradient_2D()
   
     // evaluate metric
   double act_val;
-  msq_std::vector<size_t> indices;
-  msq_std::vector<Vector3D> act_grad;
+  std::vector<size_t> indices;
+  std::vector<Vector3D> act_grad;
   size_t h = ElemSampleQM::handle( Sample(2, 0), 0 );
   m.evaluate_with_gradient( pd, h, act_val, indices, act_grad, err );
   ASSERT_NO_ERROR(err);
@@ -647,7 +643,7 @@ void TMPQualityMetricTest::test_gradient_2D()
 
 void TMPQualityMetricTest::test_gradient_3D()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   
     // check for expected value at center of flattened hex
   
@@ -695,8 +691,8 @@ void TMPQualityMetricTest::test_gradient_3D()
   
     // evaluate metric
   double act_val;
-  msq_std::vector<size_t> indices;
-  msq_std::vector<Vector3D> act_grad;
+  std::vector<size_t> indices;
+  std::vector<Vector3D> act_grad;
   size_t h = ElemSampleQM::handle( Sample(3, 0), 0 );
   m.evaluate_with_gradient( pd, h, act_val, indices, act_grad, err );
   ASSERT_NO_ERROR(err);
@@ -767,10 +763,10 @@ void TMPQualityMetricTest::compare_analytical_and_numerical_gradients(
                                                       PatchData& pd,
                                                       int dim )
 {
-  MsqPrintError err( msq_stdio::cout );
+  MsqPrintError err( std::cout );
 
-  msq_std::vector<size_t> handles, indices1, indices2;
-  msq_std::vector<Vector3D> grad1, grad2;
+  std::vector<size_t> handles, indices1, indices2;
+  std::vector<Vector3D> grad1, grad2;
   double qm_val1, qm_val2;
   bool rval;
 
@@ -796,9 +792,9 @@ void TMPQualityMetricTest::compare_analytical_and_numerical_gradients(
     CPPUNIT_ASSERT_EQUAL( indices1.size(), indices2.size() );
     CPPUNIT_ASSERT( !indices1.empty() );
 
-    msq_std::vector<size_t>::iterator it1, it2;
+    std::vector<size_t>::iterator it1, it2;
     for (it1 = indices1.begin(); it1 != indices1.end(); ++it1) {
-      it2 = msq_std::find( indices2.begin(), indices2.end(), *it1 );
+      it2 = std::find( indices2.begin(), indices2.end(), *it1 );
       CPPUNIT_ASSERT( it2 != indices2.end() );
 
       size_t idx1 = it1 - indices1.begin();
@@ -818,7 +814,7 @@ void TMPQualityMetricTest::compare_analytical_and_numerical_gradients(
     // wrt Z coordiantes as zero.
 void TMPQualityMetricTest::compare_analytical_and_numerical_hessians( QualityMetric* qm )
 {
-  MsqPrintError err( msq_stdio::cout );
+  MsqPrintError err( std::cout );
   PatchData pd;
   const EntityTopology types[] = { TRIANGLE,
                                    QUADRILATERAL,
@@ -830,9 +826,9 @@ void TMPQualityMetricTest::compare_analytical_and_numerical_hessians( QualityMet
   for (int i = 0; i < num_types; ++i) {
     get_nonideal_element( types[i], pd );
 
-    msq_std::vector<size_t> handles, indices1, indices2;
-    msq_std::vector<Vector3D> grad1, grad2;
-    msq_std::vector<Matrix3D> Hess1, Hess2;
+    std::vector<size_t> handles, indices1, indices2;
+    std::vector<Vector3D> grad1, grad2;
+    std::vector<Matrix3D> Hess1, Hess2;
     double qm_val1, qm_val2;
     bool rval;
 
@@ -859,15 +855,15 @@ void TMPQualityMetricTest::compare_analytical_and_numerical_hessians( QualityMet
       CPPUNIT_ASSERT_EQUAL( indices1.size(), indices2.size() );
       CPPUNIT_ASSERT( !indices1.empty() );
 
-      msq_std::vector<size_t>::iterator it;
+      std::vector<size_t>::iterator it;
       unsigned h = 0;
       for (unsigned r = 0; r < indices1.size(); ++r) {
-        it = msq_std::find( indices2.begin(), indices2.end(), indices1[r] );
+        it = std::find( indices2.begin(), indices2.end(), indices1[r] );
         CPPUNIT_ASSERT( it != indices2.end() );
         unsigned r2 = it - indices2.begin();
 
         for (unsigned c = r; c < indices1.size(); ++c, ++h) {
-          it = msq_std::find( indices2.begin(), indices2.end(), indices1[c] );
+          it = std::find( indices2.begin(), indices2.end(), indices1[c] );
           CPPUNIT_ASSERT( it != indices2.end() );
           unsigned c2 = it - indices2.begin();
 
@@ -895,7 +891,7 @@ void TMPQualityMetricTest::compare_analytical_and_numerical_hessians( QualityMet
     // wrt Z coordiantes as zero.
 void TMPQualityMetricTest::compare_analytical_and_numerical_diagonals( QualityMetric* qm )
 {
-  MsqPrintError err( msq_stdio::cout );
+  MsqPrintError err( std::cout );
   PatchData pd;
   const EntityTopology types[] = { TRIANGLE,
                                    QUADRILATERAL,
@@ -907,10 +903,10 @@ void TMPQualityMetricTest::compare_analytical_and_numerical_diagonals( QualityMe
   for (int i = 0; i < num_types; ++i) {
     get_nonideal_element( types[i], pd );
 
-    msq_std::vector<size_t> handles, indices1, indices2;
-    msq_std::vector<Vector3D> grad1, grad2;
-    msq_std::vector<Matrix3D> Hess1;
-    msq_std::vector<SymMatrix3D> Hess2;
+    std::vector<size_t> handles, indices1, indices2;
+    std::vector<Vector3D> grad1, grad2;
+    std::vector<Matrix3D> Hess1;
+    std::vector<SymMatrix3D> Hess2;
     double qm_val1, qm_val2;
     bool rval;
 
@@ -940,9 +936,9 @@ void TMPQualityMetricTest::compare_analytical_and_numerical_diagonals( QualityMe
       CPPUNIT_ASSERT_EQUAL( indices2.size(), Hess2.size() );
 
       size_t h = 0;
-      msq_std::vector<size_t>::iterator it;
+      std::vector<size_t>::iterator it;
       for (unsigned r = 0; r < indices1.size(); ++r) {
-        it = msq_std::find( indices2.begin(), indices2.end(), indices1[r] );
+        it = std::find( indices2.begin(), indices2.end(), indices1[r] );
         CPPUNIT_ASSERT( it != indices2.end() );
         unsigned r2 = it - indices2.begin();
         //if (!utest_mat_equal(Hess1[h],Hess2[r2],0.001))
@@ -1037,21 +1033,21 @@ void TMPQualityMetricTest::regression_inverse_mean_ratio_grad()
   CPPUNIT_ASSERT_EQUAL( (size_t)3, act_idx.size() );
   
   std::vector<size_t> sorted(exp_idx);
-  msq_std::sort( sorted.begin(), sorted.end() );
+  std::sort( sorted.begin(), sorted.end() );
   CPPUNIT_ASSERT_EQUAL( (size_t)0, sorted[0] );
   CPPUNIT_ASSERT_EQUAL( (size_t)1, sorted[1] );
   CPPUNIT_ASSERT_EQUAL( (size_t)2, sorted[2] );
   
   sorted = act_idx;
-  msq_std::sort( sorted.begin(), sorted.end() );
+  std::sort( sorted.begin(), sorted.end() );
   CPPUNIT_ASSERT_EQUAL( (size_t)0, sorted[0] );
   CPPUNIT_ASSERT_EQUAL( (size_t)1, sorted[1] );
   CPPUNIT_ASSERT_EQUAL( (size_t)2, sorted[2] );
   
   const size_t idx_map[] = { 
-    msq_std::find(act_idx.begin(),act_idx.end(),exp_idx[0]) - act_idx.begin(),
-    msq_std::find(act_idx.begin(),act_idx.end(),exp_idx[1]) - act_idx.begin(),
-    msq_std::find(act_idx.begin(),act_idx.end(),exp_idx[2]) - act_idx.begin() };
+    std::find(act_idx.begin(),act_idx.end(),exp_idx[0]) - act_idx.begin(),
+    std::find(act_idx.begin(),act_idx.end(),exp_idx[1]) - act_idx.begin(),
+    std::find(act_idx.begin(),act_idx.end(),exp_idx[2]) - act_idx.begin() };
   CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[0], act_grad[idx_map[0]], 1e-5 );
   CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[1], act_grad[idx_map[1]], 1e-5 );
   CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[2], act_grad[idx_map[2]], 1e-5 );

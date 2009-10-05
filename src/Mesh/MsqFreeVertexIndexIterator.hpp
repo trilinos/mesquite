@@ -35,13 +35,8 @@
 #ifndef MsqFreeVertexIndexIterator_hpp
 #define MsqFreeVertexIndexIterator_hpp
 
-#ifdef MSQ_USE_OLD_C_HEADERS
-#  include <stdlib.h>
-#  include <stddef.h>
-#else
-#  include <cstddef>
-#  include <cstdlib>
-#endif
+#include <cstddef>
+#include <cstdlib>
 
 #include "Mesquite.hpp"
 #include "MsqVertex.hpp"
@@ -75,10 +70,10 @@ namespace MESQUITE_NS
     //! Increments the iterator. returns false if there is no more free vertex.
     inline bool next();
     //! Returns an index corresponding to a free vertex.
-    msq_stdc::size_t value() {return iterCurrentIndex;}
+    std::size_t value() {return iterCurrentIndex;}
   private:
     const PatchData& iterOriginator;
-    msq_stdc::size_t iterCurrentIndex;
+    std::size_t iterCurrentIndex;
   };
   
 

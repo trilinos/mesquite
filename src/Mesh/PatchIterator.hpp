@@ -52,10 +52,10 @@ private:
 
   PatchSet* patchSet;
   
-  msq_std::vector<PatchSet::PatchHandle> patches;
-  msq_std::vector<Mesh::ElementHandle> elems;
-  msq_std::vector<Mesh::VertexHandle> verts;
-  msq_std::vector<PatchSet::PatchHandle>::iterator current;
+  std::vector<PatchSet::PatchHandle> patches;
+  std::vector<Mesh::ElementHandle> elems;
+  std::vector<Mesh::VertexHandle> verts;
+  std::vector<PatchSet::PatchHandle>::iterator current;
 };
 
 } // namespace Mesquite

@@ -45,9 +45,9 @@ ElementMaxQM::ElementMaxQM( ElemSampleQM* metric )
     
 ElementMaxQM::~ElementMaxQM() {}
 
-msq_std::string ElementMaxQM::get_name() const
+std::string ElementMaxQM::get_name() const
 {
-  msq_std::string result("ElementMaxQM(");
+  std::string result("ElementMaxQM(");
   result += mMetric->get_name();
   result += ")";
   return result;
@@ -72,8 +72,8 @@ bool ElementMaxQM::evaluate( PatchData& pd,
   double tmpval;
   bool tmpvalid;
 
-  value = -msq_std::numeric_limits<double>::infinity();
-  for (msq_std::vector<size_t>::iterator h = mHandles.begin(); h != mHandles.end(); ++h) {
+  value = -std::numeric_limits<double>::infinity();
+  for (std::vector<size_t>::iterator h = mHandles.begin(); h != mHandles.end(); ++h) {
     tmpvalid = qm->evaluate( pd, *h, tmpval, err ); MSQ_ERRZERO(err);
     if (!tmpvalid) 
       valid = false;
@@ -87,8 +87,8 @@ bool ElementMaxQM::evaluate( PatchData& pd,
 bool ElementMaxQM::evaluate_with_gradient( PatchData& pd, 
                                             size_t handle, 
                                             double& value, 
-                                            msq_std::vector<size_t>& indices,
-                                            msq_std::vector<Vector3D>& gradient,
+                                            std::vector<size_t>& indices,
+                                            std::vector<Vector3D>& gradient,
                                             MsqError& err )
 {
   ElemSampleQM* qm = get_quality_metric();
@@ -99,9 +99,9 @@ bool ElementMaxQM::evaluate_with_gradient( PatchData& pd,
   double tmpval;
   bool tmpvalid;
   unsigned count = 0;
-  msq_std::vector<size_t>::iterator h, i, j;
+  std::vector<size_t>::iterator h, i, j;
 
-  value = -msq_std::numeric_limits<double>::maximum();
+  value = -std::numeric_limits<double>::maximum();
   for (h = mHandles.begin(); h != mHandles.end(); ++h) {
     mIndices.clear();
     mGrad.clear();
@@ -121,7 +121,7 @@ bool ElementMaxQM::evaluate_with_gradient( PatchData& pd,
     else if (tmpval - value >= -1e-6) {
       ++count;
       for (i = mIndices.begin(); i != mIndices.end(); ++i) {
-        j = msq_std::find( indices.begin(), indices.end(), *i );
+        j = std::find( indices.begin(), indices.end(), *i );
         if (j == indices.end()) {
           indices.push_back( *i );
           gradient.push_back( mGrad[i - mIndices.begin()] );
@@ -134,7 +134,7 @@ bool ElementMaxQM::evaluate_with_gradient( PatchData& pd,
   }
   if (count > 1) {
     const double inv_count = 1.0 / count;
-    for (msq_std::vector<Vector3D>::iterator g = gradient.begin(); g != gradient.end(); ++g)
+    for (std::vector<Vector3D>::iterator g = gradient.begin(); g != gradient.end(); ++g)
       *g *= inv_count;
   }
     

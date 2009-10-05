@@ -71,7 +71,7 @@ static inline double compute_corner_volume( PatchData &pd,
 LocalSizeQualityMetric::~LocalSizeQualityMetric()
   {}
   
-msq_std::string LocalSizeQualityMetric::get_name() const
+std::string LocalSizeQualityMetric::get_name() const
   { return "Local Size"; }
 
 int LocalSizeQualityMetric::get_negate_flag() const
@@ -112,7 +112,7 @@ bool LocalSizeQualityMetric::evaluate( PatchData &pd, size_t this_vert,
     //Can we remove this dynamic allocatio?
   double* met_vals = new double[num_elems];
     //vector to hold the other verts which form a corner.
-  msq_std::vector<size_t> other_vertices;
+  std::vector<size_t> other_vertices;
   other_vertices.reserve(4);
   double total_val=0.0;
   size_t i=0;
@@ -180,13 +180,13 @@ bool LocalSizeQualityMetric::evaluate( PatchData &pd, size_t this_vert,
 bool LocalSizeQualityMetric::evaluate_with_indices( PatchData& pd,
                                                     size_t vertex,
                                                     double& value,
-                                                    msq_std::vector<size_t>& indices,
+                                                    std::vector<size_t>& indices,
                                                     MsqError& err )
 {
   indices.clear();
   pd.get_adjacent_vertex_indices( vertex, indices, err ); MSQ_ERRZERO(err);
   
-  msq_std::vector<size_t>::iterator r, w;
+  std::vector<size_t>::iterator r, w;
   for (r = w = indices.begin(); r != indices.end(); ++r) {
     if (*r < pd.num_free_vertices()) {
       *w = *r;

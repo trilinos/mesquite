@@ -43,7 +43,7 @@
 
 using namespace Mesquite;
 
-msq_std::string Randomize::get_name() const { return "Randomize"; }
+std::string Randomize::get_name() const { return "Randomize"; }
 
 PatchSet* Randomize::get_patch_set() { return &patchSet; }
 

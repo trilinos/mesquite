@@ -151,7 +151,7 @@ namespace MESQUITE_NS
 
     virtual ~NonSmoothDescent() { }
     
-    virtual msq_std::string get_name() const;
+    virtual std::string get_name() const;
     virtual PatchSet* get_patch_set();
     
   protected:

@@ -109,7 +109,7 @@ void SlaveBoundaryVerticesTest::make_mesh( MeshImpl& mesh,
                                            DomainClassifier& domain,
                                            const int intervals )
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   const char input_file[] = MESH_FILES_DIR "3D/VTK/6x6x6-hex20.vtk";
   
   const Vector3D min( -3, -3, -3 );
@@ -172,13 +172,13 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
   DomainClassifier domain;
   make_mesh( mesh, domain, 2*depth+2 );
 
-  MsqPrintError err(msq_stdio::cerr);
-  msq_std::vector< msq_std::vector<Mesh::VertexHandle> > depths(depth+1);
-  msq_std::set<Mesh::VertexHandle> non_slave;
-  msq_std::set<Mesh::VertexHandle>::iterator p;
+  MsqPrintError err(std::cerr);
+  std::vector< std::vector<Mesh::VertexHandle> > depths(depth+1);
+  std::set<Mesh::VertexHandle> non_slave;
+  std::set<Mesh::VertexHandle>::iterator p;
 
     // find boundary vertices
-  msq_std::vector<Mesh::VertexHandle> verts;
+  std::vector<Mesh::VertexHandle> verts;
   mesh.get_all_vertices( verts, err ); ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!verts.empty());
   if (boundary >= 4) {
@@ -194,7 +194,7 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
       }
   }
   else {
-    msq_std::vector<unsigned short> dim(verts.size());
+    std::vector<unsigned short> dim(verts.size());
     domain.domain_DoF( &verts[0], &dim[0], verts.size(), err );
     ASSERT_NO_ERROR(err);
     for (size_t i = 0; i < verts.size(); ++i)
@@ -210,13 +210,13 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
     // find all vertices up to specified depth
   for (unsigned d = 0; d < depth; ++d) {
     for (size_t i = 0; i < depths[d].size(); ++i) {
-      msq_std::vector<Mesh::ElementHandle> adj;
-      msq_std::vector<size_t> junk;
+      std::vector<Mesh::ElementHandle> adj;
+      std::vector<size_t> junk;
       mesh.vertices_get_attached_elements( &depths[d][i], 1, adj, junk, err );
       ASSERT_NO_ERROR(err);
       for(size_t j = 0; j < adj.size(); ++j) {
         junk.clear();
-        msq_std::vector<Mesh::VertexHandle> conn;
+        std::vector<Mesh::VertexHandle> conn;
         mesh.elements_get_attached_vertices( &adj[j], 1, conn, junk, err );
         ASSERT_NO_ERROR(err);
         for (size_t k = 0; k < conn.size(); ++k) {
@@ -236,17 +236,17 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
   CPPUNIT_ASSERT( non_slave.size() < verts.size() );
   
     // Now build a map of all higher-order nodes in the mesh
-  msq_std::set<Mesh::VertexHandle> higher_order;
-  msq_std::vector<Mesh::ElementHandle> elems;
+  std::set<Mesh::VertexHandle> higher_order;
+  std::vector<Mesh::ElementHandle> elems;
   mesh.get_all_elements( elems, err ); 
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!elems.empty());
-  msq_std::vector<EntityTopology> types(elems.size());
+  std::vector<EntityTopology> types(elems.size());
   mesh.elements_get_topologies( &elems[0], &types[0], elems.size(), err );
   ASSERT_NO_ERROR(err);
   for (size_t i = 0; i < elems.size(); ++i) {
-    msq_std::vector<Mesh::VertexHandle> conn;
-    msq_std::vector<size_t> junk;
+    std::vector<Mesh::VertexHandle> conn;
+    std::vector<size_t> junk;
     mesh.elements_get_attached_vertices( &elems[i], 1, conn, junk, err );
     ASSERT_NO_ERROR(err);
     for (size_t j = TopologyInfo::corners( types[i] ); j < conn.size(); ++j)
@@ -258,7 +258,7 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
   CPPUNIT_ASSERT( !higher_order.empty() );
   
     // Now build a map of all fixed vertices
-  msq_std::set<Mesh::VertexHandle> fixed_vertices;
+  std::set<Mesh::VertexHandle> fixed_vertices;
   bool* fixed = new bool[verts.size()];
   mesh.vertices_get_fixed_flag( &verts[0], fixed, verts.size(), err );
   if (err)
@@ -277,7 +277,7 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
   ASSERT_NO_ERROR(err);
   
     // Now verify the results
-  msq_std::vector<unsigned char> bytes( verts.size() );
+  std::vector<unsigned char> bytes( verts.size() );
   mesh.vertices_get_byte( &verts[0], &bytes[0], verts.size(), err );
   ASSERT_NO_ERROR(err);
   for (size_t i = 0; i < verts.size(); ++i) {

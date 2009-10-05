@@ -44,10 +44,11 @@ namespace MESQUITE_NS {
  * This class implements an objective function that is the 
  * standard deviation of the quality metric evalutations.
  */
-class MESQUITE_EXPORT VarianceTemplate : public ObjectiveFunctionTemplate
+class VarianceTemplate : public ObjectiveFunctionTemplate
 {
   public:
   
+	MESQUITE_EXPORT
     VarianceTemplate( QualityMetric* qm = 0 ) : ObjectiveFunctionTemplate(qm) 
       { clear(); }
     
@@ -57,6 +58,7 @@ class MESQUITE_EXPORT VarianceTemplate : public ObjectiveFunctionTemplate
        * default one would also copy the temporary arrays, which
        * would be a waste of time.
        */
+	MESQUITE_EXPORT
     VarianceTemplate( const VarianceTemplate& copy )
       : ObjectiveFunctionTemplate( copy ),
         mCount( copy.mCount ),
@@ -67,30 +69,36 @@ class MESQUITE_EXPORT VarianceTemplate : public ObjectiveFunctionTemplate
         saveSqrSum( copy.saveSqrSum )
       {}
     
+	MESQUITE_EXPORT
     virtual ~VarianceTemplate() 
       {}
     
+	MESQUITE_EXPORT
     virtual bool evaluate( EvalType type, 
                            PatchData& pd,
                            double& value_out,
                            bool free,
                            MsqError& err ); 
 
+	MESQUITE_EXPORT
     virtual bool evaluate_with_gradient( EvalType type, 
                                          PatchData& pd,
                                          double& value_out,
-                                         msq_std::vector<Vector3D>& grad_out,
+                                         std::vector<Vector3D>& grad_out,
                                          MsqError& err ); 
 
+	MESQUITE_EXPORT
     virtual bool evaluate_with_Hessian_diagonal( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
-                                        msq_std::vector<Vector3D>& grad_out,
-                                        msq_std::vector<SymMatrix3D>& hess_diag_out,
+                                        std::vector<Vector3D>& grad_out,
+                                        std::vector<SymMatrix3D>& hess_diag_out,
                                         MsqError& err ); 
 
+	MESQUITE_EXPORT
     virtual ObjectiveFunction* clone() const;
 
+	MESQUITE_EXPORT
     virtual void clear();
 
   private:
@@ -122,13 +130,13 @@ class MESQUITE_EXPORT VarianceTemplate : public ObjectiveFunctionTemplate
     double saveSqrSum;/**< Saved sum from previous patch */
   
     /** Temporary storage for qm sample handles */
-    mutable msq_std::vector<size_t> qmHandles;
+    mutable std::vector<size_t> qmHandles;
     /** Temporary storage for qm vertex indices */
-    mutable msq_std::vector<size_t> mIndices;
+    mutable std::vector<size_t> mIndices;
     /** Temporary storage for qm gradient */
-    mutable msq_std::vector<Vector3D> mGradient, tmpGradient;
+    mutable std::vector<Vector3D> mGradient, tmpGradient;
     /** Temporary storage for qm Hessian diagonal data */
-    mutable msq_std::vector<SymMatrix3D> mHessDiag, tmpDiag1, tmpDiag2;
+    mutable std::vector<SymMatrix3D> mHessDiag, tmpDiag1, tmpDiag2;
 };
 
 } // namespace Mesquite

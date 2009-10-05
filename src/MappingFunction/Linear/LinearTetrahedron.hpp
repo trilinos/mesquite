@@ -40,7 +40,7 @@ namespace MESQUITE_NS {
  * - \f$N_3(\vec{\xi})=\xi_2\f$
  * - \f$N_4(\vec{\xi})=\xi_3\f$
  */ 
-class LinearTetrahedron : public MappingFunction3D
+class MESQUITE_EXPORT LinearTetrahedron : public MappingFunction3D
 {
 public:
 

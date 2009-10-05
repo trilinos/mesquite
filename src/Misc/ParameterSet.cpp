@@ -25,11 +25,7 @@
    
   ***************************************************************** */
 #include "ParameterSet.hpp"
-#ifdef MSQ_USE_OLD_C_HEADERS
-#  include <string.h>
-#else
-#  include <cstring>
-#endif
+#include <cstring>
 
 using namespace Mesquite;
 
@@ -81,11 +77,11 @@ ParameterSet::~ParameterSet()
   delete mParameterArray;
 }
 
-msq_stdc::size_t ParameterSet::get_parameter_index(const char* name, MsqError &err)
+std::size_t ParameterSet::get_parameter_index(const char* name, MsqError &err)
 {
     // Search for a parameter with the same name
   for (size_t i = 0; (i < mNumParameters; ++i)
-    if (!msq_stdc::strcmp(mParameterArray[i].name, name))
+    if (!std::strcmp(mParameterArray[i].name, name))
       return i;
   
   MSQ_SETERR(err)( MsqError::INVALID_ARG );

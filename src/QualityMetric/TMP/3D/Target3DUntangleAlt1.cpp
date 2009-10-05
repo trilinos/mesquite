@@ -40,7 +40,7 @@ namespace MESQUITE_NS {
 Target3DUntangleAlt1::~Target3DUntangleAlt1()
 {}
 
-msq_std::string Target3DUntangleAlt1::get_name() const
+std::string Target3DUntangleAlt1::get_name() const
   { return "Untangle2"; }
 
 bool Target3DUntangleAlt1::evaluate( const MsqMatrix<3,3>& A, 

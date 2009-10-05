@@ -45,7 +45,7 @@ class InvTransBarrier2D : public TargetMetric2D
   InvTransBarrier2D( TargetMetric2D* metric ) : metricPtr(metric) {}
 
   MESQUITE_EXPORT virtual
-  msq_std::string get_name() const;
+  std::string get_name() const;
   
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<2,2>& A, const MsqMatrix<2,2>& W, double& result, MsqError& err );

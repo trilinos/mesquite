@@ -37,15 +37,11 @@
 #include "MeshInterface.hpp"
 #include "MsqVertex.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <algorithm.h>
-#else
-# include <algorithm>
-#endif
+#include <algorithm>
 
 namespace MESQUITE_NS {
 
-void VertexPatches::get_patch_handles( msq_std::vector<PatchHandle>& patch_handles_out,
+void VertexPatches::get_patch_handles( std::vector<PatchHandle>& patch_handles_out,
                                        MsqError& err )
 {
     // get all vertex handles
@@ -74,8 +70,8 @@ void VertexPatches::get_patch_handles( msq_std::vector<PatchHandle>& patch_handl
 }
 
 void VertexPatches::get_patch( PatchHandle patch_handle,
-                               msq_std::vector<Mesh::ElementHandle>& elem_handles_out,
-                               msq_std::vector<Mesh::VertexHandle>& free_vertices_out,
+                               std::vector<Mesh::ElementHandle>& elem_handles_out,
+                               std::vector<Mesh::VertexHandle>& free_vertices_out,
                                MsqError& err )
 {
   free_vertices_out.clear();
@@ -114,9 +110,9 @@ void VertexPatches::get_patch( PatchHandle patch_handle,
     if (MSQ_CHKERR(err)) break;
     
       // remove duplicates from vertex list
-    msq_std::sort( free_vertices_out.begin(), free_vertices_out.end() );
+    std::sort( free_vertices_out.begin(), free_vertices_out.end() );
     free_vertices_out.erase( 
-        msq_std::unique( free_vertices_out.begin(), free_vertices_out.end() ),
+        std::unique( free_vertices_out.begin(), free_vertices_out.end() ),
         free_vertices_out.end() );
   
       // Get elements adjacent to vertices
@@ -128,9 +124,9 @@ void VertexPatches::get_patch( PatchHandle patch_handle,
     if (MSQ_CHKERR(err)) break;
 
       // Remove duplicates from element list
-    msq_std::sort( elem_handles_out.begin(), elem_handles_out.end() );
+    std::sort( elem_handles_out.begin(), elem_handles_out.end() );
     elem_handles_out.erase( 
-        msq_std::unique( elem_handles_out.begin(), elem_handles_out.end() ),
+        std::unique( elem_handles_out.begin(), elem_handles_out.end() ),
         elem_handles_out.end() );
   }
 }

@@ -55,7 +55,7 @@ public:
                                  MeshDomain* domain,
                                  MsqError &err);
 
-  virtual msq_std::string get_name() const;
+  virtual std::string get_name() const;
 
 private:
 

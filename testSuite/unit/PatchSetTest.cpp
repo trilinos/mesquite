@@ -32,20 +32,12 @@
 #include "cppunit/extensions/HelperMacros.h"
 
 #include <assert.h>
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <vector.h>
-# include <algorithm.h>
-# include <set.h>
-# include <numeric.h>
-# include <iostream.h>
-#else
-# include <vector>
-# include <algorithm>
-# include <set>
-# include <numeric>
-# include <iostream>
-  using namespace std;
-#endif
+#include <vector>
+#include <algorithm>
+#include <set>
+#include <numeric>
+#include <iostream>
+using namespace std;
 
 
 // Define a fake implementation of Mesquite::Mesh to pass

@@ -28,23 +28,9 @@
 
 #include "Mesquite.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-#endif
-
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#  include <iostream.h>
-#else
-#  include <iostream>
-#endif
-
-#ifdef MSQ_USE_OLD_C_HEADERS
-#  include <stdio.h>
-#else
-#  include <cstdio>
-#endif
+#include <vector>
+#include <iostream>
+#include <cstdio>
 
 namespace MESQUITE_NS {
 
@@ -107,9 +93,9 @@ class MsqDebug
     static void disable_all();
   
       /**\brief Get the output stream to be used for a given debug flag */
-    static msq_stdio::ostream& get_stream( unsigned flag );
+    static std::ostream& get_stream( unsigned flag );
       /**\brief Set the output stream to be used for a given debug flag */
-    static void set_stream( unsigned flag, msq_stdio::ostream& stream );
+    static void set_stream( unsigned flag, std::ostream& stream );
     
       // Work around limitations of preprocessor macros.
       // You probably don't want to use this directly.  See
@@ -135,8 +121,8 @@ class MsqDebug
       
   private:
   
-    static msq_std::vector<msq_stdio::ostream*> streams;
-    static msq_std::vector<bool> flags;
+    static std::vector<std::ostream*> streams;
+    static std::vector<bool> flags;
     static InitializeFlags init;
 };
 

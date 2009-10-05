@@ -24,28 +24,17 @@
    
   ***************************************************************** */
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-# include <iostream.h>
-#else
-# include <iostream>
-  using std::cout;
-  using std::endl;
-#endif
-
+#include <iostream>
+using std::cout;
+using std::endl;
 #include <string>
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <map.h>
-# include <set.h>
-# include <vector.h>
-#else
-# include <map>
-# include <set>
-# include <vector>
-  using std::set;
-  using std::map;
-  using std::vector;
-  using std::string;
-#endif
+#include <map>
+#include <set>
+#include <vector>
+using std::set;
+using std::map;
+using std::vector;
+using std::string;
 
 #include <stdlib.h>
 
@@ -355,7 +344,7 @@ void iMeshTest::testVertexIterator()
   CPPUNIT_ASSERT( myMesh );
 
     // mark each vertex as it is encountered
-  msq_std::vector<int> marks(num_pts);
+  std::vector<int> marks(num_pts);
   memset( &marks[0], 0, num_pts * sizeof(int) );
   
     // iterate over vertices
@@ -426,14 +415,14 @@ void iMeshTest::testVertexAdjacency()
   CPPUNIT_ASSERT( myMesh );
 
     // construct adjacency list from input data to compare against
-  msq_std::set<int> adjset[num_pts];
+  std::set<int> adjset[num_pts];
   size_t i;
   for (i = 0; i < num_tri; ++i)
     for (size_t j = 3*i; j < 3*i+3; ++j)
       adjset[triangleConnectivity[j]].insert(i);
   
-  msq_std::vector<Mesh::ElementHandle> elements;
-  msq_std::vector<size_t> offsets;
+  std::vector<Mesh::ElementHandle> elements;
+  std::vector<size_t> offsets;
   myMesh->vertices_get_attached_elements( vtxIndexToHandle, num_pts,
                                           elements, offsets, err );
   CPPUNIT_ASSERT(!err);
@@ -450,11 +439,11 @@ void iMeshTest::testVertexAdjacency()
     {
         // Get element index from handle
       Mesh::ElementHandle handle = elems[j];
-      msq_std::map<Mesh::ElementHandle,int>::iterator idx = triHandleToIndex.find(handle);
+      std::map<Mesh::ElementHandle,int>::iterator idx = triHandleToIndex.find(handle);
       CPPUNIT_ASSERT(idx != triHandleToIndex.end());
 
         // Find element index in vertex adjacency set
-      msq_std::set<int>::iterator iter = adjset[i].find(idx->second);
+      std::set<int>::iterator iter = adjset[i].find(idx->second);
       CPPUNIT_ASSERT(iter != adjset[i].end());
       adjset[i].erase(iter);
     }
@@ -474,8 +463,8 @@ void iMeshTest::testElementConnectivity()
   CPPUNIT_ASSERT( myMesh );
 
     // get element connectivity list
-  msq_std::vector<Mesh::VertexHandle> vertices;
-  msq_std::vector<size_t> offsets;
+  std::vector<Mesh::VertexHandle> vertices;
+  std::vector<size_t> offsets;
   myMesh->elements_get_attached_vertices( triIndexToHandle, num_tri,
                                           vertices, offsets, err );
   CPPUNIT_ASSERT(!err);

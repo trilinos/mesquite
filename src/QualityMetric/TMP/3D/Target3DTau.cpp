@@ -39,7 +39,7 @@ namespace MESQUITE_NS {
 
 Target3DTau::~Target3DTau() {}
 
-msq_std::string Target3DTau::get_name() const { return "Tau"; }
+std::string Target3DTau::get_name() const { return "Tau"; }
 
 bool Target3DTau::evaluate( const MsqMatrix<3,3>& A, 
                             const MsqMatrix<3,3>& W, 

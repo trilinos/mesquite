@@ -52,7 +52,7 @@ namespace MESQUITE_NS {
  * 
  * \f$N_3(\xi,\eta) = \frac{1}{4}(1-\xi)(1+\eta)\f$
  */
-class LinearQuadrilateral : public MappingFunction2D
+class MESQUITE_EXPORT LinearQuadrilateral : public MappingFunction2D
 {
 public:
 

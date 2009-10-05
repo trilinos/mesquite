@@ -115,7 +115,7 @@ bool CompositeOFMultiply::evaluate( EvalType type,
 bool CompositeOFMultiply::evaluate_with_gradient( EvalType type, 
                                              PatchData& pd,
                                              double& value_out,
-                                             msq_std::vector<Vector3D>& grad_out,
+                                             std::vector<Vector3D>& grad_out,
                                              MsqError& err )
 {
   double value_2;
@@ -129,7 +129,7 @@ bool CompositeOFMultiply::evaluate_with_gradient( EvalType type,
   assert( grad_out.size() == pd.num_free_vertices() );
   assert( mGradient.size() == pd.num_free_vertices() );
   
-  msq_std::vector<Vector3D>::iterator i = grad_out.begin(), j = mGradient.begin();
+  std::vector<Vector3D>::iterator i = grad_out.begin(), j = mGradient.begin();
   while (i != grad_out.end()) {
     *i *= value_2;
     *j *= value_out;
@@ -144,8 +144,8 @@ bool CompositeOFMultiply::evaluate_with_gradient( EvalType type,
 bool CompositeOFMultiply::evaluate_with_Hessian_diagonal( EvalType type, 
                                             PatchData& pd,
                                             double& value_out,
-                                            msq_std::vector<Vector3D>& grad_out,
-                                            msq_std::vector<SymMatrix3D>& diag_out,
+                                            std::vector<Vector3D>& grad_out,
+                                            std::vector<SymMatrix3D>& diag_out,
                                             MsqError& err )
 {
   double value_2;
@@ -174,7 +174,7 @@ bool CompositeOFMultiply::evaluate_with_Hessian_diagonal( EvalType type,
 bool CompositeOFMultiply::evaluate_with_Hessian( EvalType , 
                                             PatchData& ,
                                             double& ,
-                                            msq_std::vector<Vector3D>& ,
+                                            std::vector<Vector3D>& ,
                                             MsqHessian& ,
                                             MsqError& err )
 {

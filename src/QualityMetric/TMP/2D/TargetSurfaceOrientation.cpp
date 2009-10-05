@@ -43,18 +43,18 @@
 namespace MESQUITE_NS {
 int TargetSurfaceOrientation::get_negate_flag( ) const { return 1; }
 
-msq_std::string TargetSurfaceOrientation::get_name() const
-  { return msq_std::string("TargetSurfaceOrientation"); }
+std::string TargetSurfaceOrientation::get_name() const
+  { return std::string("TargetSurfaceOrientation"); }
 
 void TargetSurfaceOrientation::get_evaluations( PatchData& pd,
-                                      msq_std::vector<size_t>& handles,
+                                      std::vector<size_t>& handles,
                                       bool free,
                                       MsqError& err )
 {
   handles.clear();
-  msq_std::vector<size_t> elems;
+  std::vector<size_t> elems;
   ElementQM::get_element_evaluations( pd, elems, free, err ); MSQ_ERRRTN(err);
-  for (msq_std::vector<size_t>::iterator i = elems.begin(); i != elems.end(); ++i)
+  for (std::vector<size_t>::iterator i = elems.begin(); i != elems.end(); ++i)
   {
     NodeSet samples = pd.get_samples( *i );
     EntityTopology type = pd.element_by_index( *i ).get_element_type();
@@ -73,7 +73,7 @@ void TargetSurfaceOrientation::get_evaluations( PatchData& pd,
 
 void TargetSurfaceOrientation::get_element_evaluations( PatchData& pd,
                                               size_t elem,
-                                              msq_std::vector<size_t>& handles,
+                                              std::vector<size_t>& handles,
                                               MsqError& err )
 {
   EntityTopology type = pd.element_by_index( elem ).get_element_type();
@@ -101,7 +101,7 @@ bool TargetSurfaceOrientation::evaluate( PatchData& pd, size_t handle, double& v
 bool TargetSurfaceOrientation::evaluate_with_indices( PatchData& pd,
                                             size_t handle,
                                             double& value,
-                                            msq_std::vector<size_t>& indices,
+                                            std::vector<size_t>& indices,
                                             MsqError& err )
 {
   size_t num_idx = 0;

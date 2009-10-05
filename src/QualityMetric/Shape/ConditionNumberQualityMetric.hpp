@@ -64,7 +64,7 @@ namespace MESQUITE_NS
      virtual ~ConditionNumberQualityMetric()
         {}
      
-     virtual msq_std::string get_name() const;
+     virtual std::string get_name() const;
 
       //! 1 if metric should be minimized, -1 if metric should be maximized.
      virtual int get_negate_flag() const;

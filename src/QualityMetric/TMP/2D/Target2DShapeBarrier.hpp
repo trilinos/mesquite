@@ -45,7 +45,7 @@ class Target2DShapeBarrier : public TargetMetric2D
   public:
 
   MESQUITE_EXPORT virtual
-  msq_std::string get_name() const;
+  std::string get_name() const;
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<2,2>& A, 

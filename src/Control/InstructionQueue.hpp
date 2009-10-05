@@ -41,11 +41,7 @@ Header file for the Mesquite::InstructionQueue class
 #include "Mesquite.hpp"
 #include "Settings.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <list.h>
-#else
-#  include <list>
-#endif
+#include <list>
 
 namespace MESQUITE_NS {
 
@@ -79,36 +75,53 @@ namespace MESQUITE_NS {
   {
 
   public:
+    MESQUITE_EXPORT
     InstructionQueue();
     
+    MESQUITE_EXPORT
     InstructionQueue( const Settings& settings );
 
+    MESQUITE_EXPORT
     virtual ~InstructionQueue() {};
     
+    MESQUITE_EXPORT
     void add_target_calculator( TargetWriter* tc, MsqError& err );
     
       //! Add a tool mark higher-order nodes as slaved.
       //! Note:  Implies set_slaved_ho_node_mode( Settings::SLAVE_CALCULATED )
+    MESQUITE_EXPORT
     void add_vertex_slaver( VertexSlaver* slaver, MsqError& err );
       //! Remove a tool mark higher-order nodes as slaved.
       //! Note:  Implies set_slaved_ho_node_mode( Settings::SLAVE_ALL )
+    MESQUITE_EXPORT
     void remove_vertex_slaver( VertexSlaver* slaver, MsqError& err );
     
+    MESQUITE_EXPORT
     void add_tag_vertex_mesh( TagVertexMesh* m, MsqError& err );
+    MESQUITE_EXPORT
     void remove_tag_vertex_mesh( TagVertexMesh* m, MsqError& err );
     
+    MESQUITE_EXPORT
     void add_preconditioner(QualityImprover* instr, MsqError &err);
+    MESQUITE_EXPORT
     void remove_preconditioner(size_t index, MsqError &err);
+    MESQUITE_EXPORT
     void insert_preconditioner(QualityImprover* instr, size_t index, MsqError &err);
     
+    MESQUITE_EXPORT
     void add_quality_assessor(QualityAssessor* instr, MsqError &err);
+    MESQUITE_EXPORT
     void remove_quality_assessor(size_t index, MsqError &err);
+    MESQUITE_EXPORT
     void insert_quality_assessor(QualityAssessor* instr, size_t index, MsqError &err);
-    
+
+    MESQUITE_EXPORT
     void set_master_quality_improver(QualityImprover* instr, MsqError &err);
     
+    MESQUITE_EXPORT
     void disable_automatic_quality_assessment()
        { autoQualAssess = false; }
+    MESQUITE_EXPORT
     void enable_automatic_quality_assessment()
        { autoQualAssess = true; }
 
@@ -119,6 +132,7 @@ namespace MESQUITE_NS {
        *\param mesh   The mesh to run each instruction on.
        *\param domain The domain of the mesh -- may be NULL if no domain.
        */
+    MESQUITE_EXPORT
     virtual void run_instructions( Mesh* mesh,
                                    MeshDomain* domain,
                                    MsqError &err);
@@ -126,6 +140,7 @@ namespace MESQUITE_NS {
     inline void run_instructions( Mesh* mesh, MsqError& err )
       { this->run_instructions( mesh, 0, err ); }
     
+    MESQUITE_EXPORT
     virtual void run_instructions( ParallelMesh* mesh,
                                    MeshDomain* domain,
                                    MsqError &err);
@@ -133,14 +148,15 @@ namespace MESQUITE_NS {
     inline void run_instructions( ParallelMesh* mesh, MsqError& err )
       { this->run_instructions( mesh, 0, err ); }
 
+    MESQUITE_EXPORT
     void clear();  
     
   protected:
     
   private:
-    msq_std::list<Instruction*>::iterator clear_master(MsqError &err);
+    std::list<Instruction*>::iterator clear_master(MsqError &err);
 
-    msq_std::list<Instruction*> instructions;
+    std::list<Instruction*> instructions;
 
     bool autoQualAssess;
     

@@ -43,20 +43,10 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
-#ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
 using std::cout;
 using std::endl;
-#else
-#include <iostream.h>
-#endif
-
-#ifndef MSQ_USE_OLD_C_HEADERS
 #include <cstdlib>
-#else
-#include <stdlib.h>
-#endif
-
 
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
@@ -134,13 +124,13 @@ void compare_nodes( size_t start_index,
                     MsqError& err )
 {
   size_t i, num_verts = end_index - start_index;
-  msq_std::vector<MsqVertex> verts1(num_verts), verts2(num_verts);
-  msq_std::vector<Mesh::VertexHandle> handles1(num_verts), handles2(num_verts);
+  std::vector<MsqVertex> verts1(num_verts), verts2(num_verts);
+  std::vector<Mesh::VertexHandle> handles1(num_verts), handles2(num_verts);
 
 /* VertexIterator skips higher-order nodes.
    For now, just assume index == handle
 
-  msq_std::vector<Mesh::VertexHandle>::iterator handle_iter1, handle_iter2;
+  std::vector<Mesh::VertexHandle>::iterator handle_iter1, handle_iter2;
   
     // Skip start_index vertices
   VertexIterator* iter1 = mesh1->vertex_iterator( err ); MSQ_ERRRTN(err);

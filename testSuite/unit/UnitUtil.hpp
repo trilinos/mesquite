@@ -91,7 +91,7 @@
 
 
 /** make string representation of cartesian vector */
-inline msq_std::string utest_vect_str( const Mesquite::Vector3D& v )
+inline std::string utest_vect_str( const Mesquite::Vector3D& v )
 {
   char buffer[128];
   sprintf(buffer, "[%f, %f, %f]", v[0], v[1], v[2]);
@@ -99,7 +99,7 @@ inline msq_std::string utest_vect_str( const Mesquite::Vector3D& v )
 }
 
 /** make string representation of 3x3 matrix */
-inline msq_std::string utest_mat_str( const Mesquite::Matrix3D& m )
+inline std::string utest_mat_str( const Mesquite::Matrix3D& m )
 {
   char buffer[256];
   sprintf(buffer, "[%f, %f, %f] [%f, %f, %f] [%f, %f, %f]", 
@@ -110,7 +110,7 @@ inline msq_std::string utest_mat_str( const Mesquite::Matrix3D& m )
 }
 
 /** make string representation of 3x3 symetric matrix */
-inline msq_std::string utest_mat_str( const Mesquite::SymMatrix3D& m )
+inline std::string utest_mat_str( const Mesquite::SymMatrix3D& m )
 {
   char buffer[256];
   sprintf(buffer, "[%f, %f, %f] [%f, %f, %f] [%f, %f, %f]", 
@@ -125,8 +125,8 @@ inline CppUnit::Message utest_vect_message( const Mesquite::Vector3D& v1,
                                       const Mesquite::Vector3D& v2 )
 {
   CppUnit::Message m( "equality assertion failed" );
-  m.addDetail( msq_std::string("Expected: ") + utest_vect_str(v1) );
-  m.addDetail( msq_std::string("Actual  : ") + utest_vect_str(v2) );
+  m.addDetail( std::string("Expected: ") + utest_vect_str(v1) );
+  m.addDetail( std::string("Actual  : ") + utest_vect_str(v2) );
   return m;
 }
 
@@ -135,8 +135,8 @@ inline CppUnit::Message utest_mat_message( const Mesquite::Matrix3D& m1,
                                      const Mesquite::Matrix3D& m2 )
 {
   CppUnit::Message m( "equality assertion failed" );
-  m.addDetail( msq_std::string("Expected: ") + utest_mat_str(m1) );
-  m.addDetail( msq_std::string("Actual  : ") + utest_mat_str(m2) );
+  m.addDetail( std::string("Expected: ") + utest_mat_str(m1) );
+  m.addDetail( std::string("Actual  : ") + utest_mat_str(m2) );
   return m;
 }
 
@@ -145,8 +145,8 @@ inline CppUnit::Message utest_mat_message( const Mesquite::SymMatrix3D& m1,
                                      const Mesquite::SymMatrix3D& m2 )
 {
   CppUnit::Message m( "equality assertion failed" );
-  m.addDetail( msq_std::string("Expected: ") + utest_mat_str(m1) );
-  m.addDetail( msq_std::string("Actual  : ") + utest_mat_str(m2) );
+  m.addDetail( std::string("Expected: ") + utest_mat_str(m1) );
+  m.addDetail( std::string("Actual  : ") + utest_mat_str(m2) );
   return m;
 }
 
@@ -184,9 +184,9 @@ inline bool utest_mat_equal( const Mesquite::SymMatrix3D& m1, const Mesquite::Sy
 }
 
 template <unsigned R, unsigned C>
-inline msq_std::string msq_mat_str( const Mesquite::MsqMatrix<R,C>& m )
+inline std::string msq_mat_str( const Mesquite::MsqMatrix<R,C>& m )
 {
-  msq_stdio::ostringstream os;
+  std::ostringstream os;
   for (unsigned i = 0; i < R; ++i) {
     os << "[" << m(i,0);
     for (unsigned j = 1; j < C; ++j)
@@ -200,7 +200,7 @@ template <unsigned R, unsigned C>
 inline CppUnit::Message ident_check_msg( const Mesquite::MsqMatrix<R,C>& m )
 {
   CppUnit::Message mes( "Identity Assertion Failed" );
-  mes.addDetail( msq_std::string("Actual: ") + msq_mat_str(m) );
+  mes.addDetail( std::string("Actual: ") + msq_mat_str(m) );
   return mes;
 }
 
@@ -221,8 +221,8 @@ inline CppUnit::Message mat_equal_check_msg( const Mesquite::MsqMatrix<R,C>& A,
                                              const Mesquite::MsqMatrix<R,C>& B )
 {
   CppUnit::Message mes( "Matrix Equality Assertion Failed" );
-  mes.addDetail( msq_std::string( "Expected: ") + msq_mat_str(A) );
-  mes.addDetail( msq_std::string( "Actual:   ") + msq_mat_str(B) );
+  mes.addDetail( std::string( "Expected: ") + msq_mat_str(A) );
+  mes.addDetail( std::string( "Actual:   ") + msq_mat_str(B) );
   return mes;
 }
 
@@ -231,8 +231,8 @@ inline CppUnit::Message mat_not_equal_check_msg( const Mesquite::MsqMatrix<R,C>&
                                              const Mesquite::MsqMatrix<R,C>& B )
 {
   CppUnit::Message mes( "Matrix Inequality Assertion Failed" );
-  mes.addDetail( msq_std::string( "Expected: ") + msq_mat_str(A) );
-  mes.addDetail( msq_std::string( "Actual:   ") + msq_mat_str(B) );
+  mes.addDetail( std::string( "Expected: ") + msq_mat_str(A) );
+  mes.addDetail( std::string( "Actual:   ") + msq_mat_str(B) );
   return mes;
 }
 
@@ -263,7 +263,7 @@ inline CppUnit::Message arrays_not_equal_msg( const T1* A, size_t A_len,
 {
   CppUnit::Message mes( "Equality Assertion Failed for Arrays" );
   
-  msq_stdio::ostringstream strA;
+  std::ostringstream strA;
   if (A_len == 0)
     strA << "(empty)";
   else {
@@ -272,9 +272,9 @@ inline CppUnit::Message arrays_not_equal_msg( const T1* A, size_t A_len,
       strA << ',' << A[i];
     strA << ']';
   }
-  mes.addDetail( msq_std::string( "Expected: ") + strA.str() );
+  mes.addDetail( std::string( "Expected: ") + strA.str() );
   
-  msq_stdio::ostringstream strB;
+  std::ostringstream strB;
   if (B_len == 0)
     strB << "(empty)";
   else {
@@ -283,7 +283,7 @@ inline CppUnit::Message arrays_not_equal_msg( const T1* A, size_t A_len,
       strB << ',' << B[i];
     strB << ']';
   }
-  mes.addDetail( msq_std::string( "Actual: ") + strB.str() );
+  mes.addDetail( std::string( "Actual: ") + strB.str() );
   
   return mes;
 }

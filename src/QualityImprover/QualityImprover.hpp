@@ -61,22 +61,22 @@ namespace MESQUITE_NS
     // Constructor is protected ... see below.
     
      // virtual destructor ensures use of polymorphism during destruction
-    virtual ~QualityImprover() { };
+    MESQUITE_EXPORT virtual ~QualityImprover() { };
 
       //!Sets in the termination criterion for the concrete solver's
       //! optimization.
-    void set_inner_termination_criterion(TerminationCriterion* crit)
+    MESQUITE_EXPORT void set_inner_termination_criterion(TerminationCriterion* crit)
       {
         innerTerminationCriterion=crit;
       }
       //!Sets in the termination criterion for the outer loop over 
       //! patches.
-    void set_outer_termination_criterion(TerminationCriterion* crit)
+    MESQUITE_EXPORT void set_outer_termination_criterion(TerminationCriterion* crit)
       {
         outerTerminationCriterion=crit;
       }
       
-    virtual PatchSet* get_patch_set() = 0;
+    MESQUITE_EXPORT virtual PatchSet* get_patch_set() = 0;
     
 
   protected:
@@ -84,20 +84,18 @@ namespace MESQUITE_NS
     /*! The default constructor initialises a few member variables
         to default values.
         This can be reused by concrete class constructor. */    
-    QualityImprover()
+    MESQUITE_EXPORT QualityImprover()
       {
-          //Temporary solution to not having an err object
-        MsqError temp_err;
         defaultOuterCriterion.add_iteration_limit( 1 );
         outerTerminationCriterion = & defaultOuterCriterion;
         innerTerminationCriterion = & defaultInnerCriterion;
       }
     
       //!return the outer termination criterion pointer 
-    TerminationCriterion* get_outer_termination_criterion()
+    MESQUITE_EXPORT TerminationCriterion* get_outer_termination_criterion()
       { return outerTerminationCriterion; }
       //!return the inner termination criterion pointer       
-    TerminationCriterion* get_inner_termination_criterion()
+    MESQUITE_EXPORT TerminationCriterion* get_inner_termination_criterion()
       { return innerTerminationCriterion; } 
     
   private:

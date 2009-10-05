@@ -89,7 +89,7 @@ public:
   
 template <class Metric> void Target3DTest<Metric>::test_ideal_eval()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   const double Avals[] = { 2, 1, 1, 1, 2, 1, 1, 1, 2 };
   const double Bvals[] = { 1.5, -0.7, -0.8, 0.8, -1.3, -0.7, 0.6, -0.9, -2.0 };
   const MsqMatrix<3,3> I(1.0), A(Avals), B(Bvals);
@@ -114,7 +114,7 @@ template <class Metric> void Target3DTest<Metric>::test_ideal_eval()
   
 template <class Metric> void Target3DTest<Metric>::test_ideal_gradient()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   const double Avals[] = { 2, 1, 1, 1, 2, 1, 1, 1, 2 };
   const double Bvals[] = { 1.5, -0.7, -0.8, 0.8, -1.3, -0.7, 0.6, -0.9, -2.0 };
   const MsqMatrix<3,3> I(1.0), A(Avals), B(Bvals);
@@ -140,7 +140,7 @@ template <class Metric> void Target3DTest<Metric>::test_ideal_gradient()
 
 template <class Metric> void Target3DTest<Metric>::test_inverted() 
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   const double A_vals[] = { 1, 0, 0, 
                             0, 1, 0, 
                             0, 0, -1 };
@@ -179,7 +179,7 @@ template <class Metric> void Target3DTest<Metric>::test_non_ideal(
                                                      MsqMatrix<3,3> A,
                                                      MsqMatrix<3,3> W )
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   MsqMatrix<3,3> grad;
   double val, eps = 1e-6;
   bool valid;
@@ -585,7 +585,7 @@ void Target3DTest<Metric>::compare_anaytic_and_numeric_hess()
 class GradTestMetric3D : public TargetMetric3D
 {
   public:
-    msq_std::string get_name() const { return "GradTest"; }
+    std::string get_name() const { return "GradTest"; }
   
     bool evaluate( const MsqMatrix<3,3>& A,
                    const MsqMatrix<3,3>& W,
@@ -616,7 +616,7 @@ class GradTestMetric3D : public TargetMetric3D
 class HessTestMetric3D : public TargetMetric3D
 {
   public:
-    msq_std::string get_name() const { return "HessTest"; }
+    std::string get_name() const { return "HessTest"; }
 
     bool evaluate( const MsqMatrix<3,3>& A,
                    const MsqMatrix<3,3>& W,
@@ -647,7 +647,7 @@ class HessTestMetric3D : public TargetMetric3D
 class HessTestMetric3D_2 : public TargetMetric3D
 {
   public:
-    msq_std::string get_name() const { return "HessTest2"; }
+    std::string get_name() const { return "HessTest2"; }
   
     bool evaluate( const MsqMatrix<3,3>& A, const MsqMatrix<3,3>&, double& result, MsqError& err )
       { result = Frobenius(A); return true; }

@@ -61,10 +61,10 @@ void MeshDecorator::vertex_set_coordinates( VertexHandle vertex,
 int MeshDecorator::get_geometric_dimension( MsqError& err )
   { return get_mesh()->get_geometric_dimension( err ); }
 
-void MeshDecorator::get_all_elements( msq_std::vector<ElementHandle>& elements, MsqError& err )
+void MeshDecorator::get_all_elements( std::vector<ElementHandle>& elements, MsqError& err )
   { get_mesh()->get_all_elements( elements, err ); }
 
-void MeshDecorator::get_all_vertices( msq_std::vector<VertexHandle>& vertices, MsqError& err )
+void MeshDecorator::get_all_vertices( std::vector<VertexHandle>& vertices, MsqError& err )
   { get_mesh()->get_all_vertices( vertices, err ); }
 
 
@@ -109,8 +109,8 @@ void MeshDecorator::vertices_get_byte( const VertexHandle *vertex,
 void MeshDecorator::vertices_get_attached_elements( 
                                 const VertexHandle* vertex_array,
                                 size_t num_vertex,
-                                msq_std::vector<ElementHandle>& elements,
-                                msq_std::vector<size_t>& offsets,
+                                std::vector<ElementHandle>& elements,
+                                std::vector<size_t>& offsets,
                                 MsqError& err )
   { get_mesh()->vertices_get_attached_elements( vertex_array, num_vertex, elements, offsets, err ); }
     
@@ -119,8 +119,8 @@ void MeshDecorator::vertices_get_attached_elements(
 void MeshDecorator::elements_get_attached_vertices(
                                    const ElementHandle *elem_handles,
                                    size_t num_elems,
-                                   msq_std::vector<VertexHandle>& vert_handles,
-                                   msq_std::vector<size_t>& offsets, 
+                                   std::vector<VertexHandle>& vert_handles,
+                                   std::vector<size_t>& offsets, 
                                    MsqError &err)
   { get_mesh()->elements_get_attached_vertices( elem_handles, num_elems, vert_handles, offsets, err ); }
 
@@ -132,7 +132,7 @@ void MeshDecorator::elements_get_topologies(
 
 //***************  Tags  ***********
 
-TagHandle MeshDecorator::tag_create( const msq_std::string& tag_name,
+TagHandle MeshDecorator::tag_create( const std::string& tag_name,
                                      TagType type, unsigned length,
                                      const void* default_value,
                                      MsqError &err)
@@ -143,12 +143,12 @@ TagHandle MeshDecorator::tag_create( const msq_std::string& tag_name,
 void MeshDecorator::tag_delete( TagHandle handle, MsqError& err )
   { get_mesh()->tag_delete( handle, err ); }
 
-TagHandle MeshDecorator::tag_get( const msq_std::string& name, MsqError& err )
+TagHandle MeshDecorator::tag_get( const std::string& name, MsqError& err )
   { return get_mesh()->tag_get( name, err ); }
 
 
 void MeshDecorator::tag_properties( TagHandle handle,
-                                    msq_std::string& name_out,
+                                    std::string& name_out,
                                     TagType& type_out,
                                     unsigned& length_out,
                                     MsqError& err )
