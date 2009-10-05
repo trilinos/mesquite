@@ -36,11 +36,7 @@
 #include "MsqError.hpp"
 #include "MsqMatrix.hpp"
 #include "ElemSampleQM.hpp"
-#ifdef MSQ_USE_OLD_IO_HEADERS
-# include <sstream.h>
-#else
-# include <sstream>
-#endif
+#include <sstream>
 
 namespace MESQUITE_NS {
 
@@ -52,13 +48,13 @@ static TagHandle get_tag( Mesh* mesh,
 {
   unsigned matrix_size = dimension * 3;
   unsigned num_doubles = num_matrices * matrix_size;
-  msq_stdio::ostringstream str;
+  std::ostringstream str;
   str << base_name << num_doubles;
   
   TagHandle handle = mesh->tag_get( str.str().c_str(), err ); MSQ_ERRZERO(err);
   
     // check tag type
-  msq_std::string temp_name;
+  std::string temp_name;
   Mesh::TagType temp_type;
   unsigned temp_length;
   mesh->tag_properties( handle, temp_name, temp_type, temp_length, err );
@@ -77,7 +73,7 @@ static TagHandle get_tag( Mesh* mesh,
   
   
 
-TargetReader::TargetReader(msq_std::string name )
+TargetReader::TargetReader(std::string name )
   : tagBaseName(name) {}
 
 TargetReader::~TargetReader()

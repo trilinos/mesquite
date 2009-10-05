@@ -37,7 +37,7 @@
 
 namespace MESQUITE_NS {
 
-msq_std::string Target3DSum::get_name() const
+std::string Target3DSum::get_name() const
   { return mu1->get_name() + '+' + mu2->get_name(); }
 
 bool Target3DSum::evaluate( const MsqMatrix<3,3>& A, 

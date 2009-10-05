@@ -46,7 +46,7 @@ namespace MESQUITE_NS {
 class SizeMetric : public ElementQM
 {
 public:
-     MESQUITE_EXPORT virtual msq_std::string get_name() const;
+     MESQUITE_EXPORT virtual std::string get_name() const;
 
      MESQUITE_EXPORT virtual int get_negate_flag() const;
   

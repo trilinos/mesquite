@@ -100,14 +100,14 @@ const double EPSILON = 1e-4;
 class LinearVertexMetric : public VertexQM
 {
 public:
-  msq_std::string get_name() const { return "Fake metric for testing numerical gradient"; }
+  std::string get_name() const { return "Fake metric for testing numerical gradient"; }
   int get_negate_flag() const { return 1; }
   bool evaluate( PatchData& pd, size_t vtx_idx, double& value, MsqError& )
   {
     value = pd.vertex_by_index( vtx_idx )[0];
     return true;
   }
-  bool evaluate_with_indices( PatchData& pd, size_t vtx_idx, double& value, msq_std::vector<size_t>& indices, MsqError& )
+  bool evaluate_with_indices( PatchData& pd, size_t vtx_idx, double& value, std::vector<size_t>& indices, MsqError& )
   {
     value = pd.vertex_by_index( vtx_idx )[0];
     indices.resize(1);
@@ -124,11 +124,11 @@ public:
 class ConstantElementMetric : public ElementQM
 {
 public:
-  msq_std::string get_name() const { return "Fake metric for testing numerical gradient"; }
+  std::string get_name() const { return "Fake metric for testing numerical gradient"; }
   int get_negate_flag() const { return 1; }
   bool evaluate( PatchData& pd, size_t , double& value, MsqError& )
     { value = 1.0; return true; }
-  bool evaluate_with_indices( PatchData& pd, size_t elem_idx, double& value, msq_std::vector<size_t>& indices, MsqError& )
+  bool evaluate_with_indices( PatchData& pd, size_t elem_idx, double& value, std::vector<size_t>& indices, MsqError& )
   { 
     MsqMeshEntity& elem = pd.element_by_index( elem_idx );
     unsigned nv = elem.node_count();
@@ -152,7 +152,7 @@ public:
 class ParabolicVertexMetric : public VertexQM
 {
 public:
-  msq_std::string get_name() const { return "Fake metric for testing numerical gradient"; }
+  std::string get_name() const { return "Fake metric for testing numerical gradient"; }
   int get_negate_flag() const { return 1; }
   bool evaluate( PatchData& pd, size_t vtx_idx, double& value, MsqError& )
   {
@@ -160,7 +160,7 @@ public:
     value *= value;
     return true;
   }
-  bool evaluate_with_indices( PatchData& pd, size_t vtx_idx, double& value, msq_std::vector<size_t>& indices, MsqError& )
+  bool evaluate_with_indices( PatchData& pd, size_t vtx_idx, double& value, std::vector<size_t>& indices, MsqError& )
   {
     value = pd.vertex_by_index( vtx_idx )[1];
     value *= value;
@@ -203,14 +203,14 @@ void QualityMetricTest::test_fixed_vertex_list()
                          false, false, true,
                          true,  true,  true };
   
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   PatchData pd;
   pd.fill( 9, coords, 4, QUADRILATERAL, conn, fixed, err );
   ASSERT_NO_ERROR(err);
   
   uint32_t bits;
-  msq_std::vector<size_t> indices;
-  msq_std::vector<size_t>::iterator it;
+  std::vector<size_t> indices;
+  std::vector<size_t>::iterator it;
   const size_t* verts;
   unsigned i;
   
@@ -218,17 +218,17 @@ void QualityMetricTest::test_fixed_vertex_list()
   bits = QualityMetric::fixed_vertex_bitmap( pd, &pd.element_by_index(0), indices );
   CPPUNIT_ASSERT_EQUAL( (size_t)4, indices.size() );
   CPPUNIT_ASSERT_EQUAL( (uint32_t)0, bits&0xF );
-  CPPUNIT_ASSERT( pd.num_free_vertices() > *msq_std::max_element(indices.begin(), indices.end()) );
+  CPPUNIT_ASSERT( pd.num_free_vertices() > *std::max_element(indices.begin(), indices.end()) );
   verts = pd.element_by_index(0).get_vertex_index_array();
   for (i = 0; i < 4; ++i) 
-    CPPUNIT_ASSERT( msq_stdc::find( verts, verts+4, indices[i] ) != verts+4 );
+    CPPUNIT_ASSERT( std::find( verts, verts+4, indices[i] ) != verts+4 );
   
   indices.clear();
   bits = QualityMetric::fixed_vertex_bitmap( pd, &pd.element_by_index(1), indices );
   CPPUNIT_ASSERT_EQUAL( (size_t)3, indices.size() );
   verts = pd.element_by_index(1).get_vertex_index_array();
   for (i = 0; i < 4; ++i) {
-    it = msq_std::find( indices.begin(), indices.end(), verts[i] );
+    it = std::find( indices.begin(), indices.end(), verts[i] );
     if (verts[i] < pd.num_free_vertices()) {
       CPPUNIT_ASSERT( it != indices.end() );
       CPPUNIT_ASSERT_EQUAL( 0u, bits & (1<<i) );
@@ -244,7 +244,7 @@ void QualityMetricTest::test_fixed_vertex_list()
   CPPUNIT_ASSERT_EQUAL( (size_t)1, indices.size() );
   verts = pd.element_by_index(2).get_vertex_index_array();
   for (i = 0; i < 4; ++i) {
-    it = msq_std::find( indices.begin(), indices.end(), verts[i] );
+    it = std::find( indices.begin(), indices.end(), verts[i] );
     if (verts[i] < pd.num_free_vertices()) {
       CPPUNIT_ASSERT( it != indices.end() );
       CPPUNIT_ASSERT_EQUAL( 0u, bits & (1<<i) );
@@ -260,7 +260,7 @@ void QualityMetricTest::test_fixed_vertex_list()
   CPPUNIT_ASSERT_EQUAL( (size_t)2, indices.size() );
   verts = pd.element_by_index(3).get_vertex_index_array();
   for (i = 0; i < 4; ++i) {
-    it = msq_std::find( indices.begin(), indices.end(), verts[i] );
+    it = std::find( indices.begin(), indices.end(), verts[i] );
     if (verts[i] < pd.num_free_vertices()) {
       CPPUNIT_ASSERT( it != indices.end() );
       CPPUNIT_ASSERT_EQUAL( 0u, bits & (1<<i) );
@@ -275,7 +275,7 @@ void QualityMetricTest::test_fixed_vertex_list()
 void QualityMetricTest::test_remove_fixed_gradients()
 {
     // define a list of vectors
-  msq_std::vector<Vector3D> grads(6);
+  std::vector<Vector3D> grads(6);
   grads[0] = Vector3D(0,0,0);
   grads[1] = Vector3D(1,1,1);
   grads[2] = Vector3D(2,2,2);
@@ -303,8 +303,8 @@ void QualityMetricTest::test_remove_fixed_hessians()
                                                  Matrix3D(9.0)
   };
     // convert to std::vector
-  msq_std::vector<Matrix3D> hess(10);
-  msq_std::copy( m, m+10, hess.begin() );
+  std::vector<Matrix3D> hess(10);
+  std::copy( m, m+10, hess.begin() );
     // mark fist and third vertices as fixed
   uint32_t flags = 1u | 4u;
     // call function to remove grads for fixed vertices
@@ -322,8 +322,8 @@ void QualityMetricTest::test_remove_fixed_hessians()
 void QualityMetricTest::test_gradient_constant()
 {
   MsqError err;
-  msq_std::vector<size_t> indices;
-  msq_std::vector<Vector3D> gradient;
+  std::vector<size_t> indices;
+  std::vector<Vector3D> gradient;
   double value;
   size_t ELEMENT = 0;
 
@@ -350,8 +350,8 @@ void QualityMetricTest::test_gradient_constant()
 void QualityMetricTest::test_gradient_linear()
 {
   MsqError err;
-  msq_std::vector<size_t> indices;
-  msq_std::vector<Vector3D> gradient;
+  std::vector<size_t> indices;
+  std::vector<Vector3D> gradient;
   double value;
   size_t VERTEX = 0;
   
@@ -374,8 +374,8 @@ void QualityMetricTest::test_gradient_parabolic()
 {
   const size_t VERTEX = 1;  // pick vertex with non-zero Y-coordinate
   MsqError err;
-  msq_std::vector<size_t> indices;
-  msq_std::vector<Vector3D> gradient;
+  std::vector<size_t> indices;
+  std::vector<Vector3D> gradient;
   double value;
 
   ParabolicVertexMetric parab;
@@ -397,9 +397,9 @@ void QualityMetricTest::test_gradient_parabolic()
 void QualityMetricTest::test_Hessian_constant()
 {
   MsqError err;
-  msq_std::vector<size_t> indices;
-  msq_std::vector<Vector3D> gradient;
-  msq_std::vector<Matrix3D> Hessian;
+  std::vector<size_t> indices;
+  std::vector<Vector3D> gradient;
+  std::vector<Matrix3D> Hessian;
   double value;
   size_t ELEMENT = 0;
 
@@ -416,9 +416,9 @@ void QualityMetricTest::test_Hessian_constant()
 void QualityMetricTest::test_Hessian_linear()
 {
   MsqError err;
-  msq_std::vector<size_t> indices;
-  msq_std::vector<Vector3D> gradient;
-  msq_std::vector<Matrix3D> Hessian;
+  std::vector<size_t> indices;
+  std::vector<Vector3D> gradient;
+  std::vector<Matrix3D> Hessian;
   double value;
   size_t VERTEX = 0;
   
@@ -446,9 +446,9 @@ void QualityMetricTest::test_Hessian_linear()
 void QualityMetricTest::test_Hessian_parabolic()
 {
   MsqError err;
-  msq_std::vector<size_t> indices;
-  msq_std::vector<Vector3D> gradient;
-  msq_std::vector<Matrix3D> Hessian;
+  std::vector<size_t> indices;
+  std::vector<Vector3D> gradient;
+  std::vector<Matrix3D> Hessian;
   double value;
   size_t VERTEX = 0;
 

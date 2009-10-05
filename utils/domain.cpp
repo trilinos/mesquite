@@ -16,15 +16,15 @@ using namespace Mesquite;
 class SphereDomainArg : public CLArgs::DoubleListArgI
 {
   private:
-  msq_std::vector<MeshDomain*>& domList;
-  msq_std::vector<int>& dimList;
+  std::vector<MeshDomain*>& domList;
+  std::vector<int>& dimList;
   public:
-  SphereDomainArg( msq_std::vector<MeshDomain*>& domlist,
-                   msq_std::vector<int>& dims ) 
+  SphereDomainArg( std::vector<MeshDomain*>& domlist,
+                   std::vector<int>& dims ) 
     : domList(domlist), dimList( dims ) {}
-  virtual bool value( const msq_std::vector<double>& list );
+  virtual bool value( const std::vector<double>& list );
 };
-bool SphereDomainArg::value( const msq_std::vector<double>& list )
+bool SphereDomainArg::value( const std::vector<double>& list )
 {
   double rad = list[0];
   if (rad <= 0.0)
@@ -40,15 +40,15 @@ bool SphereDomainArg::value( const msq_std::vector<double>& list )
 class CylinderDomainArg : public CLArgs::DoubleListArgI
 {
   private:
-  msq_std::vector<MeshDomain*>& domList;
-  msq_std::vector<int>& dimList;
+  std::vector<MeshDomain*>& domList;
+  std::vector<int>& dimList;
   public:
-  CylinderDomainArg( msq_std::vector<MeshDomain*>& domlist,
-                     msq_std::vector<int>& dims ) 
+  CylinderDomainArg( std::vector<MeshDomain*>& domlist,
+                     std::vector<int>& dims ) 
     : domList(domlist), dimList( dims ) {}
-  virtual bool value( const msq_std::vector<double>& list );
+  virtual bool value( const std::vector<double>& list );
 };
-bool CylinderDomainArg::value( const msq_std::vector<double>& vals )
+bool CylinderDomainArg::value( const std::vector<double>& vals )
 {
   double rad = vals[0];
   Vector3D normal( vals[1], vals[2], vals[3] );
@@ -63,15 +63,15 @@ bool CylinderDomainArg::value( const msq_std::vector<double>& vals )
 class PlanarDomainArg : public CLArgs::DoubleListArgI
 {
   private:
-  msq_std::vector<MeshDomain*>& domList;
-  msq_std::vector<int>& dimList;
+  std::vector<MeshDomain*>& domList;
+  std::vector<int>& dimList;
   public:
-  PlanarDomainArg( msq_std::vector<MeshDomain*>& domlist,
-                   msq_std::vector<int>& dims ) 
+  PlanarDomainArg( std::vector<MeshDomain*>& domlist,
+                   std::vector<int>& dims ) 
     : domList(domlist), dimList( dims ) {}
-  virtual bool value( const msq_std::vector<double>& list );
+  virtual bool value( const std::vector<double>& list );
 };
-bool PlanarDomainArg::value( const msq_std::vector<double>& list )
+bool PlanarDomainArg::value( const std::vector<double>& list )
 {
   Vector3D normal( list[0], list[1], list[2] );
   Vector3D point(0,0,0);
@@ -85,15 +85,15 @@ bool PlanarDomainArg::value( const msq_std::vector<double>& list )
 class LineDomainArg : public CLArgs::DoubleListArgI
 {
   private:
-  msq_std::vector<MeshDomain*>& domList;
-  msq_std::vector<int>& dimList;
+  std::vector<MeshDomain*>& domList;
+  std::vector<int>& dimList;
   public:
-  LineDomainArg( msq_std::vector<MeshDomain*>& domlist,
-                   msq_std::vector<int>& dims ) 
+  LineDomainArg( std::vector<MeshDomain*>& domlist,
+                   std::vector<int>& dims ) 
     : domList(domlist), dimList( dims ) {}
-  virtual bool value( const msq_std::vector<double>& list );
+  virtual bool value( const std::vector<double>& list );
 };
-bool LineDomainArg::value( const msq_std::vector<double>& vals )
+bool LineDomainArg::value( const std::vector<double>& vals )
 {
   Vector3D dir( vals[0], vals[1], vals[2] );
   Vector3D point(0,0,0);
@@ -108,15 +108,15 @@ bool LineDomainArg::value( const msq_std::vector<double>& vals )
 class CircleDomainArg : public CLArgs::DoubleListArgI
 {
   private:
-  msq_std::vector<MeshDomain*>& domList;
-  msq_std::vector<int>& dimList;
+  std::vector<MeshDomain*>& domList;
+  std::vector<int>& dimList;
   public:
-  CircleDomainArg( msq_std::vector<MeshDomain*>& domlist,
-                   msq_std::vector<int>& dims ) 
+  CircleDomainArg( std::vector<MeshDomain*>& domlist,
+                   std::vector<int>& dims ) 
     : domList(domlist), dimList( dims ) {}
-  virtual bool value( const msq_std::vector<double>& list );
+  virtual bool value( const std::vector<double>& list );
 };
-bool CircleDomainArg::value( const msq_std::vector<double>& vals )
+bool CircleDomainArg::value( const std::vector<double>& vals )
 {
   double rad = vals[0];
   Vector3D normal( vals[1], vals[2], vals[3] );
@@ -132,15 +132,15 @@ bool CircleDomainArg::value( const msq_std::vector<double>& vals )
 class PointDomainArg : public CLArgs::DoubleListArgI
 {
   private:
-  msq_std::vector<MeshDomain*>& domList;
-  msq_std::vector<int>& dimList;
+  std::vector<MeshDomain*>& domList;
+  std::vector<int>& dimList;
   public:
-  PointDomainArg( msq_std::vector<MeshDomain*>& domlist,
-                  msq_std::vector<int>& dims ) 
+  PointDomainArg( std::vector<MeshDomain*>& domlist,
+                  std::vector<int>& dims ) 
     : domList(domlist), dimList( dims ) {}
-  virtual bool value( const msq_std::vector<double>& list );
+  virtual bool value( const std::vector<double>& list );
 };
-bool PointDomainArg::value( const msq_std::vector<double>& vals )
+bool PointDomainArg::value( const std::vector<double>& vals )
 {
   Vector3D point( vals[0], vals[1], vals[2] );
   PointDomain* pdom = new PointDomain( point );
@@ -149,8 +149,8 @@ bool PointDomainArg::value( const msq_std::vector<double>& vals )
   return true;
 }
 
-msq_std::vector<MeshDomain*> domains;
-msq_std::vector<int> domain_dims;
+std::vector<MeshDomain*> domains;
+std::vector<int> domain_dims;
 SphereDomainArg     sphere_arg( domains, domain_dims );
 CylinderDomainArg cylinder_arg( domains, domain_dims );
 PlanarDomainArg      plane_arg( domains, domain_dims );
@@ -204,7 +204,7 @@ MeshDomain* process_domain_args( MeshImpl* mesh )
     mesh->mark_skin_fixed( err, false );
   }
   if (err) {
-    msq_stdio::cerr << err << msq_stdio::endl;
+    std::cerr << err << std::endl;
     exit( 3 );
   }
   

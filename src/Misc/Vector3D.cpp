@@ -27,12 +27,7 @@
 #include "Vector3D.hpp"
 #include "MsqError.hpp"
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#  include <iostream.h>
-#else
-#  include <iostream>
-#endif
-
+#include <iostream>
 #include <math.h>
 
 #ifdef HAVE_IEEEFP_H
@@ -41,7 +36,7 @@
 
 namespace MESQUITE_NS {
 
-msq_stdio::ostream& operator<<(msq_stdio::ostream &s, const Mesquite::Vector3D &v)
+std::ostream& operator<<(std::ostream &s, const Mesquite::Vector3D &v)
 {
     return s << v[0] << ' ' << v[1] << ' ' << v[2];
 }
@@ -69,7 +64,7 @@ double Vector3D::interior_angle(const Vector3D &lhs,
         angle_cos = -1.0;
       }
     
-    return msq_stdc::acos(angle_cos);
+    return std::acos(angle_cos);
   }
 
 }

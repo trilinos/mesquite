@@ -36,11 +36,7 @@
 #include "Mesquite.hpp"
 #include "MeshInterface.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <map.h>
-#else
-# include <map>
-#endif
+#include <map>
 
 namespace MESQUITE_NS {
 
@@ -113,7 +109,7 @@ class XYRectangle : public Mesquite::MeshDomain
     };
     
     //! Map vertex handles to constraints
-    typedef msq_std::multimap<Mesh::VertexHandle,VertexConstraint> constraint_t;
+    typedef std::multimap<Mesh::VertexHandle,VertexConstraint> constraint_t;
     constraint_t mConstraints;
 };
 

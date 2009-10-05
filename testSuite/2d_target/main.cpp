@@ -27,23 +27,13 @@
 #include "meshfiles.h"
 
 #include "Mesquite.hpp"
-#ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::ostream;
-#else
-#include <iostream.h>
-#endif
-
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <memory.h>
-#else
-# include <memory>
-  using std::auto_ptr;
-#endif
-
+#include <memory>
+using std::auto_ptr;
 #include <ctype.h>
 
 #include "MeshImpl.hpp"

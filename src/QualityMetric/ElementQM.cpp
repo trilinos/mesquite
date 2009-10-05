@@ -37,7 +37,7 @@
 namespace MESQUITE_NS {
 
 void ElementQM::get_evaluations( PatchData& pd, 
-                        msq_std::vector<size_t>& handles,
+                        std::vector<size_t>& handles,
                         bool free_vertices_only, 
                         MsqError& err )
 {
@@ -45,7 +45,7 @@ void ElementQM::get_evaluations( PatchData& pd,
 }
 
 void ElementQM::get_element_evaluations( PatchData& pd, 
-                        msq_std::vector<size_t>& handles,
+                        std::vector<size_t>& handles,
                         bool free_vertices_only, 
                         MsqError& err )
 {
@@ -73,7 +73,7 @@ void ElementQM::get_element_evaluations( PatchData& pd,
 bool ElementQM::evaluate_with_indices( PatchData& pd,
                                        size_t handle,
                                        double& value,
-                                       msq_std::vector<size_t>& indices,
+                                       std::vector<size_t>& indices,
                                        MsqError& err )
 {
   const MsqMeshEntity& elem = pd.element_by_index(handle);

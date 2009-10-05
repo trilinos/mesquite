@@ -44,18 +44,8 @@ Header file for the TerminationCriterion classes.
 #include "Vector3D.hpp"
 
 #include <string>
-
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-#endif
-
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#  include <fstream.h>
-#else
-#  include <fstream>
-#endif
+#include <vector>
+#include <fstream>
 
 namespace MESQUITE_NS
 {
@@ -321,7 +311,7 @@ namespace MESQUITE_NS
     double lowerOFBound;
 
       //Data specific to termination criterion 1 (gradient bounds)
-    msq_std::vector<Vector3D> mGrad;
+    std::vector<Vector3D> mGrad;
     double initialGradL2NormSquared;
     double currentGradL2NormSquared;
     double gradL2NormAbsoluteEpsSquared;
@@ -359,10 +349,10 @@ namespace MESQUITE_NS
     int debugLevel;
     
     //! Plot data
-    msq_stdio::ofstream plotFile;
+    std::ofstream plotFile;
     
     //! Base name for timestep files
-    msq_std::string timeStepFileName;    
+    std::string timeStepFileName;    
     TimeStepFileType timeStepFileType;
   };
 

@@ -32,9 +32,9 @@ int main( int argc, char* argv[] )
   args.toggle_flag( 'f', "Assess quality only for elements with at least one free vertex", &freeonly );
   args.add_required_arg( "input_file" );
   args.add_optional_arg( "output_file" );
-  msq_std::vector<msq_std::string> files;
-  if (!args.parse_options( argc, argv, files, msq_stdio::cerr )) {
-    args.print_usage( msq_stdio::cerr );
+  std::vector<std::string> files;
+  if (!args.parse_options( argc, argv, files, std::cerr )) {
+    args.print_usage( std::cerr );
     return 1;
   }
   
@@ -42,8 +42,8 @@ int main( int argc, char* argv[] )
   MeshImpl mesh;
   mesh.read_vtk( files.front().c_str(), err );
   if (err) {
-    msq_stdio::cerr << err << msq_stdio::endl 
-                    << "Failed to read file: " << files.front() << msq_std::endl;
+    std::cerr << err << std::endl 
+                    << "Failed to read file: " << files.front() << std::endl;
     return 2;
   }
 
@@ -73,15 +73,15 @@ int main( int argc, char* argv[] )
   q.add_quality_assessor( &qa, err );
   q.run_instructions( &mesh, err );
   if (err) {
-    msq_stdio::cerr << err << msq_stdio::endl;
+    std::cerr << err << std::endl;
     return 3;
   }
   
   if (files.size() > 1) {
     mesh.write_vtk( files[1].c_str(), err );
     if (err) {
-      msq_stdio::cerr << err << msq_stdio::endl 
-                      << "Failed to write file: " << files[1] << msq_std::endl;
+      std::cerr << err << std::endl 
+                      << "Failed to write file: " << files[1] << std::endl;
       return 2;
     }
   }

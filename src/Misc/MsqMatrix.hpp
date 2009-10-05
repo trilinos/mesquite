@@ -71,7 +71,7 @@ public:
     /** Parse initial values from string */
   MsqMatrix( const char* s )                          { set(s); }
     /** Parse initial values from string */
-  MsqMatrix( const msq_std::string& s )               { set(s); }
+  MsqMatrix( const std::string& s )               { set(s); }
     /** Initialize to the minor of a larger matrix
      *  This matrix is the passed matrix with the 
      *  specified row and column removed.
@@ -82,7 +82,7 @@ public:
   MsqMatrix<R,C>& operator=( double v )                 { set(v); return *this; }
   MsqMatrix<R,C>& operator=( const double* v )          { set(v); return *this; }
   MsqMatrix<R,C>& operator=( const char* s )            { set(s); return *this; }
-  MsqMatrix<R,C>& operator=( const msq_std::string& s ) { set(s); return *this; }
+  MsqMatrix<R,C>& operator=( const std::string& s ) { set(s); return *this; }
   
   double& operator()( unsigned r, unsigned c )        { return m[r*C+c]; }
   double  operator()( unsigned r, unsigned c ) const  { return m[r*C+c]; }
@@ -93,8 +93,8 @@ public:
   void identity()                                     { diag(1.0); }
   void set( double v )        { for (unsigned i = 0; i < R*C; ++i) m[i] = v; }
   void set( const double* v ) { for (unsigned i = 0; i < R*C; ++i) m[i] = v[i]; }
-  void set( const char* s )   { msq_stdio::istringstream i(s); i >> *this; }
-  void set( const msq_std::string& s ) { set( s.c_str() ); }
+  void set( const char* s )   { std::istringstream i(s); i >> *this; }
+  void set( const std::string& s ) { set( s.c_str() ); }
     /** Set diagonal value to passed values, others to zero. */
   inline void diag( double v );
     /** Set diagonal values to passed values, others to zero. */
@@ -153,7 +153,7 @@ public:
     /** Parse initial values from string */
   MsqMatrix( const char* s )                          { set(s); }
     /** Parse initial values from string */
-  MsqMatrix( const msq_std::string& s )               { set(s); }
+  MsqMatrix( const std::string& s )               { set(s); }
     /** Initialize to the minor of a larger matrix
      *  This matrix is the passed matrix with the 
      *  specified row and column removed.
@@ -163,7 +163,7 @@ public:
   MsqMatrix<1,1>& operator=( double v )                 { m = v; return *this; }
   MsqMatrix<1,1>& operator=( const double* v )          { m = *v; return *this; }
   MsqMatrix<1,1>& operator=( const char* s )            { set(s); return *this; }
-  MsqMatrix<1,1>& operator=( const msq_std::string& s ) { set(s); return *this; }
+  MsqMatrix<1,1>& operator=( const std::string& s ) { set(s); return *this; }
   
   double& operator()( unsigned, unsigned )        { return m; }
   double  operator()( unsigned, unsigned ) const  { return m; }
@@ -174,8 +174,8 @@ public:
   void identity()                                     { m = 1.0; }
   void set( double v )        { m = v; }
   void set( const double* v ) { m= *v; }
-  void set( const char* s )   { msq_stdio::istringstream i(s); i >> m; }
-  void set( const msq_std::string& s ) { set( s.c_str() ); }
+  void set( const char* s )   { std::istringstream i(s); i >> m; }
+  void set( const std::string& s ) { set( s.c_str() ); }
     /** Set diagonal value to passed values, others to zero. */
   inline void diag( double v ) { m = v; }
     /** Set diagonal values to passed values, others to zero. */
@@ -214,7 +214,7 @@ public:
   MsqVector( double v )                               { MsqMatrix<L,1>::set(v); }
   MsqVector( const double* v )                        { MsqMatrix<L,1>::set(v); }
   MsqVector( const char* s )                          { MsqMatrix<L,1>::set(s); }
-  MsqVector( const msq_std::string& s )               { MsqMatrix<L,1>::set(s); }
+  MsqVector( const std::string& s )               { MsqMatrix<L,1>::set(s); }
   MsqVector( const MsqMatrix<L,1>& m) : MsqMatrix<L,1>(m) {}
   
   double& operator[](unsigned idx)                    { return MsqMatrix<L,1>::operator()(idx,0); }
@@ -242,7 +242,7 @@ public:
   MsqMatrixA( double v )                               { MsqMatrix<R,C>::set(v); }
   MsqMatrixA( const double* v )                        { MsqMatrix<R,C>::set(v); }
   MsqMatrixA( const char* s )                          { MsqMatrix<R,C>::set(s); }
-  MsqMatrixA( const msq_std::string& s )               { MsqMatrix<R,C>::set(s); }
+  MsqMatrixA( const std::string& s )               { MsqMatrix<R,C>::set(s); }
   MsqMatrixA( const MsqMatrix<R,C>& m) : MsqMatrix<R,C>(m) {}
   MsqMatrixA( const MsqMatrix<R+1,C+1>& m, unsigned r, unsigned c )
                                                        { MsqMatrix<R,C>::make_minor(m,r,c); }
@@ -711,7 +711,7 @@ double sqr_Frobenius( const MsqMatrix<R,C>& m )
 
 template <unsigned R, unsigned C> inline
 double Frobenius( const MsqMatrix<R,C>& m )
-  { return msq_stdc::sqrt( sqr_Frobenius<R,C>( m ) ); }
+  { return std::sqrt( sqr_Frobenius<R,C>( m ) ); }
 
 template <unsigned R, unsigned C> inline
 bool operator==( const MsqMatrix<R,C>& A, const MsqMatrix<R,C>& B ) 
@@ -727,7 +727,7 @@ bool operator!=( const MsqMatrix<R,C>& A, const MsqMatrix<R,C>& B )
   { return !(A == B); }
 
 template <unsigned R, unsigned C> inline
-msq_stdio::ostream& operator<<( msq_stdio::ostream& str, const MsqMatrix<R,C>& m )
+std::ostream& operator<<( std::ostream& str, const MsqMatrix<R,C>& m )
 {
   str << m.data()[0];
   for (unsigned i = 1; i < R*C; ++i)
@@ -736,7 +736,7 @@ msq_stdio::ostream& operator<<( msq_stdio::ostream& str, const MsqMatrix<R,C>& m
 }
 
 template <unsigned R, unsigned C> inline
-msq_stdio::istream& operator>>( msq_stdio::istream& str, MsqMatrix<R,C>& m )
+std::istream& operator>>( std::istream& str, MsqMatrix<R,C>& m )
 {
   for (unsigned i = 0; i < R*C; ++i)
     str >> m.data()[i];
@@ -899,7 +899,7 @@ void QR( const MsqMatrix<3,3>& A, MsqMatrix<3,3>& Q, MsqMatrix<3,3>& R )
 inline
 void QR( const MsqMatrix<2,2>& A, MsqMatrix<2,2>& Q, MsqMatrix<2,2>& R )
 {
-    R(0,0) = msq_stdc::sqrt( A(0,0)*A(0,0) + A(1,0)*A(1,0) );
+    R(0,0) = std::sqrt( A(0,0)*A(0,0) + A(1,0)*A(1,0) );
     const double r0inv = 1.0 / R(0,0);
     Q(0,0) = Q(1,1) = A(0,0) * r0inv;
     Q(1,0) = A(1,0) * r0inv;

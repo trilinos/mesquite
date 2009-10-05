@@ -45,20 +45,10 @@ describe main.cpp here
 
 #include "meshfiles.h"
 
-#ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
 using std::cout;
 using std::endl;
-#else
-#include <iostream.h>
-#endif
-
-#ifdef MSQ_USE_OLD_C_HEADERS
 #include <cstdlib>
-#else
-#include <stdlib.h>
-#endif
-
 
 #include "Mesquite.hpp"
 #include "MsqError.hpp"
@@ -83,10 +73,10 @@ const char DEFAULT_INPUT[] = MESH_FILES_DIR "2D/VTK/square_quad_2.vtk";
 
 void help(const char* argv0)
 {
-  msq_stdio::cerr << "Usage: " << argv0 << " [<input_file>] [<output_file>]" << msq_stdio::endl
-            << "  default input file is: " << DEFAULT_INPUT << msq_stdio::endl
-            << "  defualt is no output file" << msq_stdio::endl
-            << "  Warning: input mesh is assumed to lie in Z=5 plane" << msq_stdio::endl;
+  std::cerr << "Usage: " << argv0 << " [<input_file>] [<output_file>]" << std::endl
+            << "  default input file is: " << DEFAULT_INPUT << std::endl
+            << "  defualt is no output file" << std::endl
+            << "  Warning: input mesh is assumed to lie in Z=5 plane" << std::endl;
   exit(1);
 }
 
@@ -153,18 +143,18 @@ int main(int argc, char* argv[])
   queue1.run_instructions(&mesh, &plane, err); 
   if (err) return 1;
   double secs = t.since_birth();
-  msq_stdio::cout << "Optimization completed in " << secs << " seconds" << msq_stdio::endl;
+  std::cout << "Optimization completed in " << secs << " seconds" << std::endl;
   
   if (output_file) {
     mesh.write_vtk(output_file, err); 
     if (err) return 1;
-    msq_stdio::cout << "Wrote file: " << output_file << msq_stdio::endl;
+    std::cout << "Wrote file: " << output_file << std::endl;
   }
   
     // check that smoother is working: 
     // the one free vertex must be at the origin
   if (input_file == DEFAULT_INPUT) {
-    msq_std::vector<Mesh::VertexHandle> vertices;
+    std::vector<Mesh::VertexHandle> vertices;
     mesh.get_all_vertices( vertices, err );
     if (err) return 1;
 
@@ -178,7 +168,7 @@ int main(int argc, char* argv[])
       if (fixed_flags[i] == true)
         continue;
       if (idx != -1) {
-        msq_stdio::cerr << "Multiple free vertices in mesh." << std::endl;
+        std::cerr << "Multiple free vertices in mesh." << std::endl;
         return 1;
       }
       idx = i;
@@ -186,7 +176,7 @@ int main(int argc, char* argv[])
     delete [] fixed_flags;
 
     if (idx == -1) {
-      msq_stdio::cerr << "No free vertex in mesh!!!!!" << std::endl;
+      std::cerr << "No free vertex in mesh!!!!!" << std::endl;
       return 1;
     }
 
@@ -198,7 +188,7 @@ int main(int argc, char* argv[])
       // calculate distance from origin
     double dist = sqrt( coords[0]*coords[0] + coords[1]*coords[1] );
     if  (dist > 1e-8) {
-      msq_std::cerr << "Free vertex not at origin after Laplace smooth." << std::endl
+      std::cerr << "Free vertex not at origin after Laplace smooth." << std::endl
                     << "Expected location: (0,0)" << std::endl
                     << "Actual location: (" << coords[0] << "," << coords[1] << ")" << std::endl;
       return 2;

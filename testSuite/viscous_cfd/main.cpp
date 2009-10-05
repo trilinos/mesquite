@@ -45,20 +45,10 @@ describe main.cpp here
 
 #include "meshfiles.h"
 
-#ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
 using std::cout;
 using std::endl;
-#else
-#include <iostream.h>
-#endif
-
-#ifdef MSQ_USE_OLD_C_HEADERS
 #include <cstdlib>
-#else
-#include <stdlib.h>
-#endif
-
 #include <vector>
 #include <algorithm>
 
@@ -74,10 +64,10 @@ const char DEFAULT_INPUT[] = MESH_FILES_DIR "3D/VTK/flat-tet-sphere.vtk";
 
 void help(const char* argv0)
 {
-  msq_stdio::cerr << "Usage: " << argv0 << " [<input_file>] [<output_file>]" << msq_stdio::endl
-            << "  default input file is: " << DEFAULT_INPUT << msq_stdio::endl
-            << "  defualt is no output file" << msq_stdio::endl
-            << "  Warning: input mesh is assumed to lie in Z=5 plane" << msq_stdio::endl;
+  std::cerr << "Usage: " << argv0 << " [<input_file>] [<output_file>]" << std::endl
+            << "  default input file is: " << DEFAULT_INPUT << std::endl
+            << "  defualt is no output file" << std::endl
+            << "  Warning: input mesh is assumed to lie in Z=5 plane" << std::endl;
   exit(1);
 }
 

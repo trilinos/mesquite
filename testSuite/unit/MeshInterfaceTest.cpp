@@ -106,8 +106,8 @@ public:
       // connectivity list.
     std::vector<Mesquite::Mesh::VertexHandle>::iterator new_end;
     mVertices = mConnectivity;
-    msq_std::sort( mVertices.begin(), mVertices.end() );
-    new_end = msq_std::unique( mVertices.begin(), mVertices.end() );
+    std::sort( mVertices.begin(), mVertices.end() );
+    new_end = std::unique( mVertices.begin(), mVertices.end() );
     mVertices.resize( new_end - mVertices.begin() );
   }
   
@@ -227,8 +227,8 @@ public:
 	  size_t i;
     const size_t nbVert = mVertices.size();
 
-    msq_std::vector<Mesquite::Mesh::ElementHandle> elements;
-    msq_std::vector<size_t> offsets;
+    std::vector<Mesquite::Mesh::ElementHandle> elements;
+    std::vector<size_t> offsets;
     mMesh->vertices_get_attached_elements( &mVertices[0],
                                            mVertices.size(),
                                            elements,
@@ -307,7 +307,7 @@ public:
 
     
     // Make sure CSR data is valid
-    msq_std::map<Mesquite::Mesh::VertexHandle,int> vtx_repeated_occurence;
+    std::map<Mesquite::Mesh::VertexHandle,int> vtx_repeated_occurence;
     for (i = 0; i < mVertices.size(); ++i)
       vtx_repeated_occurence[mVertices[i]] = 0;
     for (i = 0; i < mConnectivity.size(); ++i)

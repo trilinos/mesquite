@@ -29,20 +29,9 @@
 
 #include "Mesquite.hpp"
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-   class ostream;
-#else
-#  include <iosfwd>
-#endif
-
-#ifdef MSQ_USE_OLD_C_HEADERS
-#  include <assert.h>
-#  include <string.h>
-#else
-#  include <cassert>
-#  include <cstring>
-#endif
-
+#include <iosfwd>
+#include <cassert>
+#include <cstring>
 #include <vector>
 
 /*! \file Vector3D.hpp
@@ -194,9 +183,9 @@ namespace MESQUITE_NS
     mCoords[2] = z;
   }
   inline Vector3D::Vector3D(const double xyz[3]) 
-  { msq_stdc::memcpy(mCoords, xyz, 3*sizeof(double)); }
+  { std::memcpy(mCoords, xyz, 3*sizeof(double)); }
   inline Vector3D::Vector3D(const Vector3D& to_copy) 
-  { msq_stdc::memcpy(mCoords, to_copy.mCoords, 3*sizeof(double)); }
+  { std::memcpy(mCoords, to_copy.mCoords, 3*sizeof(double)); }
   
   // Functions to get coordinates
   inline double Vector3D::x() const
@@ -212,7 +201,7 @@ namespace MESQUITE_NS
     z = mCoords[2];
   }
   inline void Vector3D::get_coordinates(double xyz[3]) const
-  { msq_stdc::memcpy(xyz, mCoords, 3*sizeof(double)); }
+  { std::memcpy(xyz, mCoords, 3*sizeof(double)); }
   inline const double& Vector3D::operator[](size_t index) const
   {
     return mCoords[index];
@@ -234,9 +223,9 @@ namespace MESQUITE_NS
     mCoords[2] = z;
   }
   inline void Vector3D::set(const double xyz[3])
-  { msq_stdc::memcpy(mCoords, xyz, 3*sizeof(double)); }
+  { std::memcpy(mCoords, xyz, 3*sizeof(double)); }
   inline void Vector3D::set(const Vector3D& to_copy)
-  { msq_stdc::memcpy(mCoords, to_copy.mCoords, 3*sizeof(double)); }
+  { std::memcpy(mCoords, to_copy.mCoords, 3*sizeof(double)); }
   inline double& Vector3D::operator[](size_t index)
   { return mCoords[index]; }
    
@@ -284,7 +273,7 @@ namespace MESQUITE_NS
        mCoords[2]*rhs.mCoords[0] - mCoords[0]*rhs.mCoords[2],
        mCoords[0]*rhs.mCoords[1] - mCoords[1]*rhs.mCoords[0]
       };
-    msq_stdc::memcpy(mCoords, new_coords, 3*sizeof(double));
+    std::memcpy(mCoords, new_coords, 3*sizeof(double));
     return *this;
   }
   inline Vector3D& Vector3D::operator+=(const Vector3D &rhs)
@@ -389,7 +378,7 @@ namespace MESQUITE_NS
   }
   
   // output operator
-  msq_stdio::ostream& operator<<(msq_stdio::ostream &s, const Mesquite::Vector3D &v);
+  std::ostream& operator<<(std::ostream &s, const Mesquite::Vector3D &v);
   
   inline double Vector3D::distance_between(const Vector3D &p1,
                                            const Vector3D &p2)
@@ -400,9 +389,9 @@ namespace MESQUITE_NS
   inline int Vector3D::within_tolerance_box(const Vector3D &compare_to,
                                             double tolerance) const
   {
-    return ((msq_stdc::fabs(this->mCoords[0] - compare_to.mCoords[0]) < tolerance) &&
-            (msq_stdc::fabs(this->mCoords[1] - compare_to.mCoords[1]) < tolerance) &&
-            (msq_stdc::fabs(this->mCoords[2] - compare_to.mCoords[2]) < tolerance));
+    return ((std::fabs(this->mCoords[0] - compare_to.mCoords[0]) < tolerance) &&
+            (std::fabs(this->mCoords[1] - compare_to.mCoords[1]) < tolerance) &&
+            (std::fabs(this->mCoords[2] - compare_to.mCoords[2]) < tolerance));
   }
   
   // Length functions
@@ -414,7 +403,7 @@ namespace MESQUITE_NS
   }
   inline double Vector3D::length() const
   {
-    return msq_stdc::sqrt(mCoords[0]*mCoords[0] +
+    return std::sqrt(mCoords[0]*mCoords[0] +
                           mCoords[1]*mCoords[1] +
                           mCoords[2]*mCoords[2]);
   }
@@ -448,11 +437,11 @@ namespace MESQUITE_NS
 
   inline double length(const Vector3D*  v,int n) // norm for an array of Vector3Ds
   {
-    return msq_stdc::sqrt( length_squared( v, n ) );
+    return std::sqrt( length_squared( v, n ) );
   }
-  inline double length( const msq_std::vector<Vector3D>& v )
+  inline double length( const std::vector<Vector3D>& v )
   {
-    return msq_stdc::sqrt( length_squared( v ) );
+    return std::sqrt( length_squared( v ) );
   }
 
   inline double Linf(const Vector3D*  v,int n) // max entry for an array of Vector3Ds
@@ -460,22 +449,22 @@ namespace MESQUITE_NS
     double max=0;  
     //loop over the length of the array
     for(int i=0;i<n;++i){
-      if ( max < msq_stdc::fabs(v[i][0]) )   max=msq_stdc::fabs(v[i][0]) ;
-      if ( max < msq_stdc::fabs(v[i][1]) )   max=msq_stdc::fabs(v[i][1]) ;
-      if ( max < msq_stdc::fabs(v[i][2]) )   max=msq_stdc::fabs(v[i][2]) ;
+      if ( max < std::fabs(v[i][0]) )   max=std::fabs(v[i][0]) ;
+      if ( max < std::fabs(v[i][1]) )   max=std::fabs(v[i][1]) ;
+      if ( max < std::fabs(v[i][2]) )   max=std::fabs(v[i][2]) ;
     }
     //return the value of the largest entry in the array
     return max;
   }
 
-  inline double Linf( const msq_std::vector<Vector3D>& v ) // max entry for an array of Vector3Ds
+  inline double Linf( const std::vector<Vector3D>& v ) // max entry for an array of Vector3Ds
   {
     double max=0;  
     //loop over the length of the array
     for(size_t i=0;i<v.size();++i){
-      if ( max < msq_stdc::fabs(v[i][0]) )   max=msq_stdc::fabs(v[i][0]) ;
-      if ( max < msq_stdc::fabs(v[i][1]) )   max=msq_stdc::fabs(v[i][1]) ;
-      if ( max < msq_stdc::fabs(v[i][2]) )   max=msq_stdc::fabs(v[i][2]) ;
+      if ( max < std::fabs(v[i][0]) )   max=std::fabs(v[i][0]) ;
+      if ( max < std::fabs(v[i][1]) )   max=std::fabs(v[i][1]) ;
+      if ( max < std::fabs(v[i][2]) )   max=std::fabs(v[i][2]) ;
     }
     //return the value of the largest entry in the array
     return max;

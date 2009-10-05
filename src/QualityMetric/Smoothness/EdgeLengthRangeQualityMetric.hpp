@@ -65,7 +65,7 @@ namespace MESQUITE_NS
 
     virtual ~EdgeLengthRangeQualityMetric();
       
-    virtual msq_std::string get_name() const;
+    virtual std::string get_name() const;
     
     virtual int get_negate_flag() const;
 
@@ -79,7 +79,7 @@ namespace MESQUITE_NS
     bool evaluate_with_indices( PatchData& pd,
                    size_t vertex,
                    double& value,
-                   msq_std::vector<size_t>& indices,
+                   std::vector<size_t>& indices,
                    MsqError& err );
   
    private:
@@ -87,7 +87,7 @@ namespace MESQUITE_NS
     bool evaluate_common( PatchData& pd, 
                           size_t vertex, 
                           double& value, 
-                          msq_std::vector<size_t>& vertices,
+                          std::vector<size_t>& vertices,
                           MsqError& err );
 
     double highVal;

@@ -41,11 +41,7 @@
 #include "Mesquite.hpp"
 #include "LaplacianCommon.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-#endif
+#include <vector>
 
 namespace MESQUITE_NS
 {
@@ -60,7 +56,7 @@ namespace MESQUITE_NS
   public:
     NormSquaredSmoother();
     virtual ~NormSquaredSmoother();
-    virtual msq_std::string get_name() const;
+    virtual std::string get_name() const;
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);
     virtual void optimize_vertex_positions(PatchData &pd,

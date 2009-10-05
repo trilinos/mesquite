@@ -31,12 +31,7 @@
 #include "MsqError.hpp"
 #include "Mesquite.hpp"
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#  include <ostream.h>
-#else
-#  include <ostream>
-#endif
-
+#include <ostream>
 #include <stdio.h>
 #include <stdarg.h>
 #include <assert.h>
@@ -86,7 +81,7 @@ const char* MsqError::error_message() const
 
 MsqError::~MsqError() {}
 
-bool MsqError::Setter::set( const msq_std::string& msg, ErrorCode num )
+bool MsqError::Setter::set( const std::string& msg, ErrorCode num )
 {
   return mErr.set_error( num, msg.c_str() ) 
       && mErr.push( functionName, fileName, lineNumber );
@@ -160,30 +155,30 @@ void MsqError::clear()
   stackTrace.clear();
 }
 
-msq_stdio::ostream& operator<<( msq_stdio::ostream& str, const MsqError::Trace& tr ) 
+std::ostream& operator<<( std::ostream& str, const MsqError::Trace& tr ) 
 {
   return (str << tr.function << " at " << tr.file << ":" << tr.line);
 }
 
-msq_stdio::ostream& operator<<( msq_stdio::ostream& str, const MsqError& err ) 
+std::ostream& operator<<( std::ostream& str, const MsqError& err ) 
 {
   str << "MESQUITE ERROR " << (int)err.error_code() << " : " 
-      << err.error_message() << msq_stdio::endl;
+      << err.error_message() << std::endl;
 
   MsqError::StackTrace::const_iterator iter = err.stack().begin();
   const MsqError::StackTrace::const_iterator end = err.stack().end();
   if (iter != end)
   {
-    str << "  at " << *iter << msq_stdio::endl;
+    str << "  at " << *iter << std::endl;
     ++iter;
   }
   for ( ; iter != end; ++iter)
-    str << "  in " << *iter << msq_stdio::endl;
+    str << "  in " << *iter << std::endl;
   
   return str;
 }
 
 MsqPrintError::~MsqPrintError()
-  { if (error()) outputStream << *this << msq_stdio::endl; }
+  { if (error()) outputStream << *this << std::endl; }
 
 }

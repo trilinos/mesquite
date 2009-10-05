@@ -49,19 +49,9 @@
 #ifndef Matrix3D_hpp
 #define Matrix3D_hpp
 
-#ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
 #include <sstream>
-#else
-#include <iostream.h>
-#include <strstream.h>
-#endif
-
-#ifndef MSQ_USE_OLD_C_HEADERS
 #include <cstdlib>
-#else
-#include <stdlib.h>
-#endif
 
 #include "Mesquite.hpp"
 #include "Vector3D.hpp"
@@ -146,8 +136,8 @@ namespace MESQUITE_NS
     {
       Vector3D v(axis);
       v.normalize();
-      const double c = msq_stdc::cos( radians );
-      const double s = msq_stdc::sin( radians );
+      const double c = std::cos( radians );
+      const double s = std::sin( radians );
       v_[0] =  c      + (1.0 - c) * v[0]*v[0];
       v_[1] = -v[2]*s + (1.0 - c) * v[0]*v[1];
       v_[2] =  v[1]*s + (1.0 - c) * v[0]*v[2];
@@ -359,7 +349,7 @@ namespace MESQUITE_NS
 
   /* ***********  I/O  **************/
 
-  inline msq_stdio::ostream& operator<<(msq_stdio::ostream &s, const Matrix3D &A)
+  inline std::ostream& operator<<(std::ostream &s, const Matrix3D &A)
   {
     for (size_t i=0; i<3; ++i)
       {
@@ -370,7 +360,7 @@ namespace MESQUITE_NS
     return s;
   }
 
-  inline msq_stdio::istream& operator>>(msq_stdio::istream &s, Matrix3D &A)
+  inline std::istream& operator>>(std::istream &s, Matrix3D &A)
   {
     for (size_t i=0; i<3; i++)
       for (size_t j=0; j<3; j++)
@@ -382,11 +372,7 @@ namespace MESQUITE_NS
 
   void Matrix3D::set_values(const char *s)
   {
-#ifdef MSQ_USE_OLD_IO_HEADERS
-    ::istrstream ins(s);
-#else
     std::istringstream ins(s);
-#endif
     ins >> *this;
   }
 

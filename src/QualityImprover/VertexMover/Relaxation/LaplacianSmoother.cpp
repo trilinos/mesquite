@@ -41,7 +41,7 @@
 
 namespace MESQUITE_NS {
 
-msq_std::string LaplacianSmoother::get_name() const { return "LaplacianSmoother"; }
+std::string LaplacianSmoother::get_name() const { return "LaplacianSmoother"; }
 
 LaplacianSmoother::~LaplacianSmoother() 
 { }    

@@ -72,7 +72,7 @@ bool MaxTemplate::evaluate( EvalType type,
   const double sign = qm->get_negate_flag();
   
     // calculate OF value for just the patch
-  msq_std::vector<size_t>::const_iterator i;
+  std::vector<size_t>::const_iterator i;
   double value;
   value_out = -HUGE_VAL;
   for (i = qmHandles.begin(); i != qmHandles.end(); ++i)

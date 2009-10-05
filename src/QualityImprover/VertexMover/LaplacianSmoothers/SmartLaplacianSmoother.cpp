@@ -42,17 +42,12 @@
 #include "LInfTemplate.hpp"
 #include "IdealWeightInverseMeanRatio.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-   using std::vector;
-#endif
-
+#include <vector>
+using std::vector;
 
 namespace MESQUITE_NS {
 
-msq_std::string SmartLaplacianSmoother::get_name() const
+std::string SmartLaplacianSmoother::get_name() const
   { return "SmartLaplacianSmoother"; }
 
 SmartLaplacianSmoother::SmartLaplacianSmoother(ObjectiveFunction* obj_func,

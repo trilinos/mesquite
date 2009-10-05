@@ -294,7 +294,7 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   if (0) printf("[%d] set local tags on %d vertices\n",rank,num_vertex);
 
   /* get the elements */
-  msq_std::vector<Mesquite::Mesh::ElementHandle> elements;
+  std::vector<Mesquite::Mesh::ElementHandle> elements;
   mesh->get_all_elements(elements, err);  MSQ_ERRRTN(err);
   int num_elems = elements.size();
 
@@ -308,8 +308,8 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   int incident_vtx, vtx_off_proc, vtx_on_proc;
 
   /* get the array that contains the adjacent vertices for each mesh element */
-  msq_std::vector<Mesquite::Mesh::VertexHandle> adj_vertices;
-  msq_std::vector<size_t> vtx_offsets;
+  std::vector<Mesquite::Mesh::VertexHandle> adj_vertices;
+  std::vector<size_t> vtx_offsets;
   mesh->elements_get_attached_vertices(&elements[0],num_elems,adj_vertices,vtx_offsets,err);
   std::vector<int> adj_vertices_lid(adj_vertices.size());
   mesh->tag_get_vertex_data( lid_tag, adj_vertices.size(), &adj_vertices[0], &adj_vertices_lid[0], err );
@@ -693,10 +693,10 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   vtx_off_proc_list.resize( num_vtx_partition_boundary_local );
 
   /* get the adjacency arrays that we need */
-  msq_std::vector<Mesquite::Mesh::ElementHandle> adj_elements;
-  msq_std::vector<Mesquite::Mesh::VertexHandle> adj_adj_vertices;
-  msq_std::vector<size_t> elem_offsets;
-  msq_std::vector<size_t> adj_vtx_offsets;
+  std::vector<Mesquite::Mesh::ElementHandle> adj_elements;
+  std::vector<Mesquite::Mesh::VertexHandle> adj_adj_vertices;
+  std::vector<size_t> elem_offsets;
+  std::vector<size_t> adj_vtx_offsets;
   mesh->vertices_get_attached_elements(&part_vertices[0],num_vtx_partition_boundary_local,
 					 adj_elements,elem_offsets,err);
   mesh->elements_get_attached_vertices(&adj_elements[0],adj_elements.size(),
@@ -802,7 +802,7 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
 }
 
 
-void ParallelHelperImpl::compute_first_independent_set(msq_std::vector<Mesh::VertexHandle>& fixed_vertices)
+void ParallelHelperImpl::compute_first_independent_set(std::vector<Mesh::VertexHandle>& fixed_vertices)
 {
   if (nprocs == 1) return;
 
@@ -2398,8 +2398,8 @@ int ParallelHelperImpl::get_nprocs() const {
 bool ParallelHelperImpl::is_our_element(Mesquite::Mesh::ElementHandle element_handle,
                                         MsqError& err) const {
   int i;
-  msq_std::vector<Mesh::VertexHandle> vertices;
-  msq_std::vector<size_t> junk;
+  std::vector<Mesh::VertexHandle> vertices;
+  std::vector<size_t> junk;
   mesh->elements_get_attached_vertices(&element_handle, 1, vertices, junk, err);
   MSQ_ERRZERO(err);
   int num_verts = vertices.size();
@@ -2495,8 +2495,8 @@ void ParallelHelperImpl::communicate_power_sum_to_zero(double* pMean, MsqError& 
     *pMean = result;
 }
 
-void ParallelHelperImpl::communicate_histogram_to_zero(msq_std::vector<int> &histogram, MsqError& err) const {
-  msq_std::vector<int> histogram_recv(histogram.size());
+void ParallelHelperImpl::communicate_histogram_to_zero(std::vector<int> &histogram, MsqError& err) const {
+  std::vector<int> histogram_recv(histogram.size());
   int rval = MPI_Reduce(&(histogram[0]), &(histogram_recv[0]), histogram.size(), MPI_INT, MPI_SUM, 0, (MPI_Comm)communicator);
   CHECK_MPI( rval, err );
   if (rank == 0) {

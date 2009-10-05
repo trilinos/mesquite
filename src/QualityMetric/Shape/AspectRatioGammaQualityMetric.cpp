@@ -39,12 +39,8 @@
 #include "MsqMeshEntity.hpp"
 #include "PatchData.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-   using std::vector;
-#endif
+#include <vector>
+using std::vector;
 
 using namespace Mesquite;
 
@@ -52,7 +48,7 @@ const double fourDivRootThree = 4.0/sqrt(3.0);
 const double twelveDivRootTwo = 12.0/sqrt(2.0);
 
 
-msq_std::string AspectRatioGammaQualityMetric::get_name() const
+std::string AspectRatioGammaQualityMetric::get_name() const
   { return "AspectRatioGamma"; }
   
 int AspectRatioGammaQualityMetric::get_negate_flag() const

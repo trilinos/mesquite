@@ -38,11 +38,7 @@
 #include "ExtraDataUser.hpp"
 #include "MeshInterface.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <vector.h>
-#else
-# include <vector>
-#endif
+#include <vector>
 #include <string>
 
 namespace MESQUITE_NS {
@@ -55,9 +51,9 @@ class MsqError;
  * Store per-PatchData information.
  */
 struct TargetReaderData {
-  msq_std::vector<TagHandle> handles2D, handles3D; //< tag handles, indexed by #tags/elem
-  msq_std::vector< MsqMatrix<3,3> > targets3D; //< cached values for last element
-  msq_std::vector< MsqMatrix<3,2> > targets2D; //< cached values for last element
+  std::vector<TagHandle> handles2D, handles3D; //< tag handles, indexed by #tags/elem
+  std::vector< MsqMatrix<3,3> > targets3D; //< cached values for last element
+  std::vector< MsqMatrix<3,2> > targets2D; //< cached values for last element
   size_t elementIndex;                      //< element for which values are cached.
 };
   
@@ -69,7 +65,7 @@ class TargetReader
 {
   public:
   
-    TargetReader( msq_std::string tag_base_name = "MSQ_TARGET_MATRIX" );
+    TargetReader( std::string tag_base_name = "MSQ_TARGET_MATRIX" );
     
     virtual ~TargetReader();
     
@@ -93,7 +89,7 @@ class TargetReader
                                    PatchData& subpatch, const size_t* vert_map,
                                    const size_t* elem_map, MsqError& err );
 
-    msq_std::string tagBaseName;
+    std::string tagBaseName;
 };
 
 

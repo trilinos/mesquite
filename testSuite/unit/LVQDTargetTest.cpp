@@ -36,11 +36,7 @@
 #include "PatchData.hpp"
 #include "UnitUtil.hpp"
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-# include <iostream.h>
-#else
-# include <iostream>
-#endif
+#include <iostream>
 
 using namespace Mesquite;
 const double PI = 3.14159265358979323846;
@@ -127,7 +123,7 @@ class TargetCalculator2D : public TargetCalculator
 
 void LVQDTargetTest::test_product_2D()
 {
-  MsqPrintError err( msq_stdio::cout );
+  MsqPrintError err( std::cout );
   const double m2[] = { 1, 2, 
                        -1, 0,
                         1, 1 }; 
@@ -153,7 +149,7 @@ void LVQDTargetTest::test_product_2D()
 
 void LVQDTargetTest::test_product_3D()
 {
-  MsqPrintError err( msq_stdio::cout );
+  MsqPrintError err( std::cout );
   const double m2[] = { 1, 2, -1,
                        -1, 0,  1,
                         1, 1,  3 }; 

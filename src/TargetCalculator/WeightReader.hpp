@@ -38,11 +38,7 @@
 #include "ExtraDataUser.hpp"
 #include "MeshInterface.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <vector.h>
-#else
-# include <vector>
-#endif
+#include <vector>
 #include <string>
 
 namespace MESQUITE_NS {
@@ -55,8 +51,8 @@ class MsqError;
  * Store per-PatchData information.
  */
 struct WeightReaderData {
-  msq_std::vector<TagHandle> handles; //< tag handles, indexed by #tags/elem
-  msq_std::vector< double > weights;  //< cached values for last element
+  std::vector<TagHandle> handles; //< tag handles, indexed by #tags/elem
+  std::vector< double > weights;  //< cached values for last element
   size_t elementIndex;                //< element for which values are cached.
 };
   
@@ -68,7 +64,7 @@ class WeightReader
 {
   public:
   
-    WeightReader( msq_std::string tag_base_name = "MSQ_TARGET_WEIGHT"  );
+    WeightReader( std::string tag_base_name = "MSQ_TARGET_WEIGHT"  );
     
     virtual ~WeightReader();
     
@@ -88,7 +84,7 @@ class WeightReader
                                    const size_t* element_map,
                                    MsqError& err );
 
-    msq_std::string tagBaseName;
+    std::string tagBaseName;
 };
 
 

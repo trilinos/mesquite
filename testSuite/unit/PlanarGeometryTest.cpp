@@ -76,13 +76,9 @@ SimplifiedGeometryEngine.
 #include "UnitUtil.hpp"
 
 #include "MeshImpl.hpp"
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#include <iostream.h>
-#else 
 #include <iostream>
 using std::cout;
 using std::endl;
-#endif
 
 using namespace Mesquite;
 
@@ -385,7 +381,7 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(PlanarGeometryTest, "Regression");
 
 void PlanarGeometryTest::test_fit_plane()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   PlanarDomain plane(PlanarDomain::XY,-1);
   const double epsilon = 1e-8;
   

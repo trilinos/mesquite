@@ -39,7 +39,7 @@ namespace MESQUITE_NS {
 
 Target3DShapeBarrierAlt1::~Target3DShapeBarrierAlt1() {}
 
-msq_std::string Target3DShapeBarrierAlt1::get_name() const
+std::string Target3DShapeBarrierAlt1::get_name() const
   { return "ShapeBarrier1"; }
 
 // \mu_3(T) = \frac{ |T|^2 |adj(T)|^2 } {9 \tau^2} - 1

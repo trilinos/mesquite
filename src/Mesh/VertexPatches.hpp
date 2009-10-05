@@ -77,7 +77,7 @@ public:
     
     /**\brief Get a list of handles, one for each patch */
 	MESQUITE_EXPORT
-    virtual void get_patch_handles( msq_std::vector<PatchHandle>& patch_handles_out,
+    virtual void get_patch_handles( std::vector<PatchHandle>& patch_handles_out,
                                     MsqError& err );
     
     /**\brief Get the mesh entities in a patch
@@ -93,13 +93,13 @@ public:
      */
 	MESQUITE_EXPORT
     virtual void get_patch( PatchHandle patch_handle,
-                            msq_std::vector<Mesh::ElementHandle>& elem_handles_out,
-                            msq_std::vector<Mesh::VertexHandle>& free_vertices_out,
+                            std::vector<Mesh::ElementHandle>& elem_handles_out,
+                            std::vector<Mesh::VertexHandle>& free_vertices_out,
                             MsqError& err );
 
 private:
   
-    msq_std::vector<size_t> junk;
+    std::vector<size_t> junk;
   
     unsigned numLayers; //!< number of layers of adjacent elements
     bool freeVertices;  //!< skip fixed vertices if true

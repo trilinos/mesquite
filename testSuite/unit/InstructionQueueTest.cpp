@@ -61,13 +61,9 @@ Unit testing of various functions in the InstructionQueue class.
 
 #include "UnitUtil.hpp"
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#include <iostream.h>
-#else 
 #include <iostream>
 using std::cout;
 using std::endl;
-#endif
 
 using namespace Mesquite;
 
@@ -250,14 +246,14 @@ class DummyVertexSlaver : public VertexSlaver
                                    const Settings* ,
                                    MsqError&  )
       { CPPUNIT_ASSERT(false); return 0.0; }
-    virtual msq_std::string get_name() const { return "Dummy"; }
+    virtual std::string get_name() const { return "Dummy"; }
 };
 
 void InstructionQueueTest::test_add_remove_vertex_slaver()
 {
   InstructionQueue q;
   DummyVertexSlaver s1, s2;
-  MsqPrintError err( msq_stdio::cerr );
+  MsqPrintError err( std::cerr );
   
   CPPUNIT_ASSERT( q.get_slaved_ho_node_mode() != Settings::SLAVE_CALCULATED );
   q.add_vertex_slaver( &s1, err );

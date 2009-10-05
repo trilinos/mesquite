@@ -82,7 +82,7 @@ public:
   
   void test_inverted_elements()
   { 
-    MsqPrintError err(msq_stdio::cout);
+    MsqPrintError err(std::cout);
     double value;
     PatchData pd;
     char val_str[128];
@@ -126,7 +126,7 @@ public:
     
   void test_degenerate_elements()
   { 
-    MsqPrintError err(msq_stdio::cout);
+    MsqPrintError err(std::cout);
     double value;
     PatchData pd;
     char val_str[128];

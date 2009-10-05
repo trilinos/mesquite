@@ -36,7 +36,7 @@
 
 namespace MESQUITE_NS {
 
-msq_std::string Target2DShapeSizeBarrierAlt2::get_name() const
+std::string Target2DShapeSizeBarrierAlt2::get_name() const
   { return "ShapeSizeBarrier"; }
 
 bool Target2DShapeSizeBarrierAlt2::evaluate( const MsqMatrix<2,2>& A, 
@@ -51,7 +51,7 @@ bool Target2DShapeSizeBarrierAlt2::evaluate( const MsqMatrix<2,2>& A,
     return false;
   }
   
-  result = sqr_Frobenius(T) - 2.0 * msq_stdc::log(tau) - 2;
+  result = sqr_Frobenius(T) - 2.0 * std::log(tau) - 2;
   return true;
 }
 
@@ -69,7 +69,7 @@ bool Target2DShapeSizeBarrierAlt2::evaluate_with_grad( const MsqMatrix<2,2>& A,
     return false;
   }
   
-  result = sqr_Frobenius(T) - 2.0 * msq_stdc::log(tau) - 2;
+  result = sqr_Frobenius(T) - 2.0 * std::log(tau) - 2;
   deriv_wrt_A = T;
   deriv_wrt_A -= 1/tau * transpose_adj(T);
   deriv_wrt_A *= 2;
@@ -93,7 +93,7 @@ bool Target2DShapeSizeBarrierAlt2::evaluate_with_hess( const MsqMatrix<2,2>& A,
     return false;
   }
   
-  result = sqr_Frobenius(T) - 2.0 * msq_stdc::log(tau) - 2;
+  result = sqr_Frobenius(T) - 2.0 * std::log(tau) - 2;
 
   const MsqMatrix<2,2> adjt = transpose_adj(T);
   const double it = 1/tau;

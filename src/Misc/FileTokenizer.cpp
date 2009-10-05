@@ -26,20 +26,14 @@
 
 #include "FileTokenizer.hpp"
 #include "MsqError.hpp"
-#ifdef MSQ_USE_OLD_C_HEADERS
-#  include <string.h>
-#  include <ctype.h>
-#  include <stdlib.h>
-#else
-#  include <cstring>
-#  include <cctype>
-#  include <cstdlib>
-#endif
+#include <cstring>
+#include <cctype>
+#include <cstdlib>
 
 namespace MESQUITE_NS
 {
 
-FileTokenizer::FileTokenizer( msq_stdc::FILE* file_ptr )
+FileTokenizer::FileTokenizer( std::FILE* file_ptr )
   : filePtr( file_ptr ),
     nextToken( buffer ),
     bufferEnd( buffer ),
@@ -422,7 +416,7 @@ int FileTokenizer::match_token( const char* const* list, MsqError& err )
       return ptr - list + 1;
   
     // No match, constuct error message
-  msq_std::string message( "Parsing error at line " );
+  std::string message( "Parsing error at line " );
   char lineno[16];
   sprintf( lineno, "%d", line_number() );
   message += lineno;

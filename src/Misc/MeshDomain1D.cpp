@@ -54,7 +54,7 @@ void PointDomain::vertex_normal_at( const Mesh::VertexHandle* ,
                                     unsigned count,
                                     MsqError& err ) const
 { 
-  msq_std::fill( coordinates, coordinates+count, Vector3D(0,0,0) );
+  std::fill( coordinates, coordinates+count, Vector3D(0,0,0) );
   MSQ_SETERR(err)( "Cannot get normal for PointDomain", MsqError::INTERNAL_ERROR );
 }
                 
@@ -73,7 +73,7 @@ void PointDomain::domain_DoF( const Mesh::VertexHandle* ,
                               unsigned short* dof_array,
                               size_t num_handles,
                               MsqError&  ) const
-  { msq_std::fill( dof_array, dof_array+num_handles, 0 ); }
+  { std::fill( dof_array, dof_array+num_handles, 0 ); }
     
 void LineDomain::snap_to( Mesh::VertexHandle ,
                           Vector3D &coordinate) const
@@ -94,7 +94,7 @@ void LineDomain::vertex_normal_at( const Mesh::VertexHandle* ,
                                    unsigned count,
                                    MsqError& err ) const
 {
-  msq_std::fill( coordinates, coordinates+count, geom().direction() );
+  std::fill( coordinates, coordinates+count, geom().direction() );
   MSQ_SETERR(err)( "Cannot get normal for LineDomain", MsqError::INTERNAL_ERROR );
 }
                 
@@ -114,7 +114,7 @@ void LineDomain::domain_DoF( const Mesh::VertexHandle* ,
                              unsigned short* dof_array,
                              size_t num_handles,
                              MsqError& err ) const
-  { msq_std::fill( dof_array, dof_array+num_handles, 1 ); }
+  { std::fill( dof_array, dof_array+num_handles, 1 ); }
 
 void CircleDomain::snap_to( Mesh::VertexHandle ,
                             Vector3D &coordinate) const
@@ -162,7 +162,7 @@ void CircleDomain::domain_DoF( const Mesh::VertexHandle* ,
                                unsigned short* dof_array,
                                size_t num_handles,
                                MsqError& err ) const
-  { msq_std::fill( dof_array, dof_array+num_handles, 1 ); }
+  { std::fill( dof_array, dof_array+num_handles, 1 ); }
 
 
 

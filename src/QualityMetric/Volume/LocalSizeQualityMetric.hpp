@@ -62,7 +62,7 @@ namespace MESQUITE_NS
        // virtual destructor ensures use of polymorphism during destruction
      virtual ~LocalSizeQualityMetric();
      
-     virtual msq_std::string get_name() const;
+     virtual std::string get_name() const;
      
      virtual int get_negate_flag() const;
      
@@ -76,7 +76,7 @@ namespace MESQUITE_NS
      bool evaluate_with_indices( PatchData& pd,
                                  size_t handle,
                                  double& value,
-                                 msq_std::vector<size_t>& indices,
+                                 std::vector<size_t>& indices,
                                  MsqError& err );
   };
 

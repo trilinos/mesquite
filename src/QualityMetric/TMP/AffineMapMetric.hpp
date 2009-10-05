@@ -66,20 +66,20 @@ public:
                    TargetMetric3D* metric_3d );
      
   MESQUITE_EXPORT virtual
-  msq_std::string get_name() const;
+  std::string get_name() const;
   
   MESQUITE_EXPORT virtual 
   int get_negate_flag() const;
   
   MESQUITE_EXPORT virtual
   void get_evaluations( PatchData& pd, 
-                        msq_std::vector<size_t>& handles, 
+                        std::vector<size_t>& handles, 
                         bool free_vertices_only,
                         MsqError& err );
   
   MESQUITE_EXPORT virtual 
   void get_element_evaluations( PatchData& pd, size_t elem_index,
-                                msq_std::vector<size_t>& handles,
+                                std::vector<size_t>& handles,
                                 MsqError& err );
   
   MESQUITE_EXPORT virtual
@@ -92,7 +92,7 @@ public:
   bool evaluate_with_indices( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
+                 std::vector<size_t>& indices,
                  MsqError& err );
     
   void set_target_calculator( TargetCalculator* tc ) { targetCalc = tc; }

@@ -29,11 +29,7 @@
 
 #include "Mesquite.hpp"
 #include <sys/types.h>
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-#endif
+#include <vector>
 
 namespace MESQUITE_NS {
 
@@ -70,7 +66,7 @@ struct MESQUITE_EXPORT VtkTypeInfo {
      * ordering for the elment differs, the passed list will be reordered
      * for writing to a VTK file.
      */
-  void mesquiteToVtkOrder( msq_std::vector<size_t>& connectivity_list ) const; 
+  void mesquiteToVtkOrder( std::vector<size_t>& connectivity_list ) const; 
 };
 
 

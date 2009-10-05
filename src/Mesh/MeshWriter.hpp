@@ -84,7 +84,7 @@ class Projection {
  */
 void write_gnuplot( Mesh* mesh, const char* filename, MsqError& err );
 void write_gnuplot( PatchData& pd, const char* filename, MsqError& err );
-void write_gnuplot( Mesh* mesh, msq_std::vector<Mesh::ElementHandle>& elems,
+void write_gnuplot( Mesh* mesh, std::vector<Mesh::ElementHandle>& elems,
                     const char* filename, MsqError& err );
 
 

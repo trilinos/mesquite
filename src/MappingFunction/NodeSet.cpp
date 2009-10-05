@@ -36,7 +36,7 @@
 
 namespace MESQUITE_NS {
 
-msq_stdio::ostream& operator<<( msq_stdio::ostream& s, NodeSet set )
+std::ostream& operator<<( std::ostream& s, NodeSet set )
 {
   unsigned i;
   s << '{';

@@ -51,28 +51,11 @@
 #include "NodeSet.hpp"
 #include "MappingFunction.hpp"
 
-#ifndef MSQ_USE_OLD_C_HEADERS
-#  include <cstddef>
-#  include <cstdlib>
-#else
-#  include <stddef.h>
-#  include <stdlib.h>
-#endif
-
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <map.h>
-#  include <vector.h>
-#else
-#  include <map>
-#  include <vector>
-#endif
-
-#ifdef MSQ_USE_OLD_IO_HEADERS
-   class ostream;
-#else
-#  include <iosfwd>
-#endif
-
+#include <cstddef>
+#include <cstdlib>
+#include <map>
+#include <vector>
+#include <iosfwd>
 
 namespace MESQUITE_NS
 {
@@ -171,8 +154,8 @@ namespace MESQUITE_NS
     
  	MESQUITE_EXPORT
    void set_mesh_entities( 
-                   msq_std::vector<Mesh::ElementHandle>& patch_elems,
-                   msq_std::vector<Mesh::VertexHandle>& free_vertices,
+                   std::vector<Mesh::ElementHandle>& patch_elems,
+                   std::vector<Mesh::VertexHandle>& free_vertices,
                    MsqError& err );
     
   private:
@@ -299,17 +282,17 @@ namespace MESQUITE_NS
       //! Get the coordinates of vertices attached to the specified element
 	MESQUITE_EXPORT
     void get_element_vertex_coordinates(size_t elem_index,
-                                        msq_std::vector<Vector3D> &coords,
+                                        std::vector<Vector3D> &coords,
                                         MsqError &err);
       /*! Get the indices of vertices of specified element. !inefficient!*/
 	MESQUITE_EXPORT
     void get_element_vertex_indices(size_t elem_index,
-                                    msq_std::vector<size_t> &vertex_indices,
+                                    std::vector<size_t> &vertex_indices,
                                     MsqError &err);
       /*! Get the indices of the elements attached to the specified vertex. */
 	MESQUITE_EXPORT
     void get_vertex_element_indices(size_t vertex_index,
-                                    msq_std::vector<size_t> &elem_indices,
+                                    std::vector<size_t> &elem_indices,
                                     MsqError &err);
     
       /** Get the indices of elements adjacent to the specified vertex,
@@ -317,7 +300,7 @@ namespace MESQUITE_NS
 	MESQUITE_EXPORT
     void get_vertex_element_indices( size_t vertex_index,
                                      unsigned element_dimension,
-                                     msq_std::vector<size_t>& elem_indices,
+                                     std::vector<size_t>& elem_indices,
                                      MsqError& err );
     
       /*! Get indices of elements attached to specified vertex */
@@ -331,7 +314,7 @@ namespace MESQUITE_NS
       */
 	MESQUITE_EXPORT
     void get_adjacent_vertex_indices(size_t vertex_index,
-                                     msq_std::vector<size_t> &vert_indices,
+                                     std::vector<size_t> &vert_indices,
                                      MsqError &err);
     
     
@@ -343,7 +326,7 @@ namespace MESQUITE_NS
       */
 	MESQUITE_EXPORT
     void get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
-                                         msq_std::vector<size_t> &adj_ents,
+                                         std::vector<size_t> &adj_ents,
                                          MsqError &err);
     
       /*! Create the arrays that store which elements are attached
@@ -534,7 +517,7 @@ namespace MESQUITE_NS
                       MsqError &err);
     
 	MESQUITE_EXPORT
-    void get_free_vertex_coordinates( msq_std::vector<Vector3D>& coords_out ) const;
+    void get_free_vertex_coordinates( std::vector<Vector3D>& coords_out ) const;
     
       //! Creates a memento that holds the current
       //! state of the PatchData coordinates. 
@@ -614,10 +597,10 @@ namespace MESQUITE_NS
       { return get_samples( element, non_slave_node_set( element ) ); }
     
 	MESQUITE_EXPORT
-    void get_samples( size_t element, msq_std::vector<Sample>& samples_out, MsqError& err ) const;
+    void get_samples( size_t element, std::vector<Sample>& samples_out, MsqError& err ) const;
     
     //! Display the coordinates and connectivity information
-    friend msq_stdio::ostream& operator<<( msq_stdio::ostream&, const PatchData& );
+    friend std::ostream& operator<<( std::ostream&, const PatchData& );
    
    private:
    
@@ -704,10 +687,10 @@ namespace MESQUITE_NS
     
       //! Cached data for vertices in PatchData::vertexHandlesArray,
       //! or vertex data for a temporary patch.
-    msq_std::vector<MsqVertex> vertexArray;
+    std::vector<MsqVertex> vertexArray;
       //! The list of handles for the vertices in this patch
       //! May be empty if PatchData::myMesh is NULL
-    msq_std::vector<Mesh::VertexHandle> vertexHandlesArray;
+    std::vector<Mesh::VertexHandle> vertexHandlesArray;
       //! The number of vertices in PatchData::vertexArray that are
       //! free vertices.  The vertex array is sorted such that
       //! free vertices are first in the array.  This value
@@ -721,45 +704,45 @@ namespace MESQUITE_NS
     size_t numSlaveVertices;
       //! Cached data for elements in PatchData::elementHandlesArray
       //! or element data for a temporary patch.
-    msq_std::vector<MsqMeshEntity> elementArray;
+    std::vector<MsqMeshEntity> elementArray;
       //! The hist of handles for elements in this patch.
       //! May be empty if PatchData::myMesh is NULL
-    msq_std::vector<Mesh::ElementHandle> elementHandlesArray;
+    std::vector<Mesh::ElementHandle> elementHandlesArray;
       //! Element connectivity data.  The concatenation of the 
       //! connectivity list of each element in PatchData::elementArray.
       //! Each element in PatchData::elementArray has a pointer into
       //! this array at the correct offset for that element's connectivity data.
-    msq_std::vector<size_t> elemConnectivityArray;
+    std::vector<size_t> elemConnectivityArray;
       //! The concatenation of the adjacency lists of all the vertices
       //! in PatchData::vertexArray.  Each value in the array is an index into 
       //! PatchData::elementArray indicating that the corresponding element uses
       //! the vertex.  May be empty if vertex adjacency data has not been
       //! requested.
-    msq_std::vector<size_t> vertAdjacencyArray;
+    std::vector<size_t> vertAdjacencyArray;
       //! This array is indexed by vertex indices and specifies the
       //! offset in \vertAdjacencyArray at which the adjacency list
       //! for the corresponding vertex begins.  May be empty if vertex 
       //! adjacency data has not been requested.
-    msq_std::vector<size_t> vertAdjacencyOffsets;
+    std::vector<size_t> vertAdjacencyOffsets;
       //! Index into normalData at which the normal for the corresponding
       //! vertex index is located. Only vertices constrained to a single
       //! domain with a topological dimension of 2 have a unique domain
       //! normal.
-    msq_std::vector<unsigned> vertexNormalIndices;
+    std::vector<unsigned> vertexNormalIndices;
       //! Storage space for cached domain normal data.  Pointers in
       //! PatchData::vertexNormalPointers point into this list.
-    msq_std::vector<Vector3D> normalData;
+    std::vector<Vector3D> normalData;
       //! Storage space for cached domain DOF for vertices.  IF
       //! a domain exists and PatchData::normalData is not empty, but
       //! this array is, it may be assumed that all vertices have
       //! have a DOF == 2.
-    msq_std::vector<unsigned short> vertexDomainDOF;
+    std::vector<unsigned short> vertexDomainDOF;
     
       // Arrays in which to store temporary data
       // (avoids reallocation of temp space)
-    msq_std::vector<size_t> offsetArray;
-    msq_std::vector<unsigned char> byteArray;
-    msq_std::vector<bool> bitMap;
+    std::vector<size_t> offsetArray;
+    std::vector<unsigned char> byteArray;
+    std::vector<bool> bitMap;
     bool* boolArray;
     size_t boolArraySize;
     bool* get_bool_array( size_t size ) {
@@ -807,8 +790,8 @@ namespace MESQUITE_NS
     {}
     
     PatchData* originator; //!< PatchData whose state is kept
-    msq_std::vector<MsqVertex> vertices;
-    msq_std::vector<Vector3D> normalData;
+    std::vector<MsqVertex> vertices;
+    std::vector<Vector3D> normalData;
   };
 
   inline void PatchData::clear()
@@ -930,10 +913,10 @@ namespace MESQUITE_NS
     return element - &elementArray[0];
   }
 
-  inline void PatchData::get_free_vertex_coordinates( msq_std::vector<Vector3D>& coords_out ) const
+  inline void PatchData::get_free_vertex_coordinates( std::vector<Vector3D>& coords_out ) const
   {
     coords_out.resize( num_free_vertices() );
-    msq_std::copy( vertexArray.begin(), vertexArray.begin()+num_free_vertices(), 
+    std::copy( vertexArray.begin(), vertexArray.begin()+num_free_vertices(), 
                    coords_out.begin() );
   }
     
@@ -974,7 +957,7 @@ namespace MESQUITE_NS
     size_t num_vtx = num_free_vertices() + num_slave_vertices();
     
     memento->vertices.resize( num_vtx );
-    msq_std::copy( vertexArray.begin(), vertexArray.begin()+num_vtx, memento->vertices.begin() );
+    std::copy( vertexArray.begin(), vertexArray.begin()+num_vtx, memento->vertices.begin() );
     
     int num_normal;
     if (normalData.empty())
@@ -993,7 +976,7 @@ namespace MESQUITE_NS
     }
     
     memento->normalData.resize( num_normal );
-    msq_std::copy( normalData.begin(), normalData.begin()+num_normal, memento->normalData.begin() );
+    std::copy( normalData.begin(), normalData.begin()+num_normal, memento->normalData.begin() );
   }
   
   /*! 
@@ -1023,8 +1006,8 @@ namespace MESQUITE_NS
     }
     
       // copies the memento array into the PatchData array.
-    msq_std::copy( memento->vertices.begin(), memento->vertices.end(), vertexArray.begin() );
-    msq_std::copy( memento->normalData.begin(), memento->normalData.end(), normalData.begin() );
+    std::copy( memento->vertices.begin(), memento->vertices.end(), vertexArray.begin() );
+    std::copy( memento->normalData.begin(), memento->normalData.end(), normalData.begin() );
   }
       
 } // namespace

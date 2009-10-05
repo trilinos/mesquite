@@ -68,7 +68,7 @@ namespace MESQUITE_NS
                                    const Settings* settings,
                                    MsqError &err);
       //! Return the name of this PatchDataUser:  Mesh Transform
-    MESQUITE_EXPORT virtual msq_std::string get_name() const { return "Mesh Transform";}
+    MESQUITE_EXPORT virtual std::string get_name() const { return "Mesh Transform";}
     
     MESQUITE_EXPORT void add_translation( const Vector3D& offset );
     MESQUITE_EXPORT void add_rotation( const Vector3D& axis, double radians );

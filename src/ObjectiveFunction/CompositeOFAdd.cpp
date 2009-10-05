@@ -112,7 +112,7 @@ bool CompositeOFAdd::evaluate( EvalType type,
 bool CompositeOFAdd::evaluate_with_gradient( EvalType type, 
                                              PatchData& pd,
                                              double& value_out,
-                                             msq_std::vector<Vector3D>& grad_out,
+                                             std::vector<Vector3D>& grad_out,
                                              MsqError& err )
 {
   double value_2;
@@ -126,7 +126,7 @@ bool CompositeOFAdd::evaluate_with_gradient( EvalType type,
   assert( grad_out.size() == pd.num_free_vertices() );
   assert( mGradient.size() == pd.num_free_vertices() );
   
-  msq_std::vector<Vector3D>::iterator i = grad_out.begin(), j = mGradient.begin();
+  std::vector<Vector3D>::iterator i = grad_out.begin(), j = mGradient.begin();
   while (i != grad_out.end()) {
     *i += *j;
     ++i;
@@ -139,8 +139,8 @@ bool CompositeOFAdd::evaluate_with_gradient( EvalType type,
 bool CompositeOFAdd::evaluate_with_Hessian_diagonal( EvalType type, 
                                             PatchData& pd,
                                             double& value_out,
-                                            msq_std::vector<Vector3D>& grad_out,
-                                            msq_std::vector<SymMatrix3D>& diag_out,
+                                            std::vector<Vector3D>& grad_out,
+                                            std::vector<SymMatrix3D>& diag_out,
                                             MsqError& err )
 {
   double value_2;
@@ -163,7 +163,7 @@ bool CompositeOFAdd::evaluate_with_Hessian_diagonal( EvalType type,
 bool CompositeOFAdd::evaluate_with_Hessian( EvalType type, 
                                             PatchData& pd,
                                             double& value_out,
-                                            msq_std::vector<Vector3D>& grad_out,
+                                            std::vector<Vector3D>& grad_out,
                                             MsqHessian& Hessian_out,
                                             MsqError& err )
 {

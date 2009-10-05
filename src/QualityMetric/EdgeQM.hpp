@@ -51,20 +51,20 @@ public:
   /**\brief Returns list of edge indices in PatchData */
   MESQUITE_EXPORT virtual 
   void get_evaluations( PatchData& pd, 
-                        msq_std::vector<size_t>& handles,
+                        std::vector<size_t>& handles,
                         bool free_vertices_only, 
                         MsqError& err );
   
   /**\brief Returns list of edge indices in PatchData */
   MESQUITE_EXPORT virtual 
   void get_single_pass( PatchData& pd, 
-                        msq_std::vector<size_t>& handles,
+                        std::vector<size_t>& handles,
                         bool free_vertices_only, 
                         MsqError& err );
 
   MESQUITE_EXPORT static
   void get_edge_evaluations( PatchData& pd, 
-                             msq_std::vector<size_t>& handles,
+                             std::vector<size_t>& handles,
                              bool free_vertices_only, 
                              bool single_pass_evaluate,
                              MsqError& err );
@@ -78,7 +78,7 @@ public:
   bool evaluate_with_indices( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
+                 std::vector<size_t>& indices,
                  MsqError& err );
                  
   enum {

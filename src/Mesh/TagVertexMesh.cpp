@@ -38,7 +38,7 @@
 namespace MESQUITE_NS {
 
 
-msq_std::string TagVertexMesh::get_name() const
+std::string TagVertexMesh::get_name() const
 {
   std::string result("TagVertexMesh(\"");
   result += tagName;
@@ -46,7 +46,7 @@ msq_std::string TagVertexMesh::get_name() const
   return result;
 }
 
-void TagVertexMesh::initialize( Mesh* mesh, msq_std::string name, MsqError& err )
+void TagVertexMesh::initialize( Mesh* mesh, std::string name, MsqError& err )
 {
   MeshDecorator::set_mesh( mesh );
   tagName = name;
@@ -61,7 +61,7 @@ void TagVertexMesh::initialize( Mesh* mesh, msq_std::string name, MsqError& err 
     return;
   
     // If tag is already defined, make sure it is the correct type.
-  msq_std::string t_name;
+  std::string t_name;
   Mesh::TagType type;
   unsigned length;
   tag_properties( tagHandle, t_name, type, length, err ); 
@@ -102,19 +102,19 @@ void TagVertexMesh::copy_all_coordinates( MsqError& err )
     haveTagHandle = true;
   }
 
-  msq_std::vector<Mesh::VertexHandle> handles;
+  std::vector<Mesh::VertexHandle> handles;
   get_all_vertices( handles, err ); 
   MSQ_ERRRTN(err);
   if (handles.empty())
     return;
   
-  msq_std::vector<MsqVertex> coords(handles.size());
+  std::vector<MsqVertex> coords(handles.size());
   get_mesh()->vertices_get_coordinates( &handles[0], &coords[0], handles.size(), err );
   MSQ_ERRRTN(err);
   
-  msq_std::vector<double> data( 3*handles.size() );
-  msq_std::vector<double>::iterator j = data.begin();
-  msq_std::vector<MsqVertex>::const_iterator i = coords.begin();
+  std::vector<double> data( 3*handles.size() );
+  std::vector<double>::iterator j = data.begin();
+  std::vector<MsqVertex>::const_iterator i = coords.begin();
   while (i != coords.end()) {
     i->get_coordinates( &*j );
     ++i;
@@ -138,7 +138,7 @@ void TagVertexMesh::check_remove_tag( MsqError& err )
 TagVertexMesh::TagVertexMesh( MsqError& err,
                               Mesh* real_mesh,
                               bool clean_up,
-                              msq_std::string name)
+                              std::string name)
   : tagHandle(0), haveTagHandle(false), cleanUpTag(clean_up)
 {
   if (name.size() == 0)
@@ -158,7 +158,7 @@ void TagVertexMesh::set_mesh( Mesh* mesh, MsqError& err )
   initialize( mesh, tagName, err ); MSQ_ERRRTN(err);
 }
 
-void TagVertexMesh::set_tag_name( msq_std::string name, MsqError& err )
+void TagVertexMesh::set_tag_name( std::string name, MsqError& err )
 {
   check_remove_tag( err ); MSQ_ERRRTN(err);
   initialize( get_mesh(), name, err ); MSQ_ERRRTN(err);
@@ -185,11 +185,11 @@ void TagVertexMesh::vertices_get_coordinates( const VertexHandle vert_array[],
     MSQ_ERRRTN(err);
   }
   else {
-    msq_std::vector<double> coords( num_vtx * 3 );
+    std::vector<double> coords( num_vtx * 3 );
     get_mesh()->tag_get_vertex_data( tagHandle, num_vtx, vert_array, &coords[0], err );
     MSQ_ERRRTN(err);
     MsqVertex* coordinates_end = coordinates + num_vtx;
-    msq_std::vector<double>::const_iterator i = coords.begin();
+    std::vector<double>::const_iterator i = coords.begin();
     while (coordinates != coordinates_end) {
       coordinates->set( &*i );
       i += 3;
@@ -221,7 +221,7 @@ void TagVertexMesh::vertex_set_coordinates( VertexHandle vertex,
 
 //***************  Tags  ***********
 
-TagHandle TagVertexMesh::tag_create( const msq_std::string& tag_name,
+TagHandle TagVertexMesh::tag_create( const std::string& tag_name,
                                      TagType type, unsigned length,
                                      const void* default_value,
                                      MsqError &err)
@@ -238,7 +238,7 @@ TagHandle TagVertexMesh::tag_create( const msq_std::string& tag_name,
   return get_mesh()->tag_create( tag_name, type, length, default_value, err );
 }
 
-TagHandle TagVertexMesh::tag_get( const msq_std::string& name, MsqError& err )
+TagHandle TagVertexMesh::tag_get( const std::string& name, MsqError& err )
 {
     // Don't allow access to internal tag for vertex coordinates.
     // This prevents accidental layering of multiple instances of

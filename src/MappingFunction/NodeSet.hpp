@@ -296,7 +296,7 @@ class MESQUITE_EXPORT NodeSet {
 
 //! Print bits in reverse order (least-signficant to most-significant,
 //! or corner 0 to mid-region).
-msq_stdio::ostream& operator<<( msq_stdio::ostream& s, NodeSet set );
+std::ostream& operator<<( std::ostream& s, NodeSet set );
       
     //! Set all corner nodes
 void NodeSet::set_all_corner_nodes( EntityTopology type )

@@ -71,20 +71,20 @@ namespace MESQUITE_NS
      virtual bool evaluate_with_gradient( EvalType type, 
                                           PatchData& pd,
                                           double& value_out,
-                                          msq_std::vector<Vector3D>& grad_out,
+                                          std::vector<Vector3D>& grad_out,
                                           MsqError& err ); 
 
      virtual bool evaluate_with_Hessian_diagonal( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
-                                        msq_std::vector<Vector3D>& grad_out,
-                                        msq_std::vector<SymMatrix3D>& hess_diag_out,
+                                        std::vector<Vector3D>& grad_out,
+                                        std::vector<SymMatrix3D>& hess_diag_out,
                                         MsqError& err ); 
     
      virtual bool evaluate_with_Hessian( EvalType type, 
                                          PatchData& pd,
                                          double& value_out,
-                                         msq_std::vector<Vector3D>& grad_out,
+                                         std::vector<Vector3D>& grad_out,
                                          MsqHessian& Hessian_out,
                                          MsqError& err ); 
 

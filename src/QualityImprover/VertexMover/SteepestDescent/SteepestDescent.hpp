@@ -59,7 +59,7 @@ namespace MESQUITE_NS
 
     virtual ~SteepestDescent() { }
     
-    virtual msq_std::string get_name() const;
+    virtual std::string get_name() const;
     
     virtual PatchSet* get_patch_set();
     

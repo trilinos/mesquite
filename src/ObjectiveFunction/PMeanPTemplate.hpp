@@ -109,22 +109,22 @@ class PMeanPTemplate : public ObjectiveFunctionTemplate
     virtual bool evaluate_with_gradient( EvalType type, 
                                          PatchData& pd,
                                          double& value_out,
-                                         msq_std::vector<Vector3D>& grad_out,
+                                         std::vector<Vector3D>& grad_out,
                                          MsqError& err ); 
     
 	MESQUITE_EXPORT
     virtual bool evaluate_with_Hessian_diagonal( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
-                                        msq_std::vector<Vector3D>& grad_out,
-                                        msq_std::vector<SymMatrix3D>& hess_diag_out,
+                                        std::vector<Vector3D>& grad_out,
+                                        std::vector<SymMatrix3D>& hess_diag_out,
                                         MsqError& err ); 
 
 	MESQUITE_EXPORT
     virtual bool evaluate_with_Hessian( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
-                                        msq_std::vector<Vector3D>& grad_out,
+                                        std::vector<Vector3D>& grad_out,
                                         MsqHessian& Hessian_out,
                                         MsqError& err ); 
 
@@ -165,15 +165,15 @@ class PMeanPTemplate : public ObjectiveFunctionTemplate
   protected:
     
     /** Temporary storage for qm sample handles */
-    mutable msq_std::vector<size_t> qmHandles;
+    mutable std::vector<size_t> qmHandles;
     /** Temporary storage for qm vertex indices */
-    mutable msq_std::vector<size_t> mIndices;
+    mutable std::vector<size_t> mIndices;
     /** Temporary storage for qm gradient */
-    mutable msq_std::vector<Vector3D> mGradient;
+    mutable std::vector<Vector3D> mGradient;
     /** Temporary storage for qm hessian diagonal */
-    mutable msq_std::vector<SymMatrix3D> mDiag;
+    mutable std::vector<SymMatrix3D> mDiag;
      /** Temporary storage for qm Hessian */
-    mutable msq_std::vector<Matrix3D> mHessian;
+    mutable std::vector<Matrix3D> mHessian;
 };
 
 } // namespace Mesquite

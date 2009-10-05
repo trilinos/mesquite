@@ -92,26 +92,26 @@ public:
    {}
      
   MESQUITE_EXPORT virtual
-  msq_std::string get_name() const;
+  std::string get_name() const;
   
   MESQUITE_EXPORT virtual 
   int get_negate_flag() const;
   
   MESQUITE_EXPORT virtual
   void get_evaluations( PatchData& pd, 
-                        msq_std::vector<size_t>& handles, 
+                        std::vector<size_t>& handles, 
                         bool free_vertices_only,
                         MsqError& err );
   
   MESQUITE_EXPORT static
   void get_patch_evaluations( PatchData& pd, 
-                        msq_std::vector<size_t>& handles, 
+                        std::vector<size_t>& handles, 
                         bool free_vertices_only,
                         MsqError& err );
   
   MESQUITE_EXPORT virtual 
   void get_element_evaluations( PatchData& pd, size_t elem_index,
-                                msq_std::vector<size_t>& handles,
+                                std::vector<size_t>& handles,
                                 MsqError& err );
   
   MESQUITE_EXPORT virtual
@@ -124,33 +124,33 @@ public:
   bool evaluate_with_indices( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
+                 std::vector<size_t>& indices,
                  MsqError& err );
                  
   MESQUITE_EXPORT virtual
   bool evaluate_with_gradient( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
-                 msq_std::vector<Vector3D>& gradient,
+                 std::vector<size_t>& indices,
+                 std::vector<Vector3D>& gradient,
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate_with_Hessian_diagonal( PatchData& pd,
                     size_t handle,
                     double& value,
-                    msq_std::vector<size_t>& indices,
-                    msq_std::vector<Vector3D>& gradient,
-                    msq_std::vector<SymMatrix3D>& Hessian_diagonal,
+                    std::vector<size_t>& indices,
+                    std::vector<Vector3D>& gradient,
+                    std::vector<SymMatrix3D>& Hessian_diagonal,
                     MsqError& err );
                     
   MESQUITE_EXPORT virtual
   bool evaluate_with_Hessian( PatchData& pd,
                     size_t handle,
                     double& value,
-                    msq_std::vector<size_t>& indices,
-                    msq_std::vector<Vector3D>& gradient,
-                    msq_std::vector<Matrix3D>& Hessian,
+                    std::vector<size_t>& indices,
+                    std::vector<Vector3D>& gradient,
+                    std::vector<Matrix3D>& Hessian,
                     MsqError& err );
     
   void set_target_calculator( TargetCalculator* tc ) { targetCalc = tc; }
@@ -179,7 +179,7 @@ private:
   
   enum { MAX_ELEM_NODES = 27 };
   size_t mIndices[MAX_ELEM_NODES];
-  msq_std::vector< MsqMatrix<2,2> > hess2d;
+  std::vector< MsqMatrix<2,2> > hess2d;
   MsqVector<3> mDerivs3D[MAX_ELEM_NODES];
   MsqVector<2> mDerivs2D[MAX_ELEM_NODES];
 };

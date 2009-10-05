@@ -39,21 +39,10 @@
 
 #include "UnitUtil.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <vector.h>
-# include <algorithm.h>
-#else
-# include <vector>
-# include <algorithm>
-#endif
-
-#ifdef MSQ_USE_OLD_IO_HEADERS
-# include <iostream.h>
-# include <sstream.h>
-#else
-# include <iostream>
-# include <sstream>
-#endif
+#include <vector>
+#include <algorithm>
+#include <iostream>
+#include <sstream>
 
 using namespace Mesquite;
 using namespace std;
@@ -66,15 +55,15 @@ static inline CppUnit::Message value_message( unsigned location, NodeSet bits, d
 {
   CppUnit::Message m( "equality assertion failed" );
 
-  msq_stdio::ostringstream buffer1;
+  std::ostringstream buffer1;
   buffer1 << "Expected : " << v1;
    m.addDetail( buffer1.str() );
 
-  msq_stdio::ostringstream buffer2;
+  std::ostringstream buffer2;
   buffer2 << "Actual   : " << v2;
   m.addDetail( buffer2.str() );
 
-  msq_stdio::ostringstream buffer3;
+  std::ostringstream buffer3;
   buffer3 << "Location : ";
   if (location < 3) 
     buffer3 << "Corner " << location;
@@ -86,7 +75,7 @@ static inline CppUnit::Message value_message( unsigned location, NodeSet bits, d
     buffer3 << "INVALID!!";
   m.addDetail( buffer3.str() );
 
-  msq_stdio::ostringstream buffer4;
+  std::ostringstream buffer4;
   buffer4 << "Node Bits: " << bits;
   m.addDetail( buffer4.str() );
   return m;

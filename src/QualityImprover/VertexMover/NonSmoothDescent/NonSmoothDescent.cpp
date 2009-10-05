@@ -66,7 +66,7 @@ NonSmoothDescent::NonSmoothDescent(ElementQM* qm)
   MSQ_DBGOUT(1) << "- Executed NonSmoothDescent::NonSmoothDescent()\n";
 }  
 
-msq_std::string NonSmoothDescent::get_name() const
+std::string NonSmoothDescent::get_name() const
   { return "NonSmoothDescent"; }
 
 PatchSet* NonSmoothDescent::get_patch_set()

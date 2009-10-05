@@ -139,7 +139,7 @@ bool LPtoPTemplate::evaluate( EvalType type,
   MSQ_ERRFALSE(err);
   
     // calculate OF value for just the patch
-  msq_std::vector<size_t>::const_iterator i;
+  std::vector<size_t>::const_iterator i;
   double value, working_sum = 0.0;
   for (i = qmHandles.begin(); i != qmHandles.end(); ++i)
   {
@@ -162,7 +162,7 @@ bool LPtoPTemplate::evaluate( EvalType type,
 bool LPtoPTemplate::evaluate_with_gradient( EvalType type, 
                                             PatchData& pd,
                                             double& OF_val,
-                                            msq_std::vector<Vector3D>& grad_out,
+                                            std::vector<Vector3D>& grad_out,
                                             MsqError& err )
 {
   QualityMetric* qm = get_quality_metric();
@@ -177,7 +177,7 @@ bool LPtoPTemplate::evaluate_with_gradient( EvalType type,
   int p1;
   
     // calculate OF value and gradient for just the patch
-  msq_std::vector<size_t>::const_iterator i;
+  std::vector<size_t>::const_iterator i;
   for (i = qmHandles.begin(); i != qmHandles.end(); ++i)
   {
     qm_bool = qm->evaluate_with_gradient( pd, *i, QM_val, mIndices, mGradient, err );
@@ -208,7 +208,7 @@ bool LPtoPTemplate::evaluate_with_gradient( EvalType type,
   OF_val = qm->get_negate_flag() * get_value( OF_val, qmHandles.size(), type, global_count );
   if (dividingByN) {
     const double inv_n = 1.0/global_count;
-    msq_std::vector<Vector3D>::iterator g;
+    std::vector<Vector3D>::iterator g;
     for (g = grad_out.begin(); g != grad_out.end(); ++g)
       *g *= inv_n;
   }  
@@ -219,8 +219,8 @@ bool LPtoPTemplate::evaluate_with_gradient( EvalType type,
 bool LPtoPTemplate::evaluate_with_Hessian_diagonal( EvalType type, 
                                         PatchData& pd,
                                         double& OF_val,
-                                        msq_std::vector<Vector3D>& grad,
-                                        msq_std::vector<SymMatrix3D>& hess_diag,
+                                        std::vector<Vector3D>& grad,
+                                        std::vector<SymMatrix3D>& hess_diag,
                                         MsqError& err )
 {
   QualityMetric* qm = get_quality_metric();
@@ -241,7 +241,7 @@ bool LPtoPTemplate::evaluate_with_Hessian_diagonal( EvalType type,
    
   // Loops over all elements in the patch.
   OF_val = 0.0;
-  msq_std::vector<size_t>::const_iterator k;
+  std::vector<size_t>::const_iterator k;
   for (k = qmHandles.begin(); k != qmHandles.end(); ++k)
   {
     // Computes \nabla^2 Q(e). Only the free vertices will have non-zero entries. 
@@ -339,7 +339,7 @@ bool LPtoPTemplate::evaluate_with_Hessian_diagonal( EvalType type,
 bool LPtoPTemplate::evaluate_with_Hessian( EvalType type, 
                                            PatchData& pd,
                                            double& OF_val,
-                                           msq_std::vector<Vector3D>& grad,
+                                           std::vector<Vector3D>& grad,
                                            MsqHessian& hessian,
                                            MsqError& err )
 {
@@ -360,7 +360,7 @@ bool LPtoPTemplate::evaluate_with_Hessian( EvalType type,
    
   // Loops over all elements in the patch.
   OF_val = 0.0;
-  msq_std::vector<size_t>::const_iterator k;
+  std::vector<size_t>::const_iterator k;
   for (k = qmHandles.begin(); k != qmHandles.end(); ++k)
   {
     // Computes \nabla^2 Q(e). Only the free vertices will have non-zero entries. 
@@ -437,7 +437,7 @@ bool LPtoPTemplate::evaluate_with_Hessian( EvalType type,
          * get_value( OF_val, qmHandles.size(), type, global_count );
   if (dividingByN) {
     const double inv_n = 1.0 / global_count;
-    msq_std::vector<Vector3D>::iterator g;
+    std::vector<Vector3D>::iterator g;
     for (g = grad.begin(); g != grad.end(); ++g)
       *g *= inv_n;
     hessian.scale( inv_n );

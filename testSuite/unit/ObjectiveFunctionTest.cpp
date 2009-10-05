@@ -477,7 +477,7 @@ void ObjectiveFunctionTest::test_compute_ana_hessian_tet()
     LPtoPTemplate LP2(mean_ratio, 2, err);
     
     MsqHessian H;
-    msq_std::vector<Vector3D> g;
+    std::vector<Vector3D> g;
     double dummy;
     H.initialize(tetPatch, err); CPPUNIT_ASSERT(!err);
     LP2.evaluate_with_Hessian(ObjectiveFunction::CALCULATE, tetPatch, dummy, g, H, err); CPPUNIT_ASSERT(!err);
@@ -514,7 +514,7 @@ void ObjectiveFunctionTest::test_compute_ana_hessian_tet_scaled()
     LP2.set_dividing_by_n(true);
     
     MsqHessian H;
-    msq_std::vector<Vector3D> g;
+    std::vector<Vector3D> g;
     double dummy;
     H.initialize(tetPatch, err); CPPUNIT_ASSERT(!err);
     LP2.evaluate_with_Hessian(ObjectiveFunction::CALCULATE, tetPatch, dummy, g, H, err); CPPUNIT_ASSERT(!err);
@@ -603,6 +603,6 @@ void ObjectiveFunctionTest::test_max_negate_flag( ObjectiveFunctionTemplate& of 
   CPPUNIT_ASSERT(rval);
   
     // find min value
-  double expected = *msq_std::min_element( some_vals, some_vals+num_vals );
+  double expected = *std::min_element( some_vals, some_vals+num_vals );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( -expected, value, 1e-6 );
 }

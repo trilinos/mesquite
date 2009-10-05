@@ -66,7 +66,7 @@ public:
      */
   MESQUITE_EXPORT virtual 
   void get_element_evaluations( PatchData& pd, size_t elem_index,
-                                msq_std::vector<size_t>& handles,
+                                std::vector<size_t>& handles,
                                 MsqError& err ) = 0;
 
   /** Misc constants used in defining how element index, side dimension,

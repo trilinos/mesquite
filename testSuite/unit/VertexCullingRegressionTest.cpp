@@ -68,15 +68,9 @@ Regression testing using the vertex culling algorithms.
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "LPtoPTemplate.hpp"
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#include <iostream.h>
-#else 
 #include <iostream>
 using std::cout;
 using std::endl;
-#endif
-
-
 using namespace Mesquite;
 
 class VertexCullingRegressionTest : public CppUnit::TestFixture

@@ -39,15 +39,11 @@
 #include "MsqTimer.hpp"
 #include "MsqDebug.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <memory.h>
-#else
-#  include <memory>
-#endif
+#include <memory>
 
 namespace MESQUITE_NS {
 
-msq_std::string SteepestDescent::get_name() const
+std::string SteepestDescent::get_name() const
   { return "SteepestDescent"; }
   
 PatchSet* SteepestDescent::get_patch_set()
@@ -77,8 +73,8 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
 
   const int SEARCH_MAX = 100;
   const double c1 = 1e-4;
-  //msq_std::vector<Vector3D> unprojected(pd.num_free_vertices()); 
-  msq_std::vector<Vector3D> gradient(pd.num_free_vertices()); 
+  //std::vector<Vector3D> unprojected(pd.num_free_vertices()); 
+  std::vector<Vector3D> gradient(pd.num_free_vertices()); 
   bool feasible=true;//bool for OF values
   double min_edge_len, max_edge_len;
   double step_size, original_value, new_value;
@@ -90,7 +86,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     // get vertex memento so we can restore vertex coordinates for bad steps.
   pd_previous_coords = pd.create_vertices_memento( err ); MSQ_ERRRTN(err);
     // use auto_ptr to automatically delete memento when we exit this function
-  msq_std::auto_ptr<PatchDataVerticesMemento> memento_deleter( pd_previous_coords );
+  std::auto_ptr<PatchDataVerticesMemento> memento_deleter( pd_previous_coords );
 
     // Evaluate objective function.
     //
@@ -114,19 +110,19 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
 
     // use edge length as an initial guess for for step size
   pd.get_minmax_edge_length( min_edge_len, max_edge_len );
-  //step_size = max_edge_len / msq_stdc::sqrt(norm_squared);
+  //step_size = max_edge_len / std::sqrt(norm_squared);
   //if (!finite(step_size))  // zero-length gradient
   //  return;
   if (norm_squared < DBL_EPSILON)
     return;
-  step_size = max_edge_len / msq_std::sqrt(norm_squared) * pd.num_free_vertices();
+  step_size = max_edge_len / std::sqrt(norm_squared) * pd.num_free_vertices();
 
     // The steepest descent loop...
     // We loop until the user-specified termination criteria are met.
   while (!term_crit->terminate()) {
-    MSQ_DBGOUT(3) << "Iteration " << term_crit->get_iteration_count() << msq_stdio::endl;
-    MSQ_DBGOUT(3) << "  o  original_value: " << original_value << msq_stdio::endl;
-    MSQ_DBGOUT(3) << "  o  grad norm suqared: " << norm_squared << msq_stdio::endl;
+    MSQ_DBGOUT(3) << "Iteration " << term_crit->get_iteration_count() << std::endl;
+    MSQ_DBGOUT(3) << "  o  original_value: " << original_value << std::endl;
+    MSQ_DBGOUT(3) << "  o  grad norm suqared: " << norm_squared << std::endl;
 
       // Save current vertex coords so that they can be restored if
       // the step was bad.
@@ -136,7 +132,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     int counter = 0;
     for (;;) {
       if (++counter > SEARCH_MAX || step_size < DBL_EPSILON) {
-        MSQ_DBGOUT(3) << "    o  No valid step found.  Giving Up." << msq_stdio::endl;
+        MSQ_DBGOUT(3) << "    o  No valid step found.  Giving Up." << std::endl;
         return;
       }
       
@@ -152,8 +148,8 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       // coordinate decent to work correctly, we will need to call an
       // 'update' form if we decide to keep the new vertex coordinates.
       feasible = obj_func.evaluate( pd, new_value, err ); MSQ_ERRRTN(err);
-      MSQ_DBGOUT(3) << "    o  step_size: " << step_size << msq_stdio::endl;
-      MSQ_DBGOUT(3) << "    o  new_value: " << new_value << msq_stdio::endl;
+      MSQ_DBGOUT(3) << "    o  step_size: " << step_size << std::endl;
+      MSQ_DBGOUT(3) << "    o  new_value: " << new_value << std::endl;
 
       if (!feasible) {
         // OF value is invalid, decrease step_size a lot

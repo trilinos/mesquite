@@ -5,11 +5,7 @@
 #include "Mesquite.hpp"
 #include "RelaxationSmoother.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-#endif
+#include <vector>
 
 namespace MESQUITE_NS
 {
@@ -29,7 +25,7 @@ namespace MESQUITE_NS
     ~SmartLaplacianSmoother();
 
 	MESQUITE_EXPORT
-    virtual msq_std::string get_name() const;
+    virtual std::string get_name() const;
     
 	MESQUITE_EXPORT
     static size_t num_inverted( PatchData& pd, MsqError& err );
@@ -40,7 +36,7 @@ namespace MESQUITE_NS
                                          MsqError &err);
 
   private:
-    msq_std::vector<size_t> adjVtxList;    
+    std::vector<size_t> adjVtxList;    
   };
 
   

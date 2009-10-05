@@ -41,7 +41,7 @@ MeanMidNodeMover::MeanMidNodeMover()
 
 MeanMidNodeMover::~MeanMidNodeMover() {}
 
-msq_std::string MeanMidNodeMover::get_name() const
+std::string MeanMidNodeMover::get_name() const
 { return "MeanMidNodeMover"; }
 
 void MeanMidNodeMover::fix_mid_nodes( PatchData& pd, MsqError& err )
@@ -114,7 +114,7 @@ void MeanMidNodeMover::fix_mid_nodes( PatchData& pd, MsqError& err )
     }
   
       // Calculate average position of side vertices
-    const msq_stdc::size_t* conn_array = element.get_vertex_index_array();
+    const std::size_t* conn_array = element.get_vertex_index_array();
     Vector3D pos(0,0,0);
     for (unsigned i = 0; i < side_size; ++i)
       pos += pd.vertex_by_index( conn_array[side_indices[i]] );

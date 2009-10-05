@@ -34,15 +34,9 @@ Member functions of the Mesquite::InstructionQueue class
   \date   2002-05-01
  */
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <string.h>
-#  include <list.h>
-#  include <memory.h>
-#else
-#  include <string>
-#  include <list>
-#  include <memory>
-#endif
+#include <string>
+#include <list>
+#include <memory>
 
 #include "InstructionQueue.hpp"
 #include "MsqInterrupt.hpp"
@@ -95,7 +89,7 @@ void InstructionQueue::add_vertex_slaver( VertexSlaver* vs, MsqError& )
 void InstructionQueue::remove_vertex_slaver( VertexSlaver* vs, MsqError& err)
 {
   size_t idx = 0;
-  for (msq_std::list<Instruction*>::iterator i = instructions.begin();
+  for (std::list<Instruction*>::iterator i = instructions.begin();
        i != instructions.end(); ++i, ++idx) {
     if (*i == vs) {
       instructions.erase(i);
@@ -120,7 +114,7 @@ void InstructionQueue::add_tag_vertex_mesh( TagVertexMesh* vs, MsqError& )
 void InstructionQueue::remove_tag_vertex_mesh( TagVertexMesh* vs, MsqError& err)
 {
   size_t idx = 0;
-  for (msq_std::list<Instruction*>::iterator i = instructions.begin();
+  for (std::list<Instruction*>::iterator i = instructions.begin();
        i != instructions.end(); ++i, ++idx) {
     if (*i == vs) {
       instructions.erase(i);
@@ -173,9 +167,9 @@ void InstructionQueue::remove_preconditioner(size_t index, MsqError &err)
   }
   
   // position the instruction iterator over the preconditionner to delete
-  msq_std::list<Instruction*>::iterator pos;
+  std::list<Instruction*>::iterator pos;
   pos = instructions.begin();
-  msq_std::advance(pos, index);
+  std::advance(pos, index);
 
   if (!dynamic_cast<QualityImprover*>(*pos)) 
   {
@@ -184,7 +178,7 @@ void InstructionQueue::remove_preconditioner(size_t index, MsqError &err)
     return;
   }
   
-  msq_std::string name = (*pos)->get_name();
+  std::string name = (*pos)->get_name();
   instructions.erase(pos);
   nbPreConditionners--;
 }  
@@ -213,9 +207,9 @@ void InstructionQueue::insert_preconditioner(QualityImprover* instr,
   }
 
   // position the instruction iterator
-  msq_std::list<Instruction*>::iterator pos;
+  std::list<Instruction*>::iterator pos;
   pos = instructions.begin();
-  msq_std::advance(pos, index);
+  std::advance(pos, index);
   // adds the preconditioner
   instructions.insert(pos,instr);
   nbPreConditionners++;
@@ -249,9 +243,9 @@ void InstructionQueue::remove_quality_assessor(size_t index, MsqError &err)
   }
   
   // position the instruction iterator over the QualityAssessor to delete
-  msq_std::list<Instruction*>::iterator pos;
+  std::list<Instruction*>::iterator pos;
   pos = instructions.begin();
-  msq_std::advance(pos, index);
+  std::advance(pos, index);
 
   if ( !dynamic_cast<QualityAssessor*>(*pos) ) 
   {
@@ -260,7 +254,7 @@ void InstructionQueue::remove_quality_assessor(size_t index, MsqError &err)
     return;
   }
   
-  msq_std::string name = (*pos)->get_name();
+  std::string name = (*pos)->get_name();
   instructions.erase(pos);
 }  
 
@@ -283,9 +277,9 @@ void InstructionQueue::insert_quality_assessor(QualityAssessor* instr,
   }
 
   // position the instruction iterator
-  msq_std::list<Instruction*>::iterator pos;
+  std::list<Instruction*>::iterator pos;
   pos = instructions.begin();
-  msq_std::advance(pos, index);
+  std::advance(pos, index);
   // adds the QualityAssessor
   instructions.insert(pos,instr);
 }
@@ -298,7 +292,7 @@ void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
     MSQ_DBGOUT(1) << "InstructionQueue::set_master_quality_improver():\n"
         << "\tOverwriting previously specified master quality improver.\n";
     // if master is already set, clears it and insert the new one at the same position.
-    msq_std::list<Instruction*>::iterator master_pos;
+    std::list<Instruction*>::iterator master_pos;
     master_pos = this->clear_master(err); MSQ_ERRRTN(err);
     instructions.insert(master_pos, instr);
     isMasterSet = true;
@@ -330,7 +324,7 @@ void InstructionQueue::run_instructions( Mesh* mesh,
     // Generate SIGFPE on floating point errors
   MsqFPE fpe_trap( trap_floating_point_exception() );
   
-  msq_std::list<Instruction*>::const_iterator instr;
+  std::list<Instruction*>::const_iterator instr;
   
     // Run each instruction
   for (instr = instructions.begin(); instr != instructions.end(); ++instr) 
@@ -368,7 +362,7 @@ void InstructionQueue::run_instructions( ParallelMesh* mesh,
     // Generate SIGFPE on floating point errors
   MsqFPE fpe_trap( trap_floating_point_exception() );
   
-  msq_std::list<Instruction*>::const_iterator instr;
+  std::list<Instruction*>::const_iterator instr;
   
     // Run each instruction
   for (instr = instructions.begin(); instr != instructions.end(); ++instr) 
@@ -394,10 +388,10 @@ void InstructionQueue::clear()
 }
 
 
-msq_std::list<Instruction*>::iterator InstructionQueue::clear_master(MsqError &err)
+std::list<Instruction*>::iterator InstructionQueue::clear_master(MsqError &err)
 {
-  msq_std::list<Instruction*>::iterator instr_iter;
-  msq_std::list<Instruction*>::iterator master_pos;
+  std::list<Instruction*>::iterator instr_iter;
+  std::list<Instruction*>::iterator master_pos;
   
   if (!isMasterSet) {
     MSQ_SETERR(err)("No master quality improver to clear.", MsqError::INVALID_STATE);
@@ -406,7 +400,7 @@ msq_std::list<Instruction*>::iterator InstructionQueue::clear_master(MsqError &e
   
     // position the instruction iterator over the master quality improver
   master_pos = instructions.begin();
-  msq_std::advance(master_pos, masterInstrIndex);
+  std::advance(master_pos, masterInstrIndex);
   
     // erases the master quality improver
   instr_iter = instructions.erase(master_pos);

@@ -40,17 +40,8 @@
 
 #include "MeshInterface.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#include <map.h>
-#else
 #include <map>
-#endif
-
-#ifdef MSQ_USE_OLD_IO_HEADERS
-class ostream;
-#else
 #include <iosfwd>
-#endif
 
 namespace MESQUITE_NS
 {
@@ -98,14 +89,14 @@ namespace MESQUITE_NS
      *
      * Get the handles of every element in the active mesh.
      */ 
-    virtual void get_all_elements( msq_std::vector<ElementHandle>& handles,
+    virtual void get_all_elements( std::vector<ElementHandle>& handles,
                                    MsqError& err );
     
     /** \brief Get all vertices in mesh
      *
      * Get the handles of every vertex in the active mesh
      */
-    virtual void get_all_vertices( msq_std::vector<VertexHandle>& vertices,
+    virtual void get_all_vertices( std::vector<VertexHandle>& vertices,
                                    MsqError& err );
     
       // Returns a pointer to an iterator that iterates over the
@@ -196,8 +187,8 @@ namespace MESQUITE_NS
     virtual void vertices_get_attached_elements( 
                          const VertexHandle* vertex_array,
                          size_t num_vertex,
-                         msq_std::vector<ElementHandle>& elements,
-                         msq_std::vector<size_t>& offsets,
+                         std::vector<ElementHandle>& elements,
+                         std::vector<size_t>& offsets,
                          MsqError& err );
     
 //*************** Element Topology *************
@@ -220,8 +211,8 @@ namespace MESQUITE_NS
     virtual void elements_get_attached_vertices(
                                    const ElementHandle *elem_handles,
                                    size_t num_elems,
-                                   msq_std::vector<VertexHandle>& vert_handles,
-                                   msq_std::vector<size_t>& offsets, 
+                                   std::vector<VertexHandle>& vert_handles,
+                                   std::vector<size_t>& offsets, 
                                    MsqError &err);
 
     
@@ -247,7 +238,7 @@ namespace MESQUITE_NS
        * \param default_value Default value to assign to all entities - may be NULL
        * \return - Handle for tag definition 
        */
-    virtual TagHandle tag_create( const msq_std::string& tag_name,
+    virtual TagHandle tag_create( const std::string& tag_name,
                                   TagType type, unsigned length,
                                   const void* default_value,
                                   MsqError &err);
@@ -260,7 +251,7 @@ namespace MESQUITE_NS
     
     
       /** \brief Get handle for existing tag, by name. */
-    virtual TagHandle tag_get( const msq_std::string& name, 
+    virtual TagHandle tag_get( const std::string& name, 
                                MsqError& err );
      
       /** \brief Get properites of tag
@@ -272,7 +263,7 @@ namespace MESQUITE_NS
        * \param length_out Passed back number of values per entity.
        */
     virtual void tag_properties( TagHandle handle,
-                                 msq_std::string& name_out,
+                                 std::string& name_out,
                                  TagType& type_out,
                                  unsigned& length_out,
                                  MsqError& err );
@@ -419,7 +410,7 @@ namespace MESQUITE_NS
        */
     void* vtk_read_field_data( FileTokenizer& file, size_t count,
                                size_t field_count,
-                               const msq_std::string& field_name, 
+                               const std::string& field_name, 
                                TagDescription& tag, 
                                MsqError& err );
     
@@ -445,7 +436,7 @@ namespace MESQUITE_NS
                                    TagDescription& tag_out, MsqError& err );
 
       /** Write tag data to VTK attributes */
-    void vtk_write_attrib_data( msq_stdio::ostream& file,
+    void vtk_write_attrib_data( std::ostream& file,
                                 const TagDescription& desc,
                                 const void* data, size_t count,
                                 MsqError& err ) const;
@@ -455,7 +446,7 @@ namespace MESQUITE_NS
        *  Passes back empty result vector if no tag.
        */
     void tag_to_bool( const char* tag_name, 
-                      msq_std::vector<bool>& vertex_vals,
+                      std::vector<bool>& vertex_vals,
                       MsqError& err  );
 
 //**************** End VTK Parsing ****************

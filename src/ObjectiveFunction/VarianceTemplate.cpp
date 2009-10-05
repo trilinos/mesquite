@@ -112,7 +112,7 @@ bool VarianceTemplate::evaluate( EvalType type,
   MSQ_ERRFALSE(err);
   
     // calculate OF value for just the patch
-  msq_std::vector<size_t>::const_iterator i;
+  std::vector<size_t>::const_iterator i;
   double value, sum = 0.0, sqr = 0.0;
   for (i = qmHandles.begin(); i != qmHandles.end(); ++i)
   {
@@ -139,7 +139,7 @@ bool VarianceTemplate::evaluate( EvalType type,
 bool VarianceTemplate::evaluate_with_gradient( EvalType type, 
                                              PatchData& pd,
                                              double& value_out,
-                                             msq_std::vector<Vector3D>& grad_out,
+                                             std::vector<Vector3D>& grad_out,
                                              MsqError& err )
 {
   QualityMetric* qm = get_quality_metric();
@@ -152,7 +152,7 @@ bool VarianceTemplate::evaluate_with_gradient( EvalType type,
   tmpGradient.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
   
     // calculate OF value and gradient for just the patch
-  msq_std::vector<size_t>::const_iterator i;
+  std::vector<size_t>::const_iterator i;
   double value, sum = 0.0, sqr = 0.0;
   for (i = qmHandles.begin(); i != qmHandles.end(); ++i)
   {
@@ -200,8 +200,8 @@ bool VarianceTemplate::evaluate_with_gradient( EvalType type,
 bool VarianceTemplate::evaluate_with_Hessian_diagonal( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
-                                        msq_std::vector<Vector3D>& grad_out,
-                                        msq_std::vector<SymMatrix3D>& hess_diag_out,
+                                        std::vector<Vector3D>& grad_out,
+                                        std::vector<SymMatrix3D>& hess_diag_out,
                                         MsqError& err )
 {
   QualityMetric* qm = get_quality_metric();
@@ -221,7 +221,7 @@ bool VarianceTemplate::evaluate_with_Hessian_diagonal( EvalType type,
   
     // calculate OF value and gradient for just the patch
   Matrix3D op;
-  msq_std::vector<size_t>::const_iterator i;
+  std::vector<size_t>::const_iterator i;
   double value, sum = 0.0, sqr = 0.0;
   for (i = qmHandles.begin(); i != qmHandles.end(); ++i)
   {

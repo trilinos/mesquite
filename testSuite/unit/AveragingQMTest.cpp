@@ -212,12 +212,12 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(AveragingQMTest, "Unit");
 
 const double AveragingQMTest::VAL_LIST_1[5] = { 1, 2, -1, -2, 5 };
 const double AveragingQMTest::VAL_LIST_2[8] = { M_PI,
-                                                msq_stdc::exp(1.0),
+                                                std::exp(1.0),
                                                 -20,
                                                 8,
                                                 M_PI/4,
-                                                msq_stdc::log(2.0),
-                                                msq_stdc::sqrt(2.0),
+                                                std::log(2.0),
+                                                std::sqrt(2.0),
                                                 -1 };
 const unsigned AveragingQMTest::LEN_LIST_1 = sizeof(VAL_LIST_1)/sizeof(double);
 const unsigned AveragingQMTest::LEN_LIST_2 = sizeof(VAL_LIST_2)/sizeof(double);
@@ -226,7 +226,7 @@ static double pmean( const double* vals, unsigned n, double power )
 {
   double result = 0; 
   for(unsigned i = 0; i < n; ++i)
-    result += msq_stdc::pow( vals[i], power );
+    result += std::pow( vals[i], power );
   return pow( result / n, 1.0/power );
 }
 
@@ -272,12 +272,12 @@ static double geometric_mean( const double* vals, unsigned n )
   double result = 1.0;
   for (unsigned i = 0; i < n; ++i)
     result *= vals[i];
-  return msq_stdc::pow( result, 1.0/n );
+  return std::pow( result, 1.0/n );
 }
 
 void AveragingQMTest::test_average_metrics_liner()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm( QualityMetric::LINEAR );
   double exp, act;
   
@@ -294,7 +294,7 @@ void AveragingQMTest::test_average_metrics_liner()
 
 void AveragingQMTest::test_average_metrics_rms()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm( QualityMetric::RMS );
   double exp, act;
   
@@ -311,7 +311,7 @@ void AveragingQMTest::test_average_metrics_rms()
 
 void AveragingQMTest::test_average_metrics_hms()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm( QualityMetric::HMS );
   double exp, act;
   
@@ -328,7 +328,7 @@ void AveragingQMTest::test_average_metrics_hms()
 
 void AveragingQMTest::test_average_metrics_minimum()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm( QualityMetric::MINIMUM );
   double exp, act;
   
@@ -345,7 +345,7 @@ void AveragingQMTest::test_average_metrics_minimum()
 
 void AveragingQMTest::test_average_metrics_maximum()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm( QualityMetric::MAXIMUM );
   double exp, act;
   
@@ -362,7 +362,7 @@ void AveragingQMTest::test_average_metrics_maximum()
 
 void AveragingQMTest::test_average_metrics_harmonic()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm( QualityMetric::HARMONIC );
   double exp, act;
   
@@ -379,7 +379,7 @@ void AveragingQMTest::test_average_metrics_harmonic()
 
 void AveragingQMTest::test_average_metrics_geometric()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm( QualityMetric::GEOMETRIC );
   double exp, act;
   
@@ -396,7 +396,7 @@ void AveragingQMTest::test_average_metrics_geometric()
 
 void AveragingQMTest::test_average_metrics_sum()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm( QualityMetric::SUM );
   double exp, act;
   unsigned i;
@@ -414,7 +414,7 @@ void AveragingQMTest::test_average_metrics_sum()
 
 void AveragingQMTest::test_average_metrics_sum_squared()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm( QualityMetric::SUM_SQUARED );
   double exp, act;
   
@@ -431,7 +431,7 @@ void AveragingQMTest::test_average_metrics_sum_squared()
 
 void AveragingQMTest::test_average_metrics_standard_deviation()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm( QualityMetric::STANDARD_DEVIATION );
   double exp, act, tmp;
   
@@ -452,7 +452,7 @@ void AveragingQMTest::test_average_metrics_standard_deviation()
 
 void AveragingQMTest::test_average_metrics_max_over_min()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm( QualityMetric::MAX_OVER_MIN );
   double exp, act;
   
@@ -469,7 +469,7 @@ void AveragingQMTest::test_average_metrics_max_over_min()
 
 void AveragingQMTest::test_average_metrics_max_minus_min()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm( QualityMetric::MAX_MINUS_MIN );
   double exp, act;
   
@@ -486,7 +486,7 @@ void AveragingQMTest::test_average_metrics_max_minus_min()
 
 void AveragingQMTest::test_average_metrics_sum_of_ratios_squared()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm( QualityMetric::SUM_OF_RATIOS_SQUARED );
   double exp, act;
   
@@ -505,12 +505,12 @@ void AveragingQMTest::check_average_and_weights( const double* vals, unsigned n,
                                        QualityMetric::AveragingMethod method,
                                        const double* weights )
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm( method );
   
   CPPUNIT_ASSERT(n > 0);
-  msq_std::vector<double> working(n);
-  msq_std::copy( vals, vals+n, working.begin() );
+  std::vector<double> working(n);
+  std::copy( vals, vals+n, working.begin() );
   
   double avg1, avg2;
   avg1 = aqm.average_metrics( vals, n, err );
@@ -525,14 +525,14 @@ void AveragingQMTest::check_average_and_weights( const double* vals, unsigned n,
 
 void AveragingQMTest::test_average_and_weights_linear()
 {
-  msq_std::vector<double> weights1( LEN_LIST_1, 1.0/LEN_LIST_1), weights2( LEN_LIST_2, 1.0/LEN_LIST_2 );
+  std::vector<double> weights1( LEN_LIST_1, 1.0/LEN_LIST_1), weights2( LEN_LIST_2, 1.0/LEN_LIST_2 );
   check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::LINEAR, &weights1[0] );
   check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::LINEAR, &weights2[0] );
 }
 
 void AveragingQMTest::test_average_and_weights_rms()
 {
-  msq_std::vector<double> weights1( LEN_LIST_1 ), weights2( LEN_LIST_2 );
+  std::vector<double> weights1( LEN_LIST_1 ), weights2( LEN_LIST_2 );
   unsigned i;
   double rms;
   
@@ -549,7 +549,7 @@ void AveragingQMTest::test_average_and_weights_rms()
 
 void AveragingQMTest::test_average_and_weights_hms()
 {
-  msq_std::vector<double> weights1( LEN_LIST_1 ), weights2( LEN_LIST_2 );
+  std::vector<double> weights1( LEN_LIST_1 ), weights2( LEN_LIST_2 );
   unsigned i;
   double hms, tmp;
   
@@ -570,35 +570,35 @@ void AveragingQMTest::test_average_and_weights_hms()
 
 void AveragingQMTest::test_average_and_weights_minimum()
 {
-  msq_std::vector<double> weights1( LEN_LIST_1, 0.0 ), weights2( LEN_LIST_2, 0.0 );
+  std::vector<double> weights1( LEN_LIST_1, 0.0 ), weights2( LEN_LIST_2, 0.0 );
   const double* ptr;
   
-  ptr = msq_std::min_element( VAL_LIST_1, VAL_LIST_1+LEN_LIST_1 );
+  ptr = std::min_element( VAL_LIST_1, VAL_LIST_1+LEN_LIST_1 );
   weights1[ptr-VAL_LIST_1] = 1.0;
   check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::MINIMUM, &weights1[0] );
   
-  ptr = msq_std::min_element( VAL_LIST_2, VAL_LIST_2+LEN_LIST_2 );
+  ptr = std::min_element( VAL_LIST_2, VAL_LIST_2+LEN_LIST_2 );
   weights2[ptr-VAL_LIST_2] = 1.0;
   check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::MINIMUM, &weights2[0] );
 }  
 
 void AveragingQMTest::test_average_and_weights_maximum()
 {
-  msq_std::vector<double> weights1( LEN_LIST_1, 0.0 ), weights2( LEN_LIST_2, 0.0 );
+  std::vector<double> weights1( LEN_LIST_1, 0.0 ), weights2( LEN_LIST_2, 0.0 );
   const double* ptr;
   
-  ptr = msq_std::max_element( VAL_LIST_1, VAL_LIST_1+LEN_LIST_1 );
+  ptr = std::max_element( VAL_LIST_1, VAL_LIST_1+LEN_LIST_1 );
   weights1[ptr-VAL_LIST_1] = 1.0;
   check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::MAXIMUM, &weights1[0] );
   
-  ptr = msq_std::max_element( VAL_LIST_2, VAL_LIST_2+LEN_LIST_2 );
+  ptr = std::max_element( VAL_LIST_2, VAL_LIST_2+LEN_LIST_2 );
   weights2[ptr-VAL_LIST_2] = 1.0;
   check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::MAXIMUM, &weights2[0] );
 }  
 
 void AveragingQMTest::test_average_and_weights_harmonic()
 {
-  msq_std::vector<double> weights1( LEN_LIST_1 ), weights2( LEN_LIST_2 );
+  std::vector<double> weights1( LEN_LIST_1 ), weights2( LEN_LIST_2 );
   unsigned i;
   double h, tmp;
   
@@ -619,7 +619,7 @@ void AveragingQMTest::test_average_and_weights_harmonic()
 
 void AveragingQMTest::test_average_and_weights_geometric()
 {
-  msq_std::vector<double> weights1( LEN_LIST_1 ), weights2( LEN_LIST_2 );
+  std::vector<double> weights1( LEN_LIST_1 ), weights2( LEN_LIST_2 );
   unsigned i;
   double g;
 
@@ -638,14 +638,14 @@ void AveragingQMTest::test_average_and_weights_geometric()
 
 void AveragingQMTest::test_average_and_weights_sum()
 {
-  msq_std::vector<double> weights1( LEN_LIST_1, 1.0), weights2( LEN_LIST_2, 1.0);
+  std::vector<double> weights1( LEN_LIST_1, 1.0), weights2( LEN_LIST_2, 1.0);
   check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::SUM, &weights1[0] );
   check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::SUM, &weights2[0] );
 }
 
 void AveragingQMTest::test_average_and_weights_sum_squared()
 {
-  msq_std::vector<double> weights1( LEN_LIST_1 ), weights2( LEN_LIST_2 );
+  std::vector<double> weights1( LEN_LIST_1 ), weights2( LEN_LIST_2 );
   unsigned i;
   
   for (i = 0; i < LEN_LIST_1; ++i) 
@@ -836,7 +836,7 @@ void AveragingQMTest::check_pmean_hessian_diagonals(
                                  double outer_power,
                                  bool scale )
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm(scheme);
   uint32_t fixed = 0; // mark no vertices as fixed
 
@@ -1042,7 +1042,7 @@ void AveragingQMTest::check_pmean_hessian( QualityMetric::AveragingMethod scheme
 
   Vector3D aqm_grad[3], exp_grad[3];
   Matrix3D aqm_hess[6], exp_hess[6];;
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   AveragingQM aqm(scheme);
   uint32_t fixed = 0x4; // mark third vertex as fixed
   double aqm_avg, exp_avg;

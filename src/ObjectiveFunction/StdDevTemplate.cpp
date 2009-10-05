@@ -60,7 +60,7 @@ bool StdDevTemplate::evaluate( EvalType type,
 bool StdDevTemplate::evaluate_with_gradient( EvalType type, 
                                              PatchData& pd,
                                              double& value_out,
-                                             msq_std::vector<Vector3D>& grad_out,
+                                             std::vector<Vector3D>& grad_out,
                                              MsqError& err )
 {
   bool result = VarianceTemplate::evaluate_with_gradient( type, pd, value_out, grad_out, err );
@@ -71,7 +71,7 @@ bool StdDevTemplate::evaluate_with_gradient( EvalType type,
   value_out *= neg; // undo any negation done by VarianceTemplate
   value_out = sqrt( value_out ); // standard deviation
   const double factor = 1.0/(2.0 * value_out);  
-  for (msq_std::vector<Vector3D>::iterator i = grad_out.begin(); i != grad_out.end(); ++i)
+  for (std::vector<Vector3D>::iterator i = grad_out.begin(); i != grad_out.end(); ++i)
     *i *= factor;
   value_out *= neg; // redo any negation done by VariandeTemplate
   
@@ -82,8 +82,8 @@ bool StdDevTemplate::evaluate_with_gradient( EvalType type,
 bool StdDevTemplate::evaluate_with_Hessian_diagonal( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
-                                        msq_std::vector<Vector3D>& grad_out,
-                                        msq_std::vector<SymMatrix3D>& hess_diag_out,
+                                        std::vector<Vector3D>& grad_out,
+                                        std::vector<SymMatrix3D>& hess_diag_out,
                                         MsqError& err )
 {
   bool result = VarianceTemplate::evaluate_with_Hessian_diagonal( type, pd, value_out, grad_out, hess_diag_out, err );

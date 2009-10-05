@@ -54,7 +54,7 @@
 
 using namespace Mesquite;
 
-msq_std::string FeasibleNewton::get_name() const { return "FeasibleNewton"; }
+std::string FeasibleNewton::get_name() const { return "FeasibleNewton"; }
   
 PatchSet* FeasibleNewton::get_patch_set()
   { return PatchSetUser::get_patch_set(); }
@@ -100,7 +100,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   double beta;
   
   int nv = pd.num_free_vertices();
-  msq_std::vector<Vector3D> grad(nv), d(nv);
+  std::vector<Vector3D> grad(nv), d(nv);
   bool fn_bool=true;// bool used for determining validity of patch
   
   OFEvaluator& objFunc = get_objective_function_evaluator();
@@ -117,7 +117,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   mHessian.initialize(pd, err); MSQ_ERRRTN(err);
 
   // 3.  Calculate the norm of the gradient for the patch
-  MSQ_DBGOUT(3) << "  o  gradient norm: " << length(grad) << msq_stdio::endl;
+  MSQ_DBGOUT(3) << "  o  gradient norm: " << length(grad) << std::endl;
   
   // does the Feasible Newton iteration until stopping is required.
   // Terminate when inner termination criterion signals.

@@ -52,7 +52,7 @@ public:
   ElemSampleQM* get_quality_metric() const 
     { return mMetric; }
   
-  virtual msq_std::string get_name() const;
+  virtual std::string get_name() const;
 
   virtual int get_negate_flag() const;
 
@@ -66,38 +66,38 @@ public:
   bool evaluate_with_indices( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
+                 std::vector<size_t>& indices,
                  MsqError& err );
 
   virtual
   bool evaluate_with_gradient( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
-                 msq_std::vector<Vector3D>& gradient,
+                 std::vector<size_t>& indices,
+                 std::vector<Vector3D>& gradient,
                  MsqError& err );
 
   virtual
   bool evaluate_with_Hessian( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
-                 msq_std::vector<Vector3D>& gradient,
-                 msq_std::vector<Matrix3D>& Hessian,
+                 std::vector<size_t>& indices,
+                 std::vector<Vector3D>& gradient,
+                 std::vector<Matrix3D>& Hessian,
                  MsqError& err );
 
   virtual
   bool evaluate_with_Hessian_diagonal( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
-                 msq_std::vector<Vector3D>& gradient,
-                 msq_std::vector<SymMatrix3D>& Hessian_diagonal,
+                 std::vector<size_t>& indices,
+                 std::vector<Vector3D>& gradient,
+                 std::vector<SymMatrix3D>& Hessian_diagonal,
                  MsqError& err );
 private:
 
   ElemSampleQM* mMetric;
-  mutable msq_std::vector<size_t> mHandles;
+  mutable std::vector<size_t> mHandles;
 };
   
 

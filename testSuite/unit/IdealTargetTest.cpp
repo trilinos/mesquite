@@ -183,7 +183,7 @@ void IdealTargetTest::get_calc_target( bool rotate, EntityTopology type,
                                        Sample location,
                                        MsqMatrix<3,3>& w3, MsqMatrix<3,2>& w2 )
 {
-  MsqPrintError err( msq_stdio::cout );
+  MsqPrintError err( std::cout );
   const int elem_dim = TopologyInfo::dimension(type);
   
     // create a patch -- actual coords and such don't really matter
@@ -207,7 +207,7 @@ void IdealTargetTest::get_ideal_target( EntityTopology type,
                                         Sample location,
                                         MsqMatrix<3,3>& w3, MsqMatrix<3,2>& w2 )
 {
-  MsqPrintError err( msq_stdio::cout );
+  MsqPrintError err( std::cout );
   const unsigned elem_dim = TopologyInfo::dimension(type);
   
     // get the target matrix for an ideal element
@@ -310,7 +310,7 @@ void IdealTargetTest::test_plane_neg_z()
 {
   const Vector3D neg_z(0,0,-1);
   PlanarDomain dom(neg_z,Vector3D(0,0,0));
-  MsqPrintError err( msq_stdio::cout );
+  MsqPrintError err( std::cout );
   
     // create a patch -- actual coords and such don't really matter
   std::vector<double> coords( 24, 0.0 );

@@ -110,7 +110,7 @@ void MsqMatrixTest::test_initialize()
   CPPUNIT_ASSERT_DOUBLES_EQUAL(r1v[0], I(1,0), 1e-6 );
   CPPUNIT_ASSERT_DOUBLES_EQUAL(r1v[1], I(1,1), 1e-6 );
   
-  msq_std::string str = "-1 -2 1 2 3 4";
+  std::string str = "-1 -2 1 2 3 4";
   MsqMatrix<2,3> S1( str );
   CPPUNIT_ASSERT_DOUBLES_EQUAL(-1, S1(0,0), 1e-6 );
   CPPUNIT_ASSERT_DOUBLES_EQUAL(-2, S1(0,1), 1e-6 );

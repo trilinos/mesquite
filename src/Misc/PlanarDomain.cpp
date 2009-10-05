@@ -29,11 +29,7 @@
 #include "MsqError.hpp"
 #include "MsqVertex.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <algorithm.h>
-#else
-# include <algorithm>
-#endif
+#include <algorithm>
 
 void Mesquite::PlanarDomain::set_plane( const Mesquite::Vector3D& normal, 
                                         const Mesquite::Vector3D& point)
@@ -91,7 +87,7 @@ void Mesquite::PlanarDomain::domain_DoF( const Mesh::VertexHandle* ,
                                          size_t num_vertices,
                                          MsqError&  ) const
 {
-  msq_std::fill( dof_array, dof_array + num_vertices, 2 );
+  std::fill( dof_array, dof_array + num_vertices, 2 );
 }
 
 Mesquite::PlanarDomain Mesquite::PlanarDomain::fit_vertices( Mesquite::Mesh* mesh, 
@@ -99,7 +95,7 @@ Mesquite::PlanarDomain Mesquite::PlanarDomain::fit_vertices( Mesquite::Mesh* mes
                                                              Mesquite::MsqError& err )
 {
   // get all vertex coordiantes
-  msq_std::vector<Mesh::VertexHandle> verts;
+  std::vector<Mesh::VertexHandle> verts;
   mesh->get_all_vertices( verts, err ); 
   if (MSQ_CHKERR(err))
     return PlanarDomain(XY);
@@ -107,7 +103,7 @@ Mesquite::PlanarDomain Mesquite::PlanarDomain::fit_vertices( Mesquite::Mesh* mes
     MSQ_SETERR(err)("No mesh", MsqError::INVALID_MESH);
     return PlanarDomain(XY);
   }
-  msq_std::vector<MsqVertex> coords(verts.size());
+  std::vector<MsqVertex> coords(verts.size());
   mesh->vertices_get_coordinates( &verts[0], &coords[0], verts.size(), err ); 
   if (MSQ_CHKERR(err))
     return PlanarDomain(XY);
@@ -187,18 +183,18 @@ Mesquite::PlanarDomain Mesquite::PlanarDomain::fit_vertices( Mesquite::Mesh* mes
   }
   
     // free memory used to hold vertex data
-  msq_std::vector<MsqVertex>* tmp_vvect = new msq_std::vector<MsqVertex>;
+  std::vector<MsqVertex>* tmp_vvect = new std::vector<MsqVertex>;
   tmp_vvect->swap( coords );
   delete tmp_vvect;
-  msq_std::vector<Mesh::VertexHandle>* tmp_hvect = new msq_std::vector<Mesh::VertexHandle>;
+  std::vector<Mesh::VertexHandle>* tmp_hvect = new std::vector<Mesh::VertexHandle>;
   tmp_hvect->swap( verts );
   delete tmp_hvect;
   
     // now count inverted elements
   coords.resize(3);
   size_t inverted_count = 0;
-  msq_std::vector<Mesh::ElementHandle> elems;
-  msq_std::vector<size_t> junk;
+  std::vector<Mesh::ElementHandle> elems;
+  std::vector<size_t> junk;
   mesh->get_all_elements( elems, err ); 
   if (MSQ_CHKERR(err))
     return PlanarDomain(XY);

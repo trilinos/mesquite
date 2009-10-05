@@ -27,18 +27,8 @@
 
 #include "Mesquite.hpp"
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-class ostream;
-#else
 #include <iosfwd>
-#endif
-
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <list.h>
-#else
-#  include <list>
-#endif
-
+#include <list>
 #include <string>
 
 namespace MESQUITE_NS
@@ -162,8 +152,8 @@ public:
   //!\class Trace
   //!\brief One line of stack trace data
   struct MESQUITE_EXPORT Trace {
-    msq_std::string function;
-    msq_std::string file;
+    std::string function;
+    std::string file;
     int line;
     
     Trace( const char* fun, const char* fil, int lin )
@@ -175,7 +165,7 @@ public:
   
   //! Container type used to store stack trace.
   //! Return type for stack()
-  typedef msq_std::list<Trace> StackTrace;
+  typedef std::list<Trace> StackTrace;
 
   //! Get stack trace
   inline const StackTrace& stack() const { return stackTrace; }
@@ -202,7 +192,7 @@ public:
       
       bool set( ErrorCode num );
       bool set( const char* message, ErrorCode num );
-      bool set( const msq_std::string& message, ErrorCode num );
+      bool set( const std::string& message, ErrorCode num );
       bool set( ErrorCode num, const char* format, ... )
       #ifdef __GNUC__
         __attribute__ ((format (printf, 3, 4)))
@@ -221,15 +211,15 @@ public:
 private:
 
   ErrorCode errorCode;
-  msq_std::string errorMessage;
+  std::string errorMessage;
   StackTrace stackTrace;
 };
 
 
   //! Print message and stack trace
-MESQUITE_EXPORT msq_stdio::ostream& operator<<( msq_stdio::ostream&, const MsqError& );
+MESQUITE_EXPORT std::ostream& operator<<( std::ostream&, const MsqError& );
   //! Print MsqError::Trace
-MESQUITE_EXPORT msq_stdio::ostream& operator<<( msq_stdio::ostream&, const MsqError::Trace& );
+MESQUITE_EXPORT std::ostream& operator<<( std::ostream&, const MsqError::Trace& );
 
 /**
  *\class MsqPrintError
@@ -247,7 +237,7 @@ class MsqPrintError : public MsqError
 {
   public:
       //!\brief Initialize with ostream to print error data to.
-    MESQUITE_EXPORT MsqPrintError( msq_stdio::ostream& stream )
+    MESQUITE_EXPORT MsqPrintError( std::ostream& stream )
       : outputStream(stream) {}
     
       //!\brief On destruction, conditionally prints error data.
@@ -255,7 +245,7 @@ class MsqPrintError : public MsqError
     
   private:
       
-    msq_std::ostream& outputStream;
+    std::ostream& outputStream;
 };
 
 /*@}*/

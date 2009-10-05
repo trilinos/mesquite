@@ -51,7 +51,7 @@ public:
   MESQUITE_EXPORT ElemSampleQM* get_quality_metric() const 
     { return mMetric; }
   
-  MESQUITE_EXPORT virtual msq_std::string get_name() const;
+  MESQUITE_EXPORT virtual std::string get_name() const;
 
   MESQUITE_EXPORT virtual int get_negate_flag() const;
 
@@ -64,7 +64,7 @@ public:
 private:
 
   ElemSampleQM* mMetric;
-  mutable msq_std::vector<size_t> mHandles;
+  mutable std::vector<size_t> mHandles;
 };  
 
 

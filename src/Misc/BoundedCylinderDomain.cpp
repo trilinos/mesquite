@@ -31,13 +31,8 @@
 #include "MsqError.hpp"
 #include "MsqVertex.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <limits.h>
-# include <algorithm.h>
-#else
-# include <limits>
-# include <algorithm>
-#endif
+#include <limits>
+#include <algorithm>
 
 namespace MESQUITE_NS {
 
@@ -55,12 +50,12 @@ void BoundedCylinderDomain::domain_DoF( const Mesh::VertexHandle* handle_array,
 }
 
 void BoundedCylinderDomain::create_curve( double distance, 
-                       const msq_std::vector<Mesh::VertexHandle>& handles )
+                       const std::vector<Mesh::VertexHandle>& handles )
 {
   Curve c;
   c.t = distance;
   c.handles = handles;
-  msq_std::sort( c.handles.begin(), c.handles.end() );
+  std::sort( c.handles.begin(), c.handles.end() );
   curveList.push_back( c );
 }
 
@@ -69,18 +64,18 @@ void BoundedCylinderDomain::create_curve( double distance,
                                           double tolerance,
                                           MsqError& err )
 {
-  msq_std::vector<Mesh::VertexHandle> handles;
+  std::vector<Mesh::VertexHandle> handles;
   mesh->get_all_vertices( handles, err ); MSQ_ERRRTN(err);
   if (handles.empty()) {
     MSQ_SETERR(err)("No vertices in mesh.\n", MsqError::INVALID_ARG );
     return;
   }
   
-  msq_std::vector<MsqVertex> coords(handles.size());
+  std::vector<MsqVertex> coords(handles.size());
   mesh->vertices_get_coordinates( &handles[0], &coords[0], handles.size(), err );
   MSQ_ERRRTN(err);
   
-  msq_std::vector<Mesh::EntityHandle> list;
+  std::vector<Mesh::EntityHandle> list;
   Vector3D close, normal;
   for (size_t i = 0; i < handles.size(); ++i)
   {
@@ -103,7 +98,7 @@ void BoundedCylinderDomain::evaluate( double t,
                                       Vector3D& closest,
                                       Vector3D& normal ) const
 {
-  const double EPSILON = msq_std::numeric_limits<double>::epsilon();
+  const double EPSILON = std::numeric_limits<double>::epsilon();
   double t2 = axis() % (point - center());
   const Vector3D circ_center = center() + t * axis();
   const Vector3D axis_point = center() + t2 * axis();
@@ -135,8 +130,8 @@ void BoundedCylinderDomain::evaluate( Mesh::VertexHandle handle,
 
 bool BoundedCylinderDomain::find_curve( Mesh::VertexHandle handle, double& t ) const
 {
-  for (msq_std::list<Curve>::const_iterator i = curveList.begin(); i != curveList.end(); ++i)
-    if (msq_std::binary_search( i->handles.begin(), i->handles.end(), handle ))
+  for (std::list<Curve>::const_iterator i = curveList.begin(); i != curveList.end(); ++i)
+    if (std::binary_search( i->handles.begin(), i->handles.end(), handle ))
     {
       t = i->t;
       return true;

@@ -27,12 +27,8 @@
 #ifndef FILE_TOKENIZER_HPP
 #define FILE_TOKENIZER_HPP
 
-#ifdef MSQ_USE_OLD_C_HEADERS
-#  include <stdio.h>
-#else
-#  include <cstdio>
-#endif
 #include "Mesquite.hpp"
+#include <cstdio>
 #include <sys/types.h>
 
 namespace MESQUITE_NS
@@ -65,7 +61,7 @@ class FileTokenizer
        * 
        * \param file_ptr The file to read from.
        */
-    FileTokenizer( msq_stdc::FILE* file_ptr );
+    FileTokenizer( std::FILE* file_ptr );
     
       /** \brief destructor : closes file.
        *
@@ -224,7 +220,7 @@ class FileTokenizer
     bool get_byte_internal( unsigned char& result, MsqError& err );
   
       /** Pointer to standard C FILE struct */
-    msq_stdc::FILE* filePtr;
+    std::FILE* filePtr;
     
       /** Input buffer */
     char buffer[512];

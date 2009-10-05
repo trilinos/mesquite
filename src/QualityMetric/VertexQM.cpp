@@ -38,7 +38,7 @@
 namespace MESQUITE_NS {
 
 void VertexQM::get_evaluations( PatchData& pd, 
-                                msq_std::vector<size_t>& handles,
+                                std::vector<size_t>& handles,
                                 bool free_vertices_only, 
                                 MsqError& err )
 {
@@ -46,7 +46,7 @@ void VertexQM::get_evaluations( PatchData& pd,
 }
 
 void VertexQM::get_vertex_evaluations( PatchData& pd, 
-                                       msq_std::vector<size_t>& handles,
+                                       std::vector<size_t>& handles,
                                        bool free_vertices_only, 
                                        MsqError& err )
 {
@@ -66,7 +66,7 @@ void VertexQM::get_vertex_evaluations( PatchData& pd,
 
 void VertexQM::get_vertex_corner_handles( PatchData& pd, 
                                           size_t vtx_idx,
-                                          msq_std::vector<size_t>& handles,
+                                          std::vector<size_t>& handles,
                                           MsqError& err )
 {
   size_t len;

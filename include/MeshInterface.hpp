@@ -42,18 +42,8 @@
 #include "Mesquite.hpp"
 #include "TopologyInfo.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <vector.h>
-#else
-# include <vector>
-#endif
-
-#ifdef MSQ_USE_OLD_C_HEADERS
-#  include <stddef.h>
-#else
-#  include <cstddef>
-#endif
-
+#include <vector>
+#include <cstddef>
 #include <string>
 
 namespace MESQUITE_NS
@@ -99,14 +89,14 @@ namespace MESQUITE_NS
      *
      * Get the handles of every element in the active mesh.
      */ 
-    virtual void get_all_elements( msq_std::vector<ElementHandle>& elements,
+    virtual void get_all_elements( std::vector<ElementHandle>& elements,
                                    MsqError& err ) = 0;
     
     /** \brief Get all vertices in mesh
      *
      * Get the handles of every vertex in the active mesh
      */
-    virtual void get_all_vertices( msq_std::vector<VertexHandle>& vertices,
+    virtual void get_all_vertices( std::vector<VertexHandle>& vertices,
                                    MsqError& err ) = 0;
     
       //! Returns a pointer to an iterator that iterates over the
@@ -198,8 +188,8 @@ namespace MESQUITE_NS
     virtual void vertices_get_attached_elements( 
                          const VertexHandle* vertex_array,
                          size_t num_vertex,
-                         msq_std::vector<ElementHandle>& elements,
-                         msq_std::vector<size_t>& offsets,
+                         std::vector<ElementHandle>& elements,
+                         std::vector<size_t>& offsets,
                          MsqError& err ) = 0;
     
 //*************** Element Topology *************
@@ -222,8 +212,8 @@ namespace MESQUITE_NS
     virtual void elements_get_attached_vertices(
                                    const ElementHandle *elem_handles,
                                    size_t num_elems,
-                                   msq_std::vector<VertexHandle>& vert_handles,
-                                   msq_std::vector<size_t>& offsets, 
+                                   std::vector<VertexHandle>& vert_handles,
+                                   std::vector<size_t>& offsets, 
                                    MsqError &err) = 0;
     
     
@@ -251,7 +241,7 @@ namespace MESQUITE_NS
        * \param default_value Default value to assign to all entities - may be NULL
        * \return - Handle for tag definition 
        */
-    virtual TagHandle tag_create( const msq_std::string& tag_name,
+    virtual TagHandle tag_create( const std::string& tag_name,
                                   TagType type, unsigned length,
                                   const void* default_value,
                                   MsqError &err) = 0;
@@ -270,7 +260,7 @@ namespace MESQUITE_NS
         * tag does not exist, zero should be returned WITHOUT 
         * flagging an error.
         */
-    virtual TagHandle tag_get( const msq_std::string& name, 
+    virtual TagHandle tag_get( const std::string& name, 
                                MsqError& err ) = 0;
      
       /** \brief Get properites of tag
@@ -282,7 +272,7 @@ namespace MESQUITE_NS
        * \param length_out Passed back number of values per entity.
        */
     virtual void tag_properties( TagHandle handle,
-                                 msq_std::string& name_out,
+                                 std::string& name_out,
                                  TagType& type_out,
                                  unsigned& length_out,
                                  MsqError& err ) = 0;

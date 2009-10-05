@@ -41,11 +41,8 @@
 #include "Mesquite.hpp"
 #include "VertexMover.hpp"
 #include "VertexPatches.hpp"
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-#endif
+#include <vector>
+
 namespace MESQUITE_NS
 {
 
@@ -62,7 +59,7 @@ namespace MESQUITE_NS
 
     MESQUITE_EXPORT virtual ~Randomize() { }
     
-    MESQUITE_EXPORT virtual msq_std::string get_name() const;
+    MESQUITE_EXPORT virtual std::string get_name() const;
 
     MESQUITE_EXPORT virtual PatchSet* get_patch_set();
     
@@ -76,7 +73,7 @@ namespace MESQUITE_NS
   private:
       //! \param The percentage of the scale factor each vertex will be moved.
     double mPercent;
-    msq_std::vector<size_t> adjVtxList;
+    std::vector<size_t> adjVtxList;
     VertexPatches patchSet;
   };
 

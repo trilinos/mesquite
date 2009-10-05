@@ -126,16 +126,6 @@ ADD_OPTION_AND_DEFINE(${PACKAGE_NAME}_ENABLE_IMESHP
 SET(${PACKAGE_NAME}_MSQ_FUNCTION "" CACHE STRING "Set c++ preprocessor macro for function name.")
 SET(MSQ_FUNCTION ${${PACKAGE_NAME}_MSQ_FUNCTION})
 
-ADD_OPTION_AND_DEFINE(${PACKAGE_NAME}_ENABLE_MSQ_USE_OLD_C_HEADERS
-  MSQ_USE_OLD_C_HEADERS
-  "Enable if old C .h headers must be used for C++."
-  OFF )
-
-ADD_OPTION_AND_DEFINE(${PACKAGE_NAME}_ENABLE_MSQ_USE_OLD_IO_HEADERS
-  MSQ_USE_OLD_IO_HEADERS
-  "Enable if old .h headers must be used for C++ I/O."
-  OFF )
-
 ADD_OPTION_AND_DEFINE(${PACKAGE_NAME}_ENABLE_TRAP_FPE
   MSQ_TRAP_FPE
   "Enable to turn on floating point exception trapping."

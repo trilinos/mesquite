@@ -139,16 +139,16 @@ class DomainClassifier : public MeshDomain
       MESQUITE_EXPORT DomainSet( MeshDomain* dom ) : domain(dom) {}
       MESQUITE_EXPORT DomainSet() : domain(0) {}
       MeshDomain* domain;
-	  MESQUITE_EXPORT void set_vertices( const msq_std::vector<Mesh::VertexHandle>& verts ) 
+	  MESQUITE_EXPORT void set_vertices( const std::vector<Mesh::VertexHandle>& verts ) 
 	    { vertices = verts; }
-	  MESQUITE_EXPORT void set_elements( const msq_std::vector<Mesh::ElementHandle>& elems ) 
+	  MESQUITE_EXPORT void set_elements( const std::vector<Mesh::ElementHandle>& elems ) 
 	    { elements = elems; }
-	  MESQUITE_EXPORT void get_vertices( msq_std::vector<Mesh::VertexHandle>& verts ) const
+	  MESQUITE_EXPORT void get_vertices( std::vector<Mesh::VertexHandle>& verts ) const
 	    { verts = vertices; }
-	  MESQUITE_EXPORT void get_elements( msq_std::vector<Mesh::ElementHandle>& elems ) const
+	  MESQUITE_EXPORT void get_elements( std::vector<Mesh::ElementHandle>& elems ) const
 	    { elems = elements; }
-      msq_std::vector<Mesh::VertexHandle> vertices;
-      msq_std::vector<Mesh::ElementHandle> elements;
+      std::vector<Mesh::VertexHandle> vertices;
+      std::vector<Mesh::ElementHandle> elements;
     };
   
     /**\brief Specify classification explicitly for each entity.
@@ -237,10 +237,10 @@ class DomainClassifier : public MeshDomain
     bool deleteSubDomains;
     
     static MeshDomain* find_domain( Mesh::EntityHandle handle, 
-                                 const msq_std::vector<DomainBlock>& list );
+                                 const std::vector<DomainBlock>& list );
     
-    msq_std::vector<DomainBlock> vertexList;
-    msq_std::vector<DomainBlock> elementList;
+    std::vector<DomainBlock> vertexList;
+    std::vector<DomainBlock> elementList;
 };
 
 } // namespace Mesquite

@@ -56,12 +56,12 @@ namespace MESQUITE_NS
     LaplacianSmoother( ObjectiveFunction* OF = NULL ) : RelaxationSmoother(OF) {}
     
     virtual ~LaplacianSmoother();
-    virtual msq_std::string get_name() const;
+    virtual std::string get_name() const;
   protected:
     virtual void optimize_vertex_positions(PatchData &pd,
                                          MsqError &err);
   private:
-    msq_std::vector<size_t> adjVtxList;
+    std::vector<size_t> adjVtxList;
   };
 }
 

@@ -41,11 +41,7 @@ Header file for the Mesquite::InstructionQueue class
 #include "Mesquite.hpp"
 #include "Settings.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <list.h>
-#else
-#  include <list>
-#endif
+#include <list>
 
 namespace MESQUITE_NS {
 
@@ -158,9 +154,9 @@ namespace MESQUITE_NS {
   protected:
     
   private:
-    msq_std::list<Instruction*>::iterator clear_master(MsqError &err);
+    std::list<Instruction*>::iterator clear_master(MsqError &err);
 
-    msq_std::list<Instruction*> instructions;
+    std::list<Instruction*> instructions;
 
     bool autoQualAssess;
     

@@ -40,7 +40,7 @@ namespace MESQUITE_NS {
 
 Target3DSizeBarrier::~Target3DSizeBarrier() {}
 
-msq_std::string Target3DSizeBarrier::get_name() const
+std::string Target3DSizeBarrier::get_name() const
   { return "SizeBarrier"; }
 
 bool Target3DSizeBarrier::evaluate( const MsqMatrix<3,3>& A, 

@@ -73,13 +73,13 @@ class CLArgs
       public: ArgIBase() : wasSeen(false) {} //!< constructor
               virtual ~ArgIBase() {}         //!< virtual destructor for proper cleanup
                 /**\brief Get short description string for usage output or empty string for default*/
-              virtual msq_std::string brief() const { return msq_std::string(); }
+              virtual std::string brief() const { return std::string(); }
                 /**\brief Get short description string for UNIX man page output or empty string for default */
-              virtual msq_std::string manstr() const { return msq_std::string(); }
+              virtual std::string manstr() const { return std::string(); }
                 /**\brief Get optional additional info to print with flag description */
-              virtual msq_std::string desc_append() const { return msq_std::string(); }
+              virtual std::string desc_append() const { return std::string(); }
                 /**\brief Get optional string containing default value for option if not specified by user */
-              virtual msq_std::string default_str() const { return msq_std::string(); }
+              virtual std::string default_str() const { return std::string(); }
                 /**\brief Mark this flag as having been specified by the user */
               void set_seen() { wasSeen = true; }
                 /**\brief Test if the user specified this flag */
@@ -107,8 +107,8 @@ class CLArgs
                 /**\brief Initialize without default value */
                ArgTemplate() : mValue(T()), haveDefault(false) {}
                 /**\brief Get string representation of default value, or empty string of no default value */
-               virtual msq_std::string default_str() const {
-                 msq_stdio::ostringstream ss;
+               virtual std::string default_str() const {
+                 std::ostringstream ss;
                  if (haveDefault)
                    ss << mValue;
                  return ss.str();
@@ -117,33 +117,33 @@ class CLArgs
     };
 
       /**\brief Trivial implementation for type-specific classes */
-    template <typename T> class ArgListTemplate : public ArgTemplateI< msq_std::vector<T> > {
-      private: msq_std::vector<T> mValue;         //!< The default or user-specified value for an option.
+    template <typename T> class ArgListTemplate : public ArgTemplateI< std::vector<T> > {
+      private: std::vector<T> mValue;         //!< The default or user-specified value for an option.
                bool haveDefault; //!< True if app. provided default value.
       public:  virtual ~ArgListTemplate() {}
-               virtual bool value( const msq_std::vector<T>& val ) //!< Set value
+               virtual bool value( const std::vector<T>& val ) //!< Set value
                { 
                   mValue = val; 
-                  ArgTemplateI< msq_std::vector<T> >::set_seen(); 
+                  ArgTemplateI< std::vector<T> >::set_seen(); 
                   return true; 
                }
-               const msq_std::vector<T>& value() const { return mValue; } //!< get value
+               const std::vector<T>& value() const { return mValue; } //!< get value
                 /**\brief Initialize with default value */
-               ArgListTemplate( const msq_std::vector<T>& initial_value ) : mValue(initial_value), haveDefault(true) {}
+               ArgListTemplate( const std::vector<T>& initial_value ) : mValue(initial_value), haveDefault(true) {}
                 /**\brief Initialize without default value */
                ArgListTemplate() : haveDefault(false) {}
                 /**\brief Get string representation of default value, or empty string of no default value */
-               virtual msq_std::string default_str() const {
-                 msq_stdio::ostringstream ss;
+               virtual std::string default_str() const {
+                 std::ostringstream ss;
                  std::copy( mValue.begin(), mValue.end(), 
-                   msq_stdio::ostream_iterator<T>( ss, ", " ) );
+                   std::ostream_iterator<T>( ss, ", " ) );
                  return ss.str();
                }    
                
     };
     
       /**\brief Callback API for a string argument */
-    typedef ArgTemplateI< msq_std::string >     StringArgI;
+    typedef ArgTemplateI< std::string >     StringArgI;
       /**\brief Callback API for an integer argument */
     typedef ArgTemplateI< int >                 IntArgI;
       /**\brief Callback API for a long integer argument */
@@ -158,7 +158,7 @@ class CLArgs
     typedef ArgTemplateI< std::vector<double> > DoubleListArgI;
 
       /**\brief Trivial callback implementation for a string argument */
-    typedef ArgTemplate< msq_std::string>      StringArg;
+    typedef ArgTemplate< std::string>      StringArg;
       /**\brief Trivial callback implementation for an integer argument */
     typedef ArgTemplate< int >                 IntArg;
       /**\brief Trivial callback implementation for a long integer argument */
@@ -183,7 +183,7 @@ class CLArgs
     class KeyWordArg : public StringArg
     {
       private:
-        msq_std::vector< msq_std::string > mKeyWords;
+        std::vector< std::string > mKeyWords;
         void initialize( const char* keyword_list[], int list_length );
       public:
         KeyWordArg( const char* keyword_list[], int list_length )
@@ -191,9 +191,9 @@ class CLArgs
         KeyWordArg( const char* default_val, const char* keyword_list[], int list_length )
           : StringArg( default_val )
           { initialize( keyword_list, list_length ); }
-        virtual bool value( const msq_std::string& val );
-        virtual msq_std::string brief() const;
-        virtual msq_std::string manstr() const;
+        virtual bool value( const std::string& val );
+        virtual std::string brief() const;
+        virtual std::string manstr() const;
         static bool compare_no_case( const char* s1, const char* s2 );
     };
     
@@ -204,7 +204,7 @@ class CLArgs
       public:
         IntRange( const int* min, const int* max );
         bool is_valid( int val ) const;
-        msq_std::string desc_append() const;
+        std::string desc_append() const;
     };
     
       /**\brief Integer argument constrained to a range of valid values. */
@@ -219,7 +219,7 @@ class CLArgs
           : IntArg(default_val), mRange( min, max ) {}
         bool value( const int& val );
         const int& value() const { return IntArg::value(); }
-        msq_std::string desc_append() const
+        std::string desc_append() const
           { return mRange.desc_append(); }
     };
     
@@ -231,9 +231,9 @@ class CLArgs
       public:
         IntListRangeArg( const int* min = 0, const int* max = 0 )
           : mRange( min, max ) {}
-        bool value( const msq_std::vector<int>& val );
-        const msq_std::vector<int>& value() const { return IntListArg::value(); }
-        msq_std::string desc_append() const
+        bool value( const std::vector<int>& val );
+        const std::vector<int>& value() const { return IntListArg::value(); }
+        std::string desc_append() const
           { return mRange.desc_append(); }
     };
     
@@ -245,7 +245,7 @@ class CLArgs
       public:
         DoubleRange( const double* min, const double* max, bool inclusive );
         bool is_valid( double value ) const;
-        msq_std::string desc_append() const;
+        std::string desc_append() const;
     };
     
       /**\brief Double argument constrained to a range of valid values. */
@@ -268,7 +268,7 @@ class CLArgs
                         {}
         bool value( const double& val );
         const double& value() const { return DoubleArg::value(); }
-        msq_std::string desc_append() const
+        std::string desc_append() const
           { return mRange.desc_append(); }
     };
     
@@ -283,9 +283,9 @@ class CLArgs
                             bool inclusive = true ) 
                           : mRange( min, max, inclusive )
                             {}
-        bool value( const msq_std::vector<double>& val );
-        const msq_std::vector<double>& value() const { return DoubleListArg::value(); }
-        msq_std::string desc_append() const
+        bool value( const std::vector<double>& val );
+        const std::vector<double>& value() const { return DoubleListArg::value(); }
+        std::string desc_append() const
           { return mRange.desc_append(); }
     };
         
@@ -490,8 +490,8 @@ class CLArgs
      */
     bool parse_options( int argc, 
                         char* argv[],
-                        msq_std::vector< msq_std::string >& args_out,
-                        msq_stdio::ostream& error_stream );
+                        std::vector< std::string >& args_out,
+                        std::ostream& error_stream );
     
     
     
@@ -500,26 +500,26 @@ class CLArgs
      * 
      * Write help text to passed stream.
      */
-    void print_help( msq_stdio::ostream& stream ) const;
+    void print_help( std::ostream& stream ) const;
     
     /**\brief Write UNIX man page
      * 
      * Write man page to passed stream.
      */
-    void print_man_page( msq_stdio::ostream& stream ) const;
+    void print_man_page( std::ostream& stream ) const;
     
     /**\brief prinint usage (brief help)
      */
-    void print_usage( msq_stdio::ostream& stream ) const;
+    void print_usage( std::ostream& stream ) const;
     
   private:
   
     CLArgImpl* impl;
 };
 
-template <typename T> msq_stdio::ostream& operator<<( msq_std::ostream& str, const msq_std::vector<T>& list )
+template <typename T> std::ostream& operator<<( std::ostream& str, const std::vector<T>& list )
 { 
-  typename msq_std::vector<T>::const_iterator i = list.begin();
+  typename std::vector<T>::const_iterator i = list.begin();
   if (i != list.end()) {
     str << *i;
     for (++i; i != list.end(); ++i)

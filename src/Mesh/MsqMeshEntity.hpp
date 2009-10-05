@@ -42,19 +42,9 @@
 #include "NodeSet.hpp"
 #include "Sample.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-#endif
-
-#ifdef MSQ_USE_OLD_C_HEADERS
-#  include <string.h>
-#  include <assert.h>
-#else
-#  include <cstring>
-#  include <cassert>
-#endif
+#include <vector>
+#include <cstring>
+#include <cassert>
 
 
 namespace MESQUITE_NS
@@ -84,30 +74,30 @@ namespace MESQUITE_NS
     
       //! Returns the number of vertices in this element,
       //! based on its element type.
-    inline msq_stdc::size_t vertex_count() const;
+    inline std::size_t vertex_count() const;
       //! Return number of nodes in element (number of corner
       //! vertices + number of higher-order nodes).
-    inline msq_stdc::size_t node_count() const 
+    inline std::size_t node_count() const 
       { return numVertexIndices; }
       //! Returns number of target matrices for this element type
-    inline msq_stdc::size_t corner_count() const
+    inline std::size_t corner_count() const
       { return mType == PYRAMID ? 4 : vertex_count(); }
     
       //! gets the vertices of the mesh entity
-    void get_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertex_list) const;
-    void append_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertex_list) const;
+    void get_vertex_indices(std::vector<std::size_t> &vertex_list) const;
+    void append_vertex_indices(std::vector<std::size_t> &vertex_list) const;
     size_t get_local_matrix_map_about_vertex(PatchData &pd,
                                              MsqVertex* vert,
                                              size_t local_map_size,
                                              int* local_map,
                                              MsqError &err) const;
       //! gets the vertices of the mesh entity
-    void get_node_indices(msq_std::vector<msq_stdc::size_t> &vertex_list) const;
-    void append_node_indices(msq_std::vector<msq_stdc::size_t> &vertex_list) const;
+    void get_node_indices(std::vector<std::size_t> &vertex_list) const;
+    void append_node_indices(std::vector<std::size_t> &vertex_list) const;
     //! Very efficient retrieval of vertices indexes 
     //! (corresponding to the PatchData vertex array).
-    inline const msq_stdc::size_t *get_vertex_index_array() const;
-    inline msq_stdc::size_t *get_vertex_index_array();
+    inline const std::size_t *get_vertex_index_array() const;
+    inline std::size_t *get_vertex_index_array();
     
       //! Sets element data
     void set_element_type(EntityTopology type)
@@ -120,17 +110,17 @@ namespace MESQUITE_NS
       //! the MsqMeshEntity is destroyed.  The intention is that
       //! this is a pointer to a portion of a larger connectivity array
       //! managed by the owning PatchData.
-    void set_connectivity( msq_stdc::size_t *indices, size_t num_vertices);
+    void set_connectivity( std::size_t *indices, size_t num_vertices);
 
-    msq_stdc::size_t get_vertex_index(msq_stdc::size_t vertex_in_element) const;
+    std::size_t get_vertex_index(std::size_t vertex_in_element) const;
     
     //! Returns the centroid of the element.
     void get_centroid(Vector3D& centroid, const PatchData &pd, MsqError &err) const;
     
       //!Fills a vector<size_t> with vertices connected to the given
       //!vertex through the edges of this MsqMeshEntity.
-    void get_connected_vertices(msq_stdc::size_t vertex_index,
-                                msq_std::vector<msq_stdc::size_t> &vert_indices,
+    void get_connected_vertices(std::size_t vertex_index,
+                                std::vector<std::size_t> &vert_indices,
                                 MsqError &err);
     
       //!Computes the area of the element.
@@ -158,7 +148,7 @@ namespace MESQUITE_NS
     
     
       //! Uses a MeshDomain call-back function to compute the normal at the corner.
-    //void compute_corner_normal( msq_stdc::size_t corner_pt, 
+    //void compute_corner_normal( std::size_t corner_pt, 
     //                            Vector3D &normal,
     //                            PatchData &pd, 
     //                            MsqError &err);
@@ -191,7 +181,7 @@ namespace MESQUITE_NS
     size_t numVertexIndices;
     
       // output operator for debugging.
-    friend msq_stdio::ostream& operator<<(msq_stdio::ostream &stream, 
+    friend std::ostream& operator<<(std::ostream &stream, 
                                           const MsqMeshEntity &entity);
     
   };
@@ -203,21 +193,21 @@ namespace MESQUITE_NS
   { return mType == POLYGON || mType == POLYHEDRON ? 
            node_count() : TopologyInfo::corners( mType ); }
 
-  inline void MsqMeshEntity::set_connectivity( msq_stdc::size_t *indices,
+  inline void MsqMeshEntity::set_connectivity( std::size_t *indices,
                                                size_t num_vertices )
   {
     vertexIndices = indices;
     numVertexIndices = num_vertices;
   }
   
-  inline const msq_stdc::size_t *MsqMeshEntity::get_vertex_index_array() const
+  inline const std::size_t *MsqMeshEntity::get_vertex_index_array() const
   { return vertexIndices; }
   
-  inline msq_stdc::size_t *MsqMeshEntity::get_vertex_index_array()
+  inline std::size_t *MsqMeshEntity::get_vertex_index_array()
   { return vertexIndices; }
  
-  inline msq_stdc::size_t 
-  MsqMeshEntity::get_vertex_index(msq_stdc::size_t vertex_in_element) const
+  inline std::size_t 
+  MsqMeshEntity::get_vertex_index(std::size_t vertex_in_element) const
   {
       // Make sure we're in range
     assert(vertex_in_element < vertex_count());

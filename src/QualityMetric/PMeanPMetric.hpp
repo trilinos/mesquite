@@ -36,11 +36,7 @@
 #include "Mesquite.hpp"
 #include "Exponent.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <vector.h>
-#else
-# include <vector>
-#endif
+#include <vector>
 
 namespace MESQUITE_NS {
 
@@ -64,52 +60,52 @@ class PMeanPMetric
       
     bool average( PatchData& pd, 
                   QualityMetric* qm,
-                  const msq_std::vector<size_t>& qm_handles, 
+                  const std::vector<size_t>& qm_handles, 
                   double& value, 
                   MsqError& );
     
     bool average_with_indices( PatchData& pd, 
                                QualityMetric* qm,
-                               const msq_std::vector<size_t>& qm_handles,
+                               const std::vector<size_t>& qm_handles,
                                double& value, 
-                               msq_std::vector<size_t>& indices,
+                               std::vector<size_t>& indices,
                                MsqError& err );
     
     bool average_with_gradient( PatchData& pd, 
                                 QualityMetric* qm,
-                                const msq_std::vector<size_t>& qm_handles,
+                                const std::vector<size_t>& qm_handles,
                                 double& value, 
-                                msq_std::vector<size_t>& indices,
-                                msq_std::vector<Vector3D>& gradient,
+                                std::vector<size_t>& indices,
+                                std::vector<Vector3D>& gradient,
                                 MsqError& err );
    
     bool average_with_Hessian_diagonal( PatchData& pd,
                                         QualityMetric* metric,
-                                        const msq_std::vector<size_t>& qm_handles,
+                                        const std::vector<size_t>& qm_handles,
                                         double& value,
-                                        msq_std::vector<size_t>& indices,
-                                        msq_std::vector<Vector3D>& gradient,
-                                        msq_std::vector<SymMatrix3D>& Hessian_diagonal,
+                                        std::vector<size_t>& indices,
+                                        std::vector<Vector3D>& gradient,
+                                        std::vector<SymMatrix3D>& Hessian_diagonal,
                                         MsqError& err );
 
     bool average_with_Hessian( PatchData& pd, 
                                QualityMetric* metric,
-                               const msq_std::vector<size_t>& qm_handles,
+                               const std::vector<size_t>& qm_handles,
                                double& value, 
-                               msq_std::vector<size_t>& indices,
-                               msq_std::vector<Vector3D>& gradient,
-                               msq_std::vector<Matrix3D>& Hessian,
+                               std::vector<size_t>& indices,
+                               std::vector<Vector3D>& gradient,
+                               std::vector<Matrix3D>& Hessian,
                                MsqError& err );
   private:
   
     Exponent P;
     Exponent P1;
     Exponent P2;
-    msq_std::vector<size_t> mIndices, mOffsets;
-    msq_std::vector<Vector3D> mGrad;
-    msq_std::vector<Matrix3D> mHess;
-    msq_std::vector<SymMatrix3D> mDiag;
-    msq_std::vector<double> mValues;
+    std::vector<size_t> mIndices, mOffsets;
+    std::vector<Vector3D> mGrad;
+    std::vector<Matrix3D> mHess;
+    std::vector<SymMatrix3D> mDiag;
+    std::vector<double> mValues;
 };
 
 } // namespace Mesquite
