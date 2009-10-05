@@ -41,7 +41,9 @@
 #include "Bits.hpp"
 #include "Sample.hpp"
 
-#pragma warning( 4 : 4715 )
+#ifdef _MSC_VER
+# pragma warning( 4 : 4715 )
+#endif
 
 namespace MESQUITE_NS {
 
