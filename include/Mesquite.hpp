@@ -29,6 +29,7 @@
 
 #ifdef _MSC_VER
 #  pragma warning ( 4 : 4786)
+#  pragma warning ( 4 : 4996)
 #  include "mesquite_config.win.h"
 #else
 #  include "mesquite_config.h"
