@@ -1,0 +1,20 @@
+Anouncing new Mesquite release: 2.1.0.
+
+New features:
+  - CMake-based build system and portability fixes restoring
+     the ability to compile Mesquite on MS Windows.
+  - Many new target metrics for volume elements
+  - Target metric performance improvements
+  - edge-length and area/volume metrics for use in quality assessment
+  - QualityAssessor accumulates statistics for only free elements
+     (elements with at least one free vertex) by default.  New
+     option to revert to old behavior.
+  - New command-line utilities: 
+       msqshape :   run ShapeImprovementWrapper for a VTK file
+       msqquality : run QualityAssessor with a few common metrics
+                    for a VTK file and print results.
+  - new wrappers:
+       ViscousCFDTetShapeWrapper
+       PaverMinEdgeLengthWrapper
+  - experimental support fo r using iMeshP API with parallel mesquite
+  
