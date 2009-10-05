@@ -959,7 +959,7 @@ void pluseq_scaled( MsqMatrix<D,D> R[D*(D+1)/2],
 
 /**\brief \f$ R *= s */
 template <unsigned D> inline
-void hess_scale( MsqMatrix<D,D> R[D*(D+1)/2], double alpha )
+void hess_scale_t( MsqMatrix<D,D> R[D*(D+1)/2], double alpha )
 {
   for (unsigned i = 0; i < D*(D+1)/2; ++i)
     R[i] *= alpha;
