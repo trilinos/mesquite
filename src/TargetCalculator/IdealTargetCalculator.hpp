@@ -42,16 +42,18 @@ namespace MESQUITE_NS {
 class IdealTargetCalculator : public TargetCalculator
 {
 public:
-  IdealTargetCalculator( bool orient_surf_elems = true )
+  MESQUITE_EXPORT IdealTargetCalculator( bool orient_surf_elems = true )
    : orientSurfElems(orient_surf_elems)
    {}
   
+  MESQUITE_EXPORT
   virtual bool get_3D_target( PatchData& pd, 
                               size_t element,
                               Sample sample,
                               MsqMatrix<3,3>& W_out,
                               MsqError& err );
 
+  MESQUITE_EXPORT
   virtual bool get_2D_target( PatchData& pd, 
                               size_t element,
                               Sample sample,

@@ -45,7 +45,7 @@ namespace MESQUITE_NS
        This is a template for a spherical domain.
        It will provide the normal information necessary for surface mesh optimization.
     */
-  class SphericalDomain : public Mesquite::MeshDomain
+  class MESQUITE_EXPORT SphericalDomain : public Mesquite::MeshDomain
   {
   public:
     SphericalDomain(const Vector3D& center, double radius )

@@ -56,24 +56,24 @@ namespace MESQUITE_NS
   class MeshTransform : public Instruction 
   {
   public:
-    MeshTransform() : mMat(1,0,0,0,1,0,0,0,1), mVec(0.0) {}
-    MeshTransform(Matrix3D &in_mat, Vector3D &in_vec);
+    MESQUITE_EXPORT MeshTransform() : mMat(1,0,0,0,1,0,0,0,1), mVec(0.0) {}
+    MESQUITE_EXPORT MeshTransform(Matrix3D &in_mat, Vector3D &in_vec);
 
       // virtual destructor ensures use of polymorphism during destruction
-    virtual ~MeshTransform() { };
+    MESQUITE_EXPORT virtual ~MeshTransform() { };
       //virtual functions from PatchDataUser...
       //!Loop over the mesh and perform the affine transformation
-    virtual double loop_over_mesh( Mesh* mesh, 
+    MESQUITE_EXPORT virtual double loop_over_mesh( Mesh* mesh, 
                                    MeshDomain* domain, 
                                    const Settings* settings,
                                    MsqError &err);
       //! Return the name of this PatchDataUser:  Mesh Transform
-    virtual msq_std::string get_name() const { return "Mesh Transform";}
+    MESQUITE_EXPORT virtual msq_std::string get_name() const { return "Mesh Transform";}
     
-    void add_translation( const Vector3D& offset );
-    void add_rotation( const Vector3D& axis, double radians );
-    void add_scale( double factor );
-    void add_scale( const Vector3D& factors );
+    MESQUITE_EXPORT void add_translation( const Vector3D& offset );
+    MESQUITE_EXPORT void add_rotation( const Vector3D& axis, double radians );
+    MESQUITE_EXPORT void add_scale( double factor );
+    MESQUITE_EXPORT void add_scale( const Vector3D& factors );
     
     
   private:

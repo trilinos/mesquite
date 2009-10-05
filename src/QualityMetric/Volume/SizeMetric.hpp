@@ -46,11 +46,11 @@ namespace MESQUITE_NS {
 class SizeMetric : public ElementQM
 {
 public:
-     virtual msq_std::string get_name() const;
+     MESQUITE_EXPORT virtual msq_std::string get_name() const;
 
-     virtual int get_negate_flag() const;
+     MESQUITE_EXPORT virtual int get_negate_flag() const;
   
-     virtual
+     MESQUITE_EXPORT virtual
      bool evaluate( PatchData& pd, 
                     size_t handle, 
                     double& value, 

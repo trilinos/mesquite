@@ -47,7 +47,7 @@ namespace MESQUITE_NS {
  * - \f$N_5(\vec{\xi})=\frac{1}{2}(1+\xi)\eta\f$
  * - \f$N_6(\vec{\xi})=\frac{1}{2}(1+\xi)\zeta\f$
  */ 
-class LinearPrism : public MappingFunction3D
+class MESQUITE_EXPORT LinearPrism : public MappingFunction3D
 {
 public:
 

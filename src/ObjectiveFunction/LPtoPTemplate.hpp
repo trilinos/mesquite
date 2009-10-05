@@ -64,28 +64,35 @@ namespace MESQUITE_NS
        d)  The malloc in the concrete_eval routine should be removed.
 
      */
-   class MESQUITE_EXPORT LPtoPTemplate :public ObjectiveFunctionTemplate
-   {
-   public:
-     LPtoPTemplate(QualityMetric *, short, MsqError &);
-     LPtoPTemplate( short, QualityMetric* );
+  class LPtoPTemplate :public ObjectiveFunctionTemplate
+  {
+  public:
+	MESQUITE_EXPORT
+    LPtoPTemplate(QualityMetric *, short, MsqError &);
+	MESQUITE_EXPORT
+    LPtoPTemplate( short, QualityMetric* );
      
-     virtual ~LPtoPTemplate();
+	MESQUITE_EXPORT
+    virtual ~LPtoPTemplate();
     
+	MESQUITE_EXPORT
     virtual void clear();
     
+	MESQUITE_EXPORT
     virtual bool evaluate( EvalType type, 
                            PatchData& pd,
                            double& value_out,
                            bool free,
                            MsqError& err ); 
      
+	MESQUITE_EXPORT
     virtual bool evaluate_with_gradient( EvalType type, 
                                          PatchData& pd,
                                          double& value_out,
                                          msq_std::vector<Vector3D>& grad_out,
                                          MsqError& err ); 
 
+	MESQUITE_EXPORT
     virtual bool evaluate_with_Hessian_diagonal( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
@@ -93,6 +100,7 @@ namespace MESQUITE_NS
                                         msq_std::vector<SymMatrix3D>& hess_diag_out,
                                         MsqError& err ); 
 
+	MESQUITE_EXPORT
     virtual bool evaluate_with_Hessian( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
@@ -100,6 +108,7 @@ namespace MESQUITE_NS
                                         MsqHessian& Hessian_out,
                                         MsqError& err ); 
 
+	MESQUITE_EXPORT
     virtual ObjectiveFunction* clone() const;
 
        /*!Use set_dividing_by_n to control whether this objective
@@ -112,7 +121,8 @@ namespace MESQUITE_NS
          If this function is passed 'true', the function value
          will be scale.  If it is passed false, the function
          value will not be scaled.*/
-     void set_dividing_by_n(bool d_bool){dividingByN=d_bool;}
+	MESQUITE_EXPORT
+    void set_dividing_by_n(bool d_bool){dividingByN=d_bool;}
      
    private:
      double get_value( double power_sum, size_t count, EvalType type, size_t& global_count );

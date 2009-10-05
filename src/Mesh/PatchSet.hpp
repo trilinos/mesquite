@@ -68,6 +68,7 @@ class PatchSet
     inline void set_mesh( Mesh* mesh ) { myMesh = mesh; }
     
     /**\brief Get a list of handles, one for each patch */
+	MESQUITE_EXPORT 
     virtual void get_patch_handles( msq_std::vector<PatchHandle>& patch_handles_out,
                                     MsqError& err ) = 0;
     
@@ -82,12 +83,14 @@ class PatchSet
      *                         vertices in the closure of the elements are 
      *                         free.  
      */
+ 	MESQUITE_EXPORT 
     virtual void get_patch( PatchHandle patch_handle,
                             msq_std::vector<Mesh::ElementHandle>& elem_handles_out,
                             msq_std::vector<Mesh::VertexHandle>& free_vertices_out,
                             MsqError& err ) = 0;
     
       /**\brief get the Mesh object passed to set_mesh() */                        
+	MESQUITE_EXPORT 
     Mesh* get_mesh() const { return myMesh; }
     
   private:

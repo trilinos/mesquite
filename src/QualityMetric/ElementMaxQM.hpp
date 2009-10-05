@@ -44,18 +44,18 @@ class ElementMaxQM : public ElementQM
 {
 public:
 
-  ElementMaxQM( ElemSampleQM* metric );
+  MESQUITE_EXPORT ElementMaxQM( ElemSampleQM* metric );
   
-  virtual ~ElementMaxQM();
+  MESQUITE_EXPORT virtual ~ElementMaxQM();
   
-  ElemSampleQM* get_quality_metric() const 
+  MESQUITE_EXPORT ElemSampleQM* get_quality_metric() const 
     { return mMetric; }
   
-  virtual msq_std::string get_name() const;
+  MESQUITE_EXPORT virtual msq_std::string get_name() const;
 
-  virtual int get_negate_flag() const;
+  MESQUITE_EXPORT virtual int get_negate_flag() const;
 
-  virtual
+  MESQUITE_EXPORT virtual
   bool evaluate( PatchData& pd, 
                  size_t handle, 
                  double& value, 

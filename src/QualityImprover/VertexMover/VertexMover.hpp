@@ -51,34 +51,41 @@ namespace MESQUITE_NS
   /*! \class VertexMover
     Base class for all Vertex Movers.
    */  
-  class MESQUITE_EXPORT VertexMover : public QualityImprover 
+  class VertexMover : public QualityImprover 
   {
   protected:
-    VertexMover( ObjectiveFunction* OF = NULL, bool Nash = true );
+    MESQUITE_EXPORT VertexMover( ObjectiveFunction* OF = NULL, bool Nash = true );
     
   public:
     // virtual destructor ensures use of polymorphism during destruction
-    virtual ~VertexMover() { };
+    MESQUITE_EXPORT virtual ~VertexMover() { };
     
-    virtual double loop_over_mesh( Mesh* mesh, 
+    MESQUITE_EXPORT 
+	virtual double loop_over_mesh( Mesh* mesh, 
                                    MeshDomain* domain,
                                    const Settings* settings,
                                    MsqError &err);
 
-    virtual double loop_over_mesh( ParallelMesh* mesh, 
+    MESQUITE_EXPORT 
+	virtual double loop_over_mesh( ParallelMesh* mesh, 
                                    MeshDomain* domain,
                                    const Settings* settings,
                                    MsqError &err);
 
   protected:
 
-    virtual void initialize(PatchData &pd, MsqError &err) = 0;
+    MESQUITE_EXPORT 
+	virtual void initialize(PatchData &pd, MsqError &err) = 0;
+    MESQUITE_EXPORT 
     virtual void cleanup() = 0;
+    MESQUITE_EXPORT 
     virtual void optimize_vertex_positions(PatchData &pd, 
                                            MsqError &err) = 0; // modifies the PatchData object
 
+    MESQUITE_EXPORT 
     virtual void initialize_mesh_iteration(PatchData &pd, 
                                          MsqError &err) = 0;
+    MESQUITE_EXPORT 
     virtual void terminate_mesh_iteration(PatchData &, 
                                          MsqError &err) = 0;
 

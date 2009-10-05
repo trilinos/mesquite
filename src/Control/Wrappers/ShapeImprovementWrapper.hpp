@@ -69,18 +69,22 @@ namespace MESQUITE_NS {
      
   public:  
       //Constructor sets the instructions in the queue.
-    ShapeImprovementWrapper(MsqError& err,
+    MESQUITE_EXPORT
+	ShapeImprovementWrapper(MsqError& err,
                             double cpu_time = 0.0, 
                             double grad_norm =1.e-6);
     
       //! Destructor must delete the objects inserted in the queue.
+    MESQUITE_EXPORT
     virtual ~ShapeImprovementWrapper();
     
       //! run_instructions runs the wrapper on the given MeshSet.
+    MESQUITE_EXPORT
     virtual void run_instructions( Mesh* mesh,
                                    MeshDomain* domain,
                                    MsqError &err );
     
+    MESQUITE_EXPORT
     inline void run_instructions( Mesh* mesh, MsqError& err )
       { this->run_instructions( mesh, 0, err ); }
       

@@ -56,15 +56,15 @@ namespace MESQUITE_NS
   {
   public:
       //!Constructor defaulting mPercent to .05.
-    Randomize();
+    MESQUITE_EXPORT Randomize();
       //!Constructor allowing user to set mPercent
-    Randomize(double percent);
+    MESQUITE_EXPORT Randomize(double percent);
 
-    virtual ~Randomize() { }
+    MESQUITE_EXPORT virtual ~Randomize() { }
     
-    virtual msq_std::string get_name() const;
+    MESQUITE_EXPORT virtual msq_std::string get_name() const;
 
-    virtual PatchSet* get_patch_set();
+    MESQUITE_EXPORT virtual PatchSet* get_patch_set();
     
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);

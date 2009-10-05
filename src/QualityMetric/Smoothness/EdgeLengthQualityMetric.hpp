@@ -56,25 +56,25 @@ namespace MESQUITE_NS
   {
    public:
     
-    EdgeLengthQualityMetric() : AveragingQM(SUM)
+    MESQUITE_EXPORT EdgeLengthQualityMetric() : AveragingQM(SUM)
       {}
     
       // virtual destructor ensures use of polymorphism during destruction
-    virtual ~EdgeLengthQualityMetric()
+    MESQUITE_EXPORT virtual ~EdgeLengthQualityMetric()
        {}
       
-    virtual msq_std::string get_name() const;
+    MESQUITE_EXPORT virtual msq_std::string get_name() const;
     
-    virtual int get_negate_flag() const;
+    MESQUITE_EXPORT virtual int get_negate_flag() const;
 
 
-    virtual
+    MESQUITE_EXPORT virtual
     bool evaluate( PatchData& pd, 
                    size_t vertex, 
                    double& value, 
                    MsqError& err );
 
-    virtual
+    MESQUITE_EXPORT virtual
     bool evaluate_with_indices( PatchData& pd,
                    size_t vertex,
                    double& value,

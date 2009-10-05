@@ -92,9 +92,9 @@ namespace MESQUITE_NS
     MESQUITE_EXPORT PatchData();
     MESQUITE_EXPORT ~PatchData();
     
-    void attach_settings( const Settings* settings )
+    MESQUITE_EXPORT void attach_settings( const Settings* settings )
       { mSettings = settings; }
-    const Settings* settings() const
+    MESQUITE_EXPORT const Settings* settings() const
       { return mSettings; }
     
       /**\brief For use by testing code -- create patch explicitly
@@ -111,6 +111,7 @@ namespace MESQUITE_NS
        *                    are to be marked as fixed.  If not specified,
        *                    no vertices are fixed.     
        */
+	MESQUITE_EXPORT
     void fill( size_t num_vertex, const double* vtx_coords,
                size_t num_elem, EntityTopology type, 
                const size_t* connectivity,
@@ -130,6 +131,7 @@ namespace MESQUITE_NS
        *                    are to be marked as fixed.  If NULL,
        *                    no vertices are fixed.     
        */
+	MESQUITE_EXPORT
     void fill( size_t num_vertex, const double* vtx_coords,
                size_t num_elem, const EntityTopology* elem_types,
                const size_t* connectivity,
@@ -151,6 +153,7 @@ namespace MESQUITE_NS
        *                    are to be marked as fixed.  If NULL,
        *                    no vertices are fixed.     
        */
+	MESQUITE_EXPORT
     void fill( size_t num_vertex, const double* vtx_coords,
                size_t num_elem, const EntityTopology* elem_types,
                const size_t* vertex_per_elem,
@@ -162,10 +165,12 @@ namespace MESQUITE_NS
        *
        * Create a global patch - mesh should be initialized first.
        */
+	MESQUITE_EXPORT
     void fill_global_patch( MsqError& err );
     
     
-    void set_mesh_entities( 
+ 	MESQUITE_EXPORT
+   void set_mesh_entities( 
                    msq_std::vector<Mesh::ElementHandle>& patch_elems,
                    msq_std::vector<Mesh::VertexHandle>& free_vertices,
                    MsqError& err );
@@ -192,21 +197,26 @@ namespace MESQUITE_NS
     };
 
     //! This function clears the patch information such as maximum volume, etc ... 
+	MESQUITE_EXPORT
     void clear_computed_info() { haveComputedInfos = 0; }
     
+	MESQUITE_EXPORT
     bool have_computed_info( ComputedInfo info ) const
       { return 0 != (haveComputedInfos&(1<<info)); }
     
     //! Returns the maximum volume or area out of all the elements in the patch 
     //! This information is stored in the patch and should not decrease performance
     //! when used properly. See also PatchData::clear_computed_info() .
+	MESQUITE_EXPORT
     void get_minmax_element_unsigned_area(double& min, double& max, MsqError &err);
     
+	MESQUITE_EXPORT
     void get_minmax_edge_length(double& min, double& max) const;
     
     //! Returns delta based on the minimum and maximum corner determinant over all elements in the patch
     //! This information is stored in the patch and should not decrease performance
     //! when used properly. See also PatchData::clear_computed_info() .
+	MESQUITE_EXPORT
     double get_barrier_delta(MsqError &err); 
 
     //! Returns average corner determinant over all corners in the patch
@@ -215,52 +225,54 @@ namespace MESQUITE_NS
 //    double get_average_Lambda_3d(MsqError &err); 
 
       //! Removes data
-    void clear();
+ 	MESQUITE_EXPORT
+   void clear();
       //! Reorders the mesh data 
-    void reorder();
+ 	MESQUITE_EXPORT
+   void reorder();
 
       //! number of vertices in the patch. 
-    size_t num_nodes() const
+    MESQUITE_EXPORT size_t num_nodes() const
       { return vertexArray.size();}
-    size_t num_free_vertices() const
+    MESQUITE_EXPORT size_t num_free_vertices() const
       { return numFreeVertices; }
-    size_t num_slave_vertices() const
+    MESQUITE_EXPORT size_t num_slave_vertices() const
       { return numSlaveVertices; }
-    size_t num_fixed_vertices() const
+    MESQUITE_EXPORT size_t num_fixed_vertices() const
       { return num_nodes() - num_free_vertices() - num_slave_vertices(); }
       //! number of elements in the Patch.
-    size_t num_elements() const
+    MESQUITE_EXPORT size_t num_elements() const
       { return elementArray.size(); }
     
-    bool is_vertex_free(size_t index) const
+    MESQUITE_EXPORT bool is_vertex_free(size_t index) const
       { return index < numFreeVertices; }
-    bool is_vertex_not_free( size_t index ) const
+    MESQUITE_EXPORT bool is_vertex_not_free( size_t index ) const
       { return index >= numFreeVertices; }
-    bool is_vertex_slave(size_t index) const
+    MESQUITE_EXPORT bool is_vertex_slave(size_t index) const
       { return index >= numFreeVertices && (index - numFreeVertices) < numSlaveVertices; }
-    bool is_vertex_fixed(size_t index) const
+    MESQUITE_EXPORT bool is_vertex_fixed(size_t index) const
       { return index >= numFreeVertices + numSlaveVertices; }
     
       //! number of element corners (number of vertex uses) in patch
-    size_t num_corners() const;
+    MESQUITE_EXPORT size_t num_corners() const;
     
       //! Returns a pointer to the start of the vertex array.
-    const MsqVertex* get_vertex_array( MsqError& err ) const;
+    MESQUITE_EXPORT const MsqVertex* get_vertex_array( MsqError& err ) const;
     //MsqVertex* get_vertex_array(MsqError &err);
-    const MsqVertex* get_vertex_array() const { return &vertexArray[0]; }
+    MESQUITE_EXPORT const MsqVertex* get_vertex_array() const { return &vertexArray[0]; }
     //MsqVertex* get_vertex_array()             { return &vertexArray[0]; }
     
       //! Returns a pointer to the start of the element array.
-    const MsqMeshEntity* get_element_array( MsqError& err ) const;
-    MsqMeshEntity* get_element_array(MsqError &err);
+    MESQUITE_EXPORT const MsqMeshEntity* get_element_array( MsqError& err ) const;
+    MESQUITE_EXPORT MsqMeshEntity* get_element_array(MsqError &err);
     
-    size_t* get_connectivity_array( )
+    MESQUITE_EXPORT size_t* get_connectivity_array( )
       { return &elemConnectivityArray[0]; }
       
-    Mesh::ElementHandle* get_element_handles_array( )
+    MESQUITE_EXPORT Mesh::ElementHandle* get_element_handles_array( )
       { return &elementHandlesArray[0]; }
     
-    Mesh::VertexHandle* get_vertex_handles_array()
+    MESQUITE_EXPORT Mesh::VertexHandle* get_vertex_handles_array()
       { return &vertexHandlesArray[0]; }
     
       //! Returns the start of the vertex->element array.
@@ -278,33 +290,38 @@ namespace MESQUITE_NS
     //const size_t* get_vertex_to_elem_offset(MsqError &err);
     
     //MsqVertex& vertex_by_index(size_t index);
-    const MsqVertex& vertex_by_index(size_t index) const;
-    MsqMeshEntity& element_by_index(size_t index);
-    const MsqMeshEntity& element_by_index(size_t index) const;
-    size_t get_vertex_index(MsqVertex* vertex);
-    size_t get_element_index(MsqMeshEntity* element);
+    MESQUITE_EXPORT const MsqVertex& vertex_by_index(size_t index) const;
+    MESQUITE_EXPORT MsqMeshEntity& element_by_index(size_t index);
+    MESQUITE_EXPORT const MsqMeshEntity& element_by_index(size_t index) const;
+    MESQUITE_EXPORT size_t get_vertex_index(MsqVertex* vertex);
+    MESQUITE_EXPORT size_t get_element_index(MsqMeshEntity* element);
     
       //! Get the coordinates of vertices attached to the specified element
+	MESQUITE_EXPORT
     void get_element_vertex_coordinates(size_t elem_index,
                                         msq_std::vector<Vector3D> &coords,
                                         MsqError &err);
       /*! Get the indices of vertices of specified element. !inefficient!*/
+	MESQUITE_EXPORT
     void get_element_vertex_indices(size_t elem_index,
                                     msq_std::vector<size_t> &vertex_indices,
                                     MsqError &err);
       /*! Get the indices of the elements attached to the specified vertex. */
+	MESQUITE_EXPORT
     void get_vertex_element_indices(size_t vertex_index,
                                     msq_std::vector<size_t> &elem_indices,
                                     MsqError &err);
     
       /** Get the indices of elements adjacent to the specified vertex,
        *  and having the specified dimension */
+	MESQUITE_EXPORT
     void get_vertex_element_indices( size_t vertex_index,
                                      unsigned element_dimension,
                                      msq_std::vector<size_t>& elem_indices,
                                      MsqError& err );
     
       /*! Get indices of elements attached to specified vertex */
+	MESQUITE_EXPORT
     const size_t* get_vertex_element_adjacencies( size_t vertex_index,
                                                   size_t& array_len_out,
                                                   MsqError& err );
@@ -312,6 +329,7 @@ namespace MESQUITE_NS
       /*! Get the indices of vertices that are attached to vertex (given by
         vertex_index) by an element edge.
       */
+	MESQUITE_EXPORT
     void get_adjacent_vertex_indices(size_t vertex_index,
                                      msq_std::vector<size_t> &vert_indices,
                                      MsqError &err);
@@ -323,6 +341,7 @@ namespace MESQUITE_NS
         adjacent to the given element via an n-dimensional entity.
         
       */
+	MESQUITE_EXPORT
     void get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
                                          msq_std::vector<size_t> &adj_ents,
                                          MsqError &err);
@@ -331,23 +350,28 @@ namespace MESQUITE_NS
         to each node.  If you know how many total vertex uses there are,
         pass it in.  Otherwise the PatchData will calculate that number.
       */
+	MESQUITE_EXPORT
     void generate_vertex_to_element_data();
 
+	MESQUITE_EXPORT
     void set_vertex_coordinates(const Vector3D &coords,
                                 size_t index,
                                 MsqError &err);
 
+	MESQUITE_EXPORT
     void move_vertex( const Vector3D &delta, size_t index, MsqError &err);
 
       /*! Adjust the position of the specified vertex so that it
           lies on its constraining domain.  The actual domain constraint
           is managed by the MeshSet's MeshDomain object.
       */
+	MESQUITE_EXPORT
     void snap_vertex_to_domain(size_t vertex_index, MsqError &err);
 
     /*! Returns whether a domain is associated with the MeshSet from which
         the Patch originates.
         If false, you cannot ask for a surface normal. */
+	MESQUITE_EXPORT
     bool domain_set() const
     { return 0 != myDomain; }
     
@@ -362,6 +386,7 @@ namespace MESQUITE_NS
        *                   invalid input data, no domain associated with
        *                   element, no domain at all, etc.
        */
+	MESQUITE_EXPORT
     void get_domain_normal_at_vertex( size_t vert_index,
                                       Mesh::ElementHandle element,
                                       Vector3D& normal_out,
@@ -374,6 +399,7 @@ namespace MESQUITE_NS
           the normal will be set to (0,0,0).
           Check PatchData::domain_set() is not false first.
       */
+	MESQUITE_EXPORT
     void get_domain_normal_at_element(size_t elem_index, 
                                       Vector3D &surf_norm,
                                       MsqError &err);
@@ -382,25 +408,30 @@ namespace MESQUITE_NS
        *  normals_out must be of sufficient size to hold
        *  the normals of all the corners.
        **/
+	MESQUITE_EXPORT
     void get_domain_normals_at_corners( size_t element_index,
                                         Vector3D normals_out[],
                                         MsqError& err ) ;
                                         
+ 	MESQUITE_EXPORT
     void get_domain_normal_at_corner( size_t elemen_index,
                                       unsigned corner,
                                       Vector3D& normal,
                                       MsqError& err );
     
+	MESQUITE_EXPORT
     void get_domain_normal_at_mid_edge( size_t element_index,
                                         unsigned edge_number,
                                         Vector3D& normal,
                                         MsqError& err );
 
       //! Alternative signature. Same functionality.
+	MESQUITE_EXPORT
     void get_domain_normal_at_element(const MsqMeshEntity* elem_ptr,
                                       Vector3D &surf_norm, MsqError &err)  
     { get_domain_normal_at_element(size_t(elem_ptr-&(elementArray[0])), surf_norm, err); }
     
+	MESQUITE_EXPORT
     void get_domain_normal_at_sample( size_t element_index,
                                       Sample location,
                                       Vector3D &surf_norm, MsqError &err)  
@@ -427,6 +458,7 @@ namespace MESQUITE_NS
         \param nb_vtx number of vertices.
         \param step_size a scalar that multiplies the vectors given in dk.
       */
+	MESQUITE_EXPORT
     void move_free_vertices_constrained(Vector3D dk[], size_t nb_vtx,
                                         double step_size, MsqError &err);
     
@@ -437,43 +469,55 @@ namespace MESQUITE_NS
       \param nb_vtx number of vertices.
       \param step_size a scalar that multiplies the vectors given in dk.
     */
+	MESQUITE_EXPORT
     void set_free_vertices_constrained(PatchDataVerticesMemento* memento, 
                                        Vector3D dk[], size_t nb_vtx,
                                        double step_size, MsqError &err);
     
     //! Project gradient vector terms onto geometric domain
+	MESQUITE_EXPORT
     void project_gradient( std::vector<Vector3D>& gradient, MsqError& err );
 
       //!Calculates the distance each vertex has moved from its original
       //!position as defined by the PatchDataVerticesMememnto.
+	MESQUITE_EXPORT
     double get_max_vertex_movement_squared(PatchDataVerticesMemento* memento,
                                            MsqError &err);
     
       //! Updates the underlying mesh (the Mesquite::Mesh implementation) with
       //! new node coordinates and flag values.
+	MESQUITE_EXPORT
     void update_mesh(MsqError &err);
     
       //! Calculate new location for all slave higher-order nodes using
       //! mapping function.  Called by update_mesh().
+	MESQUITE_EXPORT
     void update_slave_node_coordinates( MsqError& err );
+	MESQUITE_EXPORT
     void update_slave_node_coordinates( const size_t* elem_indices,
                                         size_t num_elem,
                                         MsqError& err );
     
       //!Remove the soft_fixed flag from all vertices in the patch.
+	MESQUITE_EXPORT
     void set_all_vertices_soft_free(MsqError &err);
       //!Add a soft_fixed flag to all vertices in the patch.
+	MESQUITE_EXPORT
     void set_all_vertices_soft_fixed(MsqError &err);
       //!Add a soft_fixed flag to all free vertices in the patch.
+	MESQUITE_EXPORT
     void set_free_vertices_soft_fixed(MsqError &err);
 
       //!Mark vertex as culled (soft fixed)
+	MESQUITE_EXPORT
     void set_vertex_culled( size_t vtx_index )
       { vertexArray[vtx_index].flags() |= MsqVertex::MSQ_CULLED; }
       //!Mark vertex as culled (soft fixed)
+	MESQUITE_EXPORT
     void clear_vertex_culled( size_t vtx_index )
       { vertexArray[vtx_index].flags() &= ~MsqVertex::MSQ_CULLED; }
       //! check if vertex is culled
+	MESQUITE_EXPORT
     int check_vertex_culled( size_t vtx_index ) const
       { return vertexArray[vtx_index].get_flags() | MsqVertex::MSQ_CULLED; }
     
@@ -483,51 +527,65 @@ namespace MESQUITE_NS
       //! won't move the corresponding vertex in the source patch.  Also,
       //! calling 'update_mesh()' on the sub-patch WILL modify the TSTT
       //! mesh, but the source patch won't see the changes.
+	MESQUITE_EXPORT
     void get_subpatch(size_t center_vertex_index,
                       unsigned num_adj_elem_layers,
                       PatchData &pd_to_fill,
                       MsqError &err);
     
+	MESQUITE_EXPORT
     void get_free_vertex_coordinates( msq_std::vector<Vector3D>& coords_out ) const;
     
       //! Creates a memento that holds the current
       //! state of the PatchData coordinates. 
+	MESQUITE_EXPORT
     PatchDataVerticesMemento* create_vertices_memento( MsqError &err );
     
       //! reinstantiates a memento to holds the current
       //! state of the PatchData coordinates. Improves memory management.
+	MESQUITE_EXPORT
     void recreate_vertices_memento( PatchDataVerticesMemento* memento, 
                                     MsqError &err );
     
     //! Restore the PatchData coordinates to the state
     //! contained in the memento.
+	MESQUITE_EXPORT
     void set_to_vertices_memento(PatchDataVerticesMemento* memento,
                                  MsqError &err);
 
     //! Sets the originating meshSet. This is normally done in MeshSet::get_next_patch().
     //! This function is only for tests purposes. 
+	MESQUITE_EXPORT
     void set_mesh(Mesh* ms);
     
     //! Returns the originating meshSet.
+	MESQUITE_EXPORT
     Mesh* get_mesh() const
       { return myMesh; }
       
+	MESQUITE_EXPORT
     void set_domain( MeshDomain* dm );
     
+	MESQUITE_EXPORT
     MeshDomain* get_domain() const
       { return myDomain; }
     
     
+	MESQUITE_EXPORT
     const Settings* get_settings() const
       { return mSettings; }
+	MESQUITE_EXPORT
     const MappingFunction* get_mapping_function( EntityTopology type ) const
       { return mSettings->get_mapping_function(type); }
+	MESQUITE_EXPORT
     const MappingFunction2D* get_mapping_function_2D( EntityTopology type ) const
       { return mSettings->get_mapping_function_2D(type); }
+	MESQUITE_EXPORT
     const MappingFunction3D* get_mapping_function_3D( EntityTopology type ) const
       { return mSettings->get_mapping_function_3D(type); }
     
     //! Get R^3 coordinates for logical sample location.
+	MESQUITE_EXPORT
     void get_sample_location( size_t element_index,
                               Sample sample,
                               Vector3D& result,
@@ -535,8 +593,10 @@ namespace MESQUITE_NS
     
     //! This function returns a NodeSet indicating which
     //! nodes in the specified element are not slaved.
+	MESQUITE_EXPORT
     NodeSet non_slave_node_set( size_t elem_idx ) const;  
     
+	MESQUITE_EXPORT
     NodeSet get_samples( size_t element, NodeSet non_slave_nodes ) const
     {
         // If we have a mapping function, use it
@@ -549,9 +609,11 @@ namespace MESQUITE_NS
       return non_slave_nodes;
     }
     
+	MESQUITE_EXPORT
     NodeSet get_samples( size_t element ) const
       { return get_samples( element, non_slave_node_set( element ) ); }
     
+	MESQUITE_EXPORT
     void get_samples( size_t element, msq_std::vector<Sample>& samples_out, MsqError& err ) const;
     
     //! Display the coordinates and connectivity information

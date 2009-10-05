@@ -43,7 +43,7 @@ class PatchData;
 class MsqError;
 template <unsigned R, unsigned C> class MsqMatrix;
 
-class TargetCalculator
+class MESQUITE_EXPORT TargetCalculator
 {
 public:
 

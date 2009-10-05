@@ -48,7 +48,7 @@ namespace MESQUITE_NS {
  * raised to a power, divided by the totoal number of quality metric
  * values.
  */
-class MESQUITE_EXPORT PMeanPTemplate : public ObjectiveFunctionTemplate
+class PMeanPTemplate : public ObjectiveFunctionTemplate
 {
   public:
   
@@ -56,6 +56,7 @@ class MESQUITE_EXPORT PMeanPTemplate : public ObjectiveFunctionTemplate
        *\param power   The exponent to use for the power-mean
        *\param qm      The quality metric.
        */
+	MESQUITE_EXPORT
     PMeanPTemplate( double power, QualityMetric* qm = 0 ) 
       : ObjectiveFunctionTemplate(qm)
     { 
@@ -69,6 +70,7 @@ class MESQUITE_EXPORT PMeanPTemplate : public ObjectiveFunctionTemplate
        * default one would also copy the temporary arrays, which
        * would be a waste of time.
        */
+	MESQUITE_EXPORT
     PMeanPTemplate( const PMeanPTemplate& copy )
       : ObjectiveFunctionTemplate( copy ),
         mPower( copy.mPower ),
@@ -80,12 +82,15 @@ class MESQUITE_EXPORT PMeanPTemplate : public ObjectiveFunctionTemplate
         savePowSum( copy.savePowSum )
       {}
     
+	MESQUITE_EXPORT
     virtual ~PMeanPTemplate() 
       {}
     
+	MESQUITE_EXPORT
     double get_power() const 
       { return mPower.value(); }
       
+	MESQUITE_EXPORT
     void set_power( double p ) 
       { 
         mPower = p; 
@@ -93,18 +98,21 @@ class MESQUITE_EXPORT PMeanPTemplate : public ObjectiveFunctionTemplate
         mPowerMinus2 = p - 2;
       }
     
+	MESQUITE_EXPORT
     virtual bool evaluate( EvalType type, 
                            PatchData& pd,
                            double& value_out,
                            bool free,
                            MsqError& err ); 
 
+	MESQUITE_EXPORT
     virtual bool evaluate_with_gradient( EvalType type, 
                                          PatchData& pd,
                                          double& value_out,
                                          msq_std::vector<Vector3D>& grad_out,
                                          MsqError& err ); 
     
+	MESQUITE_EXPORT
     virtual bool evaluate_with_Hessian_diagonal( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
@@ -112,6 +120,7 @@ class MESQUITE_EXPORT PMeanPTemplate : public ObjectiveFunctionTemplate
                                         msq_std::vector<SymMatrix3D>& hess_diag_out,
                                         MsqError& err ); 
 
+	MESQUITE_EXPORT
     virtual bool evaluate_with_Hessian( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
@@ -119,8 +128,10 @@ class MESQUITE_EXPORT PMeanPTemplate : public ObjectiveFunctionTemplate
                                         MsqHessian& Hessian_out,
                                         MsqError& err ); 
 
+	MESQUITE_EXPORT
     virtual ObjectiveFunction* clone() const;
 
+	MESQUITE_EXPORT
     virtual void clear();
   
   protected:

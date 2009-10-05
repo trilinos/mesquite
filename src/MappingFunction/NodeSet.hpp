@@ -41,10 +41,12 @@
 #include "Bits.hpp"
 #include "Sample.hpp"
 
+#pragma warning( 4 : 4715 )
+
 namespace MESQUITE_NS {
 
 /** Utility class for storing one boolean mark/flag for each node in an element */
-class NodeSet {
+class MESQUITE_EXPORT NodeSet {
   public:
     typedef unsigned BitSet;
     

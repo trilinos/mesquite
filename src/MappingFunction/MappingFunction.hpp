@@ -76,7 +76,7 @@ class PatchData;
  * a topology may vary by the presences or lack there of of mid-edge,
  * mid-face, and mid-element nodes.
  */
-class MappingFunction 
+class MESQUITE_EXPORT MappingFunction 
 {
 public:
 
@@ -175,7 +175,7 @@ private:
 };
 
 /**\brief MappingFunction for topologically 2D (surface) elements. */
-class MappingFunction2D : public MappingFunction
+class MESQUITE_EXPORT MappingFunction2D : public MappingFunction
 {
 public:
 
@@ -355,7 +355,7 @@ public:
 };
 
 /**\brief MappingFunction for topologically 3D (volume) elements. */
-class MappingFunction3D : public MappingFunction
+class MESQUITE_EXPORT MappingFunction3D : public MappingFunction
 {
 public:
 
