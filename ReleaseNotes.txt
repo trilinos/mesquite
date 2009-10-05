@@ -1,4 +1,4 @@
-Anouncing new Mesquite release: 2.1.0.
+Anouncing Mesquite 2.1.0.
 
 New features:
   - CMake-based build system and portability fixes restoring
@@ -16,5 +16,5 @@ New features:
   - new wrappers:
        ViscousCFDTetShapeWrapper
        PaverMinEdgeLengthWrapper
-  - experimental support fo r using iMeshP API with parallel mesquite
+  - experimental support for using iMeshP API with parallel mesquite
   
