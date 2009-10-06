@@ -25,46 +25,46 @@
   ***************************************************************** */
 
 
-/** \file Target2DShapeOrientBarrier.cpp
+/** \file Target3DShapeOrientBarrier.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "Target2DShapeOrientBarrier.hpp"
+#include "Target3DShapeOrientBarrier.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string Target2DShapeOrientBarrier::get_name() const
+std::string Target3DShapeOrientBarrier::get_name() const
   { return "ShapeOrientBarrier"; }
 
-bool Target2DShapeOrientBarrier::evaluate( const MsqMatrix<2,2>& A, 
-                                           const MsqMatrix<2,2>& W, 
+bool Target3DShapeOrientBarrier::evaluate( const MsqMatrix<3,3>& A, 
+                                           const MsqMatrix<3,3>& W, 
                                            double& result, 
                                            MsqError&  )
 {
-  MsqMatrix<2,2> T = A * inverse(W);
+  MsqMatrix<3,3> T = A * inverse(W);
   const double tau = det(T);
   if (invalid_determinant(tau)) { // barrier
     result = 0.0;
     return false;
   }
-  result = 0.5/tau * (Frobenius( T ) - trace(T)/MSQ_SQRT_TWO);
+  result = 0.5/tau * (Frobenius( T ) - trace(T)/MSQ_SQRT_THREE);
   return true;
 }
 
-bool Target2DShapeOrientBarrier::evaluate_with_grad( const MsqMatrix<2,2>& A,
-                                                     const MsqMatrix<2,2>& W,
+bool Target3DShapeOrientBarrier::evaluate_with_grad( const MsqMatrix<3,3>& A,
+                                                     const MsqMatrix<3,3>& W,
                                                      double& result,
-                                                     MsqMatrix<2,2>& deriv,
+                                                     MsqMatrix<3,3>& deriv,
                                                      MsqError& err )
 {
-  const MsqMatrix<2,2> Winv = inverse(W);
-  const MsqMatrix<2,2> T = A * Winv;
+  const MsqMatrix<3,3> Winv = inverse(W);
+  const MsqMatrix<3,3> T = A * Winv;
   const double norm = Frobenius(T);
-  const double invroot = 1.0/MSQ_SQRT_TWO;
+  const double invroot = 1.0/MSQ_SQRT_THREE;
   const double tau = det(T);
   if (invalid_determinant(tau)) { // barrier
     result = 0.0;
@@ -78,6 +78,7 @@ bool Target2DShapeOrientBarrier::evaluate_with_grad( const MsqMatrix<2,2>& A,
   deriv = invnorm * T;
   deriv(0,0) -= invroot;
   deriv(1,1) -= invroot;
+  deriv(2,2) -= invroot;
   deriv *= 0.5;
   deriv -= result * transpose_adj(T);
   deriv *= inv_tau;
@@ -86,17 +87,17 @@ bool Target2DShapeOrientBarrier::evaluate_with_grad( const MsqMatrix<2,2>& A,
 }
 
 
-bool Target2DShapeOrientBarrier::evaluate_with_hess( const MsqMatrix<2,2>& A,
-                                                     const MsqMatrix<2,2>& W,
+bool Target3DShapeOrientBarrier::evaluate_with_hess( const MsqMatrix<3,3>& A,
+                                                     const MsqMatrix<3,3>& W,
                                                      double& result,
-                                                     MsqMatrix<2,2>& deriv,
-                                                     MsqMatrix<2,2> second[3],
+                                                     MsqMatrix<3,3>& deriv,
+                                                     MsqMatrix<3,3> second[6],
                                                      MsqError& err )
 {
-  const MsqMatrix<2,2> Winv = inverse(W);
-  const MsqMatrix<2,2> T = A * Winv;
+  const MsqMatrix<3,3> Winv = inverse(W);
+  const MsqMatrix<3,3> T = A * Winv;
   const double norm = Frobenius(T);
-  const double invroot = 1.0/MSQ_SQRT_TWO;
+  const double invroot = 1.0/MSQ_SQRT_THREE;
   const double tau = det(T);
   if (invalid_determinant(tau)) { // barrier
     result = 0.0;
@@ -108,10 +109,11 @@ bool Target2DShapeOrientBarrier::evaluate_with_hess( const MsqMatrix<2,2>& A,
   const double f = norm - invroot * trace(T);
   result = 0.5 * inv_tau * f;
 
-  const MsqMatrix<2,2> adjt = transpose_adj(T);
+  const MsqMatrix<3,3> adjt = transpose_adj(T);
   deriv = invnorm * T;
   deriv(0,0) -= invroot;
   deriv(1,1) -= invroot;
+  deriv(2,2) -= invroot;
   deriv *= 0.5;
   deriv -= result * adjt;
   deriv *= inv_tau;
@@ -121,7 +123,7 @@ bool Target2DShapeOrientBarrier::evaluate_with_hess( const MsqMatrix<2,2>& A,
   set_scaled_outer_product( second, -a*invnorm*invnorm, T );
   pluseq_scaled_I( second, a );
   pluseq_scaled_outer_product( second, f*inv_tau*inv_tau*inv_tau, adjt );
-  pluseq_scaled_2nd_deriv_of_det( second, -0.5*f*inv_tau*inv_tau );
+  pluseq_scaled_2nd_deriv_of_det( second, -0.5*f*inv_tau*inv_tau, T );
   pluseq_scaled_sum_outer_product( second, -0.5*inv_tau*inv_tau*invnorm, T, adjt );
   pluseq_scaled_sum_outer_product_I( second, 0.5*inv_tau*inv_tau*invroot, adjt );
   second_deriv_wrt_product_factor( second, Winv );

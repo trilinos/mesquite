@@ -247,7 +247,7 @@ Thus the symmetric Hessian of $f(T)$, with the elements of $T$ occuring in row-m
 
 \section{Chain rule for matrix multiplication}
 
-\subsection{First Derivative}
+\subsection{\label{first} First Derivative}
 
 The following demonstrates that for the product of square matrices $T = A Z$,
 that $\frac{\partial f(T)}{\partial A} = \frac{\partial f(T)}{\partial T} Z^t$. \newline
@@ -1541,6 +1541,37 @@ $g(T)=6 \tau$.  Then the relation \ref{quotient2} can be applied, with
 \end{eqnarray}
 The last derivative is basically given in \ref{hess-nrm-adj}. \newline
 
+\subsection{ \label{sho_b} Derivatives of $\mu_n(T) = \frac{1}{2 \tau}\left[|T| - \frac{1}{\sqrt{n}}(tr T)\right] $ }
+
+\noindent This metric preserves the shape and orientation of the target and 
+applies to both $n=2$ and $n=3$.  It is the barrier form of the metric in Section \ref{sho_b}\newline
+
+\noindent Given:
+\begin{eqnarray}
+\frac{\partial}{\partial T}\left(\frac{1}{2 \tau}\right) &=& 
+  -\frac{1}{2 \tau^2}\frac{\partial \tau}{\partial T} \\
+\frac{\partial^2}{\partial T^2}\left(\frac{1}{2 \tau}\right) &=& \frac{1}{\tau^3}
+  \left[\frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T}\right]
+  - \frac{1}{2 \tau^2} \frac{\partial^2 \tau}{\partial T^2} 
+\end{eqnarray}
+Then by applying Section \ref{first} to the equations in Section \ref{sho}, we get:
+\begin{eqnarray}
+\mu(T) &=& \frac{1}{2 \tau}\left[|T| - \frac{1}{\sqrt{n}}(tr T)\right] \\
+\frac{\partial \mu}{\partial T} &=& \frac{1}{2 \tau^2}
+        \left[\frac{1}{\sqrt{n}}\left(tr T\right) - |T|\right]\frac{\partial \tau}{\partial T}
+        + \frac{1}{2 \tau}\left[\frac{T}{|T|} - \frac{1}{\sqrt{n}}I\right] \\
+      &=& \frac{1}{\tau}\left[\frac{1}{2}\left(\frac{T}{|T|} - \frac{1}{\sqrt{n}}I\right)
+        - \mu(T) \frac{\partial \tau}{\partial T}\right] \\
+\nonumber
+\frac{\partial^2 \mu}{\partial T^2} &=& 
+  \left(|T|-\frac{1}{\sqrt{n}}(tr T)\right)
+  \left[\frac{1}{\tau^3}\left(\frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T}\right)
+      - \frac{1}{2\tau^2}\frac{\partial^2 \tau}{\partial T^2}\right]
+  + \frac{1}{2 \tau |T|}\left[I_n - \frac{1}{|T|^2}\left(T \otimes T\right)\right] \\
+ &-&\frac{1}{2\tau^2|T|}\left(T \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes T\right)
+  + \frac{1}{2\tau^2\sqrt{n}}\left(I \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes I\right)
+\end{eqnarray}
+
 \subsection{Derivatives of Inverse Mean Ratio, $\mu_n = \frac{|T|^2}{n \, det^{2/n}(T)}-1$ \label{imr}}
 
 \begin{eqnarray}
@@ -1684,9 +1715,8 @@ InverseMeanRatio & \ref{imr} & \ref{imr} \\
 \hline
 ShapeOrient & \ref{sho} & \ref{sho} \\
 ShapeOrientAlt1 & \ref{si+} & \ref{si+} \\
-ShapeOrientAlt2 & ? &  \\
 \hline
-ShapeOrientBarrier & ? & \\
+ShapeOrientBarrier & \ref{sho_b} & \ref{sho_b} \\
 ShapeOrientBarrierAlt1 & \ref{nu-over-tau} & \ref{nu-over-tau} \\
 \hline
 ShapeSize & \ref{magic} &  \\
@@ -1717,8 +1747,6 @@ UntangleAlt1 & \ref{untangle2} & \ref{untangle2} \\
 
 \noindent Table notes:
 \begin{enumerate}
-\item The files ShapeOrientAlt2.hpp, etc. can be discontinued (i.e., removed from the repository and the table).
-\item ShapeOrientBarrier can be 3.2.13, divided by $2 \tau$.
 \item Metric 3.2.10 should be moved to ShapeSize from ShapeSizeAlt2.
 \item ShapeSizeBarrer and ShapeSizeBarrierAlt1 should be switched.
 \item ShapeSizeOrientAlt1 should be 4.1.1?
