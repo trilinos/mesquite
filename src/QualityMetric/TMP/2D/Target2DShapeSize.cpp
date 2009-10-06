@@ -121,8 +121,6 @@ bool Target2DShapeSize::evaluate_with_hess( const MsqMatrix<2,2>& A,
   deriv_wrt_A *= 2;
   deriv_wrt_A = deriv_wrt_A * transpose(Winv);
 
-  const double s = T(0,1) - T(1,0);
-  const double tr = trace(T);
   set_scaled_2nd_deriv_wrt_psi( second, -2.0, psi, T );
   pluseq_scaled_I( second, 2 );
   second_deriv_wrt_product_factor( second, Winv );

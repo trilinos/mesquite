@@ -158,18 +158,18 @@ void set_scaled_2nd_deriv_norm_sqr_adj( MsqMatrix<3,3> R[6],
  */
 template <unsigned D> inline
 void pluseq_scaled_outer_product_t( MsqMatrix<D,D> R[D*(D+1)/2],
-                                  double alpha,
-                                  const MsqMatrix<D,D>& M );
+                                    double alpha,
+                                    const MsqMatrix<D,D>& M );
 inline
 void pluseq_scaled_outer_product( MsqMatrix<3,3> R[6], 
-								  double alpha,
-								  const MsqMatrix<3,3>& M )
+                                  double alpha,
+                                  const MsqMatrix<3,3>& M )
 { pluseq_scaled_outer_product_t<3>(R,alpha,M); }
 
 inline
 void pluseq_scaled_outer_product( MsqMatrix<2,2> R[3], 
-								  double alpha,
-								  const MsqMatrix<2,2>& M )
+                                  double alpha,
+                                  const MsqMatrix<2,2>& M )
 { pluseq_scaled_outer_product_t<2>(R,alpha,M); }
 
 /**\brief \f$ R = \alpha \left( M \otimes M \right) \f$
@@ -179,19 +179,19 @@ void pluseq_scaled_outer_product( MsqMatrix<2,2> R[3],
  */
 template <unsigned D> inline
 void set_scaled_outer_product_t( MsqMatrix<D,D> R[D*(D+1)/2],
-                               double alpha,
-                               const MsqMatrix<D,D>& M );
+                                 double alpha,
+                                 const MsqMatrix<D,D>& M );
 
 inline
 void set_scaled_outer_product( MsqMatrix<3,3> R[6],
-							   double alpha,
-							   const MsqMatrix<3,3>& M )
+                               double alpha,
+                               const MsqMatrix<3,3>& M )
 { set_scaled_outer_product_t<3>( R, alpha, M ); }
 
 inline
 void set_scaled_outer_product( MsqMatrix<2,2> R[3],
-							   double alpha,
-							   const MsqMatrix<2,2>& M )
+                               double alpha,
+                               const MsqMatrix<2,2>& M )
 { set_scaled_outer_product_t<2>( R, alpha, M ); }
 
 /**\brief \f$ R += \alpha \left( A \otimes B + B \otimes A \right) \f$
@@ -223,9 +223,9 @@ void pluseq_scaled_sum_outer_product( MsqMatrix<2,2> R[3],
  */
 inline
 void set_scaled_sum_outer_product( MsqMatrix<3,3> R[6],
-                                      double alpha,
-                                      const MsqMatrix<3,3>& A,
-                                      const MsqMatrix<3,3>& B );
+                                   double alpha,
+                                   const MsqMatrix<3,3>& A,
+                                   const MsqMatrix<3,3>& B );
 
 /**\brief \f$ R = \alpha \left( A \otimes B + B \otimes A \right) \f$
  *
@@ -234,9 +234,9 @@ void set_scaled_sum_outer_product( MsqMatrix<3,3> R[6],
  */
 inline
 void set_scaled_sum_outer_product( MsqMatrix<2,2> R[3],
-                                      double alpha,
-                                      const MsqMatrix<2,2>& A,
-                                      const MsqMatrix<2,2>& B );
+                                   double alpha,
+                                   const MsqMatrix<2,2>& A,
+                                   const MsqMatrix<2,2>& B );
 
 /**\brief \f$ R += \alpha (I \otimes I) \f$
  *
@@ -300,7 +300,7 @@ void pluseq_scaled_sum_outer_product_I( MsqMatrix<2,2> R[2],
  */
 template <unsigned D> inline
 void second_deriv_wrt_product_factor_t( MsqMatrix<D,D> R[D*(D+1)/2],
-                                      const MsqMatrix<D,D>& Z );
+                                        const MsqMatrix<D,D>& Z );
 
 inline
 void second_deriv_wrt_product_factor( MsqMatrix<3,3> R[6],
@@ -326,8 +326,8 @@ void set_scaled_2nd_deriv_wrt_psi( MsqMatrix<2,2> R[3],
  */
 template <unsigned D> inline
 void pluseq_scaled_t( MsqMatrix<D,D> R[D*(D+1)/2],
-                    double alpha,
-                    const MsqMatrix<D,D> Z[D*(D+1)/2] );
+                      double alpha,
+                      const MsqMatrix<D,D> Z[D*(D+1)/2] );
 
 
 void set_scaled_I( MsqMatrix<3,3> R[6], double alpha )

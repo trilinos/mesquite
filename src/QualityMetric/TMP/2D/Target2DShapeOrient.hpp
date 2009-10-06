@@ -30,8 +30,8 @@
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TARGET2DSHAPE_ORIENT_HPP
-#define MSQ_TARGET2DSHAPE_ORIENT_HPP
+#ifndef MSQ_TARGET_2D_SHAPE_ORIENT_HPP
+#define MSQ_TARGET_2D_SHAPE_ORIENT_HPP
 
 #include "Mesquite.hpp"
 #include "TargetMetric2D.hpp"
@@ -39,7 +39,7 @@
 namespace MESQUITE_NS {
 
 
-/** |T - 0.5*abs(trace(T))*I|^2 */
+/** |T| - tr(T)/sqrt(n) */
 class Target2DShapeOrient : public TargetMetric2D
 {
   public:
@@ -48,7 +48,25 @@ class Target2DShapeOrient : public TargetMetric2D
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<2,2>& A, const MsqMatrix<2,2>& W, double& result, MsqError& err );
+  bool evaluate( const MsqMatrix<2,2>& A, 
+                 const MsqMatrix<2,2>& W, 
+                 double& result, 
+                 MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<2,2>& A,
+                           const MsqMatrix<2,2>& W,
+                           double& result,
+                           MsqMatrix<2,2>& deriv_wrt_A,
+                           MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_hess( const MsqMatrix<2,2>& A,
+                           const MsqMatrix<2,2>& W,
+                           double& result,
+                           MsqMatrix<2,2>& deriv_wrt_A,
+                           MsqMatrix<2,2> second_wrt_A[3],
+                           MsqError& err );
 };
 
 } // namespace Mesquite

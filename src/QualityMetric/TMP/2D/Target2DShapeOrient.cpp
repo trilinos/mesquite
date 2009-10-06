@@ -33,6 +33,7 @@
 #include "Mesquite.hpp"
 #include "Target2DShapeOrient.hpp"
 #include "MsqMatrix.hpp"
+#include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
@@ -40,18 +41,71 @@ std::string Target2DShapeOrient::get_name() const
   { return "ShapeOrient"; }
 
 bool Target2DShapeOrient::evaluate( const MsqMatrix<2,2>& A, 
-                                 const MsqMatrix<2,2>& W, 
-                                 double& result, 
-                                 MsqError&  )
+                                    const MsqMatrix<2,2>& W, 
+                                    double& result, 
+                                    MsqError&  )
 {
   MsqMatrix<2,2> T = A * inverse(W);
-  const double half_trace = 0.5 * fabs(trace(T));
-  T(0,0) -= half_trace;
-  T(1,1) -= half_trace;
-  result = sqr_Frobenius( T );
+  result = Frobenius( T ) - trace(T)/MSQ_SQRT_TWO;
   return true;
 }
 
+bool Target2DShapeOrient::evaluate_with_grad( const MsqMatrix<2,2>& A,
+                                              const MsqMatrix<2,2>& W,
+                                              double& result,
+                                              MsqMatrix<2,2>& deriv,
+                                              MsqError& err )
+{
+  const MsqMatrix<2,2> Winv = inverse(W);
+  const MsqMatrix<2,2> T = A * Winv;
+  const double norm = Frobenius(T);
+  const double invroot = 1.0/MSQ_SQRT_TWO;
+  result = norm - invroot * trace(T);
+  
+  const double big = 1e100;
+  double invnorm;
+  if (norm > 1.0/big)
+    invnorm = 1.0/norm;
+  else
+    invnorm = (norm/fabs(norm)) * big;
+
+  deriv = invnorm * T;
+  deriv(0,0) -= invroot;
+  deriv(1,1) -= invroot;
+  deriv = deriv * transpose(Winv);
+  return true;
+}
+
+bool Target2DShapeOrient::evaluate_with_hess( const MsqMatrix<2,2>& A,
+                                              const MsqMatrix<2,2>& W,
+                                              double& result,
+                                              MsqMatrix<2,2>& deriv,
+                                              MsqMatrix<2,2> second[3],
+                                              MsqError& err )
+{
+  const MsqMatrix<2,2> Winv = inverse(W);
+  const MsqMatrix<2,2> T = A * Winv;
+  const double norm = Frobenius(T);
+  const double invroot = 1.0/MSQ_SQRT_TWO;
+  result = norm - invroot * trace(T);
+  
+  const double big = 1e100;
+  double invnorm;
+  if (norm > 1.0/big)
+    invnorm = 1.0/norm;
+  else
+    invnorm = (norm/fabs(norm)) * big;
+
+  deriv = invnorm * T;
+  deriv(0,0) -= invroot;
+  deriv(1,1) -= invroot;
+  deriv = deriv * transpose(Winv);
+  
+  set_scaled_outer_product( second, -invnorm*invnorm*invnorm, T );
+  pluseq_scaled_I( second, invnorm );
+  second_deriv_wrt_product_factor( second, Winv );
+  return true;
+}
 
 
 } // namespace Mesquite
