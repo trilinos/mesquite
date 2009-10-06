@@ -763,7 +763,6 @@ void TargetMetric2DTest::test_numerical_hessian()
 #include "Target2DShapeBarrier.hpp"
 #include "Target2DShapeOrient.hpp"
 #include "Target2DShapeOrientAlt1.hpp"
-#include "Target2DShapeOrientAlt2.hpp"
 #include "Target2DShapeOrientBarrier.hpp"
 #include "Target2DShapeOrientBarrierAlt1.hpp"
 #include "Target2DShapeSize.hpp"
@@ -850,9 +849,8 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "TargetMetric2DTest" 
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShape,                     false,  true,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeAlt1,                 false,  true,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeBarrier,              false,  true,  true,  true, 0.0 );
-REGISTER_TARGET2D_TEST               ( Target2DShapeOrient,               false,  true, false, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeOrient,               false,  true, false, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeOrientAlt1,           false,  true, false, false, 0.0 );
-REGISTER_TARGET2D_TEST               ( Target2DShapeOrientAlt2,           false,  true, false, false, 0.0 );
 REGISTER_TARGET2D_TEST               ( Target2DShapeOrientBarrier,        false,  true, false,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeOrientBarrierAlt1,    false,  true, false,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSize,                 false, false,  true, false, 0.0 );
@@ -871,15 +869,15 @@ REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSizeBarrier,                true,
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DUntangle,                   true,  true,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DUntangleAlt1,               true,  true,  true, false, 0.0 );
 
-class Test_TSquared2D : public Target2DTest<TSquared2D> {
+class TSquared2DTest : public Target2DTest<TSquared2D> {
   public: 
-    Test_TSquared2D() : Target2DTest<TSquared2D>(false,false,false,false,0.0) {}
-    CPPUNIT_TEST_SUITE( Test_TSquared2D );
+    TSquared2DTest() : Target2DTest<TSquared2D>(false,false,false,false,0.0) {}
+    CPPUNIT_TEST_SUITE( TSquared2DTest );
     CPPUNIT_TEST( compare_anaytic_and_numeric_grads );
     CPPUNIT_TEST( compare_eval_with_grad_and_eval_with_hess );
     CPPUNIT_TEST( compare_anaytic_and_numeric_hess );
     CPPUNIT_TEST_SUITE_END();
 };
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( Test_TSquared2D, "Unit" );
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( Test_TSquared2D, "Target2DTest" );
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( Test_TSquared2D, "Test_TSquared2D" );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TSquared2DTest, "Unit" );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TSquared2DTest, "Target2DTest" );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TSquared2DTest, "TSquared2DTest" );

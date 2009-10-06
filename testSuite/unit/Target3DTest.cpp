@@ -995,6 +995,7 @@ void TargetMetric3DTest::test_numerical_hessian()
 #include "Target3DSizeBarrier.hpp"
 #include "Target3DShapeSizeOrientBarrier.hpp"
 #include "Target3DShapeSizeOrientBarrierAlt2.hpp"
+#include "Target3DShapeOrient.hpp"
 #include "Target3DShapeOrientAlt1.hpp"
 #include "Target3DShapeOrientBarrierAlt1.hpp"
 #include "Target3DUntangle.hpp"
@@ -1064,6 +1065,7 @@ REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeAlt2,             false, fals
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShape,                     false,  true,  true, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeBarrier,              false,  true,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeBarrierAlt1,          false,  true,  true,  true, 0.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeOrient,               false,  true, false, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeOrientAlt1,           false,  true, false, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeOrientBarrierAlt1,    false,  true, false,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeBarrier,          false, false,  true,  true, 0.0 );
@@ -1078,16 +1080,16 @@ REGISTER_TARGET3D_TEST_WITH_HESS( Target3DUntangle,                   true,  tru
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DUntangleAlt1,               true,  true,  true, false, 0.0 );
 
 
-class Test_TSquared3D : public Target3DTest<TSquared3D> {
+class TSquared3DTest : public Target3DTest<TSquared3D> {
   public: 
-    Test_TSquared3D() : Target3DTest<TSquared3D>(false,false,false,false,0.0) {}
-    CPPUNIT_TEST_SUITE( Test_TSquared3D );
+    TSquared3DTest() : Target3DTest<TSquared3D>(false,false,false,false,0.0) {}
+    CPPUNIT_TEST_SUITE( TSquared3DTest );
     CPPUNIT_TEST( compare_eval_and_eval_with_grad ); 
     CPPUNIT_TEST( compare_anaytic_and_numeric_grads );
     CPPUNIT_TEST( compare_eval_with_grad_and_eval_with_hess );
     CPPUNIT_TEST( compare_anaytic_and_numeric_hess );
     CPPUNIT_TEST_SUITE_END();
 };
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( Test_TSquared3D, "Unit" );
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( Test_TSquared3D, "Target3DTest" );
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( Test_TSquared3D, "Test_TSquared3D" );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TSquared3DTest, "Unit" );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TSquared3DTest, "Target3DTest" );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TSquared3DTest, "TSquared3DTest" );
