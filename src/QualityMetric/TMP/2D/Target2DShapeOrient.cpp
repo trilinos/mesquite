@@ -62,14 +62,12 @@ bool Target2DShapeOrient::evaluate_with_grad( const MsqMatrix<2,2>& A,
   const double invroot = 1.0/MSQ_SQRT_TWO;
   result = norm - invroot * trace(T);
   
-  const double big = 1e100;
-  double invnorm;
-  if (norm > 1.0/big)
-    invnorm = 1.0/norm;
-  else
-    invnorm = (norm/fabs(norm)) * big;
+  if (norm < 1e-50) {
+    deriv = MsqMatrix<2,2>(0.0);
+    return true;
+  }
 
-  deriv = invnorm * T;
+  deriv = 1.0/norm * T;
   deriv(0,0) -= invroot;
   deriv(1,1) -= invroot;
   deriv = deriv * transpose(Winv);
@@ -89,13 +87,14 @@ bool Target2DShapeOrient::evaluate_with_hess( const MsqMatrix<2,2>& A,
   const double invroot = 1.0/MSQ_SQRT_TWO;
   result = norm - invroot * trace(T);
   
-  const double big = 1e100;
-  double invnorm;
-  if (norm > 1.0/big)
-    invnorm = 1.0/norm;
-  else
-    invnorm = (norm/fabs(norm)) * big;
+  if (norm < 1e-50) {
+    deriv = second[1] = second[2] = second[4] = MsqMatrix<2,2>(0.0);
+    second[0] = second[3] = second[5] = MsqMatrix<2,2>(1.0);
+    second_deriv_wrt_product_factor( second, Winv );
+    return true;
+  }
 
+  const double invnorm = 1.0/norm;
   deriv = invnorm * T;
   deriv(0,0) -= invroot;
   deriv(1,1) -= invroot;

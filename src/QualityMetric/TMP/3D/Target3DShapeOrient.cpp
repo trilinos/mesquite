@@ -62,14 +62,12 @@ bool Target3DShapeOrient::evaluate_with_grad( const MsqMatrix<3,3>& A,
   const double invroot = 1.0/MSQ_SQRT_THREE;
   result = norm - invroot * trace(T);
   
-  const double big = 1e100;
-  double invnorm;
-  if (norm > 1.0/big)
-    invnorm = 1.0/norm;
-  else
-    invnorm = (norm/fabs(norm)) * big;
-
-  deriv = invnorm * T;
+  if (norm < 1e-50) {
+    deriv = MsqMatrix<3,3>(0.0);
+    return true;
+  }
+  
+  deriv = 1.0/norm * T;
   deriv(0,0) -= invroot;
   deriv(1,1) -= invroot;
   deriv(2,2) -= invroot;
@@ -81,7 +79,7 @@ bool Target3DShapeOrient::evaluate_with_hess( const MsqMatrix<3,3>& A,
                                               const MsqMatrix<3,3>& W,
                                               double& result,
                                               MsqMatrix<3,3>& deriv,
-                                              MsqMatrix<3,3> second[3],
+                                              MsqMatrix<3,3> second[6],
                                               MsqError& err )
 {
   const MsqMatrix<3,3> Winv = inverse(W);
@@ -90,13 +88,14 @@ bool Target3DShapeOrient::evaluate_with_hess( const MsqMatrix<3,3>& A,
   const double invroot = 1.0/MSQ_SQRT_THREE;
   result = norm - invroot * trace(T);
   
-  const double big = 1e100;
-  double invnorm;
-  if (norm > 1.0/big)
-    invnorm = 1.0/norm;
-  else
-    invnorm = (norm/fabs(norm)) * big;
+  if (norm < 1e-50) {
+    deriv = second[1] = second[2] = second[4] = MsqMatrix<3,3>(0.0);
+    second[0] = second[3] = second[5] = MsqMatrix<3,3>(1.0);
+    second_deriv_wrt_product_factor( second, Winv );
+    return true;
+  }
 
+  const double invnorm = 1.0/norm;
   deriv = invnorm * T;
   deriv(0,0) -= invroot;
   deriv(1,1) -= invroot;
