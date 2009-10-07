@@ -38,7 +38,7 @@
 namespace MESQUITE_NS {
 
 std::string Target2DShapeSizeOrientAlt1::get_name() const
-  { return "ShapeSizeOrient"; }
+  { return "ShapeSizeOrient1"; }
 
 bool Target2DShapeSizeOrientAlt1::evaluate( const MsqMatrix<2,2>& A, 
                                  const MsqMatrix<2,2>& W, 
