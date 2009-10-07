@@ -60,7 +60,6 @@ using std::auto_ptr;
 #include "Target2DShapeBarrier.hpp"
 #include "Target2DShapeOrient.hpp"
 #include "Target2DShapeOrientAlt1.hpp"
-#include "Target2DShapeOrientAlt2.hpp"
 #include "Target2DShapeOrientBarrier.hpp"
 #include "Target2DShapeSize.hpp"
 #include "Target2DShapeSizeBarrier.hpp"
@@ -80,7 +79,6 @@ metrics[] = { { new TSquared2D,                     "TSquared"               },
               { new Target2DShapeBarrier,           "ShapeBarrier"           },
               { new Target2DShapeOrient,            "ShapeOrient0"           },
               { new Target2DShapeOrientAlt1,        "ShapeOrient1"           },
-              { new Target2DShapeOrientAlt2,        "ShapeOrient2"           },
               { new Target2DShapeOrientBarrier,     "ShapeOrientBarrier"     },
               { new Target2DShapeSize,              "ShapeSize"              },
               { new Target2DShapeSizeBarrier,       "ShapeSizeBarrier0"      },

@@ -49,7 +49,6 @@
 #include "Target2DShapeBarrier.hpp"
 #include "Target2DShapeOrient.hpp"
 #include "Target2DShapeOrientAlt1.hpp"
-#include "Target2DShapeOrientAlt2.hpp"
 #include "Target2DShapeOrientBarrier.hpp"
 #include "Target2DShapeSize.hpp"
 #include "Target2DShapeSizeBarrier.hpp"
