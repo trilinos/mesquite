@@ -25,22 +25,22 @@
   ***************************************************************** */
 
 
-/** \file Target2DShapeSizeOrientBarrierAlt2.cpp
+/** \file Target2DShapeSizeOrientBarrierAlt1.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "Target2DShapeSizeOrientBarrierAlt2.hpp"
+#include "Target2DShapeSizeOrientBarrierAlt1.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string Target2DShapeSizeOrientBarrierAlt2::get_name() const
-  { return "ShapeSizeOrientBarrier"; }
+std::string Target2DShapeSizeOrientBarrierAlt1::get_name() const
+  { return "ShapeSizeOrientBarrier1"; }
 
-bool Target2DShapeSizeOrientBarrierAlt2::evaluate( 
+bool Target2DShapeSizeOrientBarrierAlt1::evaluate( 
                                              const MsqMatrix<2,2>& A, 
                                              const MsqMatrix<2,2>& W, 
                                              double& result, 
@@ -59,7 +59,7 @@ bool Target2DShapeSizeOrientBarrierAlt2::evaluate(
 }
 
 /** \f$ \frac{1}{\Tau^2}|T|^2 - \frac{2}{\Tau}tr(adj T) + 2 */
-bool Target2DShapeSizeOrientBarrierAlt2::evaluate_with_grad( 
+bool Target2DShapeSizeOrientBarrierAlt1::evaluate_with_grad( 
                                              const MsqMatrix<2,2>& A,
                                              const MsqMatrix<2,2>& W,
                                              double& result,
@@ -87,7 +87,7 @@ bool Target2DShapeSizeOrientBarrierAlt2::evaluate_with_grad(
   return true;
 }
 
-bool Target2DShapeSizeOrientBarrierAlt2::evaluate_with_hess( 
+bool Target2DShapeSizeOrientBarrierAlt1::evaluate_with_hess( 
                                              const MsqMatrix<2,2>& A,
                                              const MsqMatrix<2,2>& W,
                                              double& result,

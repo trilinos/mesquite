@@ -38,7 +38,7 @@
 
 namespace MESQUITE_NS {
 
-/** 3.3.12: (|T|^2 + |adj(T)|^2)/6\tau - 1 */
+/** |T - T-inverse-transpose|^2 */
 class Target3DShapeSizeBarrier : public TargetMetric3D
 {
   public:
@@ -66,7 +66,6 @@ class Target3DShapeSizeBarrier : public TargetMetric3D
                            MsqMatrix<3,3>& deriv_wrt_A,
                            MsqMatrix<3,3> second_wrt_A[6],
                            MsqError& err );
-
 };
 
 

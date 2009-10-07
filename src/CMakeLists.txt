@@ -652,7 +652,7 @@ APPEND_SET(HEADERS
   QualityMetric/TMP/2D/Target2DShapeSizeOrient.hpp
   QualityMetric/TMP/2D/Target2DShapeSizeOrientAlt1.hpp
   QualityMetric/TMP/2D/Target2DShapeSizeOrientBarrier.hpp
-  QualityMetric/TMP/2D/Target2DShapeSizeOrientBarrierAlt2.hpp
+  QualityMetric/TMP/2D/Target2DShapeSizeOrientBarrierAlt1.hpp
   QualityMetric/TMP/2D/Target2DSize.hpp
   QualityMetric/TMP/2D/Target2DSizeBarrier.hpp
   QualityMetric/TMP/2D/Target2DSquared.hpp
@@ -685,7 +685,7 @@ APPEND_SET(SOURCES
   QualityMetric/TMP/2D/Target2DShapeSizeOrient.cpp
   QualityMetric/TMP/2D/Target2DShapeSizeOrientAlt1.cpp
   QualityMetric/TMP/2D/Target2DShapeSizeOrientBarrier.cpp
-  QualityMetric/TMP/2D/Target2DShapeSizeOrientBarrierAlt2.cpp
+  QualityMetric/TMP/2D/Target2DShapeSizeOrientBarrierAlt1.cpp
   QualityMetric/TMP/2D/Target2DSize.cpp
   QualityMetric/TMP/2D/Target2DSizeBarrier.cpp
   QualityMetric/TMP/2D/Target2DSquared.cpp
@@ -718,13 +718,12 @@ APPEND_SET(HEADERS
   QualityMetric/TMP/3D/Target3DShapeOrientBarrier.hpp
   QualityMetric/TMP/3D/Target3DShapeOrientBarrierAlt1.hpp
   QualityMetric/TMP/3D/Target3DShapeSize.hpp
-  QualityMetric/TMP/3D/Target3DShapeSizeAlt2.hpp
   QualityMetric/TMP/3D/Target3DShapeSizeBarrier.hpp
   QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt1.hpp
   QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt2.hpp
   QualityMetric/TMP/3D/Target3DShapeSizeOrient.hpp
   QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrier.hpp
-  QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrierAlt2.hpp
+  QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrierAlt1.hpp
   QualityMetric/TMP/3D/Target3DSize.hpp
   QualityMetric/TMP/3D/Target3DSizeBarrier.hpp
   QualityMetric/TMP/3D/Target3DSquared.hpp
@@ -748,13 +747,12 @@ APPEND_SET(SOURCES
   QualityMetric/TMP/3D/Target3DShapeOrientBarrier.cpp
   QualityMetric/TMP/3D/Target3DShapeOrientBarrierAlt1.cpp
   QualityMetric/TMP/3D/Target3DShapeSize.cpp
-  QualityMetric/TMP/3D/Target3DShapeSizeAlt2.cpp
   QualityMetric/TMP/3D/Target3DShapeSizeBarrier.cpp
   QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt1.cpp
   QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt2.cpp
   QualityMetric/TMP/3D/Target3DShapeSizeOrient.cpp
   QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrier.cpp
-  QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrierAlt2.cpp
+  QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrierAlt1.cpp
   QualityMetric/TMP/3D/Target3DSize.cpp
   QualityMetric/TMP/3D/Target3DSizeBarrier.cpp
   QualityMetric/TMP/3D/Target3DSquared.cpp

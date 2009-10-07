@@ -69,7 +69,7 @@ using std::auto_ptr;
 #include "Target2DShapeSizeOrient.hpp"
 #include "Target2DShapeSizeOrientAlt1.hpp"
 #include "Target2DShapeSizeOrientBarrier.hpp"
-#include "Target2DShapeSizeOrientBarrierAlt2.hpp"
+#include "Target2DShapeSizeOrientBarrierAlt1.hpp"
 
 using namespace Mesquite;
 
@@ -87,7 +87,7 @@ metrics[] = { { new TSquared2D,                     "TSquared"               },
               { new Target2DShapeSizeOrient,        "ShapeSizeOrient0"       },
               { new Target2DShapeSizeOrientAlt1,    "ShapeSizeOrient1"       },
               { new Target2DShapeSizeOrientBarrier, "ShapeSizeOrientBarrier0"},
-           { new Target2DShapeSizeOrientBarrierAlt2,"ShapeSizeOrientBarrier2"},
+           { new Target2DShapeSizeOrientBarrierAlt1,"ShapeSizeOrientBarrier1"},
               { 0, 0 } };
 
 enum AveragingScheme { NONE = 0, ELEMENT, VERTEX, PATCH };

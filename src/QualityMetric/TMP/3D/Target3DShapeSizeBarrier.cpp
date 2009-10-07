@@ -51,9 +51,10 @@ bool Target3DShapeSizeBarrier::evaluate( const MsqMatrix<3,3>& A,
     return false;
   }
   
-  const double f = sqr_Frobenius(T);
-  const double g = sqr_Frobenius(adj(T));
-  result = (f + g)/(6 * tau) - 1;
+  const double nT = sqr_Frobenius(T);
+  const double nadj = sqr_Frobenius(transpose_adj(T));
+  const double f = 1/(tau*tau);
+  result = nT + f*nadj - 6;
   return true;
 }
 
@@ -71,29 +72,27 @@ bool Target3DShapeSizeBarrier::evaluate_with_grad( const MsqMatrix<3,3>& A,
     return false;
   }
   
-  const double f = sqr_Frobenius(T);
-  const double g = sqr_Frobenius(adj(T));
-  result = (f + g)/(6 * tau);
+  const MsqMatrix<3,3> adjt = transpose_adj(T);
+  const double nT = sqr_Frobenius(T);
+  const double nadj = sqr_Frobenius(adjt);
+  const double f = 1/(tau*tau);
+  result = nT + f*nadj - 6;
   
-  deriv_wrt_A = -transpose(T) * T;
-  deriv_wrt_A(0,0) += 1+f;
-  deriv_wrt_A(1,1) += 1+f;
-  deriv_wrt_A(2,2) += 1+f;
-  deriv_wrt_A = T * deriv_wrt_A;
-  deriv_wrt_A -= 3*result * transpose_adj(T);
-  deriv_wrt_A *= 1.0/(3*tau);
+  deriv_wrt_A = T;
+  deriv_wrt_A *= (1+f*nT);
+  deriv_wrt_A -= f * T * transpose(T) * T;
+  deriv_wrt_A -= f/tau * nadj * adjt;
+  deriv_wrt_A *= 2;
   deriv_wrt_A = deriv_wrt_A * transpose(Winv);
   
-  result -= 1.0;
   return true;
 }
-
 
 bool Target3DShapeSizeBarrier::evaluate_with_hess( const MsqMatrix<3,3>& A,
                                                    const MsqMatrix<3,3>& W,
                                                    double& result,
-                                                   MsqMatrix<3,3>& wrt_A,
-                                                   MsqMatrix<3,3> second[6],
+                                                   MsqMatrix<3,3>& deriv_wrt_A,
+                                                   MsqMatrix<3,3> second_wrt_A[6],
                                                    MsqError& err )
 {
   const MsqMatrix<3,3> Winv = inverse(W);
@@ -104,35 +103,30 @@ bool Target3DShapeSizeBarrier::evaluate_with_hess( const MsqMatrix<3,3>& A,
     return false;
   }
   
-  const double f = sqr_Frobenius(T);
-  const double g = sqr_Frobenius(adj(T));
-  result = (f + g)/(6 * tau);
+  const MsqMatrix<3,3> adjt = transpose_adj(T);
+  const double nT = sqr_Frobenius(T);
+  const double nadj = sqr_Frobenius(adjt);
+  const double f = 1/(tau*tau);
+  result = nT + f*nadj - 6;
   
-  MsqMatrix<3,3> dtau = transpose_adj(T);
-  MsqMatrix<3,3> dg = -transpose(T) * T;
-  dg(0,0) += f;
-  dg(1,1) += f;
-  dg(2,2) += f;
-  dg = T * dg;
-  dg *= 2;
-  
-  wrt_A = T;
-  wrt_A += 0.5*dg;
-  wrt_A *= 1.0/3.0;
-  wrt_A -= result * dtau;
-  wrt_A *= 1.0/tau;
-  wrt_A = wrt_A * transpose(Winv);
-  
-  set_scaled_2nd_deriv_norm_sqr_adj( second, 1.0/6.0, T );
-  pluseq_scaled_I( second, 1.0/3.0 );
-  pluseq_scaled_sum_outer_product( second, -1./3./tau, T, dtau );
-  pluseq_scaled_sum_outer_product( second, -1./6./tau, dg, dtau );
-  pluseq_scaled_outer_product( second, 2*result/tau, dtau );
-  pluseq_scaled_2nd_deriv_of_det( second, -result, T );
-  hess_scale( second, 1.0/tau );
-  second_deriv_wrt_product_factor( second, Winv );
-  
-  result -= 1.0;
+  //! \f$ \frac{\partial}{\partial T} |adj T|^2 \f$
+  const MsqMatrix<3,3> dNadj_dT = 2 * (nT * T - T * transpose(T) * T);
+  deriv_wrt_A = T;
+  deriv_wrt_A -= f/tau * nadj * adjt;
+  deriv_wrt_A *= 2;
+  deriv_wrt_A += f * dNadj_dT;
+  deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+
+    // calculate negative of 2nd wrt T of (|adj T|^2 / tau^2) (sec 3.2.2)
+  set_scaled_2nd_deriv_norm_sqr_adj( second_wrt_A,    f,            T );
+  pluseq_scaled_2nd_deriv_of_det(    second_wrt_A, -2*f*f*nadj*tau, T );
+  pluseq_scaled_outer_product(       second_wrt_A,  6*f*f*nadj,     adjt );
+  pluseq_scaled_sum_outer_product(   second_wrt_A, -2*f*f     *tau, adjt, dNadj_dT );
+    // calculate 2nd wrt T of this metric
+  pluseq_scaled_I( second_wrt_A, 2.0 );
+    // calculate 2nd wrt A
+  second_deriv_wrt_product_factor( second_wrt_A, Winv );
+
   return true;
 }
 

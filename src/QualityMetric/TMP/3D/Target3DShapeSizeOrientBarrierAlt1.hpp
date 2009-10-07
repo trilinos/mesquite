@@ -25,16 +25,16 @@
   ***************************************************************** */
 
 
-/** \file Target2DShapeSizeOrientBarrierAlt2.hpp
+/** \file Target3DShapeSizeOrientBarrierAlt1.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TARGET_2D_SHAPE_SIZE_ORIENT_BARRIER_ALT2_HPP
-#define MSQ_TARGET_2D_SHAPE_SIZE_ORIENT_BARRIER_ALT2_HPP
+#ifndef MSQ_TARGET_3D_SHAPE_SIZE_ORIENT_BARRIER_ALT1_HPP
+#define MSQ_TARGET_3D_SHAPE_SIZE_ORIENT_BARRIER_ALT1_HPP
 
 #include "Mesquite.hpp"
-#include "TargetMetric2D.hpp"
+#include "TargetMetric3D.hpp"
 
 namespace MESQUITE_NS {
 
@@ -43,7 +43,7 @@ namespace MESQUITE_NS {
  *
  * Section 3.3.2 of derivs.tex
  */
-class Target2DShapeSizeOrientBarrierAlt2 : public TargetMetric2D
+class Target3DShapeSizeOrientBarrierAlt1 : public TargetMetric3D
 {
   public:
   
@@ -51,24 +51,24 @@ class Target2DShapeSizeOrientBarrierAlt2 : public TargetMetric2D
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<2,2>& A, 
-                 const MsqMatrix<2,2>& W, 
+  bool evaluate( const MsqMatrix<3,3>& A, 
+                 const MsqMatrix<3,3>& W, 
                  double& result, 
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_grad( const MsqMatrix<2,2>& A,
-                           const MsqMatrix<2,2>& W,
+  bool evaluate_with_grad( const MsqMatrix<3,3>& A,
+                           const MsqMatrix<3,3>& W,
                            double& result,
-                           MsqMatrix<2,2>& deriv_wrt_A,
+                           MsqMatrix<3,3>& deriv_wrt_A,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_hess( const MsqMatrix<2,2>& A,
-                           const MsqMatrix<2,2>& W,
+  bool evaluate_with_hess( const MsqMatrix<3,3>& A,
+                           const MsqMatrix<3,3>& W,
                            double& result,
-                           MsqMatrix<2,2>& deriv_wrt_A,
-                           MsqMatrix<2,2> second_wrt_A[3],
+                           MsqMatrix<3,3>& deriv_wrt_A,
+                           MsqMatrix<3,3> second_wrt_A[6],
                            MsqError& err );
 };
 

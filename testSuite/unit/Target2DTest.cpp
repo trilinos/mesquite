@@ -773,7 +773,7 @@ void TargetMetric2DTest::test_numerical_hessian()
 #include "Target2DShapeSizeOrient.hpp"
 #include "Target2DShapeSizeOrientAlt1.hpp"
 #include "Target2DShapeSizeOrientBarrier.hpp"
-#include "Target2DShapeSizeOrientBarrierAlt2.hpp"
+#include "Target2DShapeSizeOrientBarrierAlt1.hpp"
 #include "InverseMeanRatio2D.hpp"
 #include "Target2DSize.hpp"
 #include "Target2DSizeBarrier.hpp"
@@ -862,7 +862,7 @@ REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrierAlt2,      false,
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrient,           false, false, false, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientAlt1,       false, false, false, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientBarrier,    false, false, false,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientBarrierAlt2,false, false, false,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientBarrierAlt1,false, false, false,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( InverseMeanRatio2D,                false,  true,  true,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSize,                       true, false,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSizeBarrier,                true, false,  true,  true, 0.0 );

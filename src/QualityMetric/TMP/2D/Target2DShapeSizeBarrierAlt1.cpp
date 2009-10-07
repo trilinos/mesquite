@@ -32,99 +32,122 @@
 
 #include "Mesquite.hpp"
 #include "Target2DShapeSizeBarrierAlt1.hpp"
+#include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
 std::string Target2DShapeSizeBarrierAlt1::get_name() const
-  { return "ShapeSizeBarrier"; }
+  { return "ShapeSizeBarrierAlt1"; }
 
 bool Target2DShapeSizeBarrierAlt1::evaluate( const MsqMatrix<2,2>& A, 
                                              const MsqMatrix<2,2>& W, 
                                              double& result, 
                                              MsqError&  )
 {
-  const MsqMatrix<2,2> T = A * inverse(W);
-  const double tau = det(T);
-  if (invalid_determinant(tau)) { // barrier
+  MsqMatrix<2,2> T = A * inverse(W);
+  const double two_det = 2.0 * det(T);
+  if (invalid_determinant(two_det)) { // barrier
     result = 0.0;
     return false;
   }
-  
-  const double nT = sqr_Frobenius(T);
-  const double f = 1/(tau*tau);
-  result = (1 + f) * nT - 4;
+    
+  const double frob_sqr = sqr_Frobenius(T);
+  result = (frob_sqr - 2.0 * sqrt( frob_sqr + two_det ) + 2.0)/two_det;
   return true;
 }
 
-bool Target2DShapeSizeBarrierAlt1::evaluate_with_grad( const MsqMatrix<2,2>& A,
-                                                       const MsqMatrix<2,2>& W,
-                                                       double& result,
+bool Target2DShapeSizeBarrierAlt1::evaluate_with_grad( const MsqMatrix<2,2>& A, 
+                                                       const MsqMatrix<2,2>& W, 
+                                                       double& result, 
                                                        MsqMatrix<2,2>& deriv_wrt_A,
                                                        MsqError& err )
 {
   const MsqMatrix<2,2> Winv = inverse(W);
   const MsqMatrix<2,2> T = A * Winv;
-  const double tau = det(T);
-  if (invalid_determinant(tau)) { // barrier
+  const double d = det(T);
+  if (invalid_determinant(d)) { // barrier
     result = 0.0;
     return false;
   }
+  const double frob_sqr = sqr_Frobenius(T);
+  const double psi = sqrt( frob_sqr + 2.0*det(T) );
+  const double v = frob_sqr - 2.0 * psi + 2.0;
+  result = v / (2*d);
+
+    // deriv of V wrt T
+  MsqMatrix<2,2> adjt = transpose_adj(T);
+  MsqMatrix<2,2> v_wrt_T(T);
+  v_wrt_T *= (1.0 - 1.0/psi);
+  v_wrt_T -= 1.0/psi * adjt;
+  v_wrt_T *= 2;
   
-  const MsqMatrix<2,2> adjt = transpose_adj(T);
-  const double nT = sqr_Frobenius(T);
-  const double f = 1/(tau*tau);
-  result = (1 + f) * nT - 4;
+    // deriv of mu wrt T
+  deriv_wrt_A = v_wrt_T;
+  deriv_wrt_A *= 0.5/d;
+  deriv_wrt_A -= v / (2*d*d) * adjt;
   
-  deriv_wrt_A = T;
-  deriv_wrt_A *= 2 + 2*f;
-  deriv_wrt_A -= 2 * f/tau * nT * adjt;
+    // deriv of mu wrt A
   deriv_wrt_A = deriv_wrt_A * transpose(Winv);
-  
   return true;
 }
 
-bool Target2DShapeSizeBarrierAlt1::evaluate_with_hess( const MsqMatrix<2,2>& A,
-                                                       const MsqMatrix<2,2>& W,
-                                                       double& result,
+bool Target2DShapeSizeBarrierAlt1::evaluate_with_hess( const MsqMatrix<2,2>& A, 
+                                                       const MsqMatrix<2,2>& W, 
+                                                       double& result, 
                                                        MsqMatrix<2,2>& deriv_wrt_A,
-                                                       MsqMatrix<2,2> second_wrt_A[3],
+                                                       MsqMatrix<2,2> second[3],
                                                        MsqError& err )
 {
   const MsqMatrix<2,2> Winv = inverse(W);
   const MsqMatrix<2,2> T = A * Winv;
-  const double tau = det(T);
-  if (invalid_determinant(tau)) { // barrier
+  const double d = det(T);
+  if (invalid_determinant(d)) { // barrier
     result = 0.0;
     return false;
   }
-  
-  const MsqMatrix<2,2> adjt = transpose_adj(T);
-  const double nT = sqr_Frobenius(T);
-  const double f = 1/(tau*tau);
-  result = (1 + f) * nT - 4;
-  
-  deriv_wrt_A = T;
-  deriv_wrt_A *= 2 + 2*f;
-  deriv_wrt_A -= 2 * f/tau * nT * adjt;
-  deriv_wrt_A = deriv_wrt_A * transpose(Winv);
-/*  
-    // calculate negative of 2nd wrt T of (|adj T|^2 / tau^2) (eqn 3.75)
-  set_scaled_2nd_deriv_norm_sqr_adj( second_wrt_A, -f, T );
-  pluseq_scaled_outer_product( second_wrt_A, -6 * f*f * nT, adjt );
-  pluseq_scaled_2nd_deriv_of_det( second_wrt_A, 2*f*f*tau*nT );
-  pluseq_scaled_sum_outer_product( second_wrt_A, 4*f*f*tau, adjt, T );
-    // calculate 2nd wrt T of this metric
-  pluseq_scaled_I( second_wrt_A, 2.0 );
-    // calculate 2nd wrt A
-  second_deriv_wrt_product_factor( second_wrt_A, Winv );
-*/
-  set_scaled_sum_outer_product( second_wrt_A, -4*f/tau, T, adjt );
-  pluseq_scaled_I( second_wrt_A, 2 + 2*f );
-  pluseq_scaled_outer_product( second_wrt_A, 6*nT*f*f, adjt );
-  pluseq_scaled_2nd_deriv_of_det( second_wrt_A, -2*nT*f/tau );
-  second_deriv_wrt_product_factor( second_wrt_A, Winv );
+  const double frob_sqr = sqr_Frobenius(T);
+  const double psi = sqrt( frob_sqr + 2.0*det(T) );
+  const double v = frob_sqr - 2.0 * psi + 2.0;
+  result = v / (2*d);
 
+    // deriv of V wrt T
+  MsqMatrix<2,2> adjt = transpose_adj(T);
+  MsqMatrix<2,2> v_wrt_T(T);
+  v_wrt_T *= (1.0 - 1.0/psi);
+  v_wrt_T -= 1.0/psi * adjt;
+  v_wrt_T *= 2;
+  
+    // deriv of mu wrt T
+  deriv_wrt_A = v_wrt_T;
+  deriv_wrt_A *= 0.5/d;
+  deriv_wrt_A -= v / (2*d*d) * adjt;
+  
+    // deriv of mu wrt A
+  deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+  
+    // second of V wrt T 
+  const double s = T(0,1) - T(1,0);
+  const double tr = trace(T);
+  const double f = -2.0/(psi*psi*psi);
+  second[0](0,0) = second[1](0,1) = second[2](1,1) =  f*s*s;
+  second[0](0,1) = second[0](1,0) = second[1](1,1) = -f*s*tr;
+  second[1](0,0) = second[2](0,1) = second[2](1,0) =  f*s*tr;
+  second[0](1,1) = second[2](0,0) = -(second[1](1,0) = -f*tr*tr);
+  pluseq_scaled_I( second, 2 );
+  
+    // second of mu wrt T 
+  const double x = 1.0/(2*d);
+  second[0] *= x;
+  second[1] *= x;
+  second[2] *= x;
+  pluseq_scaled_2nd_deriv_of_det( second, v/(-2*d*d) );
+  pluseq_scaled_outer_product( second, v/(d*d*d), adjt );
+  pluseq_scaled_sum_outer_product( second, -1/(2*d*d), v_wrt_T, adjt );
+  
+    // second of mu wrt A
+  second_deriv_wrt_product_factor( second, Winv );
+  
   return true;
 }
 

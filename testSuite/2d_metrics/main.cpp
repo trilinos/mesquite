@@ -58,7 +58,7 @@
 #include "Target2DShapeSizeOrient.hpp"
 #include "Target2DShapeSizeOrientAlt1.hpp"
 #include "Target2DShapeSizeOrientBarrier.hpp"
-#include "Target2DShapeSizeOrientBarrierAlt2.hpp"
+#include "Target2DShapeSizeOrientBarrierAlt1.hpp"
 #include "InvTransBarrier2D.hpp"
 
 #include <iostream>
@@ -176,10 +176,10 @@ TargetMetric2D* nb[] = { &nb1, &nb2, &nb3, &nb4, &nb5, &nb6, &nb7 };
 
 Target2DShapeSizeOrientBarrier b1;
 Target2DShapeOrientBarrier b2;
-Target2DShapeSizeBarrier b3;
+Target2DShapeSizeBarrierAlt1 b3;
 Target2DShapeBarrier b4;
-Target2DShapeSizeOrientBarrierAlt2 b5;
-Target2DShapeSizeBarrierAlt1 b6;
+Target2DShapeSizeOrientBarrierAlt1 b5;
+Target2DShapeSizeBarrier b6;
 Target2DShapeSizeBarrierAlt2 b7;
 TargetMetric2D* b[] = { &b1, &b2, &b3, &b4, &b5, &b6, &b7 };
 
