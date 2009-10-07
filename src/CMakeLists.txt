@@ -721,7 +721,9 @@ APPEND_SET(HEADERS
   QualityMetric/TMP/3D/Target3DShapeSizeBarrier.hpp
   QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt1.hpp
   QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt2.hpp
+  QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt3.hpp
   QualityMetric/TMP/3D/Target3DShapeSizeOrient.hpp
+  QualityMetric/TMP/3D/Target3DShapeSizeOrientAlt1.hpp
   QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrier.hpp
   QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrierAlt1.hpp
   QualityMetric/TMP/3D/Target3DSize.hpp
@@ -750,7 +752,9 @@ APPEND_SET(SOURCES
   QualityMetric/TMP/3D/Target3DShapeSizeBarrier.cpp
   QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt1.cpp
   QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt2.cpp
+  QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt3.cpp
   QualityMetric/TMP/3D/Target3DShapeSizeOrient.cpp
+  QualityMetric/TMP/3D/Target3DShapeSizeOrientAlt1.cpp
   QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrier.cpp
   QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrierAlt1.cpp
   QualityMetric/TMP/3D/Target3DSize.cpp

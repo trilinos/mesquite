@@ -982,6 +982,7 @@ void TargetMetric3DTest::test_numerical_hessian()
 
 #include "TSquared3D.hpp"
 #include "Target3DShapeSizeOrient.hpp"
+#include "Target3DShapeSizeOrientAlt1.hpp"
 #include "Target3DShapeSize.hpp"
 #include "Target3DShapeBarrier.hpp"
 #include "Target3DShapeBarrierAlt1.hpp"
@@ -989,6 +990,7 @@ void TargetMetric3DTest::test_numerical_hessian()
 #include "Target3DShapeSizeBarrier.hpp"
 #include "Target3DShapeSizeBarrierAlt1.hpp"
 #include "Target3DShapeSizeBarrierAlt2.hpp"
+#include "Target3DShapeSizeBarrierAlt3.hpp"
 #include "InverseMeanRatio3D.hpp"
 #include "Target3DSize.hpp"
 #include "Target3DSizeBarrier.hpp"
@@ -1060,7 +1062,8 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "Target3DTest" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "TargetMetric3DTest" );
 //                                Metric                             !shape !size !orient barrer ideal
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeOrient,           false, false, false, false, 0.0 );
-REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSize,                 false, false,  true,  true, 0.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeOrientAlt1,       false, false, false, false, 0.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSize,                 false, false,  true, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShape,                     false,  true,  true, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeBarrier,              false,  true,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeBarrierAlt1,          false,  true,  true,  true, 0.0 );
@@ -1071,6 +1074,7 @@ REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeOrientBarrierAlt1,    false,  tru
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeBarrier,          false, false,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeBarrierAlt1,      false, false,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeBarrierAlt2,      false, false,  true,  true, 0.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeBarrierAlt3,      false, false,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( InverseMeanRatio3D,                false,  true,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSize,                       true, false,  true, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSizeBarrier,                true, false,  true,  true, 0.0 );

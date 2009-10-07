@@ -18,7 +18,9 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeBarrier.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeBarrierAlt1.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeBarrierAlt2.cpp \
+	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeBarrierAlt3.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrient.cpp \
+	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrientAlt1.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrientBarrier.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrientBarrierAlt1.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSize.cpp \
@@ -46,7 +48,9 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeBarrier.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeBarrierAlt1.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeBarrierAlt2.hpp \
+	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeBarrierAlt3.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrient.hpp \
+	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrientAlt1.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrientBarrier.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrientBarrierAlt1.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSize.hpp \
