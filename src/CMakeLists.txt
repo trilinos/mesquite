@@ -646,6 +646,8 @@ APPEND_SET(HEADERS
   QualityMetric/TMP/2D/Target2DShapeOrientBarrier.hpp
   QualityMetric/TMP/2D/Target2DShapeOrientBarrierAlt1.hpp
   QualityMetric/TMP/2D/Target2DShapeSize.hpp
+  QualityMetric/TMP/2D/Target2DShapeSizeAlt1.hpp
+  QualityMetric/TMP/2D/Target2DShapeSizeAlt2.hpp
   QualityMetric/TMP/2D/Target2DShapeSizeBarrier.hpp
   QualityMetric/TMP/2D/Target2DShapeSizeBarrierAlt1.hpp
   QualityMetric/TMP/2D/Target2DShapeSizeBarrierAlt2.hpp
@@ -679,6 +681,8 @@ APPEND_SET(SOURCES
   QualityMetric/TMP/2D/Target2DShapeOrientBarrier.cpp
   QualityMetric/TMP/2D/Target2DShapeOrientBarrierAlt1.cpp
   QualityMetric/TMP/2D/Target2DShapeSize.cpp
+  QualityMetric/TMP/2D/Target2DShapeSizeAlt1.cpp
+  QualityMetric/TMP/2D/Target2DShapeSizeAlt2.cpp
   QualityMetric/TMP/2D/Target2DShapeSizeBarrier.cpp
   QualityMetric/TMP/2D/Target2DShapeSizeBarrierAlt1.cpp
   QualityMetric/TMP/2D/Target2DShapeSizeBarrierAlt2.cpp
@@ -944,7 +948,7 @@ ELSE()
 ENDIF()
 
 IF(NOT "${old_all_headers_contents}" STREQUAL "${all_headers_contents}")
-  MESSAGE("Creating Mesquite_all_headers.hpp")
+#  MESSAGE("Creating Mesquite_all_headers.hpp")
   FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/Mesquite_all_headers.hpp ${all_headers_contents})
 ENDIF()
 
