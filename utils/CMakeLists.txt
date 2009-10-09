@@ -34,6 +34,12 @@ ENDIF()
 
 IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
 
+  PACKAGE_ADD_LIBRARY(
+    msqutil
+    HEADERS ${HEADERS}
+    SOURCES ${SOURCES}
+    )
+
   PACKAGE_ADD_EXECUTABLE(
     vtkrandom
     NOEXEPREFIX
@@ -68,7 +74,7 @@ IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
 
 ELSE()
 
-  ADD_LIBRARY( msqutil STATIC ${SOURCES} )
+  ADD_LIBRARY( msqutil STATIC ${SOURCES} ${HEADERS} )
   ADD_EXECUTABLE( vtkrandom randomize.cpp domain.cpp )
   ADD_EXECUTABLE( msqshape  shape-improve.cpp domain.cpp )
   ADD_EXECUTABLE( vtkxform  transform.cpp )

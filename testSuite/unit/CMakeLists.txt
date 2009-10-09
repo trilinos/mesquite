@@ -93,7 +93,7 @@ FOREACH( test ${unit_tests} )
 ENDFOREACH()
 
 IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
-  PACKAGE_ADD_EXECUTABLE( msq_test SOURCES ${unit_srcs} )
+  PACKAGE_ADD_EXECUTABLE( msq_test NOEXEPREFIX NOEXESUFFIX SOURCES ${unit_srcs} )
   TARGET_LINK_LIBRARIES( msq_test mesquite ${CPPUNIT_LIBRARY} )
   FOREACH( test ${unit_tests} )
     PACKAGE_ADD_TEST( msq_test NAME ${test} ARGS ${test} )
