@@ -74,7 +74,7 @@ namespace MESQUITE_NS
 //**************** Parallel Methods ******************************
 
 void MsqIMeshP::vertices_get_global_id(const VertexHandle vert_array[],
-					      int gid[],
+					      size_t gid[],
 					      size_t num_vtx,
 					      MsqError& err)
 {
@@ -97,12 +97,12 @@ void MsqIMeshP::vertices_get_global_id(const VertexHandle vert_array[],
     int part_rank;
     iMeshP_getRankOfPart(meshInstance, partitionInstance, part_id, &part_rank, &itaps_err);
     if (part_rank == rank) {
-      gid[i] = ((int*)&(vert_array[i]))[0];
+      gid[i] = (size_t)(vert_array[i]);
     }
     else {
       iBase_EntityHandle handle;
       iMeshP_getOwnerCopy(meshInstance, partitionInstance, (iBase_EntityHandle)(vert_array[i]), &part_id, &handle, &itaps_err);
-      gid[i] = ((int*)&(handle))[0];
+      gid[i] = (size_t)handle;
     }
   }
 }

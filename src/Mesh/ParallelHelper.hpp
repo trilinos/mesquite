@@ -45,18 +45,18 @@
 namespace MESQUITE_NS
 {
   typedef struct VertexIdMapKey {
-    int id;
+    size_t glob_id;
     int proc_id;
   } VertexIdMapKey;
   
   struct VertexIdLessFunc {
     bool operator()( const VertexIdMapKey &that1, const VertexIdMapKey& that2 ) const
     {
-        return ( (that1.proc_id < that2.proc_id) || ((that1.proc_id==that2.proc_id)&&(that1.id<that2.id)) );
+      return ( (that1.proc_id < that2.proc_id) || ((that1.proc_id==that2.proc_id)&&(that1.glob_id<that2.glob_id)) );
     }
   };
   
-    typedef std::map<VertexIdMapKey,int,VertexIdLessFunc> VertexIdMap;
+  typedef std::map<VertexIdMapKey,int,VertexIdLessFunc> VertexIdMap;
 
   class ParallelHelperImpl : public ParallelHelper
   {
@@ -120,11 +120,11 @@ namespace MESQUITE_NS
     int num_vtx_partition_boundary_remote;
     std::vector<Mesquite::Mesh::VertexHandle> part_vertices;
     std::vector<int> part_proc_owner;
-    std::vector<int> part_gid;
+    std::vector<size_t> part_gid;
     std::vector<int> part_smoothed_flag;
     std::vector<double> part_rand_number;
     int num_exportVtx;
-    std::vector<int> exportVtxGIDs;
+    std::vector<size_t> exportVtxGIDs;
     std::vector<int> exportVtxLIDs;
     std::vector<int> exportProc;
     std::vector<bool> in_independent_set;
@@ -150,7 +150,7 @@ namespace MESQUITE_NS
     std::vector<int> unghost_procs_num_vtx;
     std::vector<int> unghost_procs_offset;
     int update_num_vtx;
-    std::vector<int> update_gid;
+    std::vector<size_t> update_gid;
     int update_num_procs;
     std::vector<int> update_procs;
     std::vector<int> update_procs_num_vtx;

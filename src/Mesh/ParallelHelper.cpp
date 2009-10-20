@@ -47,18 +47,18 @@ static const char* mpi_err_string( int error_code )
   return 0; \
 } } while(false)
 
-    static bool vertex_map_insert(VertexIdMap& map, int id, int proc_id, int value)
+    static bool vertex_map_insert(VertexIdMap& map, size_t glob_id, int proc_id, int value)
     {
         VertexIdMapKey vid;
-        vid.id = id;
+	vid.glob_id = glob_id;
         vid.proc_id = proc_id;
         return map.insert(VertexIdMap::value_type(vid, value)).second;
     }
     
-    static int vertex_map_find(const VertexIdMap& map, int id, int proc_id)
+    static int vertex_map_find(const VertexIdMap& map, size_t glob_id, int proc_id)
     {
         VertexIdMapKey vid;
-        vid.id = id;
+	vid.glob_id = glob_id;
         vid.proc_id = proc_id;
         VertexIdMap::const_iterator map_element = map.find(vid);
         if (map_element == map.end())
@@ -71,11 +71,12 @@ static const char* mpi_err_string( int error_code )
         }
     }
 
-static void my_quicksort(int* a, int* b, Mesquite::Mesh::VertexHandle* c, int i, int j)
+static void my_quicksort(int* a, size_t* b, Mesquite::Mesh::VertexHandle* c, int i, int j)
 {
   int in_i = i;
   int in_j = j;
-  int w;
+  int wa;
+  size_t wb;
   Mesquite::Mesh::VertexHandle w1;
   int key = a[(i+j)/2];
   do
@@ -84,12 +85,12 @@ static void my_quicksort(int* a, int* b, Mesquite::Mesh::VertexHandle* c, int i,
       while ( a[j] > key ) j--;
       if (i<j)
 	{
-	  w = a[i];
+	  wa = a[i];
 	  a[i] = a[j];
-	  a[j] = w;
-	  w = b[i];
+	  a[j] = wa;
+	  wb = b[i];
 	  b[i] = b[j];
-	  b[j] = w;
+	  b[j] = wb;
 	  w1 = c[i];
 	  c[i] = c[j];
 	  c[j] = w1;	  
@@ -104,7 +105,6 @@ static void my_quicksort(int* a, int* b, Mesquite::Mesh::VertexHandle* c, int i,
   if (i<in_j) my_quicksort(a, b, c, i, in_j);
 }
 
-/*
 static int hash6432shift(unsigned long long key)
 {
   key = (~key) + (key << 18); // key = (key << 18) - key - 1;
@@ -115,7 +115,6 @@ static int hash6432shift(unsigned long long key)
   key = key ^ (key >> 22);
   return (int) key;
 }
-*/
 
 static unsigned long long hash64shift(unsigned long long key)
 {
@@ -129,21 +128,30 @@ static unsigned long long hash64shift(unsigned long long key)
   return key;
 }
 
-static double generate_random_number(int generate_random_numbers, int proc_id, int id)
+static double generate_random_number(int generate_random_numbers, int proc_id, size_t glob_id)
 {
+  int gid;
+
+  if (sizeof(size_t) == sizeof(unsigned long long)) {
+    gid = hash6432shift((unsigned long long)glob_id);
+  }
+  else {
+    gid = (int)glob_id;
+  }
+
   if (generate_random_numbers == 1)
   {
     // count number of on bits
     int on = 0;
-    int mist = id;
+    unsigned int mist = (unsigned int)gid;
     while (mist)
     {
       if (mist & 1) on++;
       mist = mist >> 1;
     }
     unsigned short xsubi[3];
-    if (on & 1) mist = id; 
-    else mist = -id; 
+    if (on & 1) mist = (unsigned int)gid;
+    else mist = (unsigned int)(-gid);
     if (on & 2) { 
       xsubi[0] = (unsigned short)(65535 & mist); 
       xsubi[1] = (unsigned short)(65535 & (mist >> 16)); 
@@ -159,15 +167,15 @@ static double generate_random_number(int generate_random_numbers, int proc_id, i
   {
     // count number of on bits
     int on = 0;
-    int mist = id;
+    unsigned int mist = (unsigned int)gid;
     while (mist)
     {
       if (mist & 1) on++;
       mist = mist >> 1;
     }
     unsigned short xsubi[3];
-    if (on & 1) mist = id; 
-    else mist = -id; 
+    if (on & 1) mist = (unsigned int)gid; 
+    else mist = (unsigned int)(-gid);
     if (on & 2) {
       xsubi[0] = (unsigned short)(65535 & mist); 
       xsubi[1] = (unsigned short)(65535 & (mist >> 16));
@@ -181,14 +189,14 @@ static double generate_random_number(int generate_random_numbers, int proc_id, i
   }
   else if (generate_random_numbers == 3)
   {
-    unsigned long long key = id;
+    unsigned long long key = (unsigned long long)gid;
     key = key << 32;
     key = key | proc_id;
     return (double)hash64shift(key);
   }
   else if (generate_random_numbers == 4)
   {
-    unsigned long long key = id;
+    unsigned long long key = (unsigned long long)gid;
     key = key << 32;
     key = key | proc_id;
     key = hash64shift(key);
@@ -276,7 +284,8 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   num_vertex = vertices.size();
 
   /* allocate the data arrays we'll use for smoothing */
-  std::vector<int> gid(num_vertex), proc_owner(num_vertex);
+  std::vector<size_t> gid(num_vertex);
+  std::vector<int> proc_owner(num_vertex);
   bool* app_fixed = new bool[num_vertex];
 
   /* get the data from the mesquite mesh */
@@ -373,10 +382,10 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   {
     printf("[%d]i%d local %d remote %d ",rank,iteration,num_vtx_partition_boundary_local,num_vtx_partition_boundary_remote);
     printf("[%d]i%d pb1 ",rank,iteration);
-    for (i=0;i<num_vertex;i++) if (vtx_in_partition_boundary[i] == 1) printf("%d,%d ",i,gid[i]);
+    for (i=0;i<num_vertex;i++) if (vtx_in_partition_boundary[i] == 1) printf("%d,%Zu ",i,gid[i]);
     printf("\n");
     printf("[%d]i%d pb2 ",rank,iteration);
-    for (i=0;i<num_vertex;i++) if (vtx_in_partition_boundary[i] == 2) printf("%d,%d ",i,gid[i]);
+    for (i=0;i<num_vertex;i++) if (vtx_in_partition_boundary[i] == 2) printf("%d,%Zu ",i,gid[i]);
     printf("\n");
     fflush(NULL);
   }
@@ -422,6 +431,7 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
 	vtx_partition_boundary_map_inverse[i] = j;
 	/* only insert those vertices in the map that are smoothed on other processors */
 	vertex_map_insert(vid_map, part_gid[j], part_proc_owner[j], j);
+	// printf("[%d] inserting vertex with gid %Zu and pid %d \n", rank, part_gid[j], part_proc_owner[j]);	  
 	j++;
     }
   }
@@ -437,12 +447,12 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
       unghost_num_vtx++;
     }
   }
-  //  printf("[%d] found %d unused ghost vertices (local %d remote %d)\n",rank, unghost_num_vtx, num_vtx_partition_boundary_local,num_vtx_partition_boundary_remote);
+  // printf("[%d] found %d unused ghost vertices (local %d remote %d)\n",rank, unghost_num_vtx, num_vtx_partition_boundary_local,num_vtx_partition_boundary_remote);
 
   /* create the vectors to store the unused ghost vertices */ 
   unghost_vertices.resize(unghost_num_vtx);
   std::vector<int> unghost_proc_owner(unghost_num_vtx);
-  std::vector<int> unghost_gid(unghost_num_vtx);
+  std::vector<size_t> unghost_gid(unghost_num_vtx);
 
   /* store the unused ghost vertices that are copies of vertices from other processors and will need to be received */
   j=0;
@@ -568,7 +578,7 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
 
   //if (rank == 0) delete [] num_sends_of_unghost;
 
-  // printf("[%d] i have unused ghost nodes from %d processors and i need to send updates to %d processors\n", rank, unghost_num_procs, update_num_procs);
+  //printf("[%d] i have unused ghost nodes from %d procs and i need to send updates to %d procs\n", rank, unghost_num_procs, update_num_procs);
 
   /* now the processors can negotiate amongst themselves: */
 
@@ -630,7 +640,7 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   {
     rval = MPI_Isend(&(unghost_gid[unghost_procs_offset[j]]),
 	      unghost_procs_num_vtx[j],
-	      MPI_INT,
+	      sizeof(size_t) == 4 ? MPI_INT : MPI_DOUBLE,
 	      unghost_procs[j],
 	      GHOST_NODE_VERTEX_GIDS,
 	      (MPI_Comm)communicator,
@@ -643,7 +653,7 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   {
     rval = MPI_Irecv(&(update_gid[update_procs_offset[j]]),
              update_procs_num_vtx[j],
-             MPI_INT,
+             sizeof(size_t) == 4 ? MPI_INT : MPI_DOUBLE,
              update_procs[j],
              GHOST_NODE_VERTEX_GIDS,
              (MPI_Comm)communicator,
@@ -974,6 +984,8 @@ void ParallelHelperImpl::smoothing_close(MsqError& err)
 
   if (nprocs == 1) return;
 
+  //  printf("[%d] used %d iterations\n", rank, iteration);
+
   // communicate unused ghost nodes  
 
   std::vector<double> update_updates;
@@ -982,7 +994,7 @@ void ParallelHelperImpl::smoothing_close(MsqError& err)
   if (update_num_procs)
   {
     /* get the tags so we can find the requested vertices */
-    std::vector<int> gid(num_vertex);
+    std::vector<size_t> gid(num_vertex);
     mesh->vertices_get_global_id(&vertices[0],&gid[0],num_vertex,err); MSQ_ERRRTN(err);
     bool* app_fixed = new bool[num_vertex];
     mesh->vertices_get_fixed_flag(&vertices[0],&app_fixed[0],num_vertex,err); MSQ_ERRRTN(err);
@@ -1121,7 +1133,10 @@ typedef struct VertexPack {
   double x;
   double y;
   double z;
-  double glob_id;
+  union {
+    double mist;
+    size_t glob_id;
+  };
 } VertexPack;
 
 int ParallelHelperImpl::comm_smoothed_vtx_tnb(MsqError& err)
@@ -1285,7 +1300,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb(MsqError& err)
     CHECK_MPI_RZERO( rval, err );
     /* unpack all vertices */
     for (i = 0; i < numVtxPerProcRecv[k]; i++) {
-      local_id = vertex_map_find(vid_map,(int)(packed_vertices_import[k][i].glob_id), neighbourProc[k]);
+      local_id = vertex_map_find(vid_map,packed_vertices_import[k][i].glob_id, neighbourProc[k]);
       if (local_id) {
 	Mesquite::Vector3D coordinates;
 	coordinates.set(packed_vertices_import[k][i].x, packed_vertices_import[k][i].y, packed_vertices_import[k][i].z);
@@ -1294,7 +1309,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb(MsqError& err)
 	part_smoothed_flag[local_id] = 1;
       }
       else {
-	printf("[%d]i%d communicate vertex with global_id %d not in mesh\n", rank,iteration,(int)(packed_vertices_import[k][i].glob_id));	  
+	printf("[%d]i%d vertex with gid %Zu and pid %d not in map\n",rank,iteration,packed_vertices_import[k][i].glob_id,neighbourProc[k]);
       }
     }
     num_neighbourProcRecv--;
@@ -1484,7 +1499,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all( MsqError& err )
     CHECK_MPI_RZERO( rval, err );
     /* unpack all vertices */
     for (i = 0; i < numVtxPerProcRecv[k]; i++) {
-      local_id = vertex_map_find(vid_map,(int)(packed_vertices_import[k][i].glob_id), neighbourProc[k]);
+      local_id = vertex_map_find(vid_map,packed_vertices_import[k][i].glob_id, neighbourProc[k]);
       if (local_id) {
         Mesquite::Vector3D coordinates;
         coordinates.set(packed_vertices_import[k][i].x, packed_vertices_import[k][i].y, packed_vertices_import[k][i].z);
@@ -1494,7 +1509,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all( MsqError& err )
         part_smoothed_flag[local_id] = 1;
       }
       else {
-	printf("[%d]i%d communicate vertex from %d with global_id %d not in mesh\n", rank,iteration,neighbourProc[k],(int)(packed_vertices_import[k][i].glob_id));	  
+	printf("[%d]i%d vertex with gid %Zu and pid %d not in map\n",rank,iteration,packed_vertices_import[k][i].glob_id,neighbourProc[k]);
       }
     }
     num_neighbourProcRecv--;
@@ -1693,7 +1708,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb(MsqError& err)
     MPI_Get_count(&status, MPI_INT, &count);    
     if (0) printf("[%d]i%d Received %d (%d) vertices from proc %d (%d)\n",rank,iteration,numVtxPerProcRecvRecv[k],count,neighbourProcRecv[k],proc); fflush(NULL);
     for (i = 0; i < numVtxPerProcRecvRecv[k]; i++) {
-      local_id = vertex_map_find(vid_map,(int)(packed_vertices_import[k][i].glob_id), neighbourProcRecv[k]);
+      local_id = vertex_map_find(vid_map, packed_vertices_import[k][i].glob_id, neighbourProcRecv[k]);
       if (local_id) {
 	Mesquite::Vector3D coordinates;
 	coordinates.set(packed_vertices_import[k][i].x, packed_vertices_import[k][i].y, packed_vertices_import[k][i].z);
@@ -1704,7 +1719,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb(MsqError& err)
 	if (0) printf("[%d]i%d updating vertex with global_id %d to %g %g %g \n", rank, iteration, (int)(packed_vertices_import[k][i].glob_id), packed_vertices_import[k][i].x, packed_vertices_import[k][i].y, packed_vertices_import[k][i].z);
       }
       else {
-	printf("[%d]i%d communicate vertex with global_id %d not in mesh\n", rank,iteration,(int)(packed_vertices_import[k][i].glob_id));	  
+	printf("[%d]i%d vertex with gid %Zu and pid %d not in map\n",rank,iteration,packed_vertices_import[k][i].glob_id,neighbourProcRecv[k]);
       }
     }
   }
@@ -1907,7 +1922,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all(MsqError& err)
     MPI_Get_count(&status, MPI_INT, &count);    
     if (0) printf("[%d]i%d Received %d (%d) vertices from proc %d (%d)\n",rank,iteration,numVtxPerProcRecvRecv[k],count,neighbourProcRecv[k],proc); fflush(NULL);
     for (i = 0; i < numVtxPerProcRecvRecv[k]; i++) {
-      local_id = vertex_map_find(vid_map,(int)(packed_vertices_import[k][i].glob_id), neighbourProcRecv[k]);
+      local_id = vertex_map_find(vid_map,packed_vertices_import[k][i].glob_id, neighbourProcRecv[k]);
       if (local_id) {
 	Mesquite::Vector3D coordinates;
 	coordinates.set(packed_vertices_import[k][i].x, packed_vertices_import[k][i].y, packed_vertices_import[k][i].z);
@@ -1918,7 +1933,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all(MsqError& err)
 	if (0) printf("[%d]i%d updating vertex with global_id %d to %g %g %g \n", rank, iteration, (int)(packed_vertices_import[k][i].glob_id), packed_vertices_import[k][i].x, packed_vertices_import[k][i].y, packed_vertices_import[k][i].z);
       }
       else {
-	printf("[%d]i%d communicate vertex with global_id %d not in mesh\n", rank,iteration,(int)(packed_vertices_import[k][i].glob_id));	  
+	printf("[%d]i%d vertex with gid %Zu and pid %d not in map\n",rank,iteration,packed_vertices_import[k][i].glob_id,neighbourProcRecv[k]);  
       }
     }
   }
@@ -2090,7 +2105,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b(MsqError& err)
 	  if (0) printf("[%d]i%d updating vertex with global_id %d to %g %g %g \n", rank,iteration, (int)(vertex_pack[i].glob_id), vertex_pack[i].x, vertex_pack[i].y, vertex_pack[i].z);
 	}
 	else {
-	  printf("[%d]i%d communicate vertex with global_id %d not in mesh\n", rank,iteration, (int)(vertex_pack[i].glob_id));	  
+	  printf("[%d]i%d vertex with gid %Zu and pid %d not in map\n",rank,iteration,vertex_pack[i].glob_id,proc);
 	}
       }
     }
@@ -2273,7 +2288,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b_no_all(MsqError& err)
 	  if (0 && rank == 1) printf("[%d]i%d updating vertex with global_id %d to %g %g %g \n", rank,iteration, (int)(vertex_pack[i].glob_id), vertex_pack[i].x, vertex_pack[i].y, vertex_pack[i].z);
 	}
 	else {
-	  printf("[%d]i%d communicate vertex with global_id %d not in mesh\n", rank,iteration, (int)(vertex_pack[i].glob_id));	  
+	  printf("[%d]i%d vertex with gid %Zu and pid %d not in map\n",rank,iteration,vertex_pack[i].glob_id,proc);
 	}
       }
     }

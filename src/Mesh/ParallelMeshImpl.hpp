@@ -59,7 +59,7 @@ namespace MESQUITE_NS
     void set_processor_id_tag(const char * name, MsqError& err);
 
     void vertices_set_global_id(const VertexHandle vert_array[],
-				int gid[],
+				size_t gid[],
 				size_t num_vtx,
 				MsqError& err);
     
@@ -73,7 +73,7 @@ namespace MESQUITE_NS
     /*! Get global ids for given vertices.
      */
     virtual void vertices_get_global_id(const VertexHandle vert_array[],
-                                        int gid[],
+                                        size_t gid[],
                                         size_t num_vtx,
                                         MsqError& err);
          

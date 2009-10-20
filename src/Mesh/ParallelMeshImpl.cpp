@@ -82,7 +82,7 @@ void ParallelMeshImpl::set_processor_id_tag(const char * name, MsqError& err)
 //**************** Parallel Methods ******************************
 
 void ParallelMeshImpl::vertices_get_global_id(const VertexHandle vert_array[],
-					      int gid[],
+					      size_t gid[],
 					      size_t num_vtx,
 					      MsqError& err)
 {
@@ -98,7 +98,7 @@ void ParallelMeshImpl::vertices_get_global_id(const VertexHandle vert_array[],
 }
 
 void ParallelMeshImpl::vertices_set_global_id(const VertexHandle vert_array[],
-					      int gid[],
+					      size_t gid[],
 					      size_t num_vtx,
 					      MsqError& err)
 {
@@ -107,8 +107,8 @@ void ParallelMeshImpl::vertices_set_global_id(const VertexHandle vert_array[],
     const char GLOBAL_ID_NAME[] = "GLOBAL_ID";
 
     int default_gid = -1;
-    gid_tag = tag_create( GLOBAL_ID_NAME, INT, 1, &default_gid, err );
-      // the 'INT' is the type of data to store
+    gid_tag = tag_create( GLOBAL_ID_NAME, HANDLE, 1, &default_gid, err );
+      // the 'HANDLE' is the type of data to store
       // the '1' is for one value per vertex
       // NULL for no default value, if you want them all
       // initialized to something, pass in a pointer to an int

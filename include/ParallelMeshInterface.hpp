@@ -54,7 +54,7 @@ namespace MESQUITE_NS
     /*! Get global ids for given vertices.
      */
     virtual void vertices_get_global_id ( const VertexHandle vert_array[],
-                                          int global_id[],
+                                          size_t global_id[],
 					  size_t num_vtx,
 					  MsqError& err) = 0;     
      
