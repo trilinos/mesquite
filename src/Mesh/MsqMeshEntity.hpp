@@ -51,7 +51,6 @@ namespace MESQUITE_NS
 {
   class PatchData;
   class MsqVertex;
-  class Matrix3D;
 
   /*!
       \class MsqMeshEntity
@@ -153,10 +152,6 @@ namespace MESQUITE_NS
     //                            PatchData &pd, 
     //                            MsqError &err);
     void compute_corner_normals( Vector3D normals[], PatchData& pd, MsqError& err );
-
-      //! Compute matrices which column are the vectors issued from a corner.
-      //! Stores those corner matrices in the mTag data member.  
-    void compute_corner_matrices(PatchData &pd, Matrix3D A[], int num_m3d, MsqError &err );
 
   private:
 
