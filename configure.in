@@ -695,6 +695,12 @@ UTIL_MAKE_INCLUDE="include ../testSuite/cppflags.make"
 AC_SUBST(TEST_MAKE_INCLUDE)
 AC_SUBST(UTIL_MAKE_INCLUDE)
 
+# The first header is the header that autoheader creates.
+# It should not be used because it contains stuff that is
+# not restricted to the Mesquite namespace and therefore
+# may conflict with the config.h of the application using
+# mesquite.
+AC_CONFIG_HEADERS([include/junk_config.h])
 AC_CONFIG_HEADERS([include/mesquite_config.h
                    include/mesquite_version.h
                    itaps/iBase_FCDefs.h])
@@ -743,7 +749,15 @@ AC_CONFIG_FILES([Makefile
 # also remember to do "rm .deps/*" when a source file is removed
 # from the build.
 AC_CONFIG_COMMANDS_POST([rm -f .deps/*])                 
-                 
+
+# This header is the header that autoheader creates.
+# It should not be used because it contains stuff that is
+# not restricted to the Mesquite namespace and therefore
+# may conflict with the config.h of the application using
+# mesquite.
+AC_CONFIG_COMMANDS([junk_config.h],
+                   [echo '#error "Dont use this header"' > include/junk_config.h])
+
 # Generate output files
 AC_OUTPUT
 
