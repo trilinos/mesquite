@@ -271,7 +271,6 @@ APPEND_SET(HEADERS
   Misc/PlanarDomain.hpp
   Misc/SphericalDomain.hpp
   Misc/SymMatrix3D.hpp
-  Misc/TargetMatrix.hpp
   Misc/Vector3D.hpp
   Misc/VtkTypeInfo.hpp
   Misc/XYRectangle.hpp

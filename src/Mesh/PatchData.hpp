@@ -45,7 +45,6 @@
 #include "MsqMeshEntity.hpp"
 #include "MsqVertex.hpp"
 #include "MeshInterface.hpp"
-#include "TargetMatrix.hpp"
 #include "MsqError.hpp"
 #include "Settings.hpp"
 #include "NodeSet.hpp"
