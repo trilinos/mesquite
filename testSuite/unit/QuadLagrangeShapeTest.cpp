@@ -316,10 +316,12 @@ static void compare_derivatives( const size_t* vertices,
     // Input has values in dxi & deta only for nodes in 'vertices'
     // Convert to values for every possible node, with zero's for
     // nodes that are not present.
+  CPPUNIT_ASSERT(num_vtx <= 9);
   double expanded_dxi[9], expanded_deta[9];
   std::fill( expanded_dxi, expanded_dxi+9, 0.0 );
   std::fill( expanded_deta, expanded_deta+9, 0.0 );
   for (unsigned i = 0; i < num_vtx; ++i) {
+    CPPUNIT_ASSERT(vertices[i] <= 9);
     expanded_dxi [vertices[i]] = derivs[i][0];
     expanded_deta[vertices[i]] = derivs[i][1];
   }
