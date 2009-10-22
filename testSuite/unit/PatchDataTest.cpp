@@ -82,7 +82,6 @@ private:
   CPPUNIT_TEST (test_movement_function);
   CPPUNIT_TEST (test_get_adj_elems_2d);
   CPPUNIT_TEST (test_get_minmax_element_area);
-  CPPUNIT_TEST (test_get_barrier_delta);
   CPPUNIT_TEST (test_sub_patch);
   CPPUNIT_TEST (test_fill);
   CPPUNIT_TEST (test_reorder);
@@ -349,41 +348,6 @@ public:
      CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, max, 0.0001 );
    }        
      
-   void test_get_barrier_delta()
-   {
-     MsqPrintError err(cout);
-     
-     PatchData pd1;
-     create_six_quads_patch_with_domain(pd1, err); CPPUNIT_ASSERT(!err);
-     pd1.clear_computed_info();
-     double b = pd1.get_barrier_delta(err); CPPUNIT_ASSERT(!err);
-//     cout << "b : " <<b<<endl;     
-     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, b, 0.00001 );
-     destroy_patch_with_domain(pd1);
-
-     PatchData pd2;
-     create_six_quads_patch_inverted_with_domain(pd2, err); CPPUNIT_ASSERT(!err);
-     pd2.clear_computed_info();
-     b = pd2.get_barrier_delta(err); CPPUNIT_ASSERT(!err);
-//     cout << "b : " <<b<<endl;     
-     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.003, b, 0.00001 );
-     destroy_patch_with_domain(pd2);
-
-     PatchData pd3;
-     create_twelve_hex_patch(pd3, err); CPPUNIT_ASSERT(!err);
-     pd3.clear_computed_info();
-     b = pd3.get_barrier_delta(err); CPPUNIT_ASSERT(!err);
-//     cout << "b : " <<b<<endl;     
-     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, b, 0.00001 );
-
-     PatchData pd4;
-     create_twelve_hex_patch_inverted(pd4, err); CPPUNIT_ASSERT(!err);
-     pd4.clear_computed_info();
-     b = pd4.get_barrier_delta(err); CPPUNIT_ASSERT(!err);
-//     cout << "b : " <<b<<endl;     
-     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0025, b, 0.00001 );
-   } 
-
   void check_sub_patch( unsigned vtx, unsigned layers, PatchData& pd, PatchData& sub );
   
   void test_sub_patch( );
