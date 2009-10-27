@@ -468,11 +468,11 @@ AC_SUBST(USER_GUIDE_PS)
 #-----------------------------------------------------------------------------
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h strings.h sys/file.h sys/time.h unistd.h)
-AC_CHECK_HEADER(   ieeefp.h, AC_DEFINE(HAVE_IEEEFP_H,  [1], [System has ieeefp.h]  ))
-AC_CHECK_HEADER(   stdint.h, AC_DEFINE(HAVE_STDINT_H,  [1], [System has stdint.h]  ))
-AC_CHECK_HEADER( inttypes.h, AC_DEFINE(HAVE_INTTYPES_H,[1], [System has inttypes.h]))
-AC_CHECK_HEADER(  termios.h, AC_DEFINE(HAVE_TERMIOS_H, [1], [System has termios.h]))
-AC_CHECK_HEADER( [sys/ioctl.h], AC_DEFINE(HAVE_SYS_IOCTL_H,[1], [System has sys/ioctl.h]))
+AC_CHECK_HEADER(   ieeefp.h, AC_DEFINE(MSQ_HAVE_IEEEFP_H,  [1], [System has ieeefp.h]  ))
+AC_CHECK_HEADER(   stdint.h, AC_DEFINE(MSQ_HAVE_STDINT_H,  [1], [System has stdint.h]  ))
+AC_CHECK_HEADER( inttypes.h, AC_DEFINE(MSQ_HAVE_INTTYPES_H,[1], [System has inttypes.h]))
+AC_CHECK_HEADER(  termios.h, [AM_CPPFLAGS="${AM_CPPFLAGS} -DHAVE_TERMIOS_H"])
+AC_CHECK_HEADER( [sys/ioctl.h], [AM_CPPFLAGS="${AM_CPPFLAGS} -DHAVE_SYS_IOCTL_H"])
 
 #-----------------------------------------------------------------------------
 # Check for required functions
