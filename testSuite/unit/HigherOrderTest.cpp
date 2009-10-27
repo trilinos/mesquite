@@ -31,7 +31,7 @@
  */
 
 #undef HAVE_HO_HEX
-#undef TEST_HO_QUAD
+#define TEST_HO_QUAD
 
 
 #include "Mesquite.hpp"
@@ -46,6 +46,10 @@
 #include "InverseMeanRatio2D.hpp"
 #include "Target2DShape.hpp"
 #include "InverseMeanRatio3D.hpp"
+#include "Target2DShapeSizeOrient.hpp"
+#include "Target3DShapeSizeOrient.hpp"
+#include "Target2DShapeSize.hpp"
+#include "Target3DShapeSize.hpp"
 #include "TMPQualityMetric.hpp"
 #include "PMeanPTemplate.hpp"
 #include "LPtoPTemplate.hpp"
@@ -77,12 +81,12 @@ class HigherOrderTest : public CppUnit::TestFixture
 {
 private:
   CPPUNIT_TEST_SUITE(HigherOrderTest);
-//  CPPUNIT_TEST (test_tri_basic_ideal);
+  CPPUNIT_TEST (test_tri_basic_ideal);
   CPPUNIT_TEST (test_tri_basic_mid_spin);
-//  CPPUNIT_TEST (test_tri_basic_mid_convex);
-//  CPPUNIT_TEST (test_tri_basic_peak_up);
-//  CPPUNIT_TEST (test_tri_basic_peak_down);
-//  CPPUNIT_TEST (test_tri_basic_peak_over);
+  CPPUNIT_TEST (test_tri_basic_mid_convex);
+  CPPUNIT_TEST (test_tri_basic_peak_up);
+  CPPUNIT_TEST (test_tri_basic_peak_down);
+  CPPUNIT_TEST (test_tri_basic_peak_over);
 #ifdef TEST_HO_QUAD
   CPPUNIT_TEST (test_quad_basic_ideal);
   CPPUNIT_TEST (test_quad_basic_mid_spin);
@@ -92,12 +96,12 @@ private:
   CPPUNIT_TEST (test_quad_basic_right_up);
   CPPUNIT_TEST (test_quad_basic_left_over);
 #endif
-//  CPPUNIT_TEST (test_tet_basic_ideal);
-//  CPPUNIT_TEST (test_tet_basic_mid_spin);
-//  CPPUNIT_TEST (test_tet_basic_mid_convex);
-//  CPPUNIT_TEST (test_tet_basic_apex_up);
-//  CPPUNIT_TEST (test_tet_basic_apex_down);
-//  CPPUNIT_TEST (test_tet_basic_apex_over);
+  CPPUNIT_TEST (test_tet_basic_ideal);
+  CPPUNIT_TEST (test_tet_basic_mid_spin);
+  CPPUNIT_TEST (test_tet_basic_mid_convex);
+  CPPUNIT_TEST (test_tet_basic_apex_up);
+  CPPUNIT_TEST (test_tet_basic_apex_down);
+  CPPUNIT_TEST (test_tet_basic_apex_over);
 #ifdef HAVE_HO_HEX
   CPPUNIT_TEST (test_hex_basic);
 #endif
@@ -112,8 +116,8 @@ private:
   HexLagrangeShape hex_shape;
 #endif
   InstructionQueue q;
-  Target2DShape tm2;
-  InverseMeanRatio3D tm3;
+  Target2DShapeSize tm2;
+  Target3DShapeSize tm3;
   IdealTargetCalculator tc;
   TMPQualityMetric metric;
   LPtoPTemplate func;
@@ -224,8 +228,8 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(HigherOrderTest, "Regression");
 static inline double dist( double x1, double y1, double x2, double y2 )
   { return sqrt( (x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2) ); }
 
-// ideal triangle is defined to have unit area
-const double IDEAL_TRI_SIDE = sqrt(2) / sqrt( sqrt(3) );
+// ideal triangle is defined such that J has unit determinant
+const double IDEAL_TRI_SIDE = sqrt(2/sqrt(3));
 const double IDEAL_TRI_HEIGHT = 1/IDEAL_TRI_SIDE;
 
 int tri_mid_edge_nodes_edge_center( double x2, double y2,
@@ -437,7 +441,7 @@ int quad_mid_edge_nodes_edge_center( const Vector3D& p2,
                                      double epsilon )
 {
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(1.0, 0.0, 0.0);
+  const Vector3D p1(2.0, 0.0, 0.0);
   const Vector3D e0 = 0.5*(p0+p1);
   const Vector3D e1 = 0.5*(p1+p2);
   const Vector3D e2 = 0.5*(p2+p3);
@@ -463,12 +467,12 @@ static void get_ideal_quad( Vector3D& p2,
                             Vector3D& p6,
                             Vector3D& p7 )
 {
-  p2.set( 1.0, 1.0, 0 );
-  p3.set( 0.0, 1.0, 0 );
-  p4.set( 0.5, 0.0, 0 );
-  p5.set( 1.0, 0.5, 0 );
-  p6.set( 0.5, 1.0, 0 );
-  p7.set( 0.0, 0.5, 0 );
+  p2.set( 2.0, 2.0, 0 );
+  p3.set( 0.0, 2.0, 0 );
+  p4.set( 1.0, 0.0, 0 );
+  p5.set( 2.0, 1.0, 0 );
+  p6.set( 1.0, 2.0, 0 );
+  p7.set( 0.0, 1.0, 0 );
 }
 
 void HigherOrderTest::test_quad_basic_ideal()
@@ -477,7 +481,7 @@ void HigherOrderTest::test_quad_basic_ideal()
   const double eps = 5e-2;
   Vector3D p2, p3, p4, p5, p6, p7;
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(1.0, 0.0, 0.0);
+  const Vector3D p1(2.0, 0.0, 0.0);
   
     // try starting with the optimal result
   get_ideal_quad( p2, p3, p4, p5, p6, p7 );
@@ -485,8 +489,8 @@ void HigherOrderTest::test_quad_basic_ideal()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_EQUAL( 0, quad_all_in_xy_plane( p2, p3, p4, p5, p6, p7, eps ) );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 1, 1, 0 ), p2, eps );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 1, 0 ), p3, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 2, 2, 0 ), p2, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 2, 0 ), p3, eps );
   int midok = quad_mid_edge_nodes_edge_center( p2, p3, p4, p5, p6, p7, eps );
   CPPUNIT_ASSERT_EQUAL( 0, midok );
 }
@@ -497,11 +501,11 @@ void HigherOrderTest::test_quad_basic_mid_spin()
   const double eps = 5e-2;
   Vector3D p2, p3, p4, p5, p6, p7;
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(1.0, 0.0, 0.0);
+  const Vector3D p1(2.0, 0.0, 0.0);
   
     // try moving the mid-edge nodes along the edge away from the edge center
-  p2.set(1,1,0);
-  p3.set(0,1,0);
+  p2.set(2,2,0);
+  p3.set(0,2,0);
   double f = 0.4;
   p4 = f*p0 + (1-f)*p1;
   p5 = f*p1 + (1-f)*p2;
@@ -513,8 +517,8 @@ void HigherOrderTest::test_quad_basic_mid_spin()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_EQUAL( 0, quad_all_in_xy_plane( p2, p3, p4, p5, p6, p7, eps ) );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 1, 1, 0 ), p2, eps );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 1, 0 ), p3, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 2, 2, 0 ), p2, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 2, 0 ), p3, eps );
   int midok = quad_mid_edge_nodes_edge_center( p2, p3, p4, p5, p6, p7, eps );
   CPPUNIT_ASSERT_EQUAL( 0, midok );
 }
@@ -525,22 +529,22 @@ void HigherOrderTest::test_quad_basic_mid_convex()
   const double eps = 5e-2;
   Vector3D p2, p3, p4, p5, p6, p7;
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(1.0, 0.0, 0.0);
+  const Vector3D p1(2.0, 0.0, 0.0);
   
     // try square corners with all egdes convex
   get_ideal_quad( p2, p3, p4, p5, p6, p7 );
-  p4 += Vector3D( 0.0, -0.2, 0);
-  p5 += Vector3D( 0.2,  0.0, 0);
-  p6 += Vector3D( 0.0,  0.2, 0);
-  p7 += Vector3D(-0.2,  0.0, 0);
+  p4 += Vector3D( 0.0, -0.4, 0);
+  p5 += Vector3D( 0.4,  0.0, 0);
+  p6 += Vector3D( 0.0,  0.4, 0);
+  p7 += Vector3D(-0.4,  0.0, 0);
 //  crit.write_mesh_steps( "quad_basic_mid_convex", TerminationCriterion::VTK );
   basic_quad_test( p2, p3, p4, p5, p6, p7, err );
 //  crit.write_mesh_steps( "", TerminationCriterion::NOTYPE );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_EQUAL( 0, quad_all_in_xy_plane( p2, p3, p4, p5, p6, p7, eps ) );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 1, 1, 0 ), p2, eps );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 1, 0 ), p3, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 2, 2, 0 ), p2, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 2, 0 ), p3, eps );
   int midok = quad_mid_edge_nodes_edge_center( p2, p3, p4, p5, p6, p7, eps );
   CPPUNIT_ASSERT_EQUAL( 0, midok );
 }
@@ -551,19 +555,19 @@ void HigherOrderTest::test_quad_basic_left_down()
   const double eps = 5e-2;
   Vector3D p2, p3, p4, p5, p6, p7;
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(1.0, 0.0, 0.0);
+  const Vector3D p1(2.0, 0.0, 0.0);
   
     // try moving the top left vertex down, also move mid-edge nodes proportionally
   get_ideal_quad( p2, p3, p4, p5, p6, p7 );
-  p3 -= Vector3D(0.0,0.0,0.5);
+  p3 -= Vector3D(0.0,0.0,1.0);
   p6 = 0.5*(p2+p3);
   p7 = 0.5*(p0+p3);
   basic_quad_test( p2, p3, p4, p5, p6, p7, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_EQUAL( 0, quad_all_in_xy_plane( p2, p3, p4, p5, p6, p7, eps ) );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 1, 1, 0 ), p2, eps );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 1, 0 ), p3, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 2, 2, 0 ), p2, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 2, 0 ), p3, eps );
   int midok = quad_mid_edge_nodes_edge_center( p2, p3, p4, p5, p6, p7, eps );
   CPPUNIT_ASSERT_EQUAL( 0, midok );
 }
@@ -574,12 +578,12 @@ void HigherOrderTest::test_quad_basic_top_down()
   const double eps = 5e-2;
   Vector3D p2, p3, p4, p5, p6, p7;
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(1.0, 0.0, 0.0);
+  const Vector3D p1(2.0, 0.0, 0.0);
   
     // try moving the top two vertices down, also move mid-edge nodes proportionally
   get_ideal_quad( p2, p3, p4, p5, p6, p7 );
-  p2 -= Vector3D(0.0,0.5,0.0);
-  p3 -= Vector3D(0.0,0.5,0.0);
+  p2 -= Vector3D(0.0,1.0,0.0);
+  p3 -= Vector3D(0.0,1.0,0.0);
   p5 = 0.5*(p1+p2);
   p6 = 0.5*(p2+p3);
   p7 = 0.5*(p0+p3);
@@ -587,8 +591,8 @@ void HigherOrderTest::test_quad_basic_top_down()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_EQUAL( 0, quad_all_in_xy_plane( p2, p3, p4, p5, p6, p7, eps ) );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 1, 1, 0 ), p2, eps );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 1, 0 ), p3, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 2, 2, 0 ), p2, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 2, 0 ), p3, eps );
   int midok = quad_mid_edge_nodes_edge_center( p2, p3, p4, p5, p6, p7, eps );
   CPPUNIT_ASSERT_EQUAL( 0, midok );
 }
@@ -599,19 +603,19 @@ void HigherOrderTest::test_quad_basic_right_up()
   const double eps = 5e-2;
   Vector3D p2, p3, p4, p5, p6, p7;
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(1.0, 0.0, 0.0);
+  const Vector3D p1(2.0, 0.0, 0.0);
   
     // try moving the top right vertex up, also move mid-edge nodes proportionally
   get_ideal_quad( p2, p3, p4, p5, p6, p7 );
-  p2 += Vector3D(0.0,2.0,0.0);
+  p2 += Vector3D(0.0,4.0,0.0);
   p5 = 0.5*(p1+p2);
   p6 = 0.5*(p2+p3);
   basic_quad_test( p2, p3, p4, p5, p6, p7, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_EQUAL( 0, quad_all_in_xy_plane( p2, p3, p4, p5, p6, p7, eps ) );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 1, 1, 0 ), p2, eps );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 1, 0 ), p3, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 2, 2, 0 ), p2, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 2, 0 ), p3, eps );
   int midok = quad_mid_edge_nodes_edge_center( p2, p3, p4, p5, p6, p7, eps );
   CPPUNIT_ASSERT_EQUAL( 0, midok );
 }
@@ -622,26 +626,27 @@ void HigherOrderTest::test_quad_basic_left_over()
   const double eps = 5e-2;
   Vector3D p2, p3, p4, p5, p6, p7;
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(1.0, 0.0, 0.0);
+  const Vector3D p1(2.0, 0.0, 0.0);
   
     // try moving the top left vertex to the right, also move mid-edge nodes proportionally
   get_ideal_quad( p2, p3, p4, p5, p6, p7 );
-  p3 -= Vector3D(0.5, 0.0, 0.0);
+  p3 -= Vector3D(1.0, 0.0, 0.0);
   p6 = 0.5*(p2+p3);
   p7 = 0.5*(p0+p3);
   basic_quad_test( p2, p3, p4, p5, p6, p7, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_EQUAL( 0, quad_all_in_xy_plane( p2, p3, p4, p5, p6, p7, eps ) );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 1, 1, 0 ), p2, eps );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 1, 0 ), p3, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 2, 2, 0 ), p2, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 2, 0 ), p3, eps );
   int midok = quad_mid_edge_nodes_edge_center( p2, p3, p4, p5, p6, p7, eps );
   CPPUNIT_ASSERT_EQUAL( 0, midok );
 }
 
 
-// ideal triangle is defined to have unit area
-const double IDEAL_TET_SIDE = sqrt(2.0) * pow(3.0, 1.0/3.0);
+// ideal tet is defined to have unit lambda (cube root of det == 1)
+// const double IDEAL_TET_SIDE = sqrt(2.0) * pow(3.0, 1.0/3.0); // this was for unit area
+const double IDEAL_TET_SIDE = 2.0/pow(33,1.0/6.0);
 const double IDEAL_TET_BASE = sqrt(3.0) * 0.5 * IDEAL_TET_SIDE;
 const double IDEAL_TET_HEIGHT = sqrt(2.0/3.0) * IDEAL_TET_SIDE;
 
@@ -863,10 +868,10 @@ void HigherOrderTest::test_hex_basic()
        -----------------------------------------------------------
         (0,0)           Corner               Fixed
         (1,0)           Corner               Fixed
-        (x2,y2)        Corner               Free
-        (x3,y3)        Mid                   Free
-        (x4,y4)        Mid                   Free
-        (x5,y5)        Mid                   Free
+        (x2,y2)         Corner                Free
+        (x3,y3)         Mid                   Free
+        (x4,y4)         Mid                   Free
+        (x5,y5)         Mid                   Free
        --------------------------------------------------------
  
        Start with sample points at each of the node.
@@ -968,7 +973,7 @@ void HigherOrderTest::basic_quad_test( Vector3D& p2,
   const int NVTX = 8;
   const int NELEM = 1;
   double coords[DIM*NVTX] = {    0.0,    0.0,    0.0,
-                                 1.0,    0.0,    0.0,
+                                 2.0,    0.0,    0.0,
                               p2.x(), p2.y(), p2.z(),
                               p3.x(), p3.y(), p3.z(),
                               p4.x(), p4.y(), p4.z(),
@@ -1019,9 +1024,9 @@ void HigherOrderTest::basic_hex_test( Vector3D& p4,
   const int NVTX = 20;
   const int NELEM = 1;
   double coords[DIM*NVTX] = { 0.0, 0.0, 0,
-                              1.0, 0.0, 0,
-                              1.0, 1.0, 0,
-                              0.0, 1.0, 0,
+                              2.0, 0.0, 0,
+                              2.0, 2.0, 0,
+                              0.0, 2.0, 0,
                                p4.x(), p4.y(), p4.z(),
                                p5.x(), p5.y(), p5.z(),
                                p6.x(), p6.y(), p6.z(),
