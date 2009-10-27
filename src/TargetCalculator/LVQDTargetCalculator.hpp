@@ -38,6 +38,11 @@
 
 namespace MESQUITE_NS {
 
+class TargetSize;
+class TargetOrientation;
+class TargetSkew;
+class TargetAspect;
+
 /** \brief Construct target matrices from factors of guide matrices
  *
  * Given a set of guide matrices, extract certain properties
@@ -52,10 +57,10 @@ namespace MESQUITE_NS {
 class LVQDTargetCalculator : public TargetCalculator
 {
 public:
-  LVQDTargetCalculator( TargetCalculator* lambda_source,
-                        TargetCalculator* V_source,
-                        TargetCalculator* Q_source,
-                        TargetCalculator* delta_source );
+  LVQDTargetCalculator( TargetSize*        lambda_source,
+                        TargetOrientation* V_source,
+                        TargetSkew*        Q_source,
+                        TargetAspect*      delta_source );
 
   ~LVQDTargetCalculator();
   
@@ -70,22 +75,12 @@ public:
                       Sample sample,
                       MsqMatrix<3,2>& W_out,
                       MsqError& err );
-
-  static double calc_lambda_2D( const MsqMatrix<3,2>& M );
-  static MsqMatrix<3,2> calc_V_2D( const MsqMatrix<3,2>& M );
-  static MsqMatrix<2,2> calc_Q_2D( const MsqMatrix<3,2>& M );
-  static MsqMatrix<2,2> calc_delta_2D( const MsqMatrix<3,2>& M );
-                          
-  static double calc_lambda_3D( const MsqMatrix<3,3>& M );
-  static MsqMatrix<3,3> calc_V_3D( const MsqMatrix<3,3>& M );
-  static MsqMatrix<3,3> calc_Q_3D( const MsqMatrix<3,3>& M );
-  static MsqMatrix<3,3> calc_delta_3D( const MsqMatrix<3,3>& M );
   
 private:
-  TargetCalculator *lambdaGuide,
-                   *vGuide,
-                   *qGuide,
-                   *dGuide;
+  TargetSize* lambdaGuide;
+  TargetOrientation* vGuide;
+  TargetSkew* qGuide;
+  TargetAspect* dGuide;
 };
 
 } // namespace Mesquite

@@ -25,59 +25,47 @@
   ***************************************************************** */
 
 
-/** \file LambdaConstant.cpp
+/** \file OrientFactor.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
+#ifndef MSQ_ORIENT_FACTOR_HPP
+#define MSQ_ORIENT_FACTOR_HPP
+
 #include "Mesquite.hpp"
-#include "LambdaConstant.hpp"
-#include "MsqMatrix.hpp"
-#include "MsqError.hpp"
-#include "TargetSize.hpp"
+#include "TargetOrientation.hpp"
 
 namespace MESQUITE_NS {
 
-LambdaConstant::LambdaConstant( double lambda, TargetCalculator* W )
-  : mLambda(lambda), mTarget(W)
-  {}
+class TargetCalculator;
 
-LambdaConstant::~LambdaConstant()
-  {}
-
-bool LambdaConstant::get_3D_target( PatchData& pd, 
-                                    size_t element,
-                                    Sample sample,
-                                    MsqMatrix<3,3>& W_out,
-                                    MsqError& err )
-{
-  bool valid = mTarget->get_3D_target( pd, element, sample, W_out, err );
-  if (MSQ_CHKERR(err) || !valid)
-    return false;
-  double lambda = TargetSize::factor_size( W_out );
-  if (lambda < 1e-50)
-    return false;
-  W_out *= mLambda/lambda;
-  return true;
-}
-
-bool LambdaConstant::get_2D_target( PatchData& pd, 
-                                    size_t element,
-                                    Sample sample,
-                                    MsqMatrix<3,2>& W_out,
-                                    MsqError& err )
-{
-  bool valid = mTarget->get_2D_target( pd, element, sample, W_out, err );
-  if (MSQ_CHKERR(err) || !valid)
-    return false;
-  double lambda = TargetSize::factor_size( W_out );
-  if (lambda < 1e-50)
-    return false;
-  W_out *= mLambda/lambda;
-  return true;
-}
-
+/**\brief Calculate orientation component of target matrix from some
+ *        other target matrix.
+ */
+class OrientFactor : public TargetOrientation {
+  private:
+    TargetCalculator* srcTargets;
+  
+  public:
+    OrientFactor( TargetCalculator* src ) : srcTargets(src) {}
+  
+    virtual 
+    bool get_orient_2D( PatchData& pd, 
+                        size_t element,
+                        Sample sample,
+                        MsqMatrix<3,2>& M_out,
+                        MsqError& err );
+  
+    virtual 
+    bool get_orient_3D( PatchData& pd, 
+                        size_t element,
+                        Sample sample,
+                        MsqMatrix<3,3>& M_out,
+                        MsqError& err );
+};
 
 
 } // namespace MESQUITE_NS
 
+#endif

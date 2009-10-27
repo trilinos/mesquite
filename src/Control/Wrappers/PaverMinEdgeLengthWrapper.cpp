@@ -45,7 +45,7 @@
 #include "IdealTargetCalculator.hpp"
 #include "Target2DShapeSizeBarrier.hpp"
 //#include "Target3DShapeSizeBarrier.hpp"
-#include "LVQDTargetCalculator.hpp"
+#include "TargetSize.hpp"
 #include "RefMeshTargetCalculator.hpp"
 #include "ReferenceMesh.hpp"
 
@@ -119,13 +119,13 @@ double calculate_average_lambda( Mesh* mesh,
     {
       MsqMatrix<3,2> W;
       tc->get_2D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
-      lambda += LVQDTargetCalculator::calc_lambda_2D( W );
+      lambda += TargetSize::factor_size( W );
     }
     else
     {
-     MsqMatrix<3,3> W;
+      MsqMatrix<3,3> W;
       tc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
-      lambda += LVQDTargetCalculator::calc_lambda_3D( W );
+      lambda += TargetSize::factor_size( W );
     }
   }
   return lambda/handles.size();

@@ -25,59 +25,40 @@
   ***************************************************************** */
 
 
-/** \file LambdaConstant.cpp
+/** \file SizeFactor.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
+#ifndef MSQ_SIZE_FACTOR_HPP
+#define MSQ_SIZE_FACTOR_HPP
+
 #include "Mesquite.hpp"
-#include "LambdaConstant.hpp"
-#include "MsqMatrix.hpp"
-#include "MsqError.hpp"
 #include "TargetSize.hpp"
 
 namespace MESQUITE_NS {
 
-LambdaConstant::LambdaConstant( double lambda, TargetCalculator* W )
-  : mLambda(lambda), mTarget(W)
-  {}
+class TargetCalculator;
 
-LambdaConstant::~LambdaConstant()
-  {}
-
-bool LambdaConstant::get_3D_target( PatchData& pd, 
-                                    size_t element,
-                                    Sample sample,
-                                    MsqMatrix<3,3>& W_out,
-                                    MsqError& err )
-{
-  bool valid = mTarget->get_3D_target( pd, element, sample, W_out, err );
-  if (MSQ_CHKERR(err) || !valid)
-    return false;
-  double lambda = TargetSize::factor_size( W_out );
-  if (lambda < 1e-50)
-    return false;
-  W_out *= mLambda/lambda;
-  return true;
-}
-
-bool LambdaConstant::get_2D_target( PatchData& pd, 
-                                    size_t element,
-                                    Sample sample,
-                                    MsqMatrix<3,2>& W_out,
-                                    MsqError& err )
-{
-  bool valid = mTarget->get_2D_target( pd, element, sample, W_out, err );
-  if (MSQ_CHKERR(err) || !valid)
-    return false;
-  double lambda = TargetSize::factor_size( W_out );
-  if (lambda < 1e-50)
-    return false;
-  W_out *= mLambda/lambda;
-  return true;
-}
-
+/**\brief Calculate Size component of target matrix from some
+ *        other target matrix.
+ */
+class SizeFactor : public TargetSize {
+  private:
+    TargetCalculator* srcTargets;
+  
+  public:
+    SizeFactor( TargetCalculator* src ) : srcTargets(src) {}
+  
+    virtual 
+    bool get_size( PatchData& pd, 
+                   size_t element,
+                   Sample sample,
+                   double& lambda_out,
+                   MsqError& err );
+};
 
 
 } // namespace MESQUITE_NS
 
+#endif

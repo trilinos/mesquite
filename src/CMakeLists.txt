@@ -804,6 +804,7 @@ APPEND_SET(SOURCES
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/TargetCalculator)
 
 APPEND_SET(HEADERS
+  TargetCalculator/AspectFactor.hpp
   TargetCalculator/CachingTargetCalculator.hpp
   TargetCalculator/IdealTargetCalculator.hpp
   TargetCalculator/IdentityTarget.hpp
@@ -813,12 +814,19 @@ APPEND_SET(HEADERS
   TargetCalculator/LambdaConstant.hpp
   TargetCalculator/LVQDTargetCalculator.hpp
   TargetCalculator/MetricWeight.hpp
+  TargetCalculator/OrientFactor.hpp
   TargetCalculator/RefMeshTargetCalculator.hpp
   TargetCalculator/ReferenceMesh.hpp
   TargetCalculator/RefSizeTargetCalculator.hpp
   TargetCalculator/RemainingWeight.hpp
+  TargetCalculator/SizeFactor.hpp
+  TargetCalculator/SkewFactor.hpp
+  TargetCalculator/TargetAspect.hpp
   TargetCalculator/TargetCalculator.hpp
+  TargetCalculator/TargetOrientation.hpp
   TargetCalculator/TargetReader.hpp
+  TargetCalculator/TargetSize.hpp
+  TargetCalculator/TargetSkew.hpp
   TargetCalculator/TargetWriter.hpp
   TargetCalculator/TetDihedralWeight.hpp
   TargetCalculator/WeightCalculator.hpp
@@ -826,6 +834,7 @@ APPEND_SET(HEADERS
   )
 
 APPEND_SET(SOURCES
+  TargetCalculator/AspectFactor.cpp
   TargetCalculator/CachingTargetCalculator.cpp
   TargetCalculator/IdealTargetCalculator.cpp
   TargetCalculator/IdentityTarget.cpp
@@ -835,10 +844,13 @@ APPEND_SET(SOURCES
   TargetCalculator/LambdaConstant.cpp
   TargetCalculator/LVQDTargetCalculator.cpp
   TargetCalculator/MetricWeight.cpp
+  TargetCalculator/OrientFactor.cpp
   TargetCalculator/RefMeshTargetCalculator.cpp
   TargetCalculator/ReferenceMesh.cpp
   TargetCalculator/RefSizeTargetCalculator.cpp
   TargetCalculator/RemainingWeight.cpp
+  TargetCalculator/SizeFactor.cpp
+  TargetCalculator/SkewFactor.cpp
   TargetCalculator/TargetReader.cpp
   TargetCalculator/TargetWriter.cpp
   TargetCalculator/TetDihedralWeight.cpp

@@ -25,59 +25,39 @@
   ***************************************************************** */
 
 
-/** \file LambdaConstant.cpp
+/** \file OrientFactor.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "LambdaConstant.hpp"
-#include "MsqMatrix.hpp"
+#include "OrientFactor.hpp"
+#include "TargetCalculator.hpp"
 #include "MsqError.hpp"
-#include "TargetSize.hpp"
 
 namespace MESQUITE_NS {
 
-LambdaConstant::LambdaConstant( double lambda, TargetCalculator* W )
-  : mLambda(lambda), mTarget(W)
-  {}
-
-LambdaConstant::~LambdaConstant()
-  {}
-
-bool LambdaConstant::get_3D_target( PatchData& pd, 
-                                    size_t element,
-                                    Sample sample,
-                                    MsqMatrix<3,3>& W_out,
-                                    MsqError& err )
+bool OrientFactor::get_orient_2D( PatchData& pd, 
+                                  size_t element,
+                                  Sample sample,
+                                  MsqMatrix<3,2>& M_out,
+                                  MsqError& err )
 {
-  bool valid = mTarget->get_3D_target( pd, element, sample, W_out, err );
-  if (MSQ_CHKERR(err) || !valid)
-    return false;
-  double lambda = TargetSize::factor_size( W_out );
-  if (lambda < 1e-50)
-    return false;
-  W_out *= mLambda/lambda;
-  return true;
+  MsqMatrix<3,2> W;
+  bool valid = srcTargets->get_2D_target( pd, element, sample, W, err ); 
+  return !MSQ_CHKERR(err) && valid && factor_orientation( W, M_out );
 }
 
-bool LambdaConstant::get_2D_target( PatchData& pd, 
-                                    size_t element,
-                                    Sample sample,
-                                    MsqMatrix<3,2>& W_out,
-                                    MsqError& err )
+bool OrientFactor::get_orient_3D( PatchData& pd, 
+                                  size_t element,
+                                  Sample sample,
+                                  MsqMatrix<3,3>& M_out,
+                                  MsqError& err )
 {
-  bool valid = mTarget->get_2D_target( pd, element, sample, W_out, err );
-  if (MSQ_CHKERR(err) || !valid)
-    return false;
-  double lambda = TargetSize::factor_size( W_out );
-  if (lambda < 1e-50)
-    return false;
-  W_out *= mLambda/lambda;
-  return true;
+  MsqMatrix<3,3> W;
+  bool valid = srcTargets->get_3D_target( pd, element, sample, W, err ); 
+  return !MSQ_CHKERR(err) && valid && factor_orientation( W, M_out );
 }
-
 
 
 } // namespace MESQUITE_NS
-

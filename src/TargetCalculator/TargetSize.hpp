@@ -25,59 +25,46 @@
   ***************************************************************** */
 
 
-/** \file LambdaConstant.cpp
+/** \file TargetSize.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
+#ifndef MSQ_TARGET_SIZE_HPP
+#define MSQ_TARGET_SIZE_HPP
+
 #include "Mesquite.hpp"
-#include "LambdaConstant.hpp"
 #include "MsqMatrix.hpp"
-#include "MsqError.hpp"
-#include "TargetSize.hpp"
+#include "Sample.hpp"
 
 namespace MESQUITE_NS {
 
-LambdaConstant::LambdaConstant( double lambda, TargetCalculator* W )
-  : mLambda(lambda), mTarget(W)
-  {}
+class PatchData;
+class MsqError;
 
-LambdaConstant::~LambdaConstant()
-  {}
-
-bool LambdaConstant::get_3D_target( PatchData& pd, 
-                                    size_t element,
-                                    Sample sample,
-                                    MsqMatrix<3,3>& W_out,
-                                    MsqError& err )
-{
-  bool valid = mTarget->get_3D_target( pd, element, sample, W_out, err );
-  if (MSQ_CHKERR(err) || !valid)
-    return false;
-  double lambda = TargetSize::factor_size( W_out );
-  if (lambda < 1e-50)
-    return false;
-  W_out *= mLambda/lambda;
-  return true;
-}
-
-bool LambdaConstant::get_2D_target( PatchData& pd, 
-                                    size_t element,
-                                    Sample sample,
-                                    MsqMatrix<3,2>& W_out,
-                                    MsqError& err )
-{
-  bool valid = mTarget->get_2D_target( pd, element, sample, W_out, err );
-  if (MSQ_CHKERR(err) || !valid)
-    return false;
-  double lambda = TargetSize::factor_size( W_out );
-  if (lambda < 1e-50)
-    return false;
-  W_out *= mLambda/lambda;
-  return true;
-}
-
-
+/**\brief Base clase for classes that calculate size components of
+ *        target matrices.
+ */
+class TargetSize {
+  public: 
+    virtual 
+    bool get_size( PatchData& pd, 
+                   size_t element,
+                   Sample sample,
+                   double& lambda_out,
+                   MsqError& err ) = 0;
+    
+      /**\brief Factor size component from a 3x3 target matrix */
+    inline static 
+    double factor_size( const MsqMatrix<3,3>& M )
+      { return Mesquite::cbrt( fabs( det( M ) ) ); }
+    
+      /**\brief Factor size component from a 3x2 target matrix */
+    inline static 
+    double factor_size( const MsqMatrix<3,2>& M )
+      { return sqrt( sqrt( det( transpose(M)*M ) ) ); }
+};
 
 } // namespace MESQUITE_NS
 
+#endif
