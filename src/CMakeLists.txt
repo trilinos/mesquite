@@ -939,15 +939,29 @@ APPEND_SET(HEADERS
 #
 
 SET( all_file ${CMAKE_CURRENT_BINARY_DIR}/../include/Mesquite_all_headers.hpp )
-ADD_CUSTOM_COMMAND( 
-  OUTPUT ${all_file}
-  COMMAND ${CMAKE_COMMAND}
-  ARGS -D output_file:STRING=${all_file}
-       -D headers:STRING="${HEADERS}"
-       -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/GenerateAllHeaders.cmake
-  DEPENDS ${HEADERS}
-  COMMENT "Generating Mesquite_all_headers.hpp" )
+# Cannot do this correctly because list if all headers is too long
+# of a command-line argument for some platforms (e.g. Windows.)
+# Instead, use less optimial solution (doesn't automatically update.)
+#
+#ADD_CUSTOM_COMMAND( 
+#  OUTPUT ${all_file}
+#  COMMAND ${CMAKE_COMMAND}
+#  ARGS -D output_file:STRING=${all_file}
+#       -D headers:STRING="${HEADERS}"
+#       -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/GenerateAllHeaders.cmake
+#  DEPENDS ${HEADERS}
+#  COMMENT "Generating Mesquite_all_headers.hpp" )
+#
 SET_SOURCE_FILES_PROPERTIES(${all_file} PROPERTIES GENERATED true)
+#
+file( WRITE ${all_file} "#ifndef MESQUITE_ALL_HEADERS_HPP\n#define MESQUITE_ALL_HEADERS_HPP\n" )
+foreach( header ${HEADERS} )
+  string( REGEX MATCH "[^/]+\\.h(pp)?" file ${header} )
+  file( APPEND ${all_file} "#include \"${file}\"\n")
+endforeach()
+file( APPEND ${all_file} "#endif\n" )
+  
+
 
 #last thing to do is add then newly created header
 APPEND_SET(HEADERS ${all_file} )
