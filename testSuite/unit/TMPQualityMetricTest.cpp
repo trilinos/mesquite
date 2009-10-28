@@ -1100,8 +1100,9 @@ void TMPQualityMetricTest::regression_inverse_mean_ratio_hess()
   CPPUNIT_ASSERT_EQUAL( (size_t)2, act_idx.size() );
 
   // zero derivatives with respect to Z
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < 2; ++i) 
     exp_grad[i][2] = 0.0;
+  for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 3; ++j) 
       exp_hess[i][j][2] = exp_hess[i][2][j] = 0.0;
   }

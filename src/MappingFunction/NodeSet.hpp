@@ -55,38 +55,38 @@ class MESQUITE_EXPORT NodeSet {
     //! Misc constants.  Only NUM_CORNER_BITS, NUM_EDGE_BITS, and
     //! NUM_REGION_BITS should be modified.  All other contants are
     //! a function of those three values and the size of the bit storage.
-    enum { 
-      NUM_TOTAL_BITS = 8*sizeof(BitSet),
-      MSB_POS = NUM_TOTAL_BITS - 1,
+	//enum { 
+      static const BitSet NUM_TOTAL_BITS = 8*sizeof(BitSet);
+      static const BitSet MSB_POS = NUM_TOTAL_BITS - 1;
       //! Maximum number of corner nodes.
-      NUM_CORNER_BITS = 8, 
+      static const BitSet NUM_CORNER_BITS = 8;
       //! Maximum number of mid-edge nodes
-      NUM_EDGE_BITS = 16,  
+      static const BitSet NUM_EDGE_BITS = 16;
       //! Maximum number of mid-volume nodes
-      NUM_REGION_BITS = 1, 
+      static const BitSet NUM_REGION_BITS = 1;
       //! Maximum number of mid-face nodes
-      NUM_FACE_BITS = NUM_TOTAL_BITS - (NUM_CORNER_BITS + NUM_EDGE_BITS + NUM_REGION_BITS),   
+      static const BitSet NUM_FACE_BITS = NUM_TOTAL_BITS - (NUM_CORNER_BITS + NUM_EDGE_BITS + NUM_REGION_BITS); 
       
       //! LSB of corner node storage
-      CORNER_OFFSET = 0,
+      static const BitSet CORNER_OFFSET = 0;
       //! LSB of mid-edgee storage
-      EDGE_OFFSET = CORNER_OFFSET + NUM_CORNER_BITS,
+      static const BitSet EDGE_OFFSET = CORNER_OFFSET + NUM_CORNER_BITS;
       //! LSB of mid-face storage
-      FACE_OFFSET =   EDGE_OFFSET + NUM_EDGE_BITS,
+      static const BitSet FACE_OFFSET =   EDGE_OFFSET + NUM_EDGE_BITS;
       //! LSB of mid-region storage
-      REGION_OFFSET = FACE_OFFSET + NUM_FACE_BITS,
+      static const BitSet REGION_OFFSET = FACE_OFFSET + NUM_FACE_BITS;
     
       //! Bit mask for all non-corner bits
-      MID_NODE_MASK = (~0u) << NUM_CORNER_BITS,
+      static const BitSet MID_NODE_MASK = (~0u) << NUM_CORNER_BITS;
       //! Bit mask for all corner bits
-      CORNER_MASK = ~MID_NODE_MASK,
+      static const BitSet CORNER_MASK = ~MID_NODE_MASK;
       //! Mid-region mask
-      REGION_MASK = ~((~0u) >> NUM_REGION_BITS),
+      static const BitSet REGION_MASK = ~((~0u) >> NUM_REGION_BITS);
       //! Bit mask for all mid-edge nodes
-      EDGE_MASK = (MID_NODE_MASK << (NUM_TOTAL_BITS - EDGE_OFFSET - NUM_EDGE_BITS)) >> (NUM_TOTAL_BITS - EDGE_OFFSET - NUM_EDGE_BITS),
+      static const BitSet EDGE_MASK = (MID_NODE_MASK << (NUM_TOTAL_BITS - EDGE_OFFSET - NUM_EDGE_BITS)) >> (NUM_TOTAL_BITS - EDGE_OFFSET - NUM_EDGE_BITS);
       //! Bit mask for all mid-face nodes
-      FACE_MASK = ~(CORNER_MASK|EDGE_MASK|REGION_MASK)
-    };
+      static const BitSet FACE_MASK = ~(CORNER_MASK|EDGE_MASK|REGION_MASK);
+    //};
 
   private:
     BitSet bits; //!< The data, one bit for each possible node location

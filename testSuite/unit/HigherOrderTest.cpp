@@ -123,7 +123,7 @@ private:
 public:
 
   HigherOrderTest() : metric( &tc, &tm2, &tm3 ), 
-                      func( 1.0, &metric ),
+                      func( 1, &metric ),
                       solver( &func )
   {
     MsqError err;
@@ -224,8 +224,8 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(HigherOrderTest, "Regression");
 static inline double dist( double x1, double y1, double x2, double y2 )
   { return sqrt( (x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2) ); }
 
-// ideal triangle is defined to have unit area
-const double IDEAL_TRI_SIDE = sqrt(2) / sqrt( sqrt(3) );
+// ideal triangle is defined such that J has unit determinant
+const double IDEAL_TRI_SIDE = sqrt(2.0/sqrt(3.0));
 const double IDEAL_TRI_HEIGHT = 1/IDEAL_TRI_SIDE;
 
 int tri_mid_edge_nodes_edge_center( double x2, double y2,

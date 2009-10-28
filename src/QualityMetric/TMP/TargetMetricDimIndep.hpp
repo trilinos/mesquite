@@ -96,8 +96,8 @@ do_numerical_hessian( TargetMetric* metric,
   const double INITAL_STEP = std::max( 1e-6, fabs(1e-9*value) );
   double value2;
   MsqMatrix<Dim,Dim> grad2;
-  for (int r = 0; r < Dim; ++r) {  // for each row of A
-    for (int c = 0; c < Dim; ++c) {  // for each column of A
+  for (unsigned r = 0; r < Dim; ++r) {  // for each row of A
+    for (unsigned c = 0; c < Dim; ++c) {  // for each column of A
       const double in_val = A(r,c);
       double step;
       for (step = INITAL_STEP; step > std::numeric_limits<double>::epsilon(); step *= 0.1) {
@@ -131,11 +131,11 @@ do_numerical_hessian( TargetMetric* metric,
         // values of grad2, in row-major order, are a single 9-value row of the Hessian
       grad2 -= grad;
       grad2 /= step;
-      for (int b = 0; b < r; ++b) {
+      for (unsigned b = 0; b < r; ++b) {
         const int idx = Dim*b - b*(b+1)/2 + r;
         Hess[idx].add_column( c, transpose( grad2.row(b) ) );
       }
-      for (int b = r; b < Dim; ++b) {
+      for (unsigned b = r; b < Dim; ++b) {
         const int idx = Dim*r - r*(r+1)/2 + b;
         Hess[idx].add_row( c, grad2.row(b) );
       }
@@ -143,8 +143,8 @@ do_numerical_hessian( TargetMetric* metric,
   } // for (r)
   
     // Values in non-diagonal blocks were added twice.
-  for (int r = 0, h = 1; r < Dim-1; ++r, ++h)
-    for (int c = r + 1; c < Dim; ++c, ++h)
+  for (unsigned r = 0, h = 1; r < Dim-1; ++r, ++h)
+    for (unsigned c = r + 1; c < Dim; ++c, ++h)
       Hess[h] *= 0.5;
   
   return true;

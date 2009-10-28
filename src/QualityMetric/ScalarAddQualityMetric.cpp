@@ -35,6 +35,7 @@
 #include "Vector3D.hpp"
 #include "Matrix3D.hpp"
 #include "MsqError.hpp"
+#include <stdio.h>
 
 namespace MESQUITE_NS {
 

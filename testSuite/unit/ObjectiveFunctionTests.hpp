@@ -38,6 +38,7 @@
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "ObjectiveFunctionTemplate.hpp"
 #include "UnitUtil.hpp"
+#include "MsqHessian.hpp"
 
 #include <memory>
 
@@ -188,7 +189,7 @@ static bool init_pd( PatchData& pd );
 static PatchData& patch() {
   static PatchData the_pd;
   static bool did_init = init_pd( the_pd );
-  assert(did_init);
+  CPPUNIT_ASSERT(did_init);
   return the_pd;
 }
 static bool init_pd( PatchData& pd ) {
@@ -209,7 +210,7 @@ static double evaluate_internal( ObjectiveFunction::EvalType type,
   vector<Vector3D> grad;
   vector<SymMatrix3D> diag;
   MsqHessian hess;
-  bool valid;
+  bool valid = false;
   double result;
   
   switch (test_mode) {
@@ -471,7 +472,7 @@ static void test_negate_flag( OFTestMode test_mode, ObjectiveFunctionTemplate* o
   of->set_quality_metric(&metric);
 
   MsqPrintError err(cout);
-  bool rval;
+  bool rval = false;
   double value[2];
   vector<Vector3D> grad[2];
   vector<SymMatrix3D> diag[2];
@@ -754,7 +755,7 @@ static void test_handles_invalid_qm( OFTestMode test_mode,
   vector<SymMatrix3D> diag;
   MsqHessian hess;
   double result;
-  bool valid;
+  bool valid = false;
   
   switch (test_mode) {
     case EVAL:

@@ -468,11 +468,11 @@ AC_SUBST(USER_GUIDE_PS)
 #-----------------------------------------------------------------------------
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h strings.h sys/file.h sys/time.h unistd.h)
-AC_CHECK_HEADER(   ieeefp.h, AC_DEFINE(HAVE_IEEEFP_H,  [1], [System has ieeefp.h]  ))
-AC_CHECK_HEADER(   stdint.h, AC_DEFINE(HAVE_STDINT_H,  [1], [System has stdint.h]  ))
-AC_CHECK_HEADER( inttypes.h, AC_DEFINE(HAVE_INTTYPES_H,[1], [System has inttypes.h]))
-AC_CHECK_HEADER(  termios.h, AC_DEFINE(HAVE_TERMIOS_H, [1], [System has termios.h]))
-AC_CHECK_HEADER( [sys/ioctl.h], AC_DEFINE(HAVE_SYS_IOCTL_H,[1], [System has sys/ioctl.h]))
+AC_CHECK_HEADER(   ieeefp.h, AC_DEFINE(MSQ_HAVE_IEEEFP_H,  [1], [System has ieeefp.h]  ))
+AC_CHECK_HEADER(   stdint.h, AC_DEFINE(MSQ_HAVE_STDINT_H,  [1], [System has stdint.h]  ))
+AC_CHECK_HEADER( inttypes.h, AC_DEFINE(MSQ_HAVE_INTTYPES_H,[1], [System has inttypes.h]))
+AC_CHECK_HEADER(  termios.h, [AM_CPPFLAGS="${AM_CPPFLAGS} -DHAVE_TERMIOS_H"])
+AC_CHECK_HEADER( [sys/ioctl.h], [AM_CPPFLAGS="${AM_CPPFLAGS} -DHAVE_SYS_IOCTL_H"])
 
 #-----------------------------------------------------------------------------
 # Check for required functions
@@ -695,6 +695,12 @@ UTIL_MAKE_INCLUDE="include ../testSuite/cppflags.make"
 AC_SUBST(TEST_MAKE_INCLUDE)
 AC_SUBST(UTIL_MAKE_INCLUDE)
 
+# The first header is the header that autoheader creates.
+# It should not be used because it contains stuff that is
+# not restricted to the Mesquite namespace and therefore
+# may conflict with the config.h of the application using
+# mesquite.
+AC_CONFIG_HEADERS([include/junk_config.h])
 AC_CONFIG_HEADERS([include/mesquite_config.h
                    include/mesquite_version.h
                    itaps/iBase_FCDefs.h])
@@ -744,6 +750,14 @@ AC_CONFIG_FILES([Makefile
 # from the build.
 AC_CONFIG_COMMANDS_POST([rm -f .deps/*])                 
                  
+# This header is the header that autoheader creates.
+# It should not be used because it contains stuff that is
+# not restricted to the Mesquite namespace and therefore
+# may conflict with the config.h of the application using
+# mesquite.
+AC_CONFIG_COMMANDS([junk_config.h],
+                   [echo '#error "Dont use this header"' > include/junk_config.h])
+
 # Generate output files
 AC_OUTPUT
 

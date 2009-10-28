@@ -143,46 +143,6 @@ void PatchData::get_minmax_edge_length(double& min, double& max) const
   max = sqrt(max);
 }
 
-double PatchData::get_barrier_delta(MsqError &err)
-{
-  double result;
-  if (have_computed_info(MINMAX_SIGNED_DET3D))
-  {
-    result = computedInfos[MINMAX_SIGNED_DET3D];
-  }
-  else
-  {
-    double min= MSQ_DBL_MAX;
-    double max=-MSQ_DBL_MAX;
-    size_t count = num_elements();
-    for (size_t i=0; i<count; ++i) {
-      Matrix3D A[MSQ_MAX_NUM_VERT_PER_ENT];
-      size_t nve = elementArray[i].corner_count();
-      elementArray[i].compute_corner_matrices(*this, A, nve, err);
-      MSQ_ERRZERO(err);
-      for (size_t j=0; j<nve; ++j) {
-        min = det(A[j]) < min ? det(A[j]) : min;
-        max = det(A[j]) > max ? det(A[j]) : max;
-      }
-    }
-
-    if (max <= 0) {
-      MSQ_SETERR(err)("Sigma_max is not positive.", MsqError::INVALID_MESH);
-      return 0;
-    }
-      //We set delta to zero if everything in the initial mesh is valid.
-      //  This causes metrics with a barrier between valid and inverted
-      //  meshes to retain that barrier.  If there is a negative jacobian
-      //  corner in the mesh, we set delta to a small fraction of the
-      //  maximum jacobian in the mesh.
-    result = (min<=MSQ_MIN) ? 0.001 * max : 0;
-    computedInfos[MINMAX_SIGNED_DET3D] = result;
-    note_have_info(MINMAX_SIGNED_DET3D);
-  }
-  
-  return result;
-}
-
 /*
 double PatchData::get_average_Lambda_3d( MsqError &err)
 {
@@ -1150,7 +1110,7 @@ void PatchData::get_subpatch(size_t center_vertex_index,
   subpatch.myDomain = myDomain;
   subpatch.mSettings = mSettings;
   
-  notify_sub_patch( subpatch, &vertices[0], &elements[0], err ); MSQ_CHKERR(err);
+  notify_sub_patch( subpatch, &vertices[0], elements.empty() ? 0 : &elements[0], err ); MSQ_CHKERR(err);
 }
 
 //! Adjust the position of the specified vertex so that it

@@ -30,7 +30,7 @@
 #include <iostream>
 #include <math.h>
 
-#ifdef HAVE_IEEEFP_H
+#ifdef MSQ_HAVE_IEEEFP_H
 #  include <ieeefp.h>
 #endif
 

@@ -57,6 +57,7 @@ using std::endl;
 #include "QuasiNewton.hpp"
 
 #include "MeshWriter.hpp"
+#include "MsqTimer.hpp"
 using namespace Mesquite;
 
 const char* DEFAULT_INPUT = MESH_FILES_DIR "2D/VTK/equil_tri2.vtk";
@@ -391,9 +392,9 @@ double run( QualityMetric* metric,
   else if (size[2] < 1e-4)
     domain = new PlanarDomain( PlanarDomain::XY, min[2] );
   
-  const clock_t t_0 = clock();
+  Timer timer;
   q.run_instructions( &mesh, domain, err );
-  const clock_t t_n = clock() - t_0;
+  seconds_out = timer.since_birth();
   if (err) {
     cerr << "Optimization failed." << endl << err << endl;
     abort();
@@ -418,7 +419,6 @@ double run( QualityMetric* metric,
   }
   delete domain;
   
-  seconds_out = (double)t_n / CLOCKS_PER_SEC;
   iterations_out = inner.get_iteration_count();
   
   const QualityAssessor::Assessor* a = qa.get_results( &qa_metric );

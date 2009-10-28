@@ -12,34 +12,6 @@ ENDIF()
 SET(HEADERS "")
 SET(SOURCES "")
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/..)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../include)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../include)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/Mesh)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/Misc)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/Control)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/Control/Wrappers)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/MappingFunction)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/MappingFunction/Linear)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/MappingFunction/Lagrange)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/QualityAssessor)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/QualityMetric)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/QualityMetric/Shape)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/QualityMetric/Volume)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/QualityMetric/Untangle)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/QualityMetric/TMP)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/QualityMetric/TMP/2D)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/QualityMetric/TMP/3D)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/TargetCalculator)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/ObjectiveFunction)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/QualityImprover)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/QualityImprover/VertexMover)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/QualityImprover/VertexMover/FeasibleNewton)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/QualityImprover/VertexMover/TrustRegion)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/QualityImprover/VertexMover/ConjugateGradient)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src/QualityImprover/VertexMover/Randomize)
-
 APPEND_SET(HEADERS
   CLArgs.hpp
   CLArgFlag.hpp
@@ -61,6 +33,12 @@ ENDIF()
 #
 
 IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
+
+  PACKAGE_ADD_LIBRARY(
+    msqutil
+    HEADERS ${HEADERS}
+    SOURCES ${SOURCES}
+    )
 
   PACKAGE_ADD_EXECUTABLE(
     vtkrandom
@@ -96,17 +74,18 @@ IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
 
 ELSE()
 
-  ADD_LIBRARY( msqutil STATIC ${SOURCES} )
+  ADD_LIBRARY( msqutil STATIC ${SOURCES} ${HEADERS} )
   ADD_EXECUTABLE( vtkrandom randomize.cpp domain.cpp )
   ADD_EXECUTABLE( msqshape  shape-improve.cpp domain.cpp )
   ADD_EXECUTABLE( vtkxform  transform.cpp )
   ADD_EXECUTABLE( msqquality quality.cpp )
-  TARGET_LINK_LIBRARIES( vtkrandom  mesquite msqutil )
-  TARGET_LINK_LIBRARIES( msqshape   mesquite msqutil )
-  TARGET_LINK_LIBRARIES( vtkxform   mesquite msqutil )
-  TARGET_LINK_LIBRARIES( msqquality mesquite msqutil )
 
 ENDIF()
+
+TARGET_LINK_LIBRARIES( vtkrandom  mesquite msqutil )
+TARGET_LINK_LIBRARIES( msqshape   mesquite msqutil )
+TARGET_LINK_LIBRARIES( vtkxform   mesquite msqutil )
+TARGET_LINK_LIBRARIES( msqquality mesquite msqutil )
 
 IF(${PACKAGE_NAME}_ENABLE_SHARED)
   SET( MESQUITE_UTIL_DEFINES "${MESQUITE_DEFINES}" )
@@ -119,7 +98,7 @@ SET( UTIL_SOURCES
      domain.cpp 
      ManPage.cpp 
      quality.cpp 
-     ramdomize.cpp
+     randomize.cpp
      shape-improve.cpp
      transform.cpp )
 SET_SOURCE_FILES_PROPERTIES( ${UTIL_SOURCES} COMPILE_FLAGS ${MESQUITE_UTIL_DEFINES} )

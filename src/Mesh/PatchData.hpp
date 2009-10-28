@@ -45,7 +45,6 @@
 #include "MsqMeshEntity.hpp"
 #include "MsqVertex.hpp"
 #include "MeshInterface.hpp"
-#include "TargetMatrix.hpp"
 #include "MsqError.hpp"
 #include "Settings.hpp"
 #include "NodeSet.hpp"
@@ -195,12 +194,6 @@ namespace MESQUITE_NS
     
 	MESQUITE_EXPORT
     void get_minmax_edge_length(double& min, double& max) const;
-    
-    //! Returns delta based on the minimum and maximum corner determinant over all elements in the patch
-    //! This information is stored in the patch and should not decrease performance
-    //! when used properly. See also PatchData::clear_computed_info() .
-	MESQUITE_EXPORT
-    double get_barrier_delta(MsqError &err); 
 
     //! Returns average corner determinant over all corners in the patch
     //! This information is stored in the patch and should not decrease performance

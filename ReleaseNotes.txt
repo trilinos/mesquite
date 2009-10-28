@@ -1,6 +1,4 @@
-Anouncing Mesquite 2.1.0.
-
-New features:
+Since 2.0.0:
   - CMake-based build system and portability fixes restoring
      the ability to compile Mesquite on MS Windows.
   - Many new target metrics for volume elements
@@ -17,4 +15,20 @@ New features:
        ViscousCFDTetShapeWrapper
        PaverMinEdgeLengthWrapper
   - experimental support for using iMeshP API with parallel mesquite
+  
+2.1.1:
+  - Misc CMake build fixes
+  - Support building of test suite with CMake (requires CppUnit)
+  - Fix compilation error in simple_hybrid_test
+  - Minor fixes to build with autotools
+  - Remove unused code
+  - Fix (benign) compilation warnings
+  - Fix portability issues (particularly Windows)
+  - Fix definition of macros that might conflict with appliction
+     code being indrectly included by applications
+  - Fix bug in NodeSet class on w/ Microsoft compiler (only affects 
+      experimental smoothing of higher-order elements)
+  - Fix compilation of Mesquite unit tests with latest version of CppUnit
+  - Fix bug in unit test: TMPQualityMetricTest
+
   

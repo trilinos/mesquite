@@ -29,7 +29,7 @@
 #include "SphericalDomain.hpp"
 #include "Vector3D.hpp"
 
-#ifdef HAVE_IEEEFP_H
+#ifdef MSQ_HAVE_IEEEFP_H
 #  include <ieeefp.h>
 #endif
 
