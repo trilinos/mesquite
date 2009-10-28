@@ -38,6 +38,7 @@
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "ObjectiveFunctionTemplate.hpp"
 #include "UnitUtil.hpp"
+#include "MsqHessian.hpp"
 
 #include <memory>
 
