@@ -98,7 +98,7 @@ SET( UTIL_SOURCES
      domain.cpp 
      ManPage.cpp 
      quality.cpp 
-     ramdomize.cpp
+     randomize.cpp
      shape-improve.cpp
      transform.cpp )
 SET_SOURCE_FILES_PROPERTIES( ${UTIL_SOURCES} COMPILE_FLAGS ${MESQUITE_UTIL_DEFINES} )
