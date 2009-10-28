@@ -33,6 +33,7 @@
 #include <stack>
 #include <vector>
 #include <iostream>
+#include "Mesquite.hpp"
 
 namespace MESQUITE_NS
 {
@@ -81,7 +82,6 @@ namespace MESQUITE_NS
     std::vector<CppUnit::Test*> mTests;
     std::stack<Mesquite::Timer*> mTimers;
     std::stack<int> failureCounters;
-    std::vector<CppUnit::TestSuite::Key> completedSuites;
     std::vector<std::string> failedTestNames;
     std::ostream* mOut;
     CppUnit::TestResult* myResult;
