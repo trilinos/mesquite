@@ -1110,7 +1110,7 @@ void PatchData::get_subpatch(size_t center_vertex_index,
   subpatch.myDomain = myDomain;
   subpatch.mSettings = mSettings;
   
-  notify_sub_patch( subpatch, &vertices[0], &elements[0], err ); MSQ_CHKERR(err);
+  notify_sub_patch( subpatch, &vertices[0], elements.empty() ? 0 : &elements[0], err ); MSQ_CHKERR(err);
 }
 
 //! Adjust the position of the specified vertex so that it
