@@ -920,18 +920,18 @@ ADD_CUSTOM_COMMAND(
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h PROPERTIES GENERATED true)
 
 
-APPEND_SET(HEADERS
-  ../itaps/iBase.h
-  ../itaps/iBase_FCDefs.h
-  ../itaps/iMesh.h
-  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h
-  ../itaps/iMeshP.h
-  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h
-  ../itaps/iGeom.h
-  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iGeom_protos.h
-  ../itaps/iRel.h
-  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iRel_protos.h 
-  )
+#APPEND_SET(HEADERS
+#  ../itaps/iBase.h
+#  ../itaps/iBase_FCDefs.h
+#  ../itaps/iMesh.h
+#  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h
+#  ../itaps/iMeshP.h
+#  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h
+#  ../itaps/iGeom.h
+#  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iGeom_protos.h
+#  ../itaps/iRel.h
+#  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iRel_protos.h 
+#  )
 
 
 #
