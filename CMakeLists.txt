@@ -15,8 +15,8 @@ IF (NOT DEFINED PROJECT_NAME)
       ENDIF()
     ENDIF()
   ENDMACRO()
-  
-  OPTION( ${PACKAGE_NAME}_ENABLE_TESTS "Build tests" )
+
+  SET( ${PACKAGE_NAME}_ENABLE_TESTS "OFF" CACHE BOOL "Build Tests" )
   IF (${PACKAGE_NAME}_ENABLE_TESTS)
     ENABLE_TESTING()
   ENDIF()
@@ -31,8 +31,10 @@ ELSE()
   #
 
   PACKAGE(Mesquite DISABLE_STRONG_WARNINGS)
+  SET( ${PACKAGE_NAME}_ENABLE_TESTS ${Trilinos_ENABLE_TESTS} )
 
 ENDIF()
+
 
 INCLUDE(CheckFunctionExists)
 INCLUDE(CheckIncludeFile)
@@ -72,11 +74,6 @@ SET(MSQ_VERSION_MAJOR ${MAJOR_VERSION})
 SET(MSQ_VERSION_MINOR ${MINOR_VERSION})
 SET(MSQ_VERSION_PATCH ${PATCH_VERSION})
 SET(MSQ_VERSION_STRING "\"Mesquite ${MSQ_VERSION}\"")
-
-
-# Check for libraries
-FIND_LIBRARY( CPPUNIT_LIBRARY NAMES cppunit )
-FIND_PATH( CPPUNIT_INCLUDES cppunit/extensions/HelperMacros.h )
 
 
 #check for specific functions
@@ -239,20 +236,22 @@ ADD_SUBDIRECTORY(itaps)
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(utils)
 
-IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
+IF (${PACKAGE_NAME}_ENABLE_TESTS)
+  IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
 
-  PACKAGE_ADD_TEST_DIRECTORIES(testSuite)
+    PACKAGE_ADD_TEST_DIRECTORIES(testSuite)
 
-  #PACKAGE_ADD_EXAMPLE_DIRECTORIES(example)
+    #PACKAGE_ADD_EXAMPLE_DIRECTORIES(example)
 
-  #
-  # D) Do standard postprocessing
-  #
+    #
+    # D) Do standard postprocessing
+    #
 
-  PACKAGE_POSTPROCESS()
-  
-ELSE()
+    PACKAGE_POSTPROCESS()
 
-  ADD_SUBDIRECTORY(testSuite)
+  ELSE()
 
+    ADD_SUBDIRECTORY(testSuite)
+
+  ENDIF()
 ENDIF()
