@@ -38,6 +38,7 @@ SUBDIRS = test_1 \
           high_aspect_ratio \
 	  higher_order \
 	  viscous_cfd \
+	  size_adapt_shape \
 	  $(IMESH_TEST) $(EXO_TEST) $(UNIT_TEST)
 
 # Override all-recursive so that "make" with no target 

@@ -734,6 +734,7 @@ AC_CONFIG_FILES([Makefile
                  testSuite/high_aspect_ratio/Makefile
                  testSuite/higher_order/Makefile
                  testSuite/viscous_cfd/Makefile
+                 testSuite/size_adapt_shape/Makefile
                  utils/Makefile
                  doc/Makefile
                  doc/user/Makefile
