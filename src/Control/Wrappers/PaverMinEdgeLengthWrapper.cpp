@@ -44,7 +44,7 @@
 #include "TMPQualityMetric.hpp"
 #include "IdealTargetCalculator.hpp"
 #include "Target2DShapeSizeBarrier.hpp"
-//#include "Target3DShapeSizeBarrier.hpp"
+#include "Target3DShapeSizeBarrier.hpp"
 #include "TargetSize.hpp"
 #include "RefMeshTargetCalculator.hpp"
 #include "ReferenceMesh.hpp"
@@ -74,8 +74,8 @@ void PaverMinEdgeLengthWrapper::run_instructions_internal( Mesh* mesh,
   IdealTargetCalculator W_i;
   LambdaConstant W( lambda, &W_i );
   Target2DShapeSizeBarrier tm2;
-  //Target3DShapeSizeBarrier tm3;
-  TMPQualityMetric mu( &W, &tm2, 0 /*&tm3*/ );
+  Target3DShapeSizeBarrier tm3;
+  TMPQualityMetric mu( &W, &tm2, &tm3 );
   PMeanPTemplate of( 1.0, &mu );
   
     // create quality assessor
@@ -87,7 +87,8 @@ void PaverMinEdgeLengthWrapper::run_instructions_internal( Mesh* mesh,
     // create solver
   TrustRegion solver( &of );
   TerminationCriterion tc;
-  tc.add_absolute_vertex_movement( 1e-2 );
+  tc.add_absolute_vertex_movement( maxVtxMovement );
+  tc.add_iteration_limit( iterationLimit );
   solver.set_inner_termination_criterion( &tc );
   q.set_master_quality_improver( &solver, err ); MSQ_ERRRTN(err);
   q.add_quality_assessor( &qa, err );
