@@ -30,5 +30,6 @@ Since 2.0.0:
       experimental smoothing of higher-order elements)
   - Fix compilation of Mesquite unit tests with latest version of CppUnit
   - Fix bug in unit test: TMPQualityMetricTest
-
+  - Fix bug in PaverMinEdgeLengthWrapper where user-specified termination
+      criteria were not used.
   
