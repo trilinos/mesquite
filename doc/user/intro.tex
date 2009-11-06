@@ -88,24 +88,36 @@ optimization problem which guides vertex movement to find the optimal
 mesh and thus improve its quality.  Numerical 
 optimization methods recently
 developed for unstructured meshes include \cite{Opt-MS,Kn00,FrKn01,
-FeasNewt,bjoe:swap,bjoe:chain-swap,es92}. We refer the reader to ref xxx
-which is a survey of mesh quality improvement methods which have appeared 
-in the literature. \newline
+FeasNewt,bjoe:swap,bjoe:chain-swap,es92}. \newline
+%We refer the reader to ref xxx
+%which is a survey of mesh quality improvement methods which have appeared 
+%in the literature. \newline
 
 A large number of mesh quality metrics have been devised to measure 
 mesh quality. Many of these metrics are independent of any solution 
 properties and are thus not useful in adaptive meshing. However, there
 are a number of weighted quality metrics which can be tied to the 
 numerical solution via error indicators or other information for adaptive 
-meshing. Examples of weighted metrics which have or could be used in 
-adaptive calculations include those of Brackbill (ref), Knupp (ref), etc. \newline
+meshing. \newline
+%Examples of weighted metrics which have or could be used in 
+%adaptive calculations include those of Brackbill (ref), Knupp (ref), etc. \newline
 
 Another way to improve mesh quality is to use local topological modification methods in which mesh vertices or elements are locally created and/or destroyed. These methods are very successful when applied to simplicial meshes, often within an adaptive context.  Local topology modification is less effective on non-simplicial meshes. \newline
 
 Mesh quality improvement remains an important on-going research area. 
 There remain, for example, open questions with regard to metrics which 
 can be used in adaptive settings, theoretical questions on problem 
-formulation, and how to obtain improved meshes quickly. \newline
+formulation, and how to obtain improved meshes quickly. An important 
+subset of Mesquite capabilities is based on a mathematical theory that we
+are developing which we call the Target-matrix paradigm (TMP).  The
+basic idea is similar to that from Harmonic mappings, as applied to mesh
+generation: use only a few very soundly formulated quality metrics and 
+adapt the mesh to a wide variety of specialized purposes via specification 
+of the mapping on the target manifold. However, TMP is formulated as a 
+discrete optimization problem, which allows direct control over important
+properties such as invertibility which must hold even if the asympototic limit
+is not reached. The mathematics behind the Target-matrix 
+paradigm can be found in \cite{formal,local2dmetrics,convexity,analysis2D,labelinv,labelinv-imr,tgtcons}. \newline
 
 Although mesh quality improvement algorithms have been widely implemented 
 in both meshing and applications codes, it has always been difficult to 
@@ -206,8 +218,7 @@ linked to either a meshing code or to a simulation code. \newline
 
 Mesquite software design is based on a mathematical 
 framework that improves mesh quality by solving an optimization 
-problem to guide the movement of mesh vertices \cite{formal}, 
-\cite{local2Dmetrics}. The user inputs a mesh or 
+problem to guide the movement of mesh vertices. The user inputs a mesh or 
 submesh consisting of vertices, elements, and the relationships between them. 
 The quality of each vertex or 
 element in the mesh is described by a local quality metric that is a function 
@@ -270,26 +281,26 @@ frowned upon in Mesquite since one cannot state what mesh quality metric is
 improved.  However, if such methods are included in future version sof Mesquite, they will be done in a manner similar to the local Laplace smoothing 
 algorithm in Mesquite. \newline
 
-\noindent The following notation is used in the rest of this manual
-\begin{itemize}
-\item The mesh is assumed to consist of $N$ elements and $M$ free vertices.  
-Let $n=1,2,\ldots,N$.
-\item Let $q$ be a scalar which defines an element-based {\it quality} metric. 
-The quality of the $n^{th}$ element in the mesh is given by the scalar 
-$q_n$. Element quality is a function of the coordinates ${\bf x}_n$ 
-of the vertices belonging to the element, i.e., $q_n = q({\bf x}_n)$
-\item Let $Q \in R^N$ be the vector $[q_1,q_2,\ldots,q_n]$ of element 
-qualities over the mesh. Let $f$ be a function from $R^N$ to $R$. When  
-$f$ is applied to $Q$, we call $f(Q)$ an {\it objective function template}.
-\item Because each of the element qualities depends on the coordinates of
-the vertices which it contains, the vector $Q$ is a function of the coordinates
-of all of the free vertices ${\bf x} \in R^{3M}$ in the mesh, i.e., $Q=Q({\bf x})$. Finally, form $F({\bf x})= f \circ Q({\bf x}) = f(Q({\bf x}))$ as a 
-function from $R^{3M}$ to $R$.  The function $F$ is the mesh quality 
-{\it objective function}. 
-\item $\nabla F \in R^{3M}$ is the {\it gradient} of the objective function 
-with respect to the coordinates of the free vertices. Let ${\cal H} F= \nabla (\nabla F)$ be the {\it Hessian} of the objective function.  The Hessian is a 
-$3M \times 3M$ matrix. 
-\end{itemize}
+%\noindent The following notation is used in the rest of this manual
+%\begin{itemize}
+%\item The mesh is assumed to consist of $N$ elements and $M$ free vertices.  
+%Let $n=1,2,\ldots,N$.
+%\item Let $q$ be a scalar which defines an element-based {\it quality} metric. 
+%The quality of the $n^{th}$ element in the mesh is given by the scalar 
+%$q_n$. Element quality is a function of the coordinates ${\bf x}_n$ 
+%of the vertices belonging to the element, i.e., $q_n = q({\bf x}_n)$
+%\item Let $Q \in R^N$ be the vector $[q_1,q_2,\ldots,q_n]$ of element 
+%qualities over the mesh. Let $f$ be a function from $R^N$ to $R$. When  
+%$f$ is applied to $Q$, we call $f(Q)$ an {\it objective function template}.
+%\item Because each of the element qualities depends on the coordinates of
+%the vertices which it contains, the vector $Q$ is a function of the coordinates
+%of all of the free vertices ${\bf x} \in R^{3M}$ in the mesh, i.e., $Q=Q({\bf x})$. Finally, form $F({\bf x})= f \circ Q({\bf x}) = f(Q({\bf x}))$ as a 
+%function from $R^{3M}$ to $R$.  The function $F$ is the mesh quality 
+%{\it objective function}. 
+%\item $\nabla F \in R^{3M}$ is the {\it gradient} of the objective function 
+%with respect to the coordinates of the free vertices. Let ${\cal H} F= \nabla (\nabla F)$ be the {\it Hessian} of the objective function.  The Hessian is a 
+%$3M \times 3M$ matrix. 
+%\end{itemize}
 
 \begin{figure}[htb]
 \begin{center}
@@ -310,7 +321,8 @@ This user's manual
 \item describes how to load a mesh in Mesquite via files (Chapter \ref{sec:meshes}), and 
 %\item provides instructions on using the extensive TSTT interface or a Mesquite mesh specific mesh
 %      interface to load a mesh {\it dynamicallu} in Mesquite (sections \ref{sec:msq_mesh}, \ref{sec:TSTT}), and 
-\item describes Mesquite interactions with domain geometry (Chapter \ref{sec:geom}).
+\item describes Mesquite interactions with domain geometry (Chapter \ref{sec:geom}), and
+\item describes Mesquite Wrappers (Chapter \ref{sec:wrappers}),
 %\item Exposes in details the concepts and the mechanisms of the advanced API (chapter \ref{sec:API}), and 
 %\item instructs the user on how to add their own instances of quality 
 %metrics, objective functions, and solvers (chapter \ref{sec:extensions})
@@ -328,15 +340,15 @@ The doxygen command will generate two directories: an html directory containing 
 index.html that you can open with your web browser, and a latex directory containing a Makefile that
 will generate a dvi file. 
 
-\section{Related Documents}
+%\section{Related Documents}
 
-Documentation of the Mesquite API can be generated from comments in the Mesquite
-source code using the Doxygen utility 
-(\url{http://www.stack.nl/~dimitri/doxygen/}).
-To generate HTML and LaTeX copies of this documentation, execute the command 
-{\tt doxygen Mesquite-user.dox} in the {\tt doc/usr/doxygen} subdirectory
-of the Mesquite source.
+%Documentation of the Mesquite API can be generated from comments in the Mesquite
+%source code using the Doxygen utility 
+%(\url{http://www.stack.nl/~dimitri/doxygen/}).
+%To generate HTML and LaTeX copies of this documentation, execute the command 
+%{\tt doxygen Mesquite-user.dox} in the {\tt doc/usr/doxygen} subdirectory
+%of the Mesquite source.
 
-Further information and related documentation are available on the 
-Mesquite home page, located at:
-\url{http://www.cs.sandia.gov/optimization/knupp/Mesquite.html}.
+%Further information and related documentation are available on the 
+%Mesquite home page, located at:
+%\url{http://www.cs.sandia.gov/optimization/knupp/Mesquite.html}.
