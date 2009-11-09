@@ -192,27 +192,64 @@ extern const char quadratic_unstructured_data[] =
 "Mesquite Mesh\n"
 "ASCII\n"
 "DATASET UNSTRUCTURED_GRID\n"
-"POINTS 30 float\n"
+"POINTS 41 float\n"
 "\n" // points for a single quadtratic hex, in ExodusII order
-" 1.0 -1.0 -1.0 \n  1.0  1.0 -1.0 \n -1.0  1.0 -1.0 \n -1.0 -1.0 -1.0 \n"  // bottom corners
-" 1.0 -1.0  1.0 \n  1.0  1.0  1.0 \n -1.0  1.0  1.0 \n -1.0 -1.0  1.0 \n"  // top corners
-" 1.0  0.0 -1.0 \n  0.0  1.0 -1.0 \n -1.0  0.0 -1.0 \n  0.0 -1.0 -1.0 \n"  // bottom mid-nodes
-" 1.0 -1.0  0.0 \n  1.0  1.0  0.0 \n -1.0  1.0  0.0 \n -1.0 -1.0  0.0 \n"  // side mid-nodes 
-" 1.0  0.0  1.0 \n  0.0  1.0  1.0 \n -1.0  0.0  1.0 \n  0.0 -1.0  1.0 \n"  // top mid-nodes
+" 1.0 -1.0 -1.0 \n" //  0  bottom corners
+" 1.0  1.0 -1.0 \n" //  1
+"-1.0  1.0 -1.0 \n" //  2
+"-1.0 -1.0 -1.0 \n" //  3
+" 1.0 -1.0  1.0 \n" //  4  top corners
+" 1.0  1.0  1.0 \n" //  5
+"-1.0  1.0  1.0 \n" //  6
+"-1.0 -1.0  1.0 \n" //  7
+" 1.0  0.0 -1.0 \n" //  8  bottom mid-nodes
+" 0.0  1.0 -1.0 \n" //  9
+"-1.0  0.0 -1.0 \n" // 10
+" 0.0 -1.0 -1.0 \n" // 11
+" 1.0 -1.0  0.0 \n" // 12  side mid-nodes 
+" 1.0  1.0  0.0 \n" // 13
+"-1.0  1.0  0.0 \n" // 14
+"-1.0 -1.0  0.0 \n" // 15
+" 1.0  0.0  1.0 \n" // 16  top mid-nodes
+" 0.0  1.0  1.0 \n" // 17
+"-1.0  0.0  1.0 \n" // 18
+" 0.0 -1.0  1.0 \n" // 19
+" 1.0  0.0  0.0 \n" // 20  mid-nodes for side faces
+" 0.0  1.0  0.0 \n" // 21
+"-1.0  0.0  0.0 \n" // 22
+" 0.0 -1.0  0.0 \n" // 23
+" 0.0  0.0 -1.0 \n" // 24  mid-nodes for top/bottom faces
+" 0.0  0.0  1.0 \n" // 25
+" 0.0  0.0  0.0 \n" // 26  mid-region
 "\n" // points for a single quadtatic tet, in ExodusII order
-" 1.0 -1.0 -1.0 \n  1.0  1.0 -1.0 \n -1.0  0.0 -1.0 \n" // base triangle
-" 0.0  0.0  1.0 \n "                                    // apex
-" 1.0  0.0 -1.0 \n  0.0  0.5 -1.0 \n  0.0 -0.5 -1.0 \n" // base mid-nodes
-" 0.5 -0.5  0.0 \n  0.5  0.5  0.0 \n -0.5  0.0  0.0 \n" // side mid-nodes
+" 1.0 -1.0 -1.0 \n" // 27  base triangle
+" 1.0  1.0 -1.0 \n" // 28
+"-1.0  0.0 -1.0 \n" // 29
+" 0.0  0.0  1.0 \n" // 30  apex                            
+" 1.0  0.0 -1.0 \n" // 31  base mid-nodes
+" 0.0  0.5 -1.0 \n" // 32
+" 0.0 -0.5 -1.0 \n" // 33
+" 0.5 -0.5  0.0 \n" // 34  side mid-nodes
+" 0.5  0.5  0.0 \n" // 35
+"-0.5  0.0  0.0 \n" // 36
+"\n" // mid-edge nodes for apex edges of quadratic pyramid
+" 0.5 -0.5 0 \n" // 37
+" 0.5  0.5 0 \n" // 38
+"-0.5  0.5 0 \n" // 39
+"-0.5 -0.5 0 \n" // 40
 "\n"
-"CELLS 4 48\n"
+"CELLS 8 116\n"
 "20 0 1 2 3 4 5 6 7 8 9 10 11 16 17 18 19 12 13 14 15\n" // Hex20
-"10 20 21 22 23 24 25 26 27 28 29\n" // Tet10
+"27 0 1 2 3 4 5 6 7 8 9 10 11 16 17 18 19 12 13 14 15 23 21 20 22 24 25 26\n" // Hex27
+"10 27 28 29 30 31 32 33 34 35 36\n" // Tet10
 "8 0 1 2 3 8 9 10 11\n" // Quad8 (base of hex)
-"6 20 21 22 24 25 26\n" // Tri6 (base of tet)
+"9 0 1 2 3 8 9 10 11 24\n" // Quad9 (base of hex)
+"6 27 28 29 31 32 33\n" // Tri6 (base of tet)
+"15 3 2 1 7 6 5 10 9 24 18 17 25 15 14 13\n" // quadratic prism as half of hex
+"13 0 1 2 3 25 8 9 10 11 37 38 39 40\n" // quadratic pyramid with same base as hex
 "\n"
-"CELL_TYPES 4\n"
-"25 24 23 22\n";
+"CELL_TYPES 8\n"
+"25 29 24 23 28 22 26 27\n";
 
 
   // A simple scalar attribute specifying point and hex
@@ -886,25 +923,27 @@ public:
   
   void VtkTest::test_read_quadratic( const char* filename )
   {
+    const size_t NUM_ELEM = 8;
+  
     MeshImpl mesh;
     MsqPrintError err(cout);
     
     mesh.read_vtk( filename, err );
     CPPUNIT_ASSERT(!err);
     
-    std::vector<Mesh::ElementHandle> elems(4);
+    std::vector<Mesh::ElementHandle> elems(NUM_ELEM);
     mesh.get_all_elements( elems, err );
     CPPUNIT_ASSERT(!err);
-    CPPUNIT_ASSERT_EQUAL(elems.size(), (size_t)4 );
+    CPPUNIT_ASSERT_EQUAL(elems.size(), NUM_ELEM );
     
     std::vector<Mesh::VertexHandle> conn;
     std::vector<size_t> offsets;
     mesh.elements_get_attached_vertices( &elems[0], elems.size(), conn, offsets, err );
     CPPUNIT_ASSERT(!err);
-    CPPUNIT_ASSERT_EQUAL( conn.size(), (size_t)44 );
+    CPPUNIT_ASSERT_EQUAL( conn.size(), (size_t)108 );
     
-    EntityTopology types[4];
-    mesh.elements_get_topologies( &elems[0], types, 4, err );
+    EntityTopology types[NUM_ELEM];
+    mesh.elements_get_topologies( &elems[0], types, NUM_ELEM, err );
     CPPUNIT_ASSERT(!err);
 
     static const double hex_corners[] = 
@@ -921,6 +960,19 @@ public:
         1.0,  1.0, -1.0,
        -1.0,  0.0, -1.0,
         0.0,  0.0,  1.0 };
+    static const double pyr_corners[] = 
+     {  1.0, -1.0, -1.0, 
+        1.0,  1.0, -1.0, 
+       -1.0,  1.0, -1.0, 
+       -1.0, -1.0, -1.0,
+        0.0,  0.0,  1.0 };
+    static const double pri_corners[] = 
+      { -1.0, -1.0, -1.0,
+         1.0,  1.0, -1.0,
+        -1.0,  1.0, -1.0,
+        -1.0, -1.0,  1.0,
+         1.0,  1.0,  1.0,
+        -1.0,  1.0,  1.0 };
     static const unsigned hex_edges[] =
      { 0, 1, 
        1, 2, 
@@ -941,39 +993,76 @@ public:
        0, 3,
        1, 3, 
        2, 3 };
-    
+    static const unsigned pri_edges[] =
+     { 0, 1, 
+       1, 2, 
+       2, 0,
+       0, 3,
+       1, 4,
+       2, 5,
+       3, 4,
+       4, 5,
+       5, 3 };
+    static const unsigned pyr_edges[] =
+     { 0, 1, 
+       1, 2, 
+       2, 3,
+       3, 0,
+       0, 4,
+       1, 4,
+       2, 4,
+       3, 4 };
+    static const unsigned hex_faces[] = 
+    { 4, 0, 1, 5, 4,
+      4, 1, 2, 6, 5,
+      4, 2, 3, 7, 6,
+      4, 3, 0, 4, 7,
+      4, 3, 2, 1, 0,
+      4, 4, 5, 6, 7
+    };
     static const struct {
       EntityTopology topology;
       unsigned num_corners;
       unsigned num_edges;
+      unsigned num_faces; // if non-zero expect mid-face nodes
+      unsigned num_region; // if non-zero expect mid-region node
       const double* corners;
       const unsigned* edges;
-    } expected_elems[] = {
-      { Mesquite::HEXAHEDRON,    8, 12, hex_corners, hex_edges },
-      { Mesquite::TETRAHEDRON,   4,  6, tet_corners, tet_edges },
-      { Mesquite::QUADRILATERAL, 4,  4, hex_corners, hex_edges },
-      { Mesquite::TRIANGLE,      3,  3, tet_corners, tet_edges } };
+      const unsigned* faces;
+    } expected_elems[NUM_ELEM] = {
+      { Mesquite::HEXAHEDRON,    8, 12, 0, 0, hex_corners, hex_edges, hex_faces },
+      { Mesquite::HEXAHEDRON,    8, 12, 6, 1, hex_corners, hex_edges, hex_faces },
+      { Mesquite::TETRAHEDRON,   4,  6, 0, 0, tet_corners, tet_edges, 0 },
+      { Mesquite::QUADRILATERAL, 4,  4, 0, 0, hex_corners, hex_edges, 0 },
+      { Mesquite::QUADRILATERAL, 4,  4, 0, 1, hex_corners, hex_edges, 0 },
+      { Mesquite::TRIANGLE,      3,  3, 0, 0, tet_corners, tet_edges, 0 },
+      { Mesquite::PRISM,         6,  9, 0, 0, pri_corners, pri_edges, 0 },
+      { Mesquite::PYRAMID,       5,  8, 0, 0, pyr_corners, pyr_edges, 0 } };
     
-    for (unsigned i = 0; i < 4; ++i)
+    MsqVertex have;
+    std::vector<Mesh::VertexHandle>::iterator v_it = conn.begin();
+    for (unsigned i = 0; i < NUM_ELEM; ++i)
     {
       CPPUNIT_ASSERT_EQUAL( expected_elems[i].topology, types[i] );
 
       size_t vtx_start = offsets[i];
       size_t vtx_end = offsets[i+1];
-      CPPUNIT_ASSERT( (vtx_end - vtx_start) == 
-         (expected_elems[i].num_corners + expected_elems[i].num_edges) );
+      size_t conn_len = expected_elems[i].num_corners 
+                      + expected_elems[i].num_edges
+                      + expected_elems[i].num_faces
+                      + expected_elems[i].num_region;
+      CPPUNIT_ASSERT_EQUAL( conn_len, vtx_end - vtx_start );
       
-      for (unsigned c = 0; c < expected_elems[i].num_corners; ++c)
+      for (unsigned c = 0; c < expected_elems[i].num_corners; ++c, ++v_it)
       {
         Vector3D expected(expected_elems[i].corners + 3*c);
-        MsqVertex have;
-        mesh.vertices_get_coordinates( &conn[vtx_start+c], &have, 1, err );
+        mesh.vertices_get_coordinates( &*v_it, &have, 1, err );
         CPPUNIT_ASSERT(!err);
         expected -= have;
-        CPPUNIT_ASSERT( expected.length() < DBL_EPSILON );
+        CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, expected.length(), DBL_EPSILON );
       }
       
-      for (unsigned m = 0; m < expected_elems[i].num_edges; ++m)
+      for (unsigned m = 0; m < expected_elems[i].num_edges; ++m, ++v_it)
       {
         unsigned start_idx = expected_elems[i].edges[2*m];
         unsigned end_idx = expected_elems[i].edges[2*m+1];
@@ -981,13 +1070,45 @@ public:
         Vector3D end( expected_elems[i].corners + 3*end_idx );
         Vector3D expected = 0.5 * (start + end);
         
-        MsqVertex have;
-        size_t vtx_idx = vtx_start + expected_elems[i].num_corners + m;
-        mesh.vertices_get_coordinates( &conn[vtx_idx], &have, 1, err );
+        mesh.vertices_get_coordinates( &*v_it, &have, 1, err );
         CPPUNIT_ASSERT(!err);
         
         expected -= have;
-        CPPUNIT_ASSERT( expected.length() < DBL_EPSILON );
+        CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, expected.length(), DBL_EPSILON );
+      }
+
+      const unsigned* f_it = expected_elems[i].faces;
+      for (unsigned m = 0; m < expected_elems[i].num_faces; ++m, ++v_it)
+      {
+        Vector3D expected(0,0,0);
+        const unsigned face_size = *f_it; ++f_it;
+        CPPUNIT_ASSERT( face_size == 3u || face_size == 4u );
+        for (unsigned f = 0; f < face_size; ++f, ++f_it) 
+          expected += Vector3D( expected_elems[i].corners + 3 * *f_it );
+        expected /= face_size;
+        
+        mesh.vertices_get_coordinates( &*v_it, &have, 1, err );
+        CPPUNIT_ASSERT(!err);
+        
+        expected -= have;
+        CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, expected.length(), DBL_EPSILON );
+      }
+      
+      if (expected_elems[i].num_region) {
+        CPPUNIT_ASSERT_EQUAL( 1u, expected_elems[i].num_region );
+
+        Vector3D expected(0,0,0);
+        for (unsigned m = 0; m < expected_elems[i].num_corners; ++m)
+          expected += Vector3D( expected_elems[i].corners + 3*m );
+        expected /= expected_elems[i].num_corners;
+
+        mesh.vertices_get_coordinates( &*v_it, &have, 1, err );
+        CPPUNIT_ASSERT(!err);
+
+        expected -= have;
+        CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, expected.length(), DBL_EPSILON );
+
+        ++v_it;
       }
     }
   }
