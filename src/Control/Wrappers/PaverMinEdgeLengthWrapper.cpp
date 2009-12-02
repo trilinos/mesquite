@@ -52,23 +52,28 @@
 #include "EdgeLengthMetric.hpp"
 #include "LambdaConstant.hpp"
 
+#include "MsqFPE.hpp"
+
 namespace MESQUITE_NS {
 
 static double calculate_average_lambda( Mesh* mesh, 
                                         TargetCalculator* tc,
+                                        bool trap_fpe,
                                         MsqError& err );
-
-void PaverMinEdgeLengthWrapper::run_instructions_internal( Mesh* mesh, 
-                                                  ParallelMesh* pmesh,
-                                                  MeshDomain* domain, 
-                                                  MsqError& err )
+                                        
+void PaverMinEdgeLengthWrapper::run_wrapper( Mesh* mesh,
+                                             ParallelMesh* pmesh,
+                                             MeshDomain* domain,
+                                             Settings* settings,
+                                             QualityAssessor* qa,
+                                             MsqError& err )
 {
-  InstructionQueue q( *this ); // copy settings to queue
+  InstructionQueue q;
  
     // calculate average lambda for mesh
   ReferenceMesh ref_mesh( mesh );
   RefMeshTargetCalculator W_0( &ref_mesh );
-  double lambda = calculate_average_lambda( mesh, &W_0, err ); MSQ_ERRRTN(err);
+  double lambda = calculate_average_lambda( mesh, &W_0, settings->trap_floating_point_exception(), err ); MSQ_ERRRTN(err);
   
     // create objective function
   IdealTargetCalculator W_i;
@@ -80,9 +85,9 @@ void PaverMinEdgeLengthWrapper::run_instructions_internal( Mesh* mesh,
   
     // create quality assessor
   EdgeLengthMetric len(0.0);
-  QualityAssessor qa( &mu );
-  qa.add_quality_assessment( &len );
-  q.add_quality_assessor( &qa, err );
+  qa->add_quality_assessment( &mu );
+  qa->add_quality_assessment( &len );
+  q.add_quality_assessor( qa, err );
   
     // create solver
   TrustRegion solver( &of );
@@ -91,20 +96,26 @@ void PaverMinEdgeLengthWrapper::run_instructions_internal( Mesh* mesh,
   tc.add_iteration_limit( iterationLimit );
   solver.set_inner_termination_criterion( &tc );
   q.set_master_quality_improver( &solver, err ); MSQ_ERRRTN(err);
-  q.add_quality_assessor( &qa, err );
+  q.add_quality_assessor( qa, err );
 
   // Optimize mesh
-  if (pmesh)
-    q.run_instructions( pmesh, domain, err ); 
-  else
-    q.run_instructions( mesh, domain, err ); 
-  MSQ_CHKERR(err);  
+  q.run_common( mesh, pmesh, domain, settings, err ); MSQ_CHKERR(err);  
 }
 
 double calculate_average_lambda( Mesh* mesh, 
                                  TargetCalculator* tc,
+                                 bool trap_fpe,
                                  MsqError& err )
 {
+  
+#ifdef ENABLE_INTERRUPT
+   // Register SIGINT handler
+  MsqInterrupt msq_interrupt;
+#endif
+
+    // Generate SIGFPE on floating point errors
+  MsqFPE fpe_trap( trap_fpe );
+
   PatchData pd;
   pd.set_mesh( mesh );
   pd.fill_global_patch( err );

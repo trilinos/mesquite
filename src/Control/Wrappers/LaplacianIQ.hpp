@@ -49,57 +49,29 @@ This is the second possibility for wrappers. It is based on the InctructionQueue
 #ifndef LaplacianIQ_hpp
 #define LaplacianIQ_hpp
 
-#include "IdealWeightInverseMeanRatio.hpp" 
-#include "LaplacianSmoother.hpp"
-#include "QualityAssessor.hpp"
-#include "InstructionQueue.hpp"
-#include "TerminationCriterion.hpp"
+#include "Mesquite.hpp" 
+#include "Wrapper.hpp"
 
 namespace MESQUITE_NS { 
 
-   class LaplacianIQ : public InstructionQueue {
-   private:
-      IdealWeightInverseMeanRatio* inverseMeanRatio;
-      LaplacianSmoother* lapl1;
-      QualityAssessor* mQA;
-      TerminationCriterion* mTerm;
-
+class LaplacianIQ : public Wrapper 
+{
    public:
       
       //! Constructor sets the instructions in the queue.  
-      LaplacianIQ() {
-         MsqError err;
-         // creates a mean ratio quality metric ...
-         inverseMeanRatio = new IdealWeightInverseMeanRatio(err);
-     
-         // creates the laplacian smoother  procedures
-         lapl1 = new LaplacianSmoother;
-         mQA = new QualityAssessor(inverseMeanRatio);
-     
-         //**************Set stopping criterion****************
-         mTerm = new TerminationCriterion();
-         mTerm->add_iteration_limit( 10 );
- 
-            lapl1->set_outer_termination_criterion(mTerm);
+      LaplacianIQ( int iteration_limit = 10 ) : iterationLimit(iteration_limit) {}
       
-            // adds 1 pass of pass1 
-            this->add_quality_assessor(mQA,err); MSQ_CHKERR(err);
-            this->set_master_quality_improver(lapl1, err); MSQ_CHKERR(err);
-            this->add_quality_assessor(mQA,err); MSQ_CHKERR(err);
-      }
-
-      
-      //! Destructor must delete the objects inserted in the queue.
-      virtual ~LaplacianIQ()
-      {
-         delete inverseMeanRatio;
-         delete lapl1;
-         delete mQA;
-         delete mTerm;
-      }
-  
-   };
-
+      MESQUITE_EXPORT
+      virtual void run_wrapper( Mesh* mesh,
+                                ParallelMesh* pmesh,
+                                MeshDomain* domain,
+                                Settings* settings,
+                                QualityAssessor* quality_assessor,
+                                MsqError& err );
+    
+    private:
+      int iterationLimit;
+};
 
 } // namespace
 

@@ -148,6 +148,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/Control)
 APPEND_SET(HEADERS
   Control/Instruction.hpp
   Control/InstructionQueue.hpp
+  Control/IQInterface.hpp
   Control/TerminationCriterion.hpp
   Control/Settings.hpp
   Control/SlaveBoundaryVertices.hpp
@@ -172,16 +173,17 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/Control/Wrappers)
 APPEND_SET(HEADERS
   Control/Wrappers/LaplacianIQ.hpp
   Control/Wrappers/ShapeImprovementWrapper.hpp
-  Control/Wrappers/ParallelShapeImprovementWrapper.hpp
   Control/Wrappers/PaverMinEdgeLengthWrapper.hpp 
   Control/Wrappers/ViscousCFDTetShapeWrapper.hpp 
+  Control/Wrappers/Wrapper.hpp 
   )
 
 APPEND_SET(SOURCES
+  Control/Wrappers/LaplacianIQ.cpp
   Control/Wrappers/ShapeImprovementWrapper.cpp
-  Control/Wrappers/ParallelShapeImprovementWrapper.cpp
   Control/Wrappers/PaverMinEdgeLengthWrapper.cpp
   Control/Wrappers/ViscousCFDTetShapeWrapper.cpp
+  Control/Wrappers/Wrapper.cpp 
   )
 
 #

@@ -55,6 +55,7 @@ using std::endl;
 
 // algorythms
 #include "ShapeImprovementWrapper.hpp"
+#include "MsqTimer.hpp"
 
 using namespace Mesquite;
 

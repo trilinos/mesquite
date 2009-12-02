@@ -25,50 +25,42 @@
   ***************************************************************** */
 
 
-/** \file SizeAdaptShapeWrapper.hpp
+/** \file LaplacianIQ.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef SIZE_ADAPT_SHAPE_WRAPPER_HPP
-#define SIZE_ADAPT_SHAPE_WRAPPER_HPP
-
 #include "Mesquite.hpp"
-#include "Wrapper.hpp"
+#include "LaplacianIQ.hpp"
+#include "IdealWeightInverseMeanRatio.hpp" 
+#include "LaplacianSmoother.hpp"
+#include "QualityAssessor.hpp"
+#include "InstructionQueue.hpp"
+#include "TerminationCriterion.hpp"
 
-namespace MESQUITE_NS {
-
-class MESQUITE_EXPORT SizeAdaptShapeWrapper : public Wrapper
+void MESQUITE_NS::LaplacianIQ::run_wrapper( Mesh* mesh,
+                                            ParallelMesh* pmesh,
+                                            MeshDomain* domain,
+                                            Settings* settings,
+                                            QualityAssessor* qa,
+                                            MsqError& err )
 {
-  private:
-    int iterationLimit;
-    double maxVtxMovement;
+  if (iterationLimit < 1) {
+    MSQ_SETERR(err)(MsqError::INVALID_ARG, "Invalid iteration limit: %d", iterationLimit );
+    return;
+  }
 
-    void run_wrapper( Mesh* mesh,
-                      ParallelMesh* pmesh,
-                      MeshDomain* geom,
-                      Settings* settings,
-                      QualityAssessor* qa,
-                      MsqError& err );
-
-  public:
+  IdealWeightInverseMeanRatio qa_metric;
+  qa->add_quality_assessment( &qa_metric );
   
-    /**
-     *\param max_vertex_movement  Termination optimization if no vertex is moved
-     *                            by more than this distance in the previous solver
-     *                            step.
-     *\param max_iterations       Termination optimizaiton after this many solver 
-     *                            steps.
-     */
-    SizeAdaptShapeWrapper( double max_vertex_movement,
-                           int max_iterations = 50 )
-                         : iterationLimit( max_iterations ),
-                           maxVtxMovement( max_vertex_movement )
-      {}
-
-};
-
-
-} // namespace MESQUITE_NS
-
-#endif
+  LaplacianSmoother smoother;
+  TerminationCriterion outer_term;
+  outer_term.add_iteration_limit( iterationLimit );
+  smoother.set_outer_termination_criterion( &outer_term );
+  
+  InstructionQueue q;
+  q.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
+  q.set_master_quality_improver( &smoother, err ); MSQ_ERRRTN(err);
+  q.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
+  q.run_common( mesh, pmesh, domain, settings, err ); MSQ_ERRRTN(err);
+}

@@ -25,50 +25,23 @@
   ***************************************************************** */
 
 
-/** \file SizeAdaptShapeWrapper.hpp
+/** \file Wrapper.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef SIZE_ADAPT_SHAPE_WRAPPER_HPP
-#define SIZE_ADAPT_SHAPE_WRAPPER_HPP
-
 #include "Mesquite.hpp"
 #include "Wrapper.hpp"
+#include "MsqError.hpp"
+#include "QualityAssessor.hpp"
 
-namespace MESQUITE_NS {
+MESQUITE_NS::Wrapper::Wrapper() : qualAssessor( new QualityAssessor ) {}
+MESQUITE_NS::Wrapper::~Wrapper() { delete qualAssessor; }
 
-class MESQUITE_EXPORT SizeAdaptShapeWrapper : public Wrapper
+void MESQUITE_NS::Wrapper::run_common(  Mesh* mesh, ParallelMesh* pmesh, 
+                             MeshDomain* dom, Settings* opt, MsqError& err )
 {
-  private:
-    int iterationLimit;
-    double maxVtxMovement;
-
-    void run_wrapper( Mesh* mesh,
-                      ParallelMesh* pmesh,
-                      MeshDomain* geom,
-                      Settings* settings,
-                      QualityAssessor* qa,
-                      MsqError& err );
-
-  public:
-  
-    /**
-     *\param max_vertex_movement  Termination optimization if no vertex is moved
-     *                            by more than this distance in the previous solver
-     *                            step.
-     *\param max_iterations       Termination optimizaiton after this many solver 
-     *                            steps.
-     */
-    SizeAdaptShapeWrapper( double max_vertex_movement,
-                           int max_iterations = 50 )
-                         : iterationLimit( max_iterations ),
-                           maxVtxMovement( max_vertex_movement )
-      {}
-
-};
-
-
-} // namespace MESQUITE_NS
-
-#endif
+  QualityAssessor qa(*qualAssessor); // use copy so that subclass changes aren't persistent.
+  run_wrapper( mesh, pmesh, dom, opt, &qa, err );
+  MSQ_CHKERR(err); // udpate stack trace, don't care about value
+}

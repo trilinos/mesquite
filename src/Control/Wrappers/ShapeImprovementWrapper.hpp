@@ -48,15 +48,8 @@
 #ifndef ShapeImprovementWrapper_hpp
 #define ShapeImprovementWrapper_hpp
 
-#include "IdealWeightInverseMeanRatio.hpp" 
-#include "FeasibleNewton.hpp"
-#include "LPtoPTemplate.hpp"
-#include "QualityAssessor.hpp"
-#include "InstructionQueue.hpp"
-#include "TerminationCriterion.hpp"
-
-#include "UntangleBetaQualityMetric.hpp"
-#include "ConjugateGradient.hpp"
+#include "Mesquite.hpp"
+#include "Wrapper.hpp"
 
 namespace MESQUITE_NS { 
   /*! \class ShapeImprovementWrapper
@@ -65,52 +58,36 @@ namespace MESQUITE_NS {
        ratio.
        
      */
-  class ShapeImprovementWrapper : public InstructionQueue {
+  class ShapeImprovementWrapper : public Wrapper {
      
   public:  
       //Constructor sets the instructions in the queue.
     MESQUITE_EXPORT
-	ShapeImprovementWrapper(MsqError& err,
+    ShapeImprovementWrapper(MsqError& err,
                             double cpu_time = 0.0, 
                             double grad_norm =1.e-6);
-    
-      //! Destructor must delete the objects inserted in the queue.
+      //Constructor sets the instructions in the queue.
     MESQUITE_EXPORT
-    virtual ~ShapeImprovementWrapper();
-    
-      //! run_instructions runs the wrapper on the given MeshSet.
+    ShapeImprovementWrapper(double cpu_time = 0.0, 
+                            double grad_norm =1.e-6);
+
+  protected:
+  
     MESQUITE_EXPORT
-    virtual void run_instructions( Mesh* mesh,
-                                   MeshDomain* domain,
-                                   MsqError &err );
+    void run_wrapper( Mesh* mesh,
+                      ParallelMesh* pmesh,
+                      MeshDomain* geom,
+                      Settings* settings,
+                      QualityAssessor* qa,
+                      MsqError& err );
     
-    MESQUITE_EXPORT
-    inline void run_instructions( Mesh* mesh, MsqError& err )
-      { this->run_instructions( mesh, 0, err ); }
       
   private:
-    UntangleBetaQualityMetric* untangleMetric;
-    LPtoPTemplate* untangleFunc;
-    
-    ConjugateGradient* untangleGlobal;
-    
-    TerminationCriterion* untangleGlobalOuter; 
-    TerminationCriterion* untangleGlobalInner;
 
-    IdealWeightInverseMeanRatio* inverseMeanRatio; 
-    LPtoPTemplate* objFunc;
-    FeasibleNewton* feasNewt;
-    QualityAssessor* mQA;
-    TerminationCriterion* termOuter; 
-    TerminationCriterion* termInner;
-
-    bool timerNeeded;
-    double maxTime;
-      //arbitraryily chosen variables
-    double untBeta;
-    double successiveEps;
-  
-
+    double maxTime, gradNorm;
+      // constants
+    const double untBeta;
+    const double successiveEps;
   };
   
   

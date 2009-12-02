@@ -38,8 +38,19 @@ Member functions of the Mesquite::ShapeImprovementWrapper class
 #include "ShapeImprovementWrapper.hpp"
 #include "MsqTimer.hpp"
 #include "MsqDebug.hpp"
+#include "UntangleBetaQualityMetric.hpp"
+#include "LPtoPTemplate.hpp"
+#include "ConjugateGradient.hpp"
+#include "TerminationCriterion.hpp"
+#include "IdealWeightInverseMeanRatio.hpp"
+#include "FeasibleNewton.hpp"
+#include "InstructionQueue.hpp"
+#include "QualityAssessor.hpp"
 
 namespace MESQUITE_NS {
+
+const double DEF_UNT_BETA = 1e-8;
+const double DEF_SUC_EPS = 1e-4;
 
 /*! The consturctor allows for two values.  The first is a 
   time bound (in seconds) used as a termination criterion.  If
@@ -47,137 +58,83 @@ namespace MESQUITE_NS {
   By default, the value is set to zero and no time bound
   is used.  The second value is the tolerance for the gradient
   norm termination criteria.  The default value is 1.e-6.*/
-ShapeImprovementWrapper::ShapeImprovementWrapper(MsqError& err,
+ShapeImprovementWrapper::ShapeImprovementWrapper(MsqError& ,
                                                  double cpu_time,
                                                  double grad_norm) 
- : untangleMetric(0),
-   untangleFunc(0),
-   untangleGlobal(0),
-   untangleGlobalOuter(0),
-   untangleGlobalInner(0),
-   inverseMeanRatio(0),
-   objFunc(0),
-   feasNewt(0),
-   mQA(0),
-   termOuter(0),
-   termInner(0)
+ : maxTime(cpu_time), 
+   gradNorm(grad_norm),
+   untBeta(DEF_UNT_BETA),
+   successiveEps(DEF_SUC_EPS)
+{}
+
+ShapeImprovementWrapper::ShapeImprovementWrapper(double cpu_time,
+                                                 double grad_norm) 
+ : maxTime(cpu_time), 
+   gradNorm(grad_norm),
+   untBeta(DEF_UNT_BETA),
+   successiveEps(DEF_SUC_EPS)
+{}
+ 
+ 
+void ShapeImprovementWrapper::run_wrapper( Mesh* mesh,
+                                           ParallelMesh* pmesh,
+                                           MeshDomain* domain,
+                                           Settings* settings,
+                                           QualityAssessor* qa,
+                                           MsqError& err )
 {
+    // Define an untangler
+  UntangleBetaQualityMetric untangle_metric( untBeta );
+  LPtoPTemplate untangle_func( 2, &untangle_metric );
+  ConjugateGradient untangle_global( &untangle_func );
+  TerminationCriterion untangle_inner, untangle_outer;
+  untangle_global.use_global_patch();
+  untangle_inner.add_absolute_quality_improvement( 0.0 );
+  untangle_inner.add_absolute_successive_improvement( successiveEps );
+  untangle_outer.add_iteration_limit( 1 );
+  untangle_global.set_inner_termination_criterion( &untangle_inner );
+  untangle_global.set_outer_termination_criterion( &untangle_outer );
 
-    //arbitrarily chosen variables
-  untBeta=1.e-8;
-  successiveEps=1.e-4;
-  
-  
-  
-  if(cpu_time>0.0){
-    timerNeeded=true;
-  }
-  else{
-    timerNeeded=false;
-  }
-  maxTime=cpu_time;
-  
-  untangleMetric = new UntangleBetaQualityMetric(untBeta);
-  untangleFunc =  new LPtoPTemplate(untangleMetric, 2, err);  MSQ_ERRRTN(err);
-  untangleGlobal = new ConjugateGradient(untangleFunc,err);  MSQ_ERRRTN(err);
-  untangleGlobal->use_global_patch();
-  
-  untangleGlobalInner = new TerminationCriterion();
-  untangleGlobalOuter = new TerminationCriterion();
-  
-  untangleGlobalInner->add_absolute_quality_improvement( 0.0 );
-  untangleGlobalInner->add_absolute_successive_improvement( successiveEps );
-  untangleGlobalOuter->add_iteration_limit( 1 );
-  
-  inverseMeanRatio = new IdealWeightInverseMeanRatio(err); MSQ_ERRRTN(err);
-  inverseMeanRatio->set_averaging_method(QualityMetric::LINEAR); 
-    // creates the l_2 squared objective function
-  objFunc = new LPtoPTemplate(inverseMeanRatio, 2, err);  MSQ_ERRRTN(err);
-    //creates a FeasibleNewtone improver
-  feasNewt = new FeasibleNewton(objFunc,true);
-  feasNewt->use_global_patch();
-  mQA = new QualityAssessor(inverseMeanRatio);
-        //**************Set stopping criterion*e***************
-  termInner = new TerminationCriterion();
-  termOuter = new TerminationCriterion();
-  termInner->add_absolute_gradient_L2_norm( grad_norm );
-  termInner->add_relative_successive_improvement( successiveEps );
-  termOuter->add_iteration_limit( 1 );
-  untangleGlobal->set_inner_termination_criterion(untangleGlobalInner);
-  untangleGlobal->set_outer_termination_criterion(untangleGlobalOuter);
-    //untangleLocal->set_inner_termination_criterion(untangleLocalInner);
-    //untangleLocal->set_outer_termination_criterion(untangleLocalOuter);
-  feasNewt->set_inner_termination_criterion(termInner);
-  feasNewt->set_outer_termination_criterion(termOuter);
-      
-}
+    // define shape improver
+  IdealWeightInverseMeanRatio inverse_mean_ratio;
+  inverse_mean_ratio.set_averaging_method( QualityMetric::LINEAR );
+  LPtoPTemplate obj_func( 2, &inverse_mean_ratio );
+  FeasibleNewton feas_newt( &obj_func );
+  TerminationCriterion term_inner, term_outer;
+  feas_newt.use_global_patch();
+  qa->add_quality_assessment( &inverse_mean_ratio );
+  term_inner.add_absolute_gradient_L2_norm( gradNorm );
+  term_inner.add_relative_successive_improvement( successiveEps );
+  term_outer.add_iteration_limit( 1 );
+  feas_newt.set_inner_termination_criterion( &term_inner );
+  feas_newt.set_outer_termination_criterion( &term_outer );
 
-
-ShapeImprovementWrapper::~ShapeImprovementWrapper()
-{
-  delete untangleMetric;
-  delete untangleFunc;
-  delete untangleGlobal;
-  delete untangleGlobalInner;
-  delete untangleGlobalOuter;
-      
-  delete inverseMeanRatio;
-  delete objFunc;
-  delete feasNewt;
-  delete mQA;
-  delete termInner;
-  delete termOuter;
-}
-
-
-/*!Run instructions first calls the global untangler.  If the
-  resulting mesh is tangled after that pre-conditioning step,
-  The mesh is iteratively smoothed with a local and then global
-  untangler until the mesh is untangled or until a certain time
-  constraint has been exceeded.  If the mesh was successfully
-  untangled and there is still time remaining, an inverse mean ratio
-  shape improvement is then performed.*/
-void ShapeImprovementWrapper::run_instructions( Mesh* mesh,
-                                                MeshDomain* domain, 
-                                                MsqError &err)
-{
-    //a timer to keep track of the amount of time spent in this wrapper
+    // Apply CPU time limit to untangler
+  if (maxTime > 0.0)
+    untangle_inner.add_cpu_time( maxTime );
+  
+    // Run untangler
+  InstructionQueue q1;
   Timer totalTimer;
-    //time remaining keeps a track of how much time is left before the
-    //wrapper must terminate.  If the wrapper is set to terminate on
-    //a time constraint, time_remaining will always be 1.0
-  double time_remaining=1.0;
-  mQA->loop_over_mesh(mesh, domain, 0, err);  MSQ_ERRRTN(err);
-    //if using a time constraint set the termination criteria.
-  if(timerNeeded){
-    time_remaining=maxTime;
-    untangleGlobalInner->add_cpu_time( time_remaining );
-    MSQ_ERRRTN(err);
-  }
-    //global untangler
-  untangleGlobal->loop_over_mesh(mesh, domain, 0, err);  MSQ_ERRRTN(err);
-  if(timerNeeded)
-    time_remaining=maxTime-totalTimer.since_birth();
-  double func_val=untangleGlobalInner->get_current_function_value();
-
-  mQA->loop_over_mesh(mesh, domain, 0, err);  MSQ_ERRRTN(err);
-  if(timerNeeded)
-    time_remaining=maxTime-totalTimer.since_birth();
-    //if all the time constraint has been exceeded, notify the user that
-    //the shape improvement has not been performed.
-  if(time_remaining<=0){
-    MSQ_DBGOUT(2) << "Optimization is terminating without perfoming shape improvement.  "
-                  << "Untangle Function Value is " << func_val << " .\n";
-  }
-    //otherwise, perform the shape improvement.
-  else{
-    if(timerNeeded) {
-      termInner->add_cpu_time( time_remaining );
-      MSQ_ERRRTN(err);
+  q1.set_master_quality_improver( &untangle_global, err ); MSQ_ERRRTN(err);
+  q1.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
+  q1.run_common( mesh, pmesh, domain, settings, err ); MSQ_ERRRTN(err);
+  
+    // If limited by CPU time, limit next step to remaning time
+  if (maxTime > 0.0) {
+    double remaining = maxTime - totalTimer.since_birth();
+    if (remaining <= 0.0 ){
+      MSQ_DBGOUT(2) << "Optimization is terminating without perfoming shape improvement." << std::endl;
+      remaining = 0.0;
     }
-    feasNewt->loop_over_mesh( mesh, domain, 0, err);  MSQ_ERRRTN(err);
-    mQA->loop_over_mesh(mesh, domain, 0, err);  MSQ_ERRRTN(err);
-  } 
+    term_inner.add_cpu_time( remaining );
+  }
+  
+    // Run shape improver
+  InstructionQueue q2;
+  q2.set_master_quality_improver( &feas_newt, err ); MSQ_ERRRTN(err);
+  q2.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
+  q2.run_common( mesh, pmesh, domain, settings, err ); MSQ_ERRRTN(err);
 }
 
 } // namespace Mesquite

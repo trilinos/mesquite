@@ -48,21 +48,12 @@ Member functions of the Mesquite::InstructionQueue class
 #include "MsqError.hpp"
 #include "MsqDebug.hpp"
 #include "MsqFPE.hpp"
+#include "ParallelMeshInterface.hpp"
 
 using namespace Mesquite;
 
 
 InstructionQueue::InstructionQueue() :
-  autoQualAssess(true),
-  vertexSlaverCount(0),
-  nbPreConditionners(0),
-  isMasterSet(false),
-  masterInstrIndex(0)
-{
-}
-
-InstructionQueue::InstructionQueue( const Settings& settings ) :
-  Settings(settings),
   autoQualAssess(true),
   vertexSlaverCount(0),
   nbPreConditionners(0),
@@ -304,9 +295,12 @@ void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
   }
 }
 
-void InstructionQueue::run_instructions( Mesh* mesh, 
-                                         MeshDomain* domain,
-                                         MsqError &err)
+  
+void InstructionQueue::run_common( Mesh* mesh,
+                                   ParallelMesh* pmesh, 
+                                   MeshDomain* domain,
+                                   Settings* settings,
+                                   MsqError &err)
 { 
   MSQ_DBGOUT(1) << version_string(false) << "\n";
 
@@ -322,7 +316,7 @@ void InstructionQueue::run_instructions( Mesh* mesh,
 #endif
 
     // Generate SIGFPE on floating point errors
-  MsqFPE fpe_trap( trap_floating_point_exception() );
+  MsqFPE fpe_trap( settings->trap_floating_point_exception() );
   
   std::list<Instruction*>::const_iterator instr;
   
@@ -335,46 +329,13 @@ void InstructionQueue::run_instructions( Mesh* mesh,
       return;
     }
     
-    
-    (*instr)->loop_over_mesh( mesh, domain, this, err ); 
-    MSQ_ERRRTN(err);
-  }
-}
-
-  
-void InstructionQueue::run_instructions( ParallelMesh* mesh, 
-                                         MeshDomain* domain,
-                                         MsqError &err)
-{ 
-  MSQ_DBGOUT(1) << version_string(false) << "\n";
-
-  if (nbPreConditionners != 0 && isMasterSet == false ) {
-    MSQ_SETERR(err)("no pre-conditionners allowed if master QualityImprover "
-                    "is not set.", MsqError::INVALID_STATE);
-    return;
-  }
-  
-#ifdef ENABLE_INTERRUPT
-   // Register SIGINT handler
-  MsqInterrupt msq_interrupt;
-#endif
-
-    // Generate SIGFPE on floating point errors
-  MsqFPE fpe_trap( trap_floating_point_exception() );
-  
-  std::list<Instruction*>::const_iterator instr;
-  
-    // Run each instruction
-  for (instr = instructions.begin(); instr != instructions.end(); ++instr) 
-  {
-    if (MsqInterrupt::interrupt())
-    {
-      MSQ_SETERR(err)(MsqError::INTERRUPTED);
-      return;
+    if (pmesh) {
+      assert(!mesh || pmesh == mesh);
+      (*instr)->loop_over_mesh( pmesh, domain, this, err ); 
     }
-    
-    
-    (*instr)->loop_over_mesh( mesh, domain, this, err ); 
+    else {
+      (*instr)->loop_over_mesh( mesh, domain, this, err ); 
+    }
     MSQ_ERRRTN(err);
   }
 }

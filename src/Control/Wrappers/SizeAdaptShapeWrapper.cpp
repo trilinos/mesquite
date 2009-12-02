@@ -53,12 +53,14 @@
 
 namespace MESQUITE_NS {
 
-void SizeAdaptShapeWrapper::run_instructions_internal( Mesh* mesh, 
-                                                       ParallelMesh* pmesh,
-                                                       MeshDomain* domain, 
-                                                       MsqError& err )
+void SizeAdaptShapeWrapper::run_wrapper( Mesh* mesh, 
+                                         ParallelMesh* pmesh,
+                                         MeshDomain* domain, 
+                                         Settings* settings,
+                                         QualityAssessor* qa,
+                                         MsqError& err )
 {
-  InstructionQueue q( *this ); // copy settings to queue
+  InstructionQueue q;
  
     // calculate average lambda for mesh
   TagVertexMesh init_mesh( err, mesh );  MSQ_ERRRTN(err);
@@ -76,9 +78,9 @@ void SizeAdaptShapeWrapper::run_instructions_internal( Mesh* mesh,
   
     // create quality assessor
   EdgeLengthMetric len(0.0);
-  QualityAssessor qa( &mu );
-  qa.add_quality_assessment( &len );
-  q.add_quality_assessor( &qa, err );
+  qa->add_quality_assessment( &mu );
+  qa->add_quality_assessment( &len );
+  q.add_quality_assessor( qa, err );
   
     // create solver
   TrustRegion solver( &of );
@@ -87,14 +89,10 @@ void SizeAdaptShapeWrapper::run_instructions_internal( Mesh* mesh,
   tc.add_iteration_limit( iterationLimit );
   solver.set_inner_termination_criterion( &tc );
   q.set_master_quality_improver( &solver, err ); MSQ_ERRRTN(err);
-  q.add_quality_assessor( &qa, err );
+  q.add_quality_assessor( qa, err );
 
   // Optimize mesh
-  if (pmesh)
-    q.run_instructions( pmesh, domain, err ); 
-  else
-    q.run_instructions( mesh, domain, err ); 
-  MSQ_CHKERR(err);  
+  q.run_common( mesh, pmesh, domain, settings, err ); MSQ_CHKERR(err);  
 }
 
 } // namespace MESQUITE_NS

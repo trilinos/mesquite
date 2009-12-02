@@ -12,6 +12,7 @@ MSQ_SRCS += \
 MSQ_HDRS += \
 	$(SRC_CONTROL_DIR)/Instruction.hpp \
 	$(SRC_CONTROL_DIR)/InstructionQueue.hpp \
+	$(SRC_CONTROL_DIR)/IQInterface.hpp \
 	$(SRC_CONTROL_DIR)/TerminationCriterion.hpp \
         $(SRC_CONTROL_DIR)/Settings.hpp  \
         $(SRC_CONTROL_DIR)/SlaveBoundaryVertices.hpp \
