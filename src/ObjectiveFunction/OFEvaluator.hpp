@@ -32,11 +32,7 @@
  *  \author Jason Kraftcheck
  */
 
-#ifdef MSQ_USE_OLD_C_HEADERS 
-# include <vector.h>
-#else
-# include <vector>
-#endif
+#include <vector>
 
 #include "Vector3D.hpp"
 #include "ObjectiveFunction.hpp"
@@ -132,7 +128,7 @@ public:
    */
   MESQUITE_EXPORT
   bool update( PatchData& pd, double& value, 
-               msq_std::vector<Vector3D>& grad,
+               std::vector<Vector3D>& grad,
                MsqError& err );
 
   
@@ -160,8 +156,8 @@ public:
    */
   MESQUITE_EXPORT
   bool update( PatchData& pd, double& value,
-               msq_std::vector<Vector3D>& grad, 
-               msq_std::vector<SymMatrix3D>& Hessian_diag_blocks,
+               std::vector<Vector3D>& grad, 
+               std::vector<SymMatrix3D>& Hessian_diag_blocks,
                MsqError& err );
   
   /**\brief Update accumulated values for changes to vertex positions
@@ -187,7 +183,7 @@ public:
    */
   MESQUITE_EXPORT
   bool update( PatchData& pd, double& value,
-               msq_std::vector<Vector3D>& grad, 
+               std::vector<Vector3D>& grad, 
                MsqHessian& Hessian,
                MsqError& err );
                
@@ -231,7 +227,7 @@ public:
   MESQUITE_EXPORT
   bool evaluate( PatchData& pd, 
                  double& value, 
-                 msq_std::vector<Vector3D>& grad,
+                 std::vector<Vector3D>& grad,
                  MsqError& err ) const;
 
   /**\brief Evaluate the objective function without changing any 
@@ -254,8 +250,8 @@ public:
   MESQUITE_EXPORT
   bool evaluate( PatchData& pd, 
                  double& value,
-                 msq_std::vector<Vector3D>& grad, 
-                 msq_std::vector<SymMatrix3D>& Hessian_diag_blocks,
+                 std::vector<Vector3D>& grad, 
+                 std::vector<SymMatrix3D>& Hessian_diag_blocks,
                  MsqError& err ) const;
 
   /**\brief Evaluate the objective function without changing any 
@@ -277,7 +273,7 @@ public:
   MESQUITE_EXPORT
   bool evaluate( PatchData& pd, 
                  double& value,
-                 msq_std::vector<Vector3D>& grad, 
+                 std::vector<Vector3D>& grad, 
                  MsqHessian& Hessian,
                  MsqError& err ) const;
   

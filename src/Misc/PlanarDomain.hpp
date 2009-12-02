@@ -47,7 +47,7 @@ namespace MESQUITE_NS
        This is a template for a planar domain.
        It will provide the normal information necessary for surface mesh optimization.
     */
-  class PlanarDomain : public Mesquite::MeshDomain
+  class MESQUITE_EXPORT PlanarDomain : public Mesquite::MeshDomain
   {
   public:
     enum Plane{ XY = 2, XZ = 1, YZ = 0 };

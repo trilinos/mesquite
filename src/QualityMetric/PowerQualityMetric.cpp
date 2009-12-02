@@ -44,9 +44,9 @@ PowerQualityMetric::PowerQualityMetric(QualityMetric* qm,
 
 PowerQualityMetric::~PowerQualityMetric() {}
 
-msq_std::string PowerQualityMetric::get_name() const
+std::string PowerQualityMetric::get_name() const
 {
-  return msq_std::string("pow(") + mMetric.get_name() + ")";
+  return std::string("pow(") + mMetric.get_name() + ")";
 }
 
 int PowerQualityMetric::get_negate_flag() const
@@ -55,7 +55,7 @@ int PowerQualityMetric::get_negate_flag() const
 }
 
 void PowerQualityMetric::get_evaluations( PatchData& pd,
-                                        msq_std::vector<size_t>& handles,
+                                        std::vector<size_t>& handles,
                                         bool free_only,
                                         MsqError& err )
 {
@@ -75,7 +75,7 @@ bool PowerQualityMetric::evaluate( PatchData& pd,
 bool PowerQualityMetric::evaluate_with_indices( PatchData& pd,
                                                 size_t handle,
                                                 double& value,
-                                                msq_std::vector<size_t>& indices,
+                                                std::vector<size_t>& indices,
                                                 MsqError& err )
 {
   bool rval = mMetric.evaluate_with_indices( pd, handle, value, indices, err );
@@ -87,15 +87,15 @@ bool PowerQualityMetric::evaluate_with_indices( PatchData& pd,
 bool PowerQualityMetric::evaluate_with_gradient( PatchData& pd,
                                                  size_t handle,
                                                  double& value,
-                                                 msq_std::vector<size_t>& indices,
-                                                 msq_std::vector<Vector3D>& gradient,
+                                                 std::vector<size_t>& indices,
+                                                 std::vector<Vector3D>& gradient,
                                                  MsqError& err )
 {
   bool rval = mMetric.evaluate_with_gradient( pd, handle, value, indices, gradient, err );
   const double v = mPower.raise(value);
   const double g = fabs(value) > DBL_EPSILON ? mPower.value() * v / value : 0;
   value = v;
-  for (msq_std::vector<Vector3D>::iterator i = gradient.begin(); i != gradient.end(); ++i)
+  for (std::vector<Vector3D>::iterator i = gradient.begin(); i != gradient.end(); ++i)
     *i *= g;
   return !MSQ_CHKERR(err) && rval;
 }
@@ -104,9 +104,9 @@ bool PowerQualityMetric::evaluate_with_gradient( PatchData& pd,
 bool PowerQualityMetric::evaluate_with_Hessian( PatchData& pd,
                                                 size_t handle,
                                                 double& value,
-                                                msq_std::vector<size_t>& indices,
-                                                msq_std::vector<Vector3D>& gradient,
-                                                msq_std::vector<Matrix3D>& Hessian,
+                                                std::vector<size_t>& indices,
+                                                std::vector<Vector3D>& gradient,
+                                                std::vector<Matrix3D>& Hessian,
                                                 MsqError& err )
 {
   indices.clear();

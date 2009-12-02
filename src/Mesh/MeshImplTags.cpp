@@ -45,7 +45,7 @@ MeshImplTags::TagData::~TagData()
 
 void MeshImplTags::clear()
 {
-  for (msq_std::vector<TagData*>::iterator iter = tagList.begin();
+  for (std::vector<TagData*>::iterator iter = tagList.begin();
        iter != tagList.end(); ++iter)
     if (*iter)
       delete *iter;
@@ -65,7 +65,7 @@ size_t MeshImplTags::size_from_tag_type( Mesh::TagType type )
   }
 }
 
-size_t MeshImplTags::create( const msq_std::string& name,
+size_t MeshImplTags::create( const std::string& name,
                              Mesh::TagType type,
                              unsigned length,
                              const void* defval,
@@ -141,7 +141,7 @@ void MeshImplTags::destroy( size_t tag_index, MsqError& err )
   tagList[tag_index] = 0;
 }
 
-size_t MeshImplTags::handle( const msq_std::string& name, MsqError& err ) const
+size_t MeshImplTags::handle( const std::string& name, MsqError& err ) const
 {
   for (size_t i = 0; i < tagList.size(); ++i)
     if (tagList[i] && tagList[i]->desc.name == name)

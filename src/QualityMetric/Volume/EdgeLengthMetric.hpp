@@ -40,24 +40,24 @@ namespace MESQUITE_NS {
 class EdgeLengthMetric : public EdgeQM
 {
 public:
-  EdgeLengthMetric( double gamma = 0.0 );
+  MESQUITE_EXPORT EdgeLengthMetric( double gamma = 0.0 );
 
-  virtual msq_std::string get_name() const;
+  MESQUITE_EXPORT virtual std::string get_name() const;
 
    //! 1 if metric should be minimized, -1 if metric should be maximized.
-  virtual int get_negate_flag() const;
+  MESQUITE_EXPORT virtual int get_negate_flag() const;
 
-  virtual
+  MESQUITE_EXPORT virtual
   bool evaluate( PatchData& pd, 
                  size_t handle, 
                  double& value, 
                  MsqError& err );
-  virtual
+  MESQUITE_EXPORT virtual
   bool evaluate_with_gradient( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
-                 msq_std::vector<Vector3D>& gradient,
+                 std::vector<size_t>& indices,
+                 std::vector<Vector3D>& gradient,
                  MsqError& err );
 
 private:

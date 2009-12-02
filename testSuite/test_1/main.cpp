@@ -44,21 +44,11 @@ describe main.cpp here
 
 #include "meshfiles.h"
 
-#ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
 using std::cout;
 using std::cerr;
 using std::endl;
-#else
-#include <iostream.h>
-#endif
-
-#ifdef MSQ_USE_OLD_C_HEADERS
 #include <cstdlib>
-#else
-#include <stdlib.h>
-#endif
-
 
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"

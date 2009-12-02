@@ -15,26 +15,26 @@ class RotateArg : public CLArgs::DoubleListArgI
 {
   private: MeshTransform* mTransform;
   public:  RotateArg( MeshTransform* xform ) : mTransform(xform) {}
-      bool value( const msq_std::vector<double>& vals );
+      bool value( const std::vector<double>& vals );
 };
 class ScaleArg : public CLArgs::DoubleListArgI
 {
   private: MeshTransform* mTransform;
   public:  ScaleArg( MeshTransform* xform ) : mTransform(xform) {}
-      bool value( const msq_std::vector<double>& vals );
+      bool value( const std::vector<double>& vals );
 };
 class TranslateArg : public CLArgs::DoubleListArgI
 {
   private: MeshTransform* mTransform;
   public:  TranslateArg( MeshTransform* xform ) : mTransform(xform) {}
-      bool value( const msq_std::vector<double>& vals );
+      bool value( const std::vector<double>& vals );
 };
-bool RotateArg::value( const msq_std::vector<double>& vals )
+bool RotateArg::value( const std::vector<double>& vals )
 {
   mTransform->add_rotation( Vector3D(vals[1],vals[2],vals[3]), vals[0] * M_PI / 180 );
   return true;
 }
-bool ScaleArg::value( const msq_std::vector<double>& vals )
+bool ScaleArg::value( const std::vector<double>& vals )
 {
   for (unsigned i = 0; i < vals.size(); ++i)
     if (vals[i] <= 0)
@@ -45,7 +45,7 @@ bool ScaleArg::value( const msq_std::vector<double>& vals )
     mTransform->add_scale( Vector3D(vals[0], vals[1], vals[2]) );
   return true;
 }
-bool TranslateArg::value( const msq_std::vector<double>& vals )
+bool TranslateArg::value( const std::vector<double>& vals )
 {
   mTransform->add_translation( Vector3D(vals[0], vals[1], vals[2]) );
   return true;
@@ -79,33 +79,33 @@ int main( int argc, char* argv[] )
   args.add_required_arg( "output_file" );
   
   
-  msq_std::vector<msq_std::string> files;
-  if (!args.parse_options( argc, argv, files, msq_stdio::cerr )) {
-    args.print_usage( msq_stdio::cerr );
+  std::vector<std::string> files;
+  if (!args.parse_options( argc, argv, files, std::cerr )) {
+    args.print_usage( std::cerr );
     exit(1);
   }
-  msq_std::string input_file = files[0];
-  msq_std::string output_file = files[1];
+  std::string input_file = files[0];
+  std::string output_file = files[1];
 
   MeshImpl mesh;
   MsqError err;
   mesh.read_vtk( input_file.c_str(), err );
   if (err) {
-    msq_stdio::cerr << err << msq_stdio::endl 
-                    << "Failed to read file: " << input_file << msq_std::endl;
+    std::cerr << err << std::endl 
+                    << "Failed to read file: " << input_file << std::endl;
     return 1;
   }
   
   xform.loop_over_mesh( &mesh, 0, 0, err );
   if (err) {
-    msq_stdio::cerr << err << msq_stdio::endl ;
+    std::cerr << err << std::endl ;
     return 2;
   }
   
   mesh.write_vtk( output_file.c_str(), err );
   if (err) {
-    msq_stdio::cerr << err << msq_stdio::endl 
-                    << "Failed to write file: " << output_file << msq_std::endl;
+    std::cerr << err << std::endl 
+                    << "Failed to write file: " << output_file << std::endl;
     return 1;
   }
   

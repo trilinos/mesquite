@@ -50,13 +50,8 @@
 #  include <iostream>
 #endif
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <functional.h>
-# include <algorithm.h>
-#else
-# include <functional>
-# include <algorithm>
-#endif
+#include <functional>
+#include <algorithm>
 
 namespace MESQUITE_NS {
 
@@ -90,7 +85,7 @@ void print_info( size_t elem, Sample sample,
 
 int TMPQualityMetric::get_negate_flag( ) const { return 1; }
 
-msq_std::string TMPQualityMetric::get_name() const
+std::string TMPQualityMetric::get_name() const
 {
   std::string result( "TMP(" );
   std::string pfx;
@@ -119,7 +114,7 @@ msq_std::string TMPQualityMetric::get_name() const
 
 
 void TMPQualityMetric::get_evaluations( PatchData& pd,
-                                      msq_std::vector<size_t>& handles,
+                                      std::vector<size_t>& handles,
                                       bool free,
                                       MsqError& err )
 {
@@ -127,7 +122,7 @@ void TMPQualityMetric::get_evaluations( PatchData& pd,
 }
 
 void TMPQualityMetric::get_patch_evaluations( PatchData& pd,
-                                      msq_std::vector<size_t>& handles,
+                                      std::vector<size_t>& handles,
                                       bool free,
                                       MsqError& err )
 {
@@ -136,7 +131,7 @@ void TMPQualityMetric::get_patch_evaluations( PatchData& pd,
 
 void TMPQualityMetric::get_element_evaluations( PatchData& pd,
                                               size_t elem,
-                                              msq_std::vector<size_t>& handles,
+                                              std::vector<size_t>& handles,
                                               MsqError& err )
 {
   get_elem_sample_points( pd, elem, handles, err );
@@ -242,7 +237,7 @@ bool TMPQualityMetric::evaluate( PatchData& pd, size_t handle, double& value, Ms
 bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
                                               size_t handle,
                                               double& value,
-                                              msq_std::vector<size_t>& indices,
+                                              std::vector<size_t>& indices,
                                               MsqError& err )
 {
   indices.resize( MAX_ELEM_NODES );
@@ -332,8 +327,8 @@ bool TMPQualityMetric::evaluate_with_gradient(
                                            PatchData& pd,
                                            size_t handle,
                                            double& value,
-                                           msq_std::vector<size_t>& indices,
-                                           msq_std::vector<Vector3D>& grad,
+                                           std::vector<size_t>& indices,
+                                           std::vector<Vector3D>& grad,
                                            MsqError& err )
 {
     // make sure reinterpret_casts below are valid
@@ -418,9 +413,9 @@ bool TMPQualityMetric::evaluate_with_Hessian(
                                            PatchData& pd,
                                            size_t handle,
                                            double& value,
-                                           msq_std::vector<size_t>& indices,
-                                           msq_std::vector<Vector3D>& grad,
-                                           msq_std::vector<Matrix3D>& Hessian,
+                                           std::vector<size_t>& indices,
+                                           std::vector<Vector3D>& grad,
+                                           std::vector<Matrix3D>& Hessian,
                                            MsqError& err )
 {
     // make sure reinterpret_casts below are valid
@@ -519,9 +514,9 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
                                            PatchData& pd,
                                            size_t handle,
                                            double& value,
-                                           msq_std::vector<size_t>& indices,
-                                           msq_std::vector<Vector3D>& grad,
-                                           msq_std::vector<SymMatrix3D>& diagonal,
+                                           std::vector<size_t>& indices,
+                                           std::vector<Vector3D>& grad,
+                                           std::vector<SymMatrix3D>& diagonal,
                                            MsqError& err )
 {
     // make sure reinterpret_casts below are valid

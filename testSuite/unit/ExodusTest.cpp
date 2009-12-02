@@ -39,11 +39,7 @@ static bool create_exodus_file( const char* filename );
 
 #include "cppunit/extensions/HelperMacros.h"
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-# include <iostream.h>
-#else
-# include <iostream>
-#endif
+#include <iostream>
 
 #ifndef _MSC_VER
 #  include <unistd.h>
@@ -94,7 +90,7 @@ public:
   void ExodusTest::test_write()
   {
     Mesquite::MeshImpl *mMesh;
-    Mesquite::MsqPrintError err(msq_stdio::cout);
+    Mesquite::MsqPrintError err(std::cout);
 
       // Create a mesh file
     char filename[] = "MsqExoTestTemp.g";
@@ -120,7 +116,7 @@ public:
   void ExodusTest::check_mesh( const char* filename )
   {
     Mesquite::MeshImpl *mMesh;
-    Mesquite::MsqPrintError err(msq_stdio::cout);
+    Mesquite::MsqPrintError err(std::cout);
     int i;
     const unsigned NUM_HEXES = 115;
     const unsigned NUM_QUADS = 0;
@@ -145,7 +141,7 @@ public:
                                            offset_vect, err );
     CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(vert_handle_vect.size() == 8 * NUM_HEXES + 4 * NUM_QUADS );
-    msq_std::sort( vert_handle_vect.begin(), vert_handle_vect.end() );
+    std::sort( vert_handle_vect.begin(), vert_handle_vect.end() );
     std::vector<Mesquite::Mesh::VertexHandle>::iterator new_end = 
       std::unique( vert_handle_vect.begin(), vert_handle_vect.end() );
     vert_handle_vect.resize( new_end - vert_handle_vect.begin() );

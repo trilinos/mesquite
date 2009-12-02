@@ -201,9 +201,8 @@ const char vtk_file[] =
 void BoundedCylinderDomainTest::test_create_curve_from_mesh()
 {
     // create the input file to read
-  char filename[] = "BCDTestXXXXXX";
-  int filp = mkstemp( filename );
-  FILE* file = fdopen( filp, "w" );
+  char filename[] = "BCDTestTMP";
+  FILE* file = fopen( filename, "w" );
   size_t s = fwrite( vtk_file, sizeof(vtk_file), 1, file );
   if (!s)
   {

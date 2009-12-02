@@ -372,14 +372,14 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
     {
       currentGradInfNorm = initialGradInfNorm = Linf(mGrad);
       MSQ_DBGOUT(debugLevel) << "  o Initial gradient Inf norm: " 
-        << initialGradInfNorm << msq_stdio::endl;
+        << initialGradInfNorm << std::endl;
     }  
       
     if (totalFlag & (GRADIENT_L2_NORM_ABSOLUTE|GRADIENT_L2_NORM_RELATIVE))
     {
       currentGradL2NormSquared = initialGradL2NormSquared = length_squared(mGrad);
       MSQ_DBGOUT(debugLevel) << "  o Initial gradient L2 norm: " 
-        << msq_stdc::sqrt(initialGradL2NormSquared) << msq_stdio::endl;
+        << std::sqrt(initialGradL2NormSquared) << std::endl;
     }  
 
       //the OFvalue comes for free, so save it
@@ -413,7 +413,7 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
   }
   
   if (totalFlag & (GRAD_FLAGS|OF_FLAGS))
-    MSQ_DBGOUT(debugLevel) << "  o Initial OF value: " << initialOFValue << msq_stdio::endl;
+    MSQ_DBGOUT(debugLevel) << "  o Initial OF value: " << initialOFValue << std::endl;
   
     // Store current vertex locations now, because we'll
     // need them later to compare the current movement with.
@@ -446,17 +446,17 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
     
   if (plotFile.is_open()) {
       // two newlines so GNU plot knows that we are starting a new data set
-    plotFile << msq_stdio::endl << msq_stdio::endl;
+    plotFile << std::endl << std::endl;
       // write column headings as comment in data file
-    plotFile << "#Iter\tCPU\tObjFunc\tGradL2\tGradInf\tMovement" << msq_stdio::endl;
+    plotFile << "#Iter\tCPU\tObjFunc\tGradL2\tGradInf\tMovement" << std::endl;
       // write initial values
     plotFile << 0 
      << '\t' << mTimer.since_birth() 
      << '\t' << initialOFValue 
-     << '\t' << msq_std::sqrt( currentGradL2NormSquared ) 
+     << '\t' << std::sqrt( currentGradL2NormSquared ) 
      << '\t' << currentGradInfNorm 
      << '\t' << 0.0
-     << msq_stdio::endl;
+     << std::endl;
   }
 }
 
@@ -515,14 +515,14 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
   {
     currentGradL2NormSquared = length_squared(grad_array, pd.num_free_vertices()); // get the L2 norm
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- gradient L2 norm: " 
-      << msq_stdc::sqrt(currentGradL2NormSquared) << msq_stdio::endl;
+      << std::sqrt(currentGradL2NormSquared) << std::endl;
   }
   //currentGradInfNorm = 10e6;
   if (terminationCriterionFlag & (GRADIENT_INF_NORM_ABSOLUTE | GRADIENT_INF_NORM_RELATIVE)) 
   {
     currentGradInfNorm = Linf(grad_array, pd.num_free_vertices()); // get the Linf norm
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- gradient Inf norm: " 
-      << currentGradInfNorm << msq_stdio::endl;
+      << currentGradInfNorm << std::endl;
   } 
   
   if (terminationCriterionFlag & VERTEX_MOVEMENT_RELATIVE)
@@ -534,10 +534,10 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
   previousOFValue = currentOFValue;
   currentOFValue = of_value;
   if (terminationCriterionFlag & OF_FLAGS) {
-    MSQ_DBGOUT(debugLevel) << "  o TermCrit -- OF Value: " << of_value << msq_stdio::endl;
+    MSQ_DBGOUT(debugLevel) << "  o TermCrit -- OF Value: " << of_value << std::endl;
   }
   else if (grad_array) {
-    MSQ_DBGOUT(debugLevel) << "  o OF Value: " << of_value << msq_stdio::endl;
+    MSQ_DBGOUT(debugLevel) << "  o OF Value: " << of_value << std::endl;
   }
   
   ++iterationCounter;
@@ -548,10 +548,10 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
     plotFile << iterationCounter 
      << '\t' << mTimer.since_birth() 
      << '\t' << of_value 
-     << '\t' << msq_std::sqrt( currentGradL2NormSquared ) 
+     << '\t' << std::sqrt( currentGradL2NormSquared ) 
      << '\t' << currentGradInfNorm 
-     << '\t' << (maxSquaredMovement > 0.0 ? msq_std::sqrt( maxSquaredMovement ) : 0.0)
-     << msq_stdio::endl;
+     << '\t' << (maxSquaredMovement > 0.0 ? std::sqrt( maxSquaredMovement ) : 0.0)
+     << std::endl;
 }
 
 
@@ -621,7 +621,7 @@ bool TerminationCriterion::terminate( )
     //First check for an interrupt signal
   if (MsqInterrupt::interrupt())
   {
-     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- INTERRUPTED" << msq_stdio::endl;
+     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- INTERRUPTED" << std::endl;
     return true;
   }
   
@@ -630,13 +630,13 @@ bool TerminationCriterion::terminate( )
     && iterationCounter >= iterationBound)
   {
     return_flag = true;
-    MSQ_DBGOUT(debugLevel) << "  o TermCrit -- Reached " << iterationBound << " iterations." << msq_stdio::endl;
+    MSQ_DBGOUT(debugLevel) << "  o TermCrit -- Reached " << iterationBound << " iterations." << std::endl;
   }
   
   if (CPU_TIME & terminationCriterionFlag && mTimer.since_birth()>=timeBound)
   {
     return_flag=true;
-    MSQ_DBGOUT(debugLevel) << "  o TermCrit -- Exceeded CPU time." << msq_stdio::endl;
+    MSQ_DBGOUT(debugLevel) << "  o TermCrit -- Exceeded CPU time." << std::endl;
   }
   
   
@@ -644,7 +644,7 @@ bool TerminationCriterion::terminate( )
       && maxSquaredMovement >= 0.0)
   {
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- Maximuim vertex movement: "
-    << sqrt(maxSquaredMovement) << msq_stdio::endl;
+    << sqrt(maxSquaredMovement) << std::endl;
 
     if (VERTEX_MOVEMENT_ABSOLUTE & terminationCriterionFlag 
         && maxSquaredMovement <= vertexMovementAbsoluteEps)
@@ -715,7 +715,7 @@ bool TerminationCriterion::terminate( )
   {
     return_flag = true;
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- " << vertexMovementExceedsBound
-                           << " vertices out of bounds." << msq_stdio::endl;
+                           << " vertices out of bounds." << std::endl;
   }
   
     // clear this value at the end of each iteration
@@ -873,7 +873,7 @@ void TerminationCriterion::write_timestep( PatchData& pd,
 void TerminationCriterion::write_iterations( const char* filename, MsqError& err )
 {
   if (filename) {
-    plotFile.open( filename, msq_stdio::ios::trunc );
+    plotFile.open( filename, std::ios::trunc );
     if (!plotFile)
       MSQ_SETERR(err)( MsqError::FILE_ACCESS, "Failed to open plot data file: '%s'", filename );
   }

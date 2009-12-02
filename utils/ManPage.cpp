@@ -34,14 +34,14 @@
 #include "ManPage.hpp"
 
 
-msq_stdio::ostream& ManPage::write_text( msq_stdio::ostream& str, bool hanging_indent, const msq_std::string& text )
+std::ostream& ManPage::write_text( std::ostream& str, bool hanging_indent, const std::string& text )
 {
-  msq_std::string::size_type i = 0, j;
+  std::string::size_type i = 0, j;
   if (hanging_indent)
     begin_hanging_paragraph( str );
   else
     begin_paragraph( str );
-  const msq_std::string::size_type n = text.size();
+  const std::string::size_type n = text.size();
   while (i != n) {
     if (text[i] == '\n') {
       begin_paragraph( str );
@@ -49,7 +49,7 @@ msq_stdio::ostream& ManPage::write_text( msq_stdio::ostream& str, bool hanging_i
       continue;
     }
     j = text.find( "\n", i );
-    if (j == msq_std::string::npos)
+    if (j == std::string::npos)
       j = n;
     if (text[i] == '.')
       str << '\\';

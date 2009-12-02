@@ -120,7 +120,7 @@ bool ObjectiveFunction::compute_patch_numerical_gradient(  EvalType type,
                                                            EvalType subtype,
                                                            PatchData& pd,
                                                            double& flocal,
-                                                           msq_std::vector<Vector3D>& grad,
+                                                           std::vector<Vector3D>& grad,
                                                            MsqError& err )
 {
   double flocald=0;
@@ -172,7 +172,7 @@ bool ObjectiveFunction::compute_patch_numerical_gradient(  EvalType type,
 bool ObjectiveFunction::evaluate_with_gradient( EvalType eval_type,
                                                 PatchData &pd,
                                                 double& OF_val,
-                                                msq_std::vector<Vector3D>& grad,
+                                                std::vector<Vector3D>& grad,
                                                 MsqError &err )
 {
   bool b;
@@ -186,7 +186,7 @@ bool ObjectiveFunction::evaluate_with_gradient( EvalType eval_type,
   }
   
   ObjectiveFunction* of = this;
-  msq_std::auto_ptr<ObjectiveFunction> deleter;
+  std::auto_ptr<ObjectiveFunction> deleter;
   if (eval_type == CALCULATE) {
     of->clear();
     b = of->evaluate( ACCUMULATE, pd, OF_val, OF_FREE_EVALS_ONLY, err );
@@ -204,7 +204,7 @@ bool ObjectiveFunction::evaluate_with_gradient( EvalType eval_type,
     if (MSQ_CHKERR(err) || !b)
       return false;
     of = this->clone();
-    deleter = msq_std::auto_ptr<ObjectiveFunction>(of);
+    deleter = std::auto_ptr<ObjectiveFunction>(of);
   }
 
     // Determine number of layers of adjacent elements based on metric type.
@@ -231,8 +231,8 @@ bool ObjectiveFunction::evaluate_with_gradient( EvalType eval_type,
 bool ObjectiveFunction::evaluate_with_Hessian_diagonal( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
-                                        msq_std::vector<Vector3D>& grad_out,
-                                        msq_std::vector<SymMatrix3D>& hess_diag_out,
+                                        std::vector<Vector3D>& grad_out,
+                                        std::vector<SymMatrix3D>& hess_diag_out,
                                         MsqError& err )
 {
   MsqHessian hess;
@@ -248,7 +248,7 @@ bool ObjectiveFunction::evaluate_with_Hessian_diagonal( EvalType type,
 bool ObjectiveFunction::evaluate_with_Hessian( EvalType type, 
                                                PatchData& pd,
                                                double& value_out,
-                                               msq_std::vector<Vector3D>& grad_out,
+                                               std::vector<Vector3D>& grad_out,
                                                MsqHessian& Hessian_out,
                                                MsqError& err ) 
 {

@@ -45,13 +45,8 @@ Header file for the Mesquite::ObjectiveFunction class
 
 #include "Mesquite.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <list.h>
-#  include <vector.h>
-#else
-#  include <list>
-#  include <vector>
-#endif
+#include <list>
+#include <vector>
 
 namespace MESQUITE_NS
 {
@@ -188,7 +183,7 @@ namespace MESQUITE_NS
     virtual bool evaluate_with_gradient( EvalType type, 
                                          PatchData& pd,
                                          double& value_out,
-                                         msq_std::vector<Vector3D>& grad_out,
+                                         std::vector<Vector3D>& grad_out,
                                          MsqError& err ); 
     
       /**\brief Evaluate objective function and diagonal blocks of Hessian for specified patch.
@@ -217,8 +212,8 @@ namespace MESQUITE_NS
     virtual bool evaluate_with_Hessian_diagonal( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
-                                        msq_std::vector<Vector3D>& grad_out,
-                                        msq_std::vector<SymMatrix3D>& hess_diag_out,
+                                        std::vector<Vector3D>& grad_out,
+                                        std::vector<SymMatrix3D>& hess_diag_out,
                                         MsqError& err ); 
     
     
@@ -244,7 +239,7 @@ namespace MESQUITE_NS
     virtual bool evaluate_with_Hessian( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
-                                        msq_std::vector<Vector3D>& grad_out,
+                                        std::vector<Vector3D>& grad_out,
                                         MsqHessian& Hessian_out,
                                         MsqError& err ); 
 
@@ -307,7 +302,7 @@ namespace MESQUITE_NS
                                            EvalType get_eps_eval_type,
                                            PatchData& pd,
                                            double& flocal,
-                                           msq_std::vector<Vector3D>& grad,
+                                           std::vector<Vector3D>& grad,
                                            MsqError& err );
   };
   

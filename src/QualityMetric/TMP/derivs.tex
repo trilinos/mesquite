@@ -1175,6 +1175,43 @@ metric in Section \ref{2ds} and the second term being $\gamma$ times the
 expressions in \ref{tauminus1} and \ref{tm1}. The derivatives are accordingly 
 a linear combination of the derivatives of these two terms. \newline
 
+%\subsection{Derivatives of $\mu_3(T)=|T-(adj T)^t|^2 + \gamma (\tau-1)^2$ \label{ss3dalt} }
+
+%This metric preserves the shape and size of the target and applies to $n=3$ only.
+%\begin{eqnarray}
+%\mu_3 (T) & = & |T-(adj T)^t|^2 + \gamma (\tau-1)^2 \\
+%          & = & |T|^2 - 6 \, \tau + |adj T|^2 + \gamma (\tau-1)^2
+%\end{eqnarray}
+
+%\noindent This is a composite metric, the second term being $\gamma$ times the
+%expressions in \ref{tauminus1} and \ref{tm1}. The derivatives are accordingly 
+%a linear combination of the derivatives of these two terms. \newline
+
+%\noindent Let the first term be 
+%\begin{eqnarray}
+%\nu(T) & = & |T|^2 - 6 \, \tau + |adj T|^2 
+%\end{eqnarray}
+%The first derivative is
+%\begin{eqnarray}
+%\frac{\partial \nu}{\partial T} & = &  2 \, \left( 1 + |T|^2 \right) \, T - 6 \, (adj T)^t - 2 \, T \, T^t \, T
+%\end{eqnarray}
+%while the second derivative is
+%\begin{eqnarray}
+%\frac{\partial^2 \nu}{\partial T^2} & = & 2 \, I_9 + \frac{\partial^2}{\partial T^2} \, |adj T|^2 - 6\, \frac{\partial^2 \tau}{\partial T^2}
+%\end{eqnarray}
+%Expressions for the latter two terms are given in (\ref{hess-nrm-adj}) and (\ref{2ndtau3d}), respectively. \newline
+
+\subsection{Derivatives of $\mu_n(T)=|T| - \frac{1}{\sqrt{n}} \, (tr T)$ \label{sho} }
+
+\noindent This metric preserves the shape and orientation of the target and 
+applies to both $n=2$ and $n=3$.  \newline
+
+\begin{eqnarray}
+\mu(T) & = & |T| - \frac{1}{\sqrt{n}} \, \left( tr \, T \right) \\
+\frac{\partial \mu}{\partial T} & = & \frac{T}{|T|} - \frac{1}{\sqrt{n}} \, I \\\frac{\partial^2 \mu}{\partial T^2} & = & \frac{1}{|T|} \, \left\{ I_{n^2} - \frac{(T \otimes T)}{|T|^2}\right\}
+\end{eqnarray}
+The metric is non-differentiable at $T=0$. \newline
+
 \section{Derivatives of Barrier Metrics}
 
 \subsection{Derivatives of $\mu_n(T)=\frac{|T-I_n|^2}{2 \, \tau}$ \label{sso+}}
@@ -1385,7 +1422,7 @@ second derivatives of $\nu$ from Section \ref{magic}.  \newline
 \subsection{Derivatives of $\mu_3(T)=\frac{1}{9} \, \kappa^2(T) - 1$ \label{s+1} }
 
 \noindent This metric preserves the shape of the target and applies
-to $n=3$, the $n=2$ case being related to Mean Ratio. \newline
+to $n=3$, the $n=2$ case being related to Inverse Mean Ratio. \newline
 
 \noindent The condition number of $T$ is
 \begin{eqnarray}
@@ -1444,7 +1481,7 @@ To complete this expression, use formulas \ref{adjform} and either
 \subsection{Derivatives of $\mu_2(T) = \frac{|T|^2}{2 \tau}-1$ \label{shape+2d} }
 
 \noindent This metric preserves the shape of the target and applies
-to $n=2$. It is the 2D Mean Ratio. It is a special case of the result
+to $n=2$. It is the 2D Inverse Mean Ratio. It is a special case of the result
 in the Inverse Mean Ratio section below, but with an alternate derivation. \newline
 
 \noindent For $\tau>0$,
@@ -1632,7 +1669,7 @@ f(T) & = & \frac{g(T)}{e(T)}
 The table in this section is a map from class names in the Mesquite implementation to sections in this document describing the corresponding
 metric and its derivatives.  Section numbers in parantheses indicate
 metrics that are not yet implemented.  Entries with question marks indicate
-implementations for which there is no corresponding section in this document.
+implementations for which there is no corresponding section in this document.\newline
 
 \begin{tabular}{|c|c|c|}
 \hline
@@ -1645,14 +1682,14 @@ ShapeBarrier & \ref{shape+2d} & \ref{shape+3d} \\
 ShapeBarrierAlt1 &  & \ref{s+1} \\
 InverseMeanRatio & \ref{imr} & \ref{imr} \\
 \hline
-ShapeOrient & ? &  \\
+ShapeOrient & (\ref{sho}) & (\ref{sho}) \\
 ShapeOrientAlt1 & \ref{si+} & \ref{si+} \\
 ShapeOrientAlt2 & ? &  \\
 \hline
 ShapeOrientBarrier & ? & \\
 ShapeOrientBarrierAlt1 & \ref{nu-over-tau} & \ref{nu-over-tau} \\
 \hline
-ShapeSize & \ref{magic} & ? \\
+ShapeSize & \ref{magic} &  \\
 ShapeSizeAlt1 & \ref{magic2} &  \\
 ShapeSizeAlt2 & \ref{ss2d} & \ref{ss3d} \\
 \hline
@@ -1677,5 +1714,17 @@ Untangle & \ref{untangle1} & \ref{untangle1} \\
 UntangleAlt1 & \ref{untangle2} & \ref{untangle2} \\
 \hline
 \end{tabular}
+
+\noindent Table notes:
+\begin{enumerate}
+\item ShapeOrient, 3.2.13, is new and needs to be implemented. The files
+Target2DShapeOrient.hpp, etc. now contain a metric which can be discontinued.
+\item The files ShapeOrientAlt2.hpp, etc. can be discontinued (i.e., removed from the repository and the table).
+\item ShapeOrientBarrier can be 3.2.13, divided by $2 \tau$.
+\item Metric 3.2.10 should be moved to ShapeSize from ShapeSizeAlt2.
+\item ShapeSizeBarrer and ShapeSizeBarrierAlt1 should be switched.
+\item ShapeSizeOrientAlt1 should be 4.1.1?
+\item ShapeSizeOrientBarrierAlt2 should be renamed ShapeSizeOrientBarrierAlt1.
+\end{enumerate}
 
 \end{document}

@@ -45,9 +45,9 @@ ElementPMeanP::ElementPMeanP( double p, ElemSampleQM* metric )
     
 ElementPMeanP::~ElementPMeanP() {}
 
-msq_std::string ElementPMeanP::get_name() const
+std::string ElementPMeanP::get_name() const
 {
-  msq_std::string result("ElementPMeanP(");
+  std::string result("ElementPMeanP(");
   result += mMetric->get_name();
   result += ")";
   return result;
@@ -74,8 +74,8 @@ bool ElementPMeanP::evaluate( PatchData& pd,
 bool ElementPMeanP::evaluate_with_gradient( PatchData& pd, 
                                             size_t handle, 
                                             double& value, 
-                                            msq_std::vector<size_t>& indices,
-                                            msq_std::vector<Vector3D>& gradient,
+                                            std::vector<size_t>& indices,
+                                            std::vector<Vector3D>& gradient,
                                             MsqError& err )
 {
   ElemSampleQM* qm = get_quality_metric();
@@ -88,9 +88,9 @@ bool ElementPMeanP::evaluate_with_gradient( PatchData& pd,
 bool ElementPMeanP::evaluate_with_Hessian( PatchData& pd, 
                           size_t handle, 
                           double& value, 
-                          msq_std::vector<size_t>& indices,
-                          msq_std::vector<Vector3D>& gradient,
-                          msq_std::vector<Matrix3D>& Hessian,
+                          std::vector<size_t>& indices,
+                          std::vector<Vector3D>& gradient,
+                          std::vector<Matrix3D>& Hessian,
                           MsqError& err )
 {
   ElemSampleQM* qm = get_quality_metric();
@@ -103,9 +103,9 @@ bool ElementPMeanP::evaluate_with_Hessian( PatchData& pd,
 bool ElementPMeanP::evaluate_with_Hessian_diagonal( PatchData& pd, 
                           size_t handle, 
                           double& value, 
-                          msq_std::vector<size_t>& indices,
-                          msq_std::vector<Vector3D>& gradient,
-                          msq_std::vector<SymMatrix3D>& diagonal,
+                          std::vector<size_t>& indices,
+                          std::vector<Vector3D>& gradient,
+                          std::vector<SymMatrix3D>& diagonal,
                           MsqError& err )
 {
   ElemSampleQM* qm = get_quality_metric();

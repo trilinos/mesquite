@@ -52,28 +52,28 @@ class TargetWriter : public Instruction
 public:
   TargetWriter( TargetCalculator* tc,
                 WeightCalculator* wc = 0,
-                msq_std::string target_base_name = "MSQ_TARGET_MATRIX",
-                msq_std::string weight_base_name = "MSQ_TARGET_WEIGHT") ;
+                std::string target_base_name = "MSQ_TARGET_MATRIX",
+                std::string weight_base_name = "MSQ_TARGET_WEIGHT") ;
                 
   virtual ~TargetWriter();
   
   double loop_over_mesh( Mesh* mesh, MeshDomain*, const Settings*, MsqError& );
 
-  msq_std::string get_name() const;
+  std::string get_name() const;
 
 private:
 
   TagHandle get_target_tag( unsigned dimension,  unsigned count, 
                             Mesh* mesh, MsqError& err );
   TagHandle get_weight_tag( unsigned count, Mesh* mesh, MsqError& err );
-  TagHandle get_tag_handle( const msq_std::string& base_name,
+  TagHandle get_tag_handle( const std::string& base_name,
                             unsigned num_dbl, Mesh* mesh, MsqError& err );
 
   TargetCalculator* targetCalc;
   WeightCalculator* weightCalc;
   
-  msq_std::string targetName, weightName;
-  msq_std::vector<TagHandle> targetTags, weightTags;
+  std::string targetName, weightName;
+  std::vector<TagHandle> targetTags, weightTags;
 };
 
 

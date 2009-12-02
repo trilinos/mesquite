@@ -38,8 +38,8 @@
 #include <iostream>
 #include <sstream>
 
-template <typename T> static msq_std::string stringify( T value ) {
-  msq_stdio::ostringstream ss;
+template <typename T> static std::string stringify( T value ) {
+  std::ostringstream ss;
   ss << value;
   return ss.str();
 }
@@ -48,9 +48,9 @@ template <typename T> static msq_std::string stringify( T value ) {
 
 CLArgFlag::~CLArgFlag() {}
 
-msq_std::string CLArgFlag::make_man_string( int count, const char* names[] ) const
+std::string CLArgFlag::make_man_string( int count, const char* names[] ) const
 {
-  msq_stdio::ostringstream ss;
+  std::ostringstream ss;
   ManPage::begin_bold(ss) << "-" << flag();
   ManPage::end_bold(ss);
   if (count) {
@@ -63,9 +63,9 @@ msq_std::string CLArgFlag::make_man_string( int count, const char* names[] ) con
   return ss.str();
 }
 
-msq_std::string CLArgFlag::make_literal_man_string( int count, const char* args[] ) const
+std::string CLArgFlag::make_literal_man_string( int count, const char* args[] ) const
 {
-  msq_stdio::ostringstream ss;
+  std::ostringstream ss;
   ManPage::begin_bold(ss) << "-" << flag();
   ManPage::end_bold(ss);
   if (count) {
@@ -92,14 +92,14 @@ bool CLArgToggle::parse( const char* ) const
   return true;
 }
 
-msq_std::string CLArgToggle::brief() const
+std::string CLArgToggle::brief() const
 {
   if (!mOpposite) {
     const char result[] = { '-', flag(), '\0' };
     return result;
   }
   else if (mOpposite->flag() < flag()) {
-    return msq_std::string();
+    return std::string();
   }
   else {
     const char result[] = { '-', flag(), '|', '-', mOpposite->flag(), '\0' };
@@ -107,13 +107,13 @@ msq_std::string CLArgToggle::brief() const
   }
 }
 
-msq_std::string CLArgToggle::manstr() const
+std::string CLArgToggle::manstr() const
 {
   if (!mOpposite) {
     return make_man_string();
   }
   else if (mOpposite->flag() > flag()) {
-    msq_stdio::ostringstream result;
+    std::ostringstream result;
     ManPage::begin_bold(result);
     result << "-" << flag();
     ManPage::end_bold(result);
@@ -124,21 +124,21 @@ msq_std::string CLArgToggle::manstr() const
     return result.str();
   }
   else {
-    return msq_std::string();
+    return std::string();
   }
 }
     
 
 /************************* CLArgString ***********************************/
 
-msq_std::string CLArgString::brief() const
+std::string CLArgString::brief() const
 {
-  msq_stdio::ostringstream ss;
+  std::ostringstream ss;
   ss << '-' << flag() << "  <" << mName << '>';
   return ss.str();
 }
 
-msq_std::string CLArgString::manstr() const
+std::string CLArgString::manstr() const
   { return make_man_string( mName.c_str() );  }
 
 bool CLArgString::parse( const char* option ) const
@@ -151,15 +151,15 @@ bool CLArgString::parse( const char* option ) const
 
 /************************* CLArgLong ***********************************/
 
-msq_std::string CLArgLong::brief() const
+std::string CLArgLong::brief() const
 {
   const char str[] = { '-', flag(), ' ', '<', '\0' };
-  msq_std::string result( str );
+  std::string result( str );
   result += mName;
   result += ">";
   return result;
 }
-msq_std::string CLArgLong::manstr() const
+std::string CLArgLong::manstr() const
 {
   return make_man_string( &mName[0] );
 }
@@ -177,15 +177,15 @@ bool CLArgLong::parse( const char* option ) const
 
 /************************* CLArgInt ***********************************/
 
-msq_std::string CLArgInt::brief() const
+std::string CLArgInt::brief() const
 {
   const char str[] = { '-', flag(), ' ', '<', '\0' };
-  msq_std::string result( str );
+  std::string result( str );
   result += mName;
   result += ">";
   return result;
 }
-msq_std::string CLArgInt::manstr() const
+std::string CLArgInt::manstr() const
 {
   return make_man_string( &mName[0] );
 }
@@ -206,15 +206,15 @@ bool CLArgInt::parse( const char* option ) const
 
 /************************* CLArgDouble ********************************/
 
-msq_std::string CLArgDouble::brief() const
+std::string CLArgDouble::brief() const
 {
   const char str[] = { '-', flag(), ' ', '<', '\0' };
-  msq_std::string result( str );
+  std::string result( str );
   result += mName;
   result += ">";
   return result;
 }
-msq_std::string CLArgDouble::manstr() const
+std::string CLArgDouble::manstr() const
 {
   return make_man_string( &mName[0] );
 }
@@ -231,21 +231,21 @@ bool CLArgDouble::parse( const char* option ) const
 
 /************************* CLArgIDList ********************************/
 
-msq_std::string CLArgIDList::brief() const
+std::string CLArgIDList::brief() const
 {
   const char str[] = { '-', flag(), '\0' };
-  msq_std::string result( str );
+  std::string result( str );
   result += " <id_list>";
   return result;
 }
-msq_std::string CLArgIDList::manstr() const
+std::string CLArgIDList::manstr() const
 {
   return make_man_string( "id_list" );
 }
 
 bool CLArgIDList::parse( const char* str ) const
 {
-  msq_std::vector<int> list;
+  std::vector<int> list;
   long v;
   int i, j;
   char* endptr;
@@ -323,24 +323,24 @@ bool CLArgListData::acceptable_length( unsigned len ) const
   return mSets.empty();
 }
 
-msq_std::string CLArgListData::set_string( int i ) const
+std::string CLArgListData::set_string( int i ) const
 {
   if (mSets[i].empty())
-    return msq_std::string();
+    return std::string();
     
-  msq_stdio::ostringstream result;
+  std::ostringstream result;
   result << mSets[i][0];
   for (unsigned j = 1; j < mSets[i].size(); ++j)
     result << "," << mSets[i][j];
   return result.str();
 }
 
-msq_std::string CLArgListData::brief() const
+std::string CLArgListData::brief() const
 {
   if (mSets.empty())
-    return msq_std::string();
+    return std::string();
   
-  msq_stdio::ostringstream result;
+  std::ostringstream result;
   for (unsigned i = 0; i < mSets.size(); ++i) {
     if (i)
       result << '|';
@@ -349,7 +349,7 @@ msq_std::string CLArgListData::brief() const
   return result.str();
 }
 
-msq_std::string CLArgListData::manstr( char type_char, const CLArgFlag& f ) const
+std::string CLArgListData::manstr( char type_char, const CLArgFlag& f ) const
 {
   if (mSets.empty()) {
     const char argstr[] = { type_char, '1', ',', type_char, '2', ',', '.', '.', '.', '\0' };
@@ -357,7 +357,7 @@ msq_std::string CLArgListData::manstr( char type_char, const CLArgFlag& f ) cons
   }
   else {
     const char flagstr[] = { '-', f.flag(), '\0' };
-    msq_stdio::ostringstream ss;
+    std::ostringstream ss;
     for (unsigned i = 0; i < mSets.size(); ++i) {
       if (i)
         ss << "|";
@@ -373,10 +373,10 @@ msq_std::string CLArgListData::manstr( char type_char, const CLArgFlag& f ) cons
 
 /************************* CLArgIntList ********************************/
 
-msq_std::string CLArgIntList::brief() const
+std::string CLArgIntList::brief() const
 {
   const char str[] = { '-', flag(), ' ', '\0' };
-  msq_std::string result( str );
+  std::string result( str );
   
   if (listData.accept_any_length()) 
     result += "<n1,n2,...>";
@@ -386,14 +386,14 @@ msq_std::string CLArgIntList::brief() const
   return result;
 }
 
-msq_std::string CLArgIntList::manstr() const
+std::string CLArgIntList::manstr() const
   { return listData.manstr('n', *this); }
 
 bool CLArgIntList::parse( const char* str ) const
 {
   long i;
   char* endptr;
-  msq_std::vector<int> list;
+  std::vector<int> list;
   for (;;) {
     while (isspace(*str))
       ++str;
@@ -426,10 +426,10 @@ bool CLArgIntList::parse( const char* str ) const
 
 /************************* CLArgDoubleList ********************************/
 
-msq_std::string CLArgDoubleList::brief() const
+std::string CLArgDoubleList::brief() const
 {
   const char str[] = { '-', flag(), ' ', '\0' };
-  msq_std::string result( str );
+  std::string result( str );
   
   if (listData.accept_any_length()) 
     result += "<r1,r2,...>";
@@ -439,12 +439,12 @@ msq_std::string CLArgDoubleList::brief() const
   return result;
 }
 
-msq_std::string CLArgDoubleList::manstr() const
+std::string CLArgDoubleList::manstr() const
   { return listData.manstr('r', *this); }
 
 bool CLArgDoubleList::parse( const char* str ) const
 {
-  msq_std::vector<double> list;
+  std::vector<double> list;
   char* endptr;
   for (;;) {
     while (isspace(*str))

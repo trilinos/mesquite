@@ -43,7 +43,7 @@ class MeshDomain;
 class MsqError;
 class ParallelMesh;
 
-MESQUITE_EXPORT class ViscousCFDTetShapeWrapper : public Settings
+class MESQUITE_EXPORT ViscousCFDTetShapeWrapper : public Settings
 {
   private:
     double dCutoff, aVal;

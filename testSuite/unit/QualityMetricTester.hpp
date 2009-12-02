@@ -284,7 +284,7 @@ public:
     public: 
       virtual ~PatchXform() {}
       virtual void xform(PatchData& pd, PlanarDomain* dom ) = 0; 
-      virtual void xform_grad(msq_std::vector<Vector3D>& grads) = 0;
+      virtual void xform_grad(std::vector<Vector3D>& grads) = 0;
   };
   
   void test_transform_invariant( QualityMetric* qm, 
@@ -304,13 +304,13 @@ public:
                                 bool unit_area );
 private:
   inline bool type_is_supported( EntityTopology type )
-    { return msq_std::find( types.begin(), types.end(), type ) != types.end(); }
+    { return std::find( types.begin(), types.end(), type ) != types.end(); }
 
   void test_type_is_supported( EntityTopology type, QualityMetric* qm );
   void test_type_is_not_supported( EntityTopology type, QualityMetric* qm );
 
   bool degenHexPyramid; //!< See: ideal_pyramid_base_equals_height()
-  msq_std::vector<EntityTopology> types;
+  std::vector<EntityTopology> types;
   const Settings* mSettings;
   Settings defaultSettings;
   PlanarDomain geomPlane;

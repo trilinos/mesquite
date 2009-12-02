@@ -45,8 +45,15 @@ namespace MESQUITE_NS {
 
 /**\brief \f$ R *= s */
 template <unsigned D> inline
-void hess_scale( MsqMatrix<D,D> R[D*(D+1)/2], double alpha );
+void hess_scale_t( MsqMatrix<D,D> R[D*(D+1)/2], double alpha );
 
+inline
+void hess_scale( MsqMatrix<3,3> R[6], double alpha )
+{ hess_scale_t<3>( R, alpha ); }
+
+inline
+void hess_scale( MsqMatrix<2,2> R[3], double alpha )
+{ hess_scale_t<2>( R, alpha ); }
 
 /**\brief \f$ R = \alpha I_9 \f$
  *
@@ -150,9 +157,20 @@ void set_scaled_2nd_deriv_norm_sqr_adj( MsqMatrix<3,3> R[6],
  *         symmetric matrix.
  */
 template <unsigned D> inline
-void pluseq_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
+void pluseq_scaled_outer_product_t( MsqMatrix<D,D> R[D*(D+1)/2],
                                   double alpha,
                                   const MsqMatrix<D,D>& M );
+inline
+void pluseq_scaled_outer_product( MsqMatrix<3,3> R[6], 
+								  double alpha,
+								  const MsqMatrix<3,3>& M )
+{ pluseq_scaled_outer_product_t<3>(R,alpha,M); }
+
+inline
+void pluseq_scaled_outer_product( MsqMatrix<2,2> R[3], 
+								  double alpha,
+								  const MsqMatrix<2,2>& M )
+{ pluseq_scaled_outer_product_t<2>(R,alpha,M); }
 
 /**\brief \f$ R = \alpha \left( M \otimes M \right) \f$
  *
@@ -160,9 +178,21 @@ void pluseq_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
  *         symmetric matrix.
  */
 template <unsigned D> inline
-void set_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
+void set_scaled_outer_product_t( MsqMatrix<D,D> R[D*(D+1)/2],
                                double alpha,
                                const MsqMatrix<D,D>& M );
+
+inline
+void set_scaled_outer_product( MsqMatrix<3,3> R[6],
+							   double alpha,
+							   const MsqMatrix<3,3>& M )
+{ set_scaled_outer_product_t<3>( R, alpha, M ); }
+
+inline
+void set_scaled_outer_product( MsqMatrix<2,2> R[3],
+							   double alpha,
+							   const MsqMatrix<2,2>& M )
+{ set_scaled_outer_product_t<2>( R, alpha, M ); }
 
 /**\brief \f$ R += \alpha \left( A \otimes B + B \otimes A \right) \f$
  *
@@ -246,9 +276,21 @@ void pluseq_outer_product_I( MsqMatrix<3,3> R[6], const MsqMatrix<3,3>& A );
  *         symmetric matrix.
  */
 template <unsigned D> inline
-void pluseq_scaled_sum_outer_product_I( MsqMatrix<D,D> R[D*(D+1)/2],
+void pluseq_scaled_sum_outer_product_I_t( MsqMatrix<D,D> R[D*(D+1)/2],
                                         double alpha,
                                         const MsqMatrix<D,D>& A );
+inline
+void pluseq_scaled_sum_outer_product_I( MsqMatrix<3,3> R[6],
+                                        double alpha,
+                                        const MsqMatrix<3,3>& A_in )
+{ pluseq_scaled_sum_outer_product_I_t<3>( R, alpha, A_in ); }
+
+inline
+void pluseq_scaled_sum_outer_product_I( MsqMatrix<2,2> R[2],
+                                        double alpha,
+                                        const MsqMatrix<2,2>& A_in )
+{ pluseq_scaled_sum_outer_product_I_t<2>( R, alpha, A_in ); }
+
 
 /**\brief \f$ \frac{\partial^2 f}{\partial (AZ)^2} \Rightarrow \frac{\partial^2 f}{\partial A^2} \f$
  *
@@ -257,8 +299,18 @@ void pluseq_scaled_sum_outer_product_I( MsqMatrix<D,D> R[D*(D+1)/2],
  * with respect to the first matrix in the product.
  */
 template <unsigned D> inline
-void second_deriv_wrt_product_factor( MsqMatrix<D,D> R[D*(D+1)/2],
+void second_deriv_wrt_product_factor_t( MsqMatrix<D,D> R[D*(D+1)/2],
                                       const MsqMatrix<D,D>& Z );
+
+inline
+void second_deriv_wrt_product_factor( MsqMatrix<3,3> R[6],
+                                      const MsqMatrix<3,3>& Z )
+{ second_deriv_wrt_product_factor_t<3>( R, Z ); }
+
+inline
+void second_deriv_wrt_product_factor( MsqMatrix<2,2> R[3],
+                                      const MsqMatrix<2,2>& Z )
+{ second_deriv_wrt_product_factor_t<2>( R, Z ); }
 
 /**\brief \f$ R = \aplha * \frac{\partial^2 \psi(T)}{\partial T^2} \f$
  *
@@ -273,7 +325,7 @@ void set_scaled_2nd_deriv_wrt_psi( MsqMatrix<2,2> R[3],
 /**\brief \f$  R = R + \alpha * Z \f$
  */
 template <unsigned D> inline
-void pluseq_scaled( MsqMatrix<D,D> R[D*(D+1)/2],
+void pluseq_scaled_t( MsqMatrix<D,D> R[D*(D+1)/2],
                     double alpha,
                     const MsqMatrix<D,D> Z[D*(D+1)/2] );
 
@@ -486,7 +538,7 @@ void set_scaled_2nd_deriv_norm_sqr_adj( MsqMatrix<3,3> R[6],
 
 #ifdef MSQ_ROW_BASED_OUTER_PRODUCT
 template <unsigned D>
-void pluseq_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
+void pluseq_scaled_outer_product_t( MsqMatrix<D,D> R[D*(D+1)/2],
                                   double alpha,
                                   const MsqMatrix<D,D>& M )
 {
@@ -499,7 +551,7 @@ void pluseq_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
 }
 #else
 template <unsigned D>
-void pluseq_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
+void pluseq_scaled_outer_product_t( MsqMatrix<D,D> R[D*(D+1)/2],
                                   double alpha,
                                   const MsqMatrix<D,D>& M )
 {
@@ -514,7 +566,7 @@ void pluseq_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
 
 #ifdef MSQ_ROW_BASED_OUTER_PRODUCT
 template <unsigned D>
-void set_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
+void set_scaled_outer_product_t( MsqMatrix<D,D> R[D*(D+1)/2],
                                double alpha,
                                const MsqMatrix<D,D>& M )
 {
@@ -527,7 +579,7 @@ void set_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
 }
 #else
 template <unsigned D>
-void set_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
+void set_scaled_outer_product_t( MsqMatrix<D,D> R[D*(D+1)/2],
                                double alpha,
                                const MsqMatrix<D,D>& M )
 {
@@ -539,6 +591,7 @@ void set_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
       R[h++] = M.column(i) * aM.row(j);
 }
 #endif
+
 
 #ifdef MSQ_ROW_BASED_OUTER_PRODUCT
 void pluseq_scaled_sum_outer_product( MsqMatrix<3,3> R[6],
@@ -860,7 +913,7 @@ inline void pluseq_outer_product_I( MsqMatrix<2,2> R[3], const MsqMatrix<2,2>& A
 #endif
 
 template <unsigned D>
-void pluseq_scaled_sum_outer_product_I( MsqMatrix<D,D> R[D*(D+1)/2],
+void pluseq_scaled_sum_outer_product_I_t( MsqMatrix<D,D> R[D*(D+1)/2],
                                         double alpha,
                                         const MsqMatrix<D,D>& A_in )
 {
@@ -872,7 +925,7 @@ void pluseq_scaled_sum_outer_product_I( MsqMatrix<D,D> R[D*(D+1)/2],
 }
 
 template <unsigned D>
-void second_deriv_wrt_product_factor( MsqMatrix<D,D> R[D*(D+1)/2],
+void second_deriv_wrt_product_factor_t( MsqMatrix<D,D> R[D*(D+1)/2],
                                       const MsqMatrix<D,D>& Z )
 {
   const MsqMatrix<D,D> Zt = transpose(Z);
@@ -906,7 +959,7 @@ void pluseq_scaled( MsqMatrix<D,D> R[D*(D+1)/2],
 
 /**\brief \f$ R *= s */
 template <unsigned D> inline
-void hess_scale( MsqMatrix<D,D> R[D*(D+1)/2], double alpha )
+void hess_scale_t( MsqMatrix<D,D> R[D*(D+1)/2], double alpha )
 {
   for (unsigned i = 0; i < D*(D+1)/2; ++i)
     R[i] *= alpha;

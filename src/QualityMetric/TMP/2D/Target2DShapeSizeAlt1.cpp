@@ -37,7 +37,7 @@
 
 namespace MESQUITE_NS {
 
-msq_std::string Target2DShapeSizeAlt1::get_name() const
+std::string Target2DShapeSizeAlt1::get_name() const
   { return "ShapeSize1"; }
 
 /** \f$ \mu(T) = \frac{|T|^2+2}{2\psi(T)} - 1 \f$

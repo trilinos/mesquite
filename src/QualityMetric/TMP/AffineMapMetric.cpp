@@ -44,13 +44,8 @@
 #include "TargetMetric3D.hpp"
 #include "TargetMetricUtil.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <functional.h>
-# include <algorithm.h>
-#else
-# include <functional>
-# include <algorithm>
-#endif
+#include <functional>
+#include <algorithm>
 
 namespace MESQUITE_NS {
 
@@ -84,11 +79,11 @@ AffineMapMetric::AffineMapMetric( TargetCalculator* tc,
 
 int AffineMapMetric::get_negate_flag( ) const { return 1; }
 
-msq_std::string AffineMapMetric::get_name() const
-  { return msq_std::string("AffineMap"); }
+std::string AffineMapMetric::get_name() const
+  { return std::string("AffineMap"); }
 
 void AffineMapMetric::get_evaluations( PatchData& pd,
-                                       msq_std::vector<size_t>& handles,
+                                       std::vector<size_t>& handles,
                                        bool free,
                                        MsqError& err )
 {
@@ -97,7 +92,7 @@ void AffineMapMetric::get_evaluations( PatchData& pd,
 
 void AffineMapMetric::get_element_evaluations( PatchData& pd,
                                                size_t elem,
-                                               msq_std::vector<size_t>& handles,
+                                               std::vector<size_t>& handles,
                                                MsqError& err )
 {
   get_elem_sample_points( pd, elem, handles, err );
@@ -183,7 +178,7 @@ bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, Msq
 bool AffineMapMetric::evaluate_with_indices( PatchData& pd,
                                              size_t handle,
                                              double& value,
-                                             msq_std::vector<size_t>& indices,
+                                             std::vector<size_t>& indices,
                                              MsqError& err )
 {
   Sample   s = ElemSampleQM::sample( handle );

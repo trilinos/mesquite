@@ -38,18 +38,14 @@
 #include "ExtraDataUser.hpp"
 #include "MsqMatrix.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <vector.h>
-#else
-# include <vector>
-#endif
+#include <vector>
 
 namespace MESQUITE_NS {
 
 struct CachedTargetData {
-  msq_std::vector<size_t> elementOffsets;
-  msq_std::vector< MsqMatrix<3,3> > targets3D;
-  msq_std::vector< MsqMatrix<3,2> > targets2D;
+  std::vector<size_t> elementOffsets;
+  std::vector< MsqMatrix<3,3> > targets3D;
+  std::vector< MsqMatrix<3,2> > targets2D;
   bool has_data() const { return !elementOffsets.empty(); }
   void clear() 
     { 

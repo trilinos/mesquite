@@ -56,7 +56,7 @@ namespace MESQUITE_NS
      virtual ~AspectRatioGammaQualityMetric()
         {}
      
-     virtual msq_std::string get_name() const;
+     virtual std::string get_name() const;
      
      int get_negate_flag() const;
      
@@ -66,7 +66,7 @@ namespace MESQUITE_NS
                     MsqError& err );
       
    private:
-      msq_std::vector<Vector3D> vert;
+      std::vector<Vector3D> vert;
    };
    
    

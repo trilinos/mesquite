@@ -48,7 +48,7 @@ public:
   
   MetricType get_metric_type() const;
   
-  msq_std::string get_name() const;
+  std::string get_name() const;
   
   int get_negate_flag() const;
   
@@ -57,7 +57,7 @@ public:
   
   virtual
   void get_evaluations( PatchData& pd, 
-                        msq_std::vector<size_t>& handles, 
+                        std::vector<size_t>& handles, 
                         bool free_vertices_only,
                         MsqError& err );
 
@@ -72,7 +72,7 @@ public:
   bool evaluate_with_indices( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
+                 std::vector<size_t>& indices,
                  MsqError& err );
 
 
@@ -80,8 +80,8 @@ public:
   bool evaluate_with_gradient( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
-                 msq_std::vector<Vector3D>& gradient,
+                 std::vector<size_t>& indices,
+                 std::vector<Vector3D>& gradient,
                  MsqError& err );
 
 
@@ -89,17 +89,17 @@ public:
   bool evaluate_with_Hessian( PatchData& pd,
                  size_t handle,
                  double& value,
-                 msq_std::vector<size_t>& indices,
-                 msq_std::vector<Vector3D>& gradient,
-                 msq_std::vector<Matrix3D>& Hessian,
+                 std::vector<size_t>& indices,
+                 std::vector<Vector3D>& gradient,
+                 std::vector<Matrix3D>& Hessian,
                  MsqError& err );
                  
 private:
   QualityMetric &metric1, &metric2;
-  mutable msq_std::vector<size_t> mHandles;
-  mutable msq_std::vector<size_t> indices1, indices2;
-  mutable msq_std::vector<Vector3D> grad1, grad2;
-  mutable msq_std::vector<Matrix3D> Hess1, Hess2;
+  mutable std::vector<size_t> mHandles;
+  mutable std::vector<size_t> indices1, indices2;
+  mutable std::vector<Vector3D> grad1, grad2;
+  mutable std::vector<Matrix3D> Hess1, Hess2;
   
 };
 

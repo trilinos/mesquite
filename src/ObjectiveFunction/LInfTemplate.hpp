@@ -62,7 +62,7 @@ namespace MESQUITE_NS
      virtual void clear();
    private:
      /** Temporary storage for qm sample handles */
-     mutable msq_std::vector<size_t> qmHandles;
+     mutable std::vector<size_t> qmHandles;
    };
 }//namespace
 #endif // LInfTemplate_hpp

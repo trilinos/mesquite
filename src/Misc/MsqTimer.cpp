@@ -26,13 +26,8 @@
   ***************************************************************** */
 #include "MsqTimer.hpp"
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#  include <iostream.h>
-#  include <iomanip.h>
-#else
-#  include <iostream>
-#  include <iomanip>
-#endif
+#include <iostream>
+#include <iomanip>
 
 // Create the global collection of stop watches
 Mesquite::StopWatchCollection Mesquite::GlobalStopWatches;
@@ -64,14 +59,10 @@ Mesquite::StopWatchCollection Mesquite::GlobalStopWatches;
      return (double)(t.tms_utime + t.tms_stime) / CLK_TCK;
    }
 #elif defined(HAVE_CLOCK)
-#  ifdef MSQ_USE_OLD_C_HEADERS
-#    include <time.h>
-#  else
-#    include <ctime>
-#  endif
+#  include <ctime>
    static inline double now()
    {
-     return (double)msq_stdc::clock() / CLOCKS_PER_SEC; 
+     return (double)std::clock() / CLOCKS_PER_SEC; 
    }
 #endif
 
@@ -137,7 +128,7 @@ double Mesquite::StopWatch::total_time() const
 }
 
 Mesquite::StopWatchCollection::Key Mesquite::StopWatchCollection::add(
-  const msq_std::string &name,
+  const std::string &name,
   bool fail_if_exists)
 {
     // Don't allow empty name
@@ -163,7 +154,7 @@ Mesquite::StopWatchCollection::Key Mesquite::StopWatchCollection::add(
       // If not, create a new one
     if (i == mEntries.size())
     {
-      mEntries.push_back(msq_std::pair<msq_std::string, StopWatch>(name, StopWatch()));
+      mEntries.push_back(std::pair<std::string, StopWatch>(name, StopWatch()));
     }
     key = i+1;
   }
@@ -176,7 +167,7 @@ Mesquite::StopWatchCollection::Key Mesquite::StopWatchCollection::add(
 
 
 Mesquite::StopWatchCollection::Key Mesquite::StopWatchCollection::get_key(
-  const msq_std::string &name) const
+  const std::string &name) const
 {
   Key key = 0;
   
@@ -267,7 +258,7 @@ int Mesquite::StopWatchCollection::number_of_starts(
   key associated with the smallest total_time StopWatch is in the last
   position of the vector.*/
 void Mesquite::StopWatchCollection::get_keys_sorted_by_time(
-  msq_std::vector<Key> &sorted_keys)
+  std::vector<Key> &sorted_keys)
 {
   int num_watches=mEntries.size();
   int *sorted_indices=new int[num_watches];
@@ -308,24 +299,24 @@ void Mesquite::StopWatchCollection::get_keys_sorted_by_time(
 // Originally in MsqMessage.cpp
 // Moved here and converted to an ostream operator 
 // by J.Kraftcheck, 2004-10-18
-msq_stdio::ostream& Mesquite::operator<<( msq_stdio::ostream& str,
+std::ostream& Mesquite::operator<<( std::ostream& str,
                                           Mesquite::StopWatchCollection& coll )
 {
-  msq_std::vector<Mesquite::StopWatchCollection::Key> sorted_keys;
+  std::vector<Mesquite::StopWatchCollection::Key> sorted_keys;
   Mesquite::GlobalStopWatches.get_keys_sorted_by_time(sorted_keys);
   int number_of_keys=sorted_keys.size();
   int i =0;
   str<<"\nTIME        | NUM. STARTS | TIMER NAME ("<<number_of_keys<<" timers)\n";
   for(i=0;i<number_of_keys;++i){
-	  str<<msq_stdio::setiosflags(msq_stdio::ios::left)
-             <<msq_stdio::setw(13)
+	  str<<std::setiosflags(std::ios::left)
+             <<std::setw(13)
              <<Mesquite::GlobalStopWatches.total_time(sorted_keys[i])
              <<" "
-             <<msq_stdio::setw(13)
+             <<std::setw(13)
              <<Mesquite::GlobalStopWatches.number_of_starts(sorted_keys[i])
              <<" "
              <<Mesquite::GlobalStopWatches.get_string(sorted_keys[i])
-             <<msq_stdio::endl;
+             <<std::endl;
   }
   return str;
 }

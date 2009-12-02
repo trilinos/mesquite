@@ -43,7 +43,7 @@ EdgeQM::~EdgeQM()
 
 
 void EdgeQM::get_evaluations( PatchData& pd, 
-                              msq_std::vector<size_t>& handles,
+                              std::vector<size_t>& handles,
                               bool free_vertices_only, 
                               MsqError& err )
 {
@@ -51,7 +51,7 @@ void EdgeQM::get_evaluations( PatchData& pd,
 }
 
 void EdgeQM::get_single_pass( PatchData& pd, 
-                              msq_std::vector<size_t>& handles,
+                              std::vector<size_t>& handles,
                               bool free_vertices_only, 
                               MsqError& err )
 {
@@ -72,12 +72,12 @@ inline bool operator==( const EdgeData& e1, const EdgeData& e2 )
 
 
 void EdgeQM::get_edge_evaluations( PatchData& pd, 
-                                   msq_std::vector<size_t>& handles,
+                                   std::vector<size_t>& handles,
                                    bool free_vertices_only, 
                                    bool single_pass_evaluate,
                                    MsqError& err )
 {
-  msq_std::vector<EdgeData> vtx_edges;
+  std::vector<EdgeData> vtx_edges;
   size_t n_verts = free_vertices_only ? pd.num_free_vertices() : pd.num_nodes();
   size_t n_cutoff = single_pass_evaluate ? pd.num_nodes() : n_verts;
   handles.clear();
@@ -126,8 +126,8 @@ void EdgeQM::get_edge_evaluations( PatchData& pd,
       } // end for each edge in element
     } // end for each element adjacent to vertex
     
-    msq_std::sort( vtx_edges.begin(), vtx_edges.end() );
-    msq_std::vector<EdgeData>::iterator it, end;
+    std::sort( vtx_edges.begin(), vtx_edges.end() );
+    std::vector<EdgeData>::iterator it, end;
     end = std::unique( vtx_edges.begin(), vtx_edges.end() );
     for (it = vtx_edges.begin(); it != end; ++it) 
       handles.push_back( handle( it->elemEdge, it->adjElem ) );
@@ -137,7 +137,7 @@ void EdgeQM::get_edge_evaluations( PatchData& pd,
 bool EdgeQM::evaluate_with_indices( PatchData& pd,
                                     size_t handle,
                                     double& value,
-                                    msq_std::vector<size_t>& indices,
+                                    std::vector<size_t>& indices,
                                     MsqError& err )
 {
   const MsqMeshEntity& element = pd.element_by_index( elem(handle) );

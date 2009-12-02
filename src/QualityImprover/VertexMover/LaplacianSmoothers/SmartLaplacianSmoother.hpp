@@ -59,7 +59,7 @@ namespace MESQUITE_NS
     MESQUITE_EXPORT SmartLaplacianSmoother(ObjectiveFunction *obj_func, 
                                            MsqError &err);
     MESQUITE_EXPORT ~SmartLaplacianSmoother();
-    virtual msq_std::string get_name() const;
+    virtual std::string get_name() const;
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);
     virtual void optimize_vertex_positions(PatchData &pd,

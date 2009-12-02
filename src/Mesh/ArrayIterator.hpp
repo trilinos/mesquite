@@ -34,14 +34,8 @@
 #define MSQ_ARRAY_ITERATOR_HPP
 
 #include "Mesquite.hpp"
-
-#ifdef MSQ_USE_OLD_STD_HEADERS
-# include <vector.h>
-#else
-# include <vector>
-#endif
-
 #include "MeshInterface.hpp"
+#include <vector>
 
 namespace MESQUITE_NS {
 
@@ -58,8 +52,8 @@ public:
   virtual void operator++();
   virtual bool is_at_end();
 protected:
-  msq_std::vector<Mesh::EntityHandle> mArray;
-  msq_std::vector<Mesh::EntityHandle>::iterator mIter;
+  std::vector<Mesh::EntityHandle> mArray;
+  std::vector<Mesh::EntityHandle>::iterator mIter;
 };
 
 /** Default implementation of Mesh::VertexIterator.

@@ -89,32 +89,32 @@ class FauxMetric : public ElemSampleQM
 {
 public:
   MetricType get_metric_type() const { return ELEMENT_BASED; }
-  msq_std::string get_name() const { return "FauxMetrix"; }
+  std::string get_name() const { return "FauxMetrix"; }
   int get_negate_flag() const { return 1; }
-  void get_evaluations( PatchData& pd, msq_std::vector<size_t>& h, bool free, MsqError& );
-  void get_element_evaluations( PatchData&, size_t, msq_std::vector<size_t>&, MsqError& );
+  void get_evaluations( PatchData& pd, std::vector<size_t>& h, bool free, MsqError& );
+  void get_element_evaluations( PatchData&, size_t, std::vector<size_t>&, MsqError& );
   bool evaluate( PatchData& pd, size_t h, double& v, MsqError& err );
   bool evaluate_with_indices( PatchData& pd, size_t h, double& v, 
-                              msq_std::vector<size_t>& indices, MsqError& err );
+                              std::vector<size_t>& indices, MsqError& err );
   bool evaluate_with_gradient( PatchData& pd, size_t h, double& v, 
-                              msq_std::vector<size_t>& indices, 
-                              msq_std::vector<Vector3D>& grads,
+                              std::vector<size_t>& indices, 
+                              std::vector<Vector3D>& grads,
                               MsqError& err );
   bool evaluate_with_Hessian( PatchData& pd, size_t h, double& v, 
-                              msq_std::vector<size_t>& indices, 
-                              msq_std::vector<Vector3D>& grad,
-                              msq_std::vector<Matrix3D>& Hess,
+                              std::vector<size_t>& indices, 
+                              std::vector<Vector3D>& grad,
+                              std::vector<Matrix3D>& Hess,
                               MsqError& err );
 };
 
-void FauxMetric::get_evaluations( PatchData& pd, msq_std::vector<size_t>& h, bool free, MsqError& err )
+void FauxMetric::get_evaluations( PatchData& pd, std::vector<size_t>& h, bool free, MsqError& err )
 {
   h.clear();
   for (size_t i = 0; i < pd.num_elements(); ++i)
     get_element_evaluations( pd, i, h, err );
 }
 
-void FauxMetric::get_element_evaluations( PatchData& pd, size_t h, msq_std::vector<size_t>& list, MsqError& )
+void FauxMetric::get_element_evaluations( PatchData& pd, size_t h, std::vector<size_t>& list, MsqError& )
 {
   MsqMeshEntity& elem = pd.element_by_index(h);
   for (unsigned i = 0; i  < elem.corner_count(); ++i)
@@ -132,7 +132,7 @@ bool FauxMetric::evaluate( PatchData& pd, size_t h, double& v, MsqError&  )
 }
 
 bool FauxMetric::evaluate_with_indices( PatchData& pd, size_t h, double& v, 
-                              msq_std::vector<size_t>& indices, MsqError& err )
+                              std::vector<size_t>& indices, MsqError& err )
 {
   evaluate( pd, h, v, err );
   indices.resize(3);
@@ -148,8 +148,8 @@ bool FauxMetric::evaluate_with_indices( PatchData& pd, size_t h, double& v,
 }
 
 bool FauxMetric::evaluate_with_gradient( PatchData& pd, size_t h, double& v, 
-                              msq_std::vector<size_t>& indices, 
-                              msq_std::vector<Vector3D>& grads,
+                              std::vector<size_t>& indices, 
+                              std::vector<Vector3D>& grads,
                               MsqError& err )
 {
   evaluate_with_indices( pd, h, v, indices, err );
@@ -160,9 +160,9 @@ bool FauxMetric::evaluate_with_gradient( PatchData& pd, size_t h, double& v,
 }
 
 bool FauxMetric::evaluate_with_Hessian( PatchData& pd, size_t h, double& v, 
-                              msq_std::vector<size_t>& indices, 
-                              msq_std::vector<Vector3D>& grad,
-                              msq_std::vector<Matrix3D>& hess,
+                              std::vector<size_t>& indices, 
+                              std::vector<Vector3D>& grad,
+                              std::vector<Matrix3D>& hess,
                               MsqError& err )
 {
   evaluate_with_gradient( pd, h, v, indices, grad, err );
@@ -190,7 +190,7 @@ void PMeanPMetricTest::test_get_element_evaluations()
   MsqError err;
   FauxMetric m;
   ElementPMeanP e( 1.0, &m );
-  msq_std::vector<size_t> handles;
+  std::vector<size_t> handles;
     // test that handles array contains all elements
   e.get_evaluations( pd, handles, false, err );
   std::sort( handles.begin(), handles.end() );
@@ -211,7 +211,7 @@ void PMeanPMetricTest::test_get_vertex_evaluations()
   MsqError err;
   FauxMetric m;
   VertexPMeanP e( 1.0, &m );
-  msq_std::vector<size_t> handles;
+  std::vector<size_t> handles;
     // test that handles array contains all vertices
   e.get_evaluations( pd, handles, false, err );
   std::sort( handles.begin(), handles.end() );
@@ -251,7 +251,7 @@ void PMeanPMetricTest::test_vertex_evaluate()
     const MsqMeshEntity& elem = pd.element_by_index( elems[i] );
     const size_t* verts = elem.get_vertex_index_array();
     const size_t* end = verts + elem.node_count();
-    const size_t* p = msq_std::find( verts, end, (size_t)0 );
+    const size_t* p = std::find( verts, end, (size_t)0 );
     CPPUNIT_ASSERT( p < end );
     size_t h = ElemSampleQM::handle( Sample(0,p - verts), elems[i] );
   
@@ -284,7 +284,7 @@ void PMeanPMetricTest::test_element_evaluate()
   CPPUNIT_ASSERT(!err);
   
     // get sample points within element
-  msq_std::vector<size_t> handles;
+  std::vector<size_t> handles;
   m.get_element_evaluations( pd, 0, handles, err );
   CPPUNIT_ASSERT(!err);
   
@@ -312,25 +312,25 @@ void PMeanPMetricTest::test_indices()
   ElementPMeanP m2( 2.0, &m );
   
   double v1, v2;
-  msq_std::vector<size_t> indices;
+  std::vector<size_t> indices;
   m2.evaluate_with_indices( pd, 0, v1, indices, err );
   CPPUNIT_ASSERT(!err);
   m2.evaluate( pd, 0, v2, err );
   CPPUNIT_ASSERT(!err);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( v2, v1, 1e-6 );
   
-  msq_std::vector<size_t> vertices;
+  std::vector<size_t> vertices;
   pd.element_by_index(0).get_vertex_indices( vertices );
   
-  msq_std::sort( vertices.begin(), vertices.end() );
-  msq_std::sort( indices.begin(), indices.end() );
+  std::sort( vertices.begin(), vertices.end() );
+  std::sort( indices.begin(), indices.end() );
   CPPUNIT_ASSERT( vertices == indices );
 }
 
 template <typename T>
-size_t index_of( const msq_std::vector<T>& v, T a )
+size_t index_of( const std::vector<T>& v, T a )
 {
-  return msq_std::find( v.begin(), v.end(), a ) - v.begin();
+  return std::find( v.begin(), v.end(), a ) - v.begin();
 }
 
 void PMeanPMetricTest::test_gradient()
@@ -341,13 +341,13 @@ void PMeanPMetricTest::test_gradient()
   ElementPMeanP m2( 2.0, &m );
   
     // get vertices for later
-  msq_std::vector<size_t> vertices;
+  std::vector<size_t> vertices;
   pd.element_by_index(0).get_vertex_indices( vertices );
   
     // evaluate without gradients
   double v1, v2, v3, v4;
-  msq_std::vector<size_t> indices1, indices2, indices3, indices4;
-  msq_std::vector<Vector3D> grads1, grads2;
+  std::vector<size_t> indices1, indices2, indices3, indices4;
+  std::vector<Vector3D> grads1, grads2;
   m1.evaluate_with_indices( pd, 0, v1, indices1, err );
   CPPUNIT_ASSERT(!err);
   m2.evaluate_with_indices( pd, 0, v2, indices2, err );
@@ -362,22 +362,22 @@ void PMeanPMetricTest::test_gradient()
     // compare value and indices to eval w/out gradient
   CPPUNIT_ASSERT_DOUBLES_EQUAL( v1, v3, 1e-6 );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( v2, v4, 1e-6 );
-  msq_std::sort( indices1.begin(), indices1.end() );
-  msq_std::vector<size_t> tm( indices3 );
-  msq_std::sort( tm.begin(), tm.end() );
+  std::sort( indices1.begin(), indices1.end() );
+  std::vector<size_t> tm( indices3 );
+  std::sort( tm.begin(), tm.end() );
   CPPUNIT_ASSERT( tm == indices1 );
-  msq_std::sort( indices2.begin(), indices2.end() );
+  std::sort( indices2.begin(), indices2.end() );
   tm = indices4 ;
-  msq_std::sort( tm.begin(), tm.end() );
+  std::sort( tm.begin(), tm.end() );
   CPPUNIT_ASSERT( tm == indices2 );
   
     // setup evaluation of underying metric
-  msq_std::vector<size_t> handles;
+  std::vector<size_t> handles;
   m.get_element_evaluations( pd, 0, handles, err );
   CPPUNIT_ASSERT(!err);
   
     // calculate expected gradients
-  msq_std::vector<Vector3D> expected1, expected2, temp;
+  std::vector<Vector3D> expected1, expected2, temp;
   expected1.resize( vertices.size(), Vector3D(0,0,0) );
   expected2.resize( vertices.size(), Vector3D(0,0,0) );
   for (unsigned i = 0; i < handles.size(); ++i) {
@@ -413,14 +413,14 @@ void PMeanPMetricTest::test_hessian()
   ElementPMeanP m2( 2.0, &m );
   
     // get vertices for later
-  msq_std::vector<size_t> vertices;
+  std::vector<size_t> vertices;
   pd.element_by_index(0).get_vertex_indices( vertices );
   
     // evaluate gradient
   double v1, v2, v3, v4;
-  msq_std::vector<size_t> indices1, indices2, indices3, indices4, tmpi;
-  msq_std::vector<Vector3D> grad1, grad2, grad3, grad4;
-  msq_std::vector<Matrix3D> hess3, hess4;
+  std::vector<size_t> indices1, indices2, indices3, indices4, tmpi;
+  std::vector<Vector3D> grad1, grad2, grad3, grad4;
+  std::vector<Matrix3D> hess3, hess4;
   m1.evaluate_with_gradient( pd, 0, v1, indices1, grad1, err );
   CPPUNIT_ASSERT(!err);
   m2.evaluate_with_gradient( pd, 0, v2, indices2, grad2, err );
@@ -453,14 +453,14 @@ void PMeanPMetricTest::test_hessian()
   }
   
     // setup evaluation of underying metric
-  msq_std::vector<size_t> handles;
+  std::vector<size_t> handles;
   m.get_element_evaluations( pd, 0, handles, err );
   CPPUNIT_ASSERT(!err);
   
     // calculate expected Hessians
-  msq_std::vector<Vector3D> g;
-  msq_std::vector<Matrix3D> expected1, expected2, h;
-  msq_std::vector<Matrix3D>::iterator h_iter;
+  std::vector<Vector3D> g;
+  std::vector<Matrix3D> expected1, expected2, h;
+  std::vector<Matrix3D>::iterator h_iter;
   const unsigned N = vertices.size();
   expected1.resize( N*(N+1)/2, Matrix3D(0,0,0,0,0,0,0,0,0) );
   expected2 = expected1;
@@ -530,10 +530,10 @@ void PMeanPMetricTest::test_hessian_diagonal()
     // we've already validated the Hessian results in the 
     // previous test, so just check that the diagonal terms
     // match the terms for the full Hessian.
-  msq_std::vector<size_t> m1_indices_h, m1_indices_d, m2_indices_h, m2_indices_d;
-  msq_std::vector<Vector3D> m1_g_h, m1_g_d, m2_g_h, m2_g_d;
-  msq_std::vector<Matrix3D> m1_h_h, m2_h_h;
-  msq_std::vector<SymMatrix3D> m1_h_d, m2_h_d;
+  std::vector<size_t> m1_indices_h, m1_indices_d, m2_indices_h, m2_indices_d;
+  std::vector<Vector3D> m1_g_h, m1_g_d, m2_g_h, m2_g_d;
+  std::vector<Matrix3D> m1_h_h, m2_h_h;
+  std::vector<SymMatrix3D> m1_h_d, m2_h_d;
   double m1_v_h, m1_v_d, m2_v_h, m2_v_d;
   m1.evaluate_with_Hessian( pd, 0, m1_v_h, m1_indices_h, m1_g_h, m1_h_h, err );
   ASSERT_NO_ERROR(err);

@@ -116,13 +116,13 @@ const VtkTypeInfo* VtkTypeInfo::find_type( EntityTopology msq_type,
   return 0;
 }
 
-void VtkTypeInfo::mesquiteToVtkOrder( msq_std::vector<size_t>& conn_list ) const
+void VtkTypeInfo::mesquiteToVtkOrder( std::vector<size_t>& conn_list ) const
 {
   assert(conn_list.size() == numNodes);
   if (vtkConnOrder)
   {
-    msq_std::vector<size_t> temp_list(numNodes);
-    msq_std::swap( temp_list, conn_list );
+    std::vector<size_t> temp_list(numNodes);
+    std::swap( temp_list, conn_list );
     for (size_t i = 0; i < numNodes; ++i)
       conn_list[vtkConnOrder[i]] = temp_list[i];
   }

@@ -42,11 +42,7 @@
 #include "cppunit/extensions/HelperMacros.h"
 #include "UnitUtil.hpp"
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-# include <iostream.h>
-#else
-# include <iostream>
-#endif
+#include <iostream>
 
 using namespace Mesquite;
 
@@ -115,12 +111,12 @@ void TargetReadWriteTest::setUp()
   MsqError err;
   myMesh.read_vtk( filename, err );
   remove(filename);
-  if (err) msq_stdio::cout << err << msq_stdio::endl;
+  if (err) std::cout << err << std::endl;
   CPPUNIT_ASSERT( !err );
   
     // Construct global patch
-  msq_std::vector<Mesh::ElementHandle> elems;
-  msq_std::vector<Mesh::VertexHandle> verts;
+  std::vector<Mesh::ElementHandle> elems;
+  std::vector<Mesh::VertexHandle> verts;
   myMesh.get_all_elements( elems, err ); CPPUNIT_ASSERT(!err);
   myMesh.get_all_vertices( verts, err ); CPPUNIT_ASSERT(!err);
   myPatch.set_mesh( &myMesh );
@@ -206,7 +202,7 @@ unsigned long FakeTargetCalc::make_value( Mesh::ElementHandle elem, Sample sampl
 
 void TargetReadWriteTest::read_write_targets()
 {
-  MsqPrintError err( msq_stdio::cout );
+  MsqPrintError err( std::cout );
   FakeTargetCalc tc;
   
     // Write the targets
@@ -218,7 +214,7 @@ void TargetReadWriteTest::read_write_targets()
   TargetReader reader;
   for (size_t i = 0; i < myPatch.num_elements(); ++i) {
     const unsigned d = TopologyInfo::dimension( myPatch.element_by_index(i).get_element_type() );
-    msq_std::vector<Sample> samples;
+    std::vector<Sample> samples;
     myPatch.get_samples( i, samples, err ); ASSERT_NO_ERROR(err);
     for (size_t j = 0; j < samples.size(); ++j) {
       if (d == 2) {
@@ -243,7 +239,7 @@ void TargetReadWriteTest::read_write_targets()
 
 void TargetReadWriteTest::read_write_weights()
 {
-  MsqPrintError err( msq_stdio::cout );
+  MsqPrintError err( std::cout );
   FakeTargetCalc tc;
   
     // Write the targets
@@ -254,7 +250,7 @@ void TargetReadWriteTest::read_write_weights()
     // Compare all target matrices
   WeightReader reader;
   for (size_t i = 0; i < myPatch.num_elements(); ++i) {
-    msq_std::vector<Sample> samples;
+    std::vector<Sample> samples;
     myPatch.get_samples( i, samples, err ); ASSERT_NO_ERROR(err);
     for (size_t j = 0; j < samples.size(); ++j) {
       double expected = tc.get_weight( myPatch, i, samples[j], err );

@@ -87,7 +87,8 @@ void PaverMinEdgeLengthWrapper::run_instructions_internal( Mesh* mesh,
     // create solver
   TrustRegion solver( &of );
   TerminationCriterion tc;
-  tc.add_absolute_vertex_movement( 1e-2 );
+  tc.add_absolute_vertex_movement( maxVtxMovement );
+  tc.add_iteration_limit( iterationLimit );
   solver.set_inner_termination_criterion( &tc );
   q.set_master_quality_improver( &solver, err ); MSQ_ERRRTN(err);
   q.add_quality_assessor( &qa, err );

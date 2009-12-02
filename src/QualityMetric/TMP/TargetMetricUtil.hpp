@@ -34,12 +34,7 @@
 #define MSQ_TARGET_METRIC_UTIL_HPP
 
 #include "Mesquite.hpp"
-
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-#endif
+#include <vector>
 
 namespace MESQUITE_NS {
 
@@ -69,13 +64,13 @@ void surface_to_2d( const MsqMatrix<3,2>& A_in,
                     MsqMatrix<2,2>& W_out );
 */
 void get_sample_pt_evaluations( PatchData& pd,
-                                msq_std::vector<size_t>& handles,
+                                std::vector<size_t>& handles,
                                 bool free,
                                 MsqError& err );
                     
 void get_elem_sample_points( PatchData& pd,
                              size_t elem,
-                             msq_std::vector<size_t>& handles,
+                             std::vector<size_t>& handles,
                              MsqError& err );
                     
 } // namespace Mesquite

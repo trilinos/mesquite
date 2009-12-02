@@ -33,14 +33,9 @@
 
 //#define DO_QUALITY_ASSESSOR
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#  include <iostream.h>
-#else
-#  include <iostream>
-   using std::cout;
-   using std::endl;
-#endif
-
+#include <iostream>
+using std::cout;
+using std::endl;
 #include <stdlib.h>
 
 
@@ -64,36 +59,36 @@ using namespace Mesquite;
 // Use CPPUNIT_ASSERT in code so it's easy to convert to a unit test later.
 #define CPPUNIT_ASSERT(A) \
   do { if (!(A)) { \
-  msq_stdio::cout << "Assertion Failed: " << #A << msq_stdio::endl; \
-  msq_stdio::cout << "  File: " << __FILE__ << msq_stdio::endl; \
-  msq_stdio::cout << "  Line: " << __LINE__ << msq_stdio::endl; \
+  std::cout << "Assertion Failed: " << #A << std::endl; \
+  std::cout << "  File: " << __FILE__ << std::endl; \
+  std::cout << "  Line: " << __LINE__ << std::endl; \
   return true; \
   } } while (false)
 
 #define CPPUNIT_ASSERT_DOUBLES_EQUAL(E,V,T) \
   do { if (fabs(E-V) > T) { \
-  msq_stdio::cout << "Assertion Failed: " << #V << " == " << #E << msq_stdio::endl; \
-  msq_stdio::cout << "Expected: " << E << "  Got: " << V << msq_stdio::endl;\
-  msq_stdio::cout << "  File: " << __FILE__ << msq_stdio::endl; \
-  msq_stdio::cout << "  Line: " << __LINE__ << msq_stdio::endl; \
+  std::cout << "Assertion Failed: " << #V << " == " << #E << std::endl; \
+  std::cout << "Expected: " << E << "  Got: " << V << std::endl;\
+  std::cout << "  File: " << __FILE__ << std::endl; \
+  std::cout << "  Line: " << __LINE__ << std::endl; \
   return true; \
   } } while (false)
 
 #define CPPUNIT_ASSERT_EQUAL(E,V) \
   do { if (E != V) { \
-  msq_stdio::cout << "Assertion Failed: " << #V << " == " << #E << msq_stdio::endl; \
-  msq_stdio::cout << "Expected: " << E << "  Got: " << V << msq_stdio::endl;\
-  msq_stdio::cout << "  File: " << __FILE__ << msq_stdio::endl; \
-  msq_stdio::cout << "  Line: " << __LINE__ << msq_stdio::endl; \
+  std::cout << "Assertion Failed: " << #V << " == " << #E << std::endl; \
+  std::cout << "Expected: " << E << "  Got: " << V << std::endl;\
+  std::cout << "  File: " << __FILE__ << std::endl; \
+  std::cout << "  Line: " << __LINE__ << std::endl; \
   return true; \
   } } while (false)
 
 #define CPPUNIT_ASSERT_VECTORS_EQUAL(E,V,T) \
   do { if (!E.within_tolerance_box(V,T)) { \
-  msq_stdio::cout << "Assertion Failed: " << #V << " == " << #E << msq_stdio::endl; \
-  msq_stdio::cout << "Expected: " << E << "  Got: " << V << msq_stdio::endl;\
-  msq_stdio::cout << "  File: " << __FILE__ << msq_stdio::endl; \
-  msq_stdio::cout << "  Line: " << __LINE__ << msq_stdio::endl; \
+  std::cout << "Assertion Failed: " << #V << " == " << #E << std::endl; \
+  std::cout << "Expected: " << E << "  Got: " << V << std::endl;\
+  std::cout << "  File: " << __FILE__ << std::endl; \
+  std::cout << "  Line: " << __LINE__ << std::endl; \
   return true; \
   } } while (false)
 
@@ -116,7 +111,7 @@ int main( int argc, char* argv[] )
 {
   if (argc != 1)
   {
-    msq_stdio::cerr << "Invalid arguments.\n";
+    std::cerr << "Invalid arguments.\n";
     return 2;
   }
   
@@ -232,17 +227,17 @@ bool smooth_mesh( MeshImpl* mesh, Mesh* ref_mesh,
   const Vector3D origin( 0, 0, 0 );
   
   // print a little output so we know when we died
-  msq_stdio::cout << 
+  std::cout << 
   "**************************************************************************" 
-  << msq_stdio::endl << 
+  << std::endl << 
   "* Smoothing..."
-  << msq_stdio::endl << 
+  << std::endl << 
   "* Metric: " << metric->get_name()
-  << msq_stdio::endl << 
+  << std::endl << 
   "* Offset: " << delta
-  << msq_stdio::endl //<< 
+  << std::endl //<< 
   //"**************************************************************************" 
-  << msq_stdio::endl;
+  << std::endl;
   
   
   // Set free vertices to specified position
@@ -299,19 +294,19 @@ bool smooth_mesh( MeshImpl* mesh, Mesh* ref_mesh,
   CPPUNIT_ASSERT(!err);
   
   // print a little output so we know when we died
-  msq_stdio::cout //<< 
+  std::cout //<< 
   //"**************************************************************************" 
-  << msq_stdio::endl << 
+  << std::endl << 
   "* Done Smoothing:"
-  << msq_stdio::endl << 
+  << std::endl << 
   "* Metric: " << metric->get_name()
-  << msq_stdio::endl << 
+  << std::endl << 
   "* Position1: " << new_coords[0][0] << " " << new_coords[0][1] << " " << new_coords[0][2]
-  << msq_stdio::endl << 
+  << std::endl << 
   "* Position2: " << new_coords[1][0] << " " << new_coords[1][1] << " " << new_coords[1][2]
-  << msq_stdio::endl <<  
+  << std::endl <<  
   "**************************************************************************" 
-  << msq_stdio::endl;
+  << std::endl;
   
   CPPUNIT_ASSERT_VECTORS_EQUAL( coordinates[0], new_coords[0], TOL );
   CPPUNIT_ASSERT_VECTORS_EQUAL( coordinates[1], new_coords[1], TOL );

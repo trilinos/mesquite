@@ -31,16 +31,10 @@
 
 #include "meshfiles.h"
 
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#  include <iostream.h>
-#else
-#  include <iostream>
-   using std::cout;
-   using std::endl;
-#endif
-
+#include <iostream>
+using std::cout;
+using std::endl;
 #include <stdlib.h>
-
 
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
@@ -64,9 +58,9 @@ using namespace Mesquite;
 // Use CPPUNIT_ASSERT in code so it's easy to convert to a unit test later.
 #define CPPUNIT_ASSERT(A) \
   do { if (!(A)) { \
-  msq_stdio::cout << "Assertion Failed: " << #A << msq_stdio::endl; \
-  msq_stdio::cout << "  File: " << __FILE__ << msq_stdio::endl; \
-  msq_stdio::cout << "  Line: " << __LINE__ << msq_stdio::endl; \
+  std::cout << "Assertion Failed: " << #A << std::endl; \
+  std::cout << "  File: " << __FILE__ << std::endl; \
+  std::cout << "  Line: " << __LINE__ << std::endl; \
   return true; \
   } } while (false)
 
@@ -90,7 +84,7 @@ int main( int argc, char* argv[] )
     input_file = argv[1];
   else if (argc != 1)
   {
-    msq_stdio::cerr << "Invalid arguments.\n";
+    std::cerr << "Invalid arguments.\n";
     return 2;
   }
   
@@ -195,17 +189,17 @@ bool smooth_mesh( Mesh* mesh, Mesh* ref_mesh,
   const Vector3D origin( 0, 0, 0 );
   
   // print a little output so we know when we died
-  msq_stdio::cout << 
+  std::cout << 
   "**************************************************************************" 
-  << msq_stdio::endl << 
+  << std::endl << 
   "* Smoothing..."
-  << msq_stdio::endl << 
+  << std::endl << 
   "* Metric: " << metric->get_name()
-  << msq_stdio::endl << 
+  << std::endl << 
   "* Apex position: " << initial_free_vertex_position
-  << msq_stdio::endl //<< 
+  << std::endl //<< 
   //"**************************************************************************" 
-  << msq_stdio::endl;
+  << std::endl;
 
   
   // Set free vertex to specified position
@@ -251,17 +245,17 @@ bool smooth_mesh( Mesh* mesh, Mesh* ref_mesh,
   Vector3D position = vtx;
   
   // print a little output so we know when we died
-  msq_stdio::cout //<< 
+  std::cout //<< 
   //"**************************************************************************" 
-  << msq_stdio::endl << 
+  << std::endl << 
   "* Done Smoothing:"
-  << msq_stdio::endl << 
+  << std::endl << 
   "* Metric: " << metric->get_name()
-  << msq_stdio::endl << 
+  << std::endl << 
   "* Apex position: " << position
-  << msq_stdio::endl <<  
+  << std::endl <<  
   "**************************************************************************" 
-  << msq_stdio::endl;
+  << std::endl;
   
   CPPUNIT_ASSERT( position.within_tolerance_box( Vector3D(0,0,0), TOL ) );
   return false;
@@ -275,13 +269,13 @@ bool smooth_mixed_mesh( const char* filename )
   Mesquite::MsqPrintError err(cout);
   
   // print a little output so we know when we died
-  msq_stdio::cout << 
+  std::cout << 
   "**************************************************************************" 
-  << msq_stdio::endl << 
+  << std::endl << 
   "* Smoothing: " << filename
-  << msq_stdio::endl  <<
+  << std::endl  <<
   "**************************************************************************" 
-  << msq_stdio::endl;
+  << std::endl;
   
   // The instruction queue to set up
   InstructionQueue Q;

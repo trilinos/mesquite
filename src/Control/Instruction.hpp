@@ -29,11 +29,7 @@
 
 #include "Mesquite.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <string.h>
-#else
-#  include <string>
-#endif
+#include <string>
 
 namespace MESQUITE_NS {
 
@@ -43,8 +39,7 @@ class MeshDomain;
 class MsqError;
 class Settings;
 
-MESQUITE_EXPORT
-class Instruction
+class MESQUITE_EXPORT Instruction
 {
   public:
   
@@ -60,7 +55,7 @@ class Instruction
                                    const Settings* settings,
                                    MsqError& err );
 
-    virtual msq_std::string get_name() const = 0;
+    virtual std::string get_name() const = 0;
 };
 
 } // namespace Mesquite

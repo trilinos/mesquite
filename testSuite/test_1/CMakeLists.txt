@@ -1,9 +1,1 @@
-
-INCLUDE(PackageAddExecutableAndTest)
-
-
-PACKAGE_ADD_EXECUTABLE_AND_TEST(
-  Test_1
-  SOURCES main.cpp
-  COMM serial mpi
-  )
+MSQ_ADD_TEST( test_1 test_1_main main.cpp )

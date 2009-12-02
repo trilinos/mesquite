@@ -64,7 +64,7 @@ namespace MESQUITE_NS {
  *    8 & 2 & 2 \end{array}\f$
  *    
  */
-class QuadLagrangeShape : public MappingFunction2D
+class MESQUITE_EXPORT QuadLagrangeShape : public MappingFunction2D
 {
 public:
 

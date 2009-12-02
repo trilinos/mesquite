@@ -146,8 +146,8 @@ unsigned CachingTargetTest::request_all_targets_3d()
 {
   unsigned total = 0;
   MsqMatrix<3,3> W;
-  MsqPrintError err(msq_stdio::cout);
-  msq_std::vector<Sample> locations;
+  MsqPrintError err(std::cout);
+  std::vector<Sample> locations;
   
   for (size_t i = 0; i < patch_3d.num_elements(); ++i)
   {
@@ -167,8 +167,8 @@ unsigned CachingTargetTest::request_all_targets_2d()
 {
   unsigned total = 0;
   MsqMatrix<3,2> W;
-  MsqPrintError err(msq_stdio::cout);
-  msq_std::vector<Sample> locations;
+  MsqPrintError err(std::cout);
+  std::vector<Sample> locations;
   
   for (size_t i = 0; i < patch_2d.num_elements(); ++i)
   {
@@ -216,8 +216,8 @@ void CachingTargetTest::test_2d_targets_cached()
 
 void CachingTargetTest::test_3d_target_values()
 {
-  MsqPrintError err(msq_stdio::cout);
-  msq_std::vector<Sample> locations;
+  MsqPrintError err(std::cout);
+  std::vector<Sample> locations;
   
     // evaluate all once to make sure we test the cached values
   request_all_targets_3d();
@@ -240,8 +240,8 @@ void CachingTargetTest::test_3d_target_values()
 
 void CachingTargetTest::test_2d_target_values()
 {
-  MsqPrintError err(msq_stdio::cout);
-  msq_std::vector<Sample> locations;
+  MsqPrintError err(std::cout);
+  std::vector<Sample> locations;
   
     // evaluate all once to make sure we test the cached values
   request_all_targets_2d();
@@ -264,8 +264,8 @@ void CachingTargetTest::test_2d_target_values()
 
 void CachingTargetTest::test_3d_target_subpatch()
 {
-  MsqPrintError err(msq_stdio::cout);
-  msq_std::vector<Sample> locations;
+  MsqPrintError err(std::cout);
+  std::vector<Sample> locations;
   
     // cache some values on the main patch
   request_all_targets_3d();
@@ -300,7 +300,7 @@ void CachingTargetTest::test_3d_target_subpatch()
       
       Mesh::ElementHandle h = subpatch.get_element_handles_array()[i];
       Mesh::ElementHandle* old_h = patch_3d.get_element_handles_array();
-      size_t old_idx = msq_std::find( old_h, old_h + patch_3d.num_elements(), h ) - old_h;
+      size_t old_idx = std::find( old_h, old_h + patch_3d.num_elements(), h ) - old_h;
       CPPUNIT_ASSERT(old_idx < patch_3d.num_elements());
       MsqMatrix<3,3> M = CachedTargetCalculator::make_3d( old_idx, locations[j]);
       ASSERT_MATRICES_EQUAL( W, M, DBL_EPSILON );
@@ -310,8 +310,8 @@ void CachingTargetTest::test_3d_target_subpatch()
 
 void CachingTargetTest::test_2d_target_subpatch()
 {
-  MsqPrintError err(msq_stdio::cout);
-  msq_std::vector<Sample> locations;
+  MsqPrintError err(std::cout);
+  std::vector<Sample> locations;
   
     // cache some values on the main patch
   request_all_targets_2d();
@@ -346,7 +346,7 @@ void CachingTargetTest::test_2d_target_subpatch()
       
       Mesh::ElementHandle h = subpatch.get_element_handles_array()[i];
       Mesh::ElementHandle* old_h = patch_2d.get_element_handles_array();
-      size_t old_idx = msq_std::find( old_h, old_h + patch_2d.num_elements(), h ) - old_h;
+      size_t old_idx = std::find( old_h, old_h + patch_2d.num_elements(), h ) - old_h;
       CPPUNIT_ASSERT(old_idx < patch_2d.num_elements());
       MsqMatrix<3,2> M = CachedTargetCalculator::make_2d( old_idx, locations[j] );
       ASSERT_MATRICES_EQUAL( W, M, DBL_EPSILON );
@@ -356,7 +356,7 @@ void CachingTargetTest::test_2d_target_subpatch()
 
 void CachingTargetTest::test_cache_cleared()
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   
     // cache some values on the main patch
   request_all_targets_3d();

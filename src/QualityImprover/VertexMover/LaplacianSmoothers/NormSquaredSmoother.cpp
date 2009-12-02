@@ -41,17 +41,12 @@
 #include "LPtoPTemplate.hpp"
 #include "EdgeLengthQualityMetric.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
+#include <vector>
 using std::vector;
-#endif
-
 
 namespace MESQUITE_NS {
 
-  msq_std::string NormSquaredSmoother::get_name() const
+  std::string NormSquaredSmoother::get_name() const
     { return "NormSquaredSmoother"; }
 
   NormSquaredSmoother::NormSquaredSmoother() 

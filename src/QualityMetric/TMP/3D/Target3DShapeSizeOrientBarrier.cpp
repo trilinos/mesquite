@@ -38,7 +38,7 @@ namespace MESQUITE_NS {
 
 Target3DShapeSizeOrientBarrier::~Target3DShapeSizeOrientBarrier() {}
 
-msq_std::string Target3DShapeSizeOrientBarrier::get_name() const
+std::string Target3DShapeSizeOrientBarrier::get_name() const
   { return "ShapeSizeOrientBarrier"; }
 
 bool Target3DShapeSizeOrientBarrier::evaluate( const MsqMatrix<3,3>& A, 

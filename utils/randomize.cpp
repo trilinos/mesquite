@@ -37,7 +37,7 @@ public:
   
   virtual ~UnOptimizer() {}
   
-  virtual msq_std::string get_name() const;
+  virtual std::string get_name() const;
   
   virtual PatchSet* get_patch_set();
   
@@ -56,12 +56,12 @@ protected:
 
 private:
   
-    msq_std::vector<size_t> adjVtxList;
+    std::vector<size_t> adjVtxList;
     VertexPatches patchSet;
     ObjectiveFunction* objectiveFunction;
 };
 
-msq_std::string UnOptimizer::get_name() const { return "UnOptimize"; }
+std::string UnOptimizer::get_name() const { return "UnOptimize"; }
 PatchSet* UnOptimizer::get_patch_set() { return &patchSet; }
 void UnOptimizer::initialize( PatchData&, MsqError& ) {}
 void UnOptimizer::initialize_mesh_iteration(PatchData& , MsqError& ) {}
@@ -70,7 +70,7 @@ void UnOptimizer::cleanup() {}
 
 void UnOptimizer::optimize_vertex_positions( PatchData &pd, MsqError &err) {
   assert( pd.num_free_vertices() == 1 && pd.vertex_by_index(0).is_free_vertex() );
-  msq_std::vector<Vector3D> grad(1);
+  std::vector<Vector3D> grad(1);
   double val, junk, coeff;
   bool state;
   
@@ -84,7 +84,7 @@ void UnOptimizer::optimize_vertex_positions( PatchData &pd, MsqError &err) {
   grad[0] /= grad[0].length();
   
   PatchDataVerticesMemento* memento = pd.create_vertices_memento( err ); MSQ_ERRRTN(err);
-  msq_std::auto_ptr<PatchDataVerticesMemento> deleter( memento );
+  std::auto_ptr<PatchDataVerticesMemento> deleter( memento );
   pd.get_minmax_edge_length( junk, coeff );
   
   for (int i = 0; i < 100; ++i) {
@@ -120,20 +120,20 @@ int main( int argc, char* argv[] )
   args.add_required_arg( "input_file" );
   args.add_required_arg( "output_file" );
 
-  msq_std::vector<msq_std::string> files;
-  if (!args.parse_options( argc, argv, files, msq_stdio::cerr )) {
-    args.print_usage( msq_stdio::cerr );
+  std::vector<std::string> files;
+  if (!args.parse_options( argc, argv, files, std::cerr )) {
+    args.print_usage( std::cerr );
     exit(1);
   }
-  msq_std::string input_file = files[0];
-  msq_std::string output_file = files[1];
+  std::string input_file = files[0];
+  std::string output_file = files[1];
   
   MsqError err;
   MeshImpl mesh;
   mesh.read_vtk( input_file.c_str(), err );
   if (err) {
-    msq_stdio::cerr << "ERROR READING FILE: " << input_file << msq_stdio::endl
-                    << err << msq_stdio::endl;
+    std::cerr << "ERROR READING FILE: " << input_file << std::endl
+                    << err << std::endl;
     return 2;
   }
   MeshDomain* domain = process_domain_args( &mesh );
@@ -157,24 +157,24 @@ int main( int argc, char* argv[] )
   q.add_quality_assessor( &qa, err );
   q.run_instructions( &mesh, domain, err );
   if (err) {
-    msq_stdio::cerr << err << msq_stdio::endl;
+    std::cerr << err << std::endl;
     return 3;
   }
 
   int inverted, junk;
   if (qa.get_inverted_element_count( inverted, junk, err ) && inverted ) {
     if (allow_invalid.value())
-      msq_stdio::cerr << "Warning: output mesh contains " << inverted << " inverted elements" << msq_stdio::endl;
+      std::cerr << "Warning: output mesh contains " << inverted << " inverted elements" << std::endl;
     else {
-      msq_stdio::cerr << "Error: output mesh contains " << inverted << " inverted elements" << msq_stdio::endl;
+      std::cerr << "Error: output mesh contains " << inverted << " inverted elements" << std::endl;
       return 4;
     }
   }
   
   mesh.write_vtk( output_file.c_str(), err );
   if (err) {
-    msq_stdio::cerr << "ERROR WRITING FILE: " << output_file << msq_stdio::endl
-                    << err << msq_stdio::endl;
+    std::cerr << "ERROR WRITING FILE: " << output_file << std::endl
+                    << err << std::endl;
     return 2;
   }
   

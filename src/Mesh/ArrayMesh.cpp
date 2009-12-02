@@ -157,7 +157,7 @@ bool ArrayMesh::valid() const
 {
   for (unsigned long i = 0; i < vertexCount; ++i) {
     if (fixedFlags[i] != 0 && fixedFlags[i] != 1) {
-      msq_stdio::cerr << "Invalid vertex fixed flag at index " << i << std::endl;
+      std::cerr << "Invalid vertex fixed flag at index " << i << std::endl;
       return false;
     }
   }
@@ -165,7 +165,7 @@ bool ArrayMesh::valid() const
   for (unsigned long i = 0; i < elementCount * nodesPerElement; ++i) {
     unsigned long j = connArray[i] - oneBasedArrays;
     if (j >= vertexCount) {
-      msq_stdio::cerr << "Invalid connectivity index at index " << j 
+      std::cerr << "Invalid connectivity index at index " << j 
                 << "(element " << j/elementCount << " node " << j%elementCount 
                 << ')' << std::endl;
       return false;
@@ -258,14 +258,14 @@ inline const unsigned long* ArrayMesh::elem_verts( size_t e, int& n ) const
 int ArrayMesh::get_geometric_dimension( MsqError& )
   { return mDimension; }
 
-void ArrayMesh::get_all_elements( msq_std::vector<ElementHandle>& elements, MsqError& )
+void ArrayMesh::get_all_elements( std::vector<ElementHandle>& elements, MsqError& )
 {
   elements.resize( elementCount );
   for (unsigned long i = 0; i < elementCount; ++i)
     elements[i] = (Mesh::ElementHandle)i;
 }
 
-void ArrayMesh::get_all_vertices( msq_std::vector<VertexHandle>& vertices, MsqError& )
+void ArrayMesh::get_all_vertices( std::vector<VertexHandle>& vertices, MsqError& )
 {
   vertices.resize( vertexCount );
   for (unsigned long i = 0; i < vertexCount; ++i)
@@ -374,8 +374,8 @@ void ArrayMesh::vertices_get_byte( const VertexHandle *vert_array,
 void ArrayMesh::vertices_get_attached_elements( 
                          const VertexHandle* vertex_array,
                          size_t num_vertex,
-                         msq_std::vector<ElementHandle>& elements,
-                         msq_std::vector<size_t>& offsets,
+                         std::vector<ElementHandle>& elements,
+                         std::vector<size_t>& offsets,
                          MsqError& )
 {
   const size_t* indices = (const size_t*)vertex_array;
@@ -397,8 +397,8 @@ void ArrayMesh::vertices_get_attached_elements(
 void ArrayMesh::elements_get_attached_vertices(
                                    const ElementHandle *elem_handles,
                                    size_t num_elems,
-                                   msq_std::vector<VertexHandle>& vert_handles,
-                                   msq_std::vector<size_t>& offsets, 
+                                   std::vector<VertexHandle>& vert_handles,
+                                   std::vector<size_t>& offsets, 
                                    MsqError &)
 {
   const size_t* indices = (const size_t*)elem_handles;
@@ -475,13 +475,13 @@ void ArrayMesh::build_vertex_adjacency_list()
   vertexAdjacencyOffsets[0] = 0; 
 }
 
-TagHandle ArrayMesh::tag_create( const msq_std::string&, TagType, unsigned, const void*, MsqError &err)
+TagHandle ArrayMesh::tag_create( const std::string&, TagType, unsigned, const void*, MsqError &err)
   { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); return (TagHandle)-1; }
 void ArrayMesh::tag_delete( TagHandle, MsqError& err )
   { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); }
-TagHandle ArrayMesh::tag_get( const msq_std::string&, MsqError& err )
+TagHandle ArrayMesh::tag_get( const std::string&, MsqError& err )
   { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); return (TagHandle)-1; }
-void ArrayMesh::tag_properties( TagHandle, msq_std::string&, TagType&, unsigned&, MsqError& err )
+void ArrayMesh::tag_properties( TagHandle, std::string&, TagType&, unsigned&, MsqError& err )
   { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); }
 void ArrayMesh::tag_set_element_data( TagHandle, size_t, const ElementHandle*, const void*, MsqError& err )
   { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); }

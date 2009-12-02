@@ -25,20 +25,20 @@ int main( int argc, char* argv[] )
   args.add_required_arg( "input_file" );
   args.add_required_arg( "output_file" );
 
-  msq_std::vector<msq_std::string> files;
-  if (!args.parse_options( argc, argv, files, msq_stdio::cerr )) {
-    args.print_usage( msq_stdio::cerr );
+  std::vector<std::string> files;
+  if (!args.parse_options( argc, argv, files, std::cerr )) {
+    args.print_usage( std::cerr );
     exit(1);
   }
-  msq_std::string input_file = files[0];
-  msq_std::string output_file = files[1];
+  std::string input_file = files[0];
+  std::string output_file = files[1];
   
   MsqError err;
   MeshImpl mesh;
   mesh.read_vtk( input_file.c_str(), err );
   if (err) {
-    msq_stdio::cerr << "ERROR READING FILE: " << input_file << msq_stdio::endl
-                    << err << msq_stdio::endl;
+    std::cerr << "ERROR READING FILE: " << input_file << std::endl
+                    << err << std::endl;
     return 2;
   }
   MeshDomain* domain = process_domain_args( &mesh );
@@ -46,8 +46,8 @@ int main( int argc, char* argv[] )
   if (l2_norm.seen()) {
     ShapeImprovementWrapper smoother( err, cpu_time.value(), l2_norm.value() );
     if (err) {
-      msq_stdio::cerr << "Error constructing smoother" << msq_stdio::endl
-                      << err << msq_stdio::endl;
+      std::cerr << "Error constructing smoother" << std::endl
+                      << err << std::endl;
       return 2;
     }
     smoother.run_instructions( &mesh, domain, err );
@@ -55,21 +55,21 @@ int main( int argc, char* argv[] )
   else {
     ShapeImprovementWrapper smoother( err, cpu_time.value() );
     if (err) {
-      msq_stdio::cerr << "Error constructing smoother" << msq_stdio::endl
-                      << err << msq_stdio::endl;
+      std::cerr << "Error constructing smoother" << std::endl
+                      << err << std::endl;
       return 2;
     }
     smoother.run_instructions( &mesh, domain, err );
   }
   if (err) {
-    msq_stdio::cerr << err << msq_stdio::endl;
+    std::cerr << err << std::endl;
     return 3;
   }
   
   mesh.write_vtk( output_file.c_str(), err );
   if (err) {
-    msq_stdio::cerr << "ERROR WRITING FILE: " << output_file << msq_stdio::endl
-                    << err << msq_stdio::endl;
+    std::cerr << "ERROR WRITING FILE: " << output_file << std::endl
+                    << err << std::endl;
     return 2;
   }
   

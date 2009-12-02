@@ -43,7 +43,7 @@ ConditionNumberQualityMetric::ConditionNumberQualityMetric()
   : AveragingQM(QualityMetric::LINEAR)
   { }
 
-msq_std::string ConditionNumberQualityMetric::get_name() const
+std::string ConditionNumberQualityMetric::get_name() const
   { return "Condition Number"; }
 
 int ConditionNumberQualityMetric::get_negate_flag() const

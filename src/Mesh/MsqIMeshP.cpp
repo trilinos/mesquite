@@ -100,7 +100,9 @@ void MsqIMeshP::vertices_get_global_id(const VertexHandle vert_array[],
       gid[i] = ((int*)&(vert_array[i]))[0];
     }
     else {
-      iMeshP_getOwnerCopy(meshInstance, partitionInstance, (iBase_EntityHandle)(vert_array[i]), &part_id, (iBase_EntityHandle*)&(gid[i]), &itaps_err);
+      iBase_EntityHandle handle;
+      iMeshP_getOwnerCopy(meshInstance, partitionInstance, (iBase_EntityHandle)(vert_array[i]), &part_id, &handle, &itaps_err);
+      gid[i] = ((int*)&(handle))[0];
     }
   }
 }

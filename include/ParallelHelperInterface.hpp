@@ -59,7 +59,7 @@ namespace MESQUITE_NS
     friend class VertexMover;
     // functions called by VertexMover::loop_over_mesh()
     virtual void smoothing_init(MsqError&) = 0;
-    virtual void compute_first_independent_set(msq_std::vector<Mesh::VertexHandle>& fixed_vertices) = 0;
+    virtual void compute_first_independent_set(std::vector<Mesh::VertexHandle>& fixed_vertices) = 0;
     virtual void communicate_first_independent_set(MsqError&) = 0;
     virtual bool compute_next_independent_set() = 0;
     virtual bool get_next_partition_boundary_vertex(Mesquite::Mesh::VertexHandle& vertex_handle) = 0;
@@ -77,7 +77,7 @@ namespace MESQUITE_NS
     virtual void communicate_min_max_to_zero(double* minimum, double* maximum, MsqError&) const = 0;
     virtual void communicate_sums_to_zero(size_t* freeElementCount, int* invertedElementCount, size_t* elementCount, int* invertedSampleCount, size_t* sampleCount, long unsigned int* count, long unsigned int* invalid, double* sum, double *sqrSum, MsqError&) const = 0;
     virtual void communicate_power_sum_to_zero(double* pMean, MsqError&) const = 0;
-    virtual void communicate_histogram_to_zero(msq_std::vector<int> &histogram, MsqError&) const = 0;
+    virtual void communicate_histogram_to_zero(std::vector<int> &histogram, MsqError&) const = 0;
   };
 } // namespace
 

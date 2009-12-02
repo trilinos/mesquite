@@ -548,8 +548,8 @@ void ArrayMeshTest::test_vertices_get_attached_elements()
 {
   MsqPrintError err(std::cerr);
   const size_t verts[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
-  msq_std::vector<Mesh::ElementHandle> elems;
-  msq_std::vector<size_t> offsets;
+  std::vector<Mesh::ElementHandle> elems;
+  std::vector<size_t> offsets;
   zeroBased3D->vertices_get_attached_elements( (const Mesh::VertexHandle*)verts,
                                                9, elems, offsets, err );
   CPPUNIT_ASSERT(!err);
@@ -599,8 +599,8 @@ void ArrayMeshTest::test_vertices_get_attached_elements_one_based()
 {
   MsqPrintError err(std::cerr);
   const size_t verts[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-  msq_std::vector<Mesh::ElementHandle> elems;
-  msq_std::vector<size_t> offsets;
+  std::vector<Mesh::ElementHandle> elems;
+  std::vector<size_t> offsets;
   oneBased3D->vertices_get_attached_elements( (const Mesh::VertexHandle*)verts,
                                                9, elems, offsets, err );
   CPPUNIT_ASSERT(!err);
@@ -650,8 +650,8 @@ void ArrayMeshTest::test_elements_get_attached_vertices()
 {
   MsqPrintError err(std::cerr);
   const size_t elems[] = { 3, 2, 1, 0 };
-  msq_std::vector<Mesh::VertexHandle> verts;
-  msq_std::vector<size_t> offsets;
+  std::vector<Mesh::VertexHandle> verts;
+  std::vector<size_t> offsets;
   zeroBased3D->elements_get_attached_vertices( (const Mesh::ElementHandle*)elems,
                                                4, verts, offsets, err );
   CPPUNIT_ASSERT(!err);
@@ -709,8 +709,8 @@ void ArrayMeshTest::test_vertices_get_attached_elements_mixed()
 {
   MsqPrintError err(std::cerr);
   const size_t verts[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-  msq_std::vector<Mesh::ElementHandle> elems;
-  msq_std::vector<size_t> offsets;
+  std::vector<Mesh::ElementHandle> elems;
+  std::vector<size_t> offsets;
   mixedZeroBased->vertices_get_attached_elements( (const Mesh::VertexHandle*)verts,
                                                8, elems, offsets, err );
   CPPUNIT_ASSERT(!err);
@@ -756,8 +756,8 @@ void ArrayMeshTest::test_vertices_get_attached_elements_mixed_one_based()
 {
   MsqPrintError err(std::cerr);
   const size_t verts[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
-  msq_std::vector<Mesh::ElementHandle> elems;
-  msq_std::vector<size_t> offsets;
+  std::vector<Mesh::ElementHandle> elems;
+  std::vector<size_t> offsets;
   mixedOneBased->vertices_get_attached_elements( (const Mesh::VertexHandle*)verts,
                                                8, elems, offsets, err );
   CPPUNIT_ASSERT(!err);
@@ -803,8 +803,8 @@ void ArrayMeshTest::test_elements_get_attached_vertices_mixed()
 {
   MsqPrintError err(std::cerr);
   const size_t elems[] = { 3, 2, 1, 0 };
-  msq_std::vector<Mesh::VertexHandle> verts;
-  msq_std::vector<size_t> offsets;
+  std::vector<Mesh::VertexHandle> verts;
+  std::vector<size_t> offsets;
   mixedZeroBased->elements_get_attached_vertices( (const Mesh::ElementHandle*)elems,
                                                4, verts, offsets, err );
   CPPUNIT_ASSERT(!err);
@@ -844,8 +844,8 @@ void ArrayMeshTest::test_elements_get_attached_vertices_mixed_one_based()
 {
   MsqPrintError err(std::cerr);
   const size_t elems[] = { 3, 2, 1, 0 };
-  msq_std::vector<Mesh::VertexHandle> verts;
-  msq_std::vector<size_t> offsets;
+  std::vector<Mesh::VertexHandle> verts;
+  std::vector<size_t> offsets;
   mixedOneBased->elements_get_attached_vertices( (const Mesh::ElementHandle*)elems,
                                                4, verts, offsets, err );
   CPPUNIT_ASSERT(!err);

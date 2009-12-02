@@ -60,7 +60,7 @@ namespace MESQUITE_NS
 
     MESQUITE_EXPORT virtual ~ConjugateGradient();
     
-    MESQUITE_EXPORT virtual msq_std::string get_name() const;
+    MESQUITE_EXPORT virtual std::string get_name() const;
     
     virtual PatchSet* get_patch_set();
     
@@ -93,7 +93,7 @@ namespace MESQUITE_NS
     
      
 private:
-    msq_std::vector<Vector3D> fGrad, pGrad, fNewGrad;
+    std::vector<Vector3D> fGrad, pGrad, fNewGrad;
     PatchDataVerticesMemento* pMemento;
       //just for debugging
     int conjGradDebug;

@@ -65,7 +65,7 @@ Exponent::constMemberPtr Exponent::get_func_ptr( double exponent )
     return &Exponent::powThreeHalves;
   else if (exponent == -2.0)
     return &Exponent::invSquare;
-  else if (msq_stdc::floor(exponent) == exponent)
+  else if (std::floor(exponent) == exponent)
   {
     if (exponent > 0.0)
       return &Exponent::powPositiveInt;
@@ -85,15 +85,15 @@ void Exponent::set_exponent( double exponent )
 double Exponent::pow0( double   ) const          { return 1.0;   }
 double Exponent::pow1( double x ) const          { return x;     }
 double Exponent::pow2( double x ) const          { return x * x; }
-double Exponent::squareRoot( double x ) const    { return msq_stdc::sqrt( x ); }
+double Exponent::squareRoot( double x ) const    { return std::sqrt( x ); }
 double Exponent::cubeRoot( double x ) const      { return Mesquite::cbrt( x ); }
 double Exponent::invCubeRoot( double x ) const   { return 1.0/Mesquite::cbrt( x ); }
 double Exponent::powTwoThirds( double x ) const  { return Mesquite::cbrt_sqr(x); }
 double Exponent::invTwoThirds( double x ) const  { return 1.0 / Mesquite::cbrt_sqr(x); }
-double Exponent::std_pow( double x ) const       { return msq_stdc::pow( x, mExponent ); }
+double Exponent::std_pow( double x ) const       { return std::pow( x, mExponent ); }
 double Exponent::inverse( double x ) const       { return 1.0 / x; }
-double Exponent::invSquareRoot( double x ) const { return 1.0 / msq_stdc::sqrt(x); }
-double Exponent::powThreeHalves( double x ) const{ return x*x*x / msq_stdc::sqrt(x); }
+double Exponent::invSquareRoot( double x ) const { return 1.0 / std::sqrt(x); }
+double Exponent::powThreeHalves( double x ) const{ return x*x*x / std::sqrt(x); }
 double Exponent::invSquare( double x ) const     { return 1.0 / (x*x); }
 
 double Exponent::powPositiveInt( double x ) const

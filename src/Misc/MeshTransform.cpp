@@ -60,13 +60,13 @@ namespace MESQUITE_NS {
                                         const Settings*,
                                         MsqError &err )
   {
-    msq_std::vector<Mesh::VertexHandle> handle_list;
+    std::vector<Mesh::VertexHandle> handle_list;
     mesh->get_all_vertices( handle_list, err );
     if (MSQ_CHKERR(err))
       return 1.0;
     
     MsqVertex vertex;
-    msq_std::vector<Mesh::VertexHandle>::const_iterator iter;
+    std::vector<Mesh::VertexHandle>::const_iterator iter;
     for (iter = handle_list.begin(); iter != handle_list.end(); ++iter)
     {
       mesh->vertices_get_coordinates( &*iter, &vertex, 1, err );

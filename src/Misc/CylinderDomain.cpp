@@ -29,12 +29,7 @@
 
 #include "Mesquite.hpp"
 #include "CylinderDomain.hpp"
-
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <limits.h>
-#else
-#  include <limits>
-#endif
+#include <limits>
 
 namespace MESQUITE_NS {
 
@@ -43,7 +38,7 @@ void CylinderDomain::evaluate( Mesh::VertexHandle,
                                Vector3D& closest,
                                Vector3D& normal ) const
 {
-  const double EPSILON = msq_std::numeric_limits<double>::epsilon();
+  const double EPSILON = std::numeric_limits<double>::epsilon();
   double t = mAxis % (point - mCenter);
   const Vector3D axis_point = mCenter + t * mAxis;
   
@@ -108,7 +103,7 @@ void CylinderDomain::domain_DoF( const Mesh::VertexHandle* ,
                                  size_t count,
                                  MsqError&  ) const
 {
-  msq_std::fill( dof_array, dof_array + count, (unsigned short)2 );
+  std::fill( dof_array, dof_array + count, (unsigned short)2 );
 }
   
 

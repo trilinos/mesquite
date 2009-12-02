@@ -52,7 +52,7 @@ class QuasiNewton : public VertexMover, public PatchSetUser
     
     PatchSet* get_patch_set();
     
-    MESQUITE_EXPORT msq_std::string get_name() const;
+    MESQUITE_EXPORT std::string get_name() const;
     
   protected:
     
@@ -69,8 +69,8 @@ class QuasiNewton : public VertexMover, public PatchSetUser
     enum Constants { QNVEC = 5 };
   
     PatchDataVerticesMemento* mMemento;
-    msq_std::vector<Vector3D> x, v[QNVEC+1], w[QNVEC+1], d;
-    msq_std::vector<SymMatrix3D> mHess;
+    std::vector<Vector3D> x, v[QNVEC+1], w[QNVEC+1], d;
+    std::vector<SymMatrix3D> mHess;
 };
 
 } // namespace Mesquite

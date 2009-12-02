@@ -46,7 +46,7 @@ class Target2DShapeSizeAlt2 : public TargetMetric2D
   Target2DShapeSizeAlt2( double gamma = 2.0 ) : mGamma(gamma) {}
 
   MESQUITE_EXPORT virtual
-  msq_std::string get_name() const;
+  std::string get_name() const;
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<2,2>& A, 

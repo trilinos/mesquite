@@ -254,7 +254,7 @@ public:
   MetricType get_metric_type() const 
     { return mMetric->get_metric_type(); }
 
-  msq_std::string get_name() const
+  std::string get_name() const
     { return mMetric->get_name(); }
 
   int get_negate_flag() const

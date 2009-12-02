@@ -61,7 +61,7 @@ namespace MESQUITE_NS
         {}
      
      
-     virtual msq_std::string get_name() const;
+     virtual std::string get_name() const;
 
       //! 1 if metric should be minimized, -1 if metric should be maximized.
      virtual int get_negate_flag() const;
@@ -76,7 +76,7 @@ namespace MESQUITE_NS
      bool evaluate_with_indices( PatchData& pd,
                     size_t handle,
                     double& value,
-                    msq_std::vector<size_t>& indices,
+                    std::vector<size_t>& indices,
                     MsqError& err );
   };
     

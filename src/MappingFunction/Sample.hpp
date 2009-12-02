@@ -47,7 +47,7 @@ namespace MESQUITE_NS {
 //!
 //! Logical sample points are currently limited to corners, mid-sides
 //! (region elements have both face and edge "sides") and mid-element.
-struct Sample {
+struct MESQUITE_EXPORT Sample {
   //!\brief The "dimension" of the sub-entity.  
   //!
   //! Possible values are [0-3]:

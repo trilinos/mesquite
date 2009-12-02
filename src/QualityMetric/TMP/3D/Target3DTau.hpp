@@ -48,7 +48,7 @@ public:
   ~Target3DTau();
 
   MESQUITE_EXPORT virtual
-  msq_std::string get_name() const;
+  std::string get_name() const;
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& A, 

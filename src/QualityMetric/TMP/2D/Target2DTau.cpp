@@ -39,7 +39,7 @@ namespace MESQUITE_NS {
 
 Target2DTau::~Target2DTau() {}
 
-msq_std::string Target2DTau::get_name() const { return "Tau"; }
+std::string Target2DTau::get_name() const { return "Tau"; }
 
 bool Target2DTau::evaluate( const MsqMatrix<2,2>& A, 
                             const MsqMatrix<2,2>& W, 

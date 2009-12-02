@@ -39,7 +39,7 @@ namespace MESQUITE_NS {
  * - \f$N_2(\vec{\xi})=\xi_1\f$
  * - \f$N_3(\vec{\xi})=\xi_2\f$
  */ 
-class LinearTriangle : public MappingFunction2D
+class MESQUITE_EXPORT LinearTriangle : public MappingFunction2D
 {
 public:
 

@@ -35,8 +35,8 @@ namespace MESQUITE_NS
 /* IMPORTANT: Be careful to initialize the InitializeFlags object
               *LAST* as it will access the other static data. */
 
-msq_std::vector<msq_stdio::ostream*> MsqDebug::streams;
-msq_std::vector<bool> MsqDebug::flags;
+std::vector<std::ostream*> MsqDebug::streams;
+std::vector<bool> MsqDebug::flags;
 
 #ifdef MSQ_ENABLE_DEBUG
 static void parse_flag_string( const char* str, bool flag_val )
@@ -106,22 +106,22 @@ void MsqDebug::disable_all()
   flags.clear();
 }
 
-msq_stdio::ostream& MsqDebug::get_stream( unsigned flag )
+std::ostream& MsqDebug::get_stream( unsigned flag )
 {
   if (flag < streams.size())
     return *streams[flag];
   else
-    return msq_stdio::cout;
+    return std::cout;
 }
 
-void MsqDebug::set_stream( unsigned flag, msq_stdio::ostream& stream )
+void MsqDebug::set_stream( unsigned flag, std::ostream& stream )
 {
   if (flag >= streams.size())
   {
     size_t old_size = streams.size();
     streams.resize( flag );
     for (unsigned i = old_size; i < flag; ++i)
-      streams[i] = &msq_stdio::cout;
+      streams[i] = &std::cout;
   }
   streams[flag] = &stream;
 }

@@ -67,7 +67,7 @@ namespace MESQUITE_NS {
  *
  * \f$u = 1 - r - s - t\f$
  */
-class TetLagrangeShape : public MappingFunction3D
+class MESQUITE_EXPORT TetLagrangeShape : public MappingFunction3D
 {
 public:
 

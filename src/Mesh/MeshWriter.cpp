@@ -35,28 +35,14 @@
 #include "PlanarDomain.hpp"
 #include "VtkTypeInfo.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#include <memory.h>
-#include <limits.h>
-#include <vector.h>
-#include <algorithm.h>
-#else
 #include <memory>
 #include <limits>
 #include <vector>
 #include <algorithm>
-#endif
-
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#include <fstream.h>
-#include <string.h>
-#include <iomanip.h>
-#else
 #include <fstream>
 #include <string>
 #include <iomanip>
 using namespace std;
-#endif
 
 #include <stdio.h>
 
@@ -120,8 +106,8 @@ public:
 private:
   PatchData* patchPtr;
   size_t vertIdx;
-  msq_std::vector<Edge> adjList;
-  msq_std::vector<Edge>::iterator adjIter;
+  std::vector<Edge> adjList;
+  std::vector<Edge>::iterator adjIter;
   void get_adjacent_vertices( MsqError& err );
 };
 
@@ -179,7 +165,7 @@ void EdgeIterator::get_adjacent_vertices( MsqError& err )
   MSQ_ERRRTN(err);
   
     // Get all adjacent vertices from elements
-  msq_std::vector<size_t> elem_verts;
+  std::vector<size_t> elem_verts;
   for (size_t e = 0; e < num_elem; ++e)
   {
     MsqMeshEntity& elem = patchPtr->element_by_index(elems[e]);
@@ -223,8 +209,8 @@ void EdgeIterator::get_adjacent_vertices( MsqError& err )
   }
   
     // Remove duplicates
-  msq_std::sort( adjList.begin(), adjList.end() );
-  adjIter = msq_std::unique( adjList.begin(), adjList.end() );
+  std::sort( adjList.begin(), adjList.end() );
+  adjIter = std::unique( adjList.begin(), adjList.end() );
   adjList.resize( adjIter - adjList.begin() );
   adjIter = adjList.begin();
 }
@@ -261,7 +247,7 @@ void write_vtk( PatchData& pd, const char* out_filename, MsqError &err,
                 const Vector3D* OF_gradient)
 {
     // Open the file
-  msq_stdio::ofstream file(out_filename);
+  std::ofstream file(out_filename);
   if (!file)
   {
     MSQ_SETERR(err)(MsqError::FILE_ACCESS);
@@ -292,7 +278,7 @@ void write_vtk( PatchData& pd, const char* out_filename, MsqError &err,
   file << "CELLS " << pd.num_elements() << ' ' << connectivity_size << '\n';
   for (i = 0; i < pd.num_elements(); i++)
   {
-    msq_std::vector<size_t> vtx_indices;
+    std::vector<size_t> vtx_indices;
     pd.element_by_index(i).get_node_indices(vtx_indices);
     
       // Convert native to VTK node order, if not the same
@@ -302,7 +288,7 @@ void write_vtk( PatchData& pd, const char* out_filename, MsqError &err,
     info->mesquiteToVtkOrder( vtx_indices );
      
     file << vtx_indices.size();
-    for (msq_stdc::size_t j = 0; j < vtx_indices.size(); ++j)
+    for (std::size_t j = 0; j < vtx_indices.size(); ++j)
     {
       file << ' ' << vtx_indices[j];
     }
@@ -353,13 +339,13 @@ void write_gnuplot( Mesh* mesh, const char* out_filebase, MsqError &err)
   write_gnuplot( pd, out_filebase, err );
 }
 
-void write_gnuplot( Mesh* mesh, msq_std::vector<Mesh::ElementHandle>& elems,
+void write_gnuplot( Mesh* mesh, std::vector<Mesh::ElementHandle>& elems,
                     const char* out_filebase, MsqError &err)
 {
     // loads a global patch
   PatchData pd;
   pd.set_mesh( mesh );
-  msq_std::vector<Mesh::VertexHandle> verts;
+  std::vector<Mesh::VertexHandle> verts;
   pd.set_mesh_entities( elems, verts, err ); MSQ_ERRRTN(err);
   write_gnuplot( pd, out_filebase, err );
 }
@@ -382,9 +368,9 @@ void write_gnuplot( Mesh* mesh, msq_std::vector<Mesh::ElementHandle>& elems,
 void write_gnuplot( PatchData& pd, const char* out_filebase, MsqError& err )
 {
     // Open the file
-  msq_std::string out_filename = out_filebase;
+  std::string out_filename = out_filebase;
   out_filename += ".gpt";
-  msq_stdio::ofstream file(out_filename.c_str());
+  std::ofstream file(out_filename.c_str());
   if (!file)
   {
     MSQ_SETERR(err)(MsqError::FILE_ACCESS);
@@ -402,11 +388,11 @@ void write_gnuplot( PatchData& pd, const char* out_filebase, MsqError& err )
     const Vector3D& e = edges.end();
     const Vector3D* m = edges.mid();
     
-    file << s[0] << ' ' << s[1] << ' ' << s[2] << msq_stdio::endl;
+    file << s[0] << ' ' << s[1] << ' ' << s[2] << std::endl;
     if (m) 
-      file << (*m)[0] << ' ' << (*m)[1] << ' ' << (*m)[2] << msq_stdio::endl;
-    file << e[0] << ' ' << e[1] << ' ' << e[2] << msq_stdio::endl;
-    file << msq_stdio::endl << msq_stdio::endl;
+      file << (*m)[0] << ' ' << (*m)[1] << ' ' << (*m)[2] << std::endl;
+    file << e[0] << ' ' << e[1] << ' ' << e[2] << std::endl;
+    file << std::endl << std::endl;
     
     edges.step(err); MSQ_ERRRTN(err);
   }
@@ -655,7 +641,7 @@ void write_stl( Mesh* mesh, const char* filename, MsqError& err )
   file.close();
   if (count == 0)
   {
-    msq_stdc::remove(filename);
+    std::remove(filename);
     MSQ_SETERR(err)("Mesh contains no triangles", MsqError::INVALID_STATE);
   }
 }
@@ -758,8 +744,8 @@ Transform2D::Transform2D( PatchData* pd,
 {
     // Get the bounding box of the projected points
   float w_max, w_min, h_max, h_min;
-  w_max = h_max = -msq_std::numeric_limits<float>::max();
-  w_min = h_min =  msq_std::numeric_limits<float>::max();
+  w_max = h_max = -std::numeric_limits<float>::max();
+  w_min = h_min =  std::numeric_limits<float>::max();
   MsqError err;
   const MsqVertex* verts = pd->get_vertex_array( err );
   const size_t num_vert = pd->num_nodes();
@@ -798,8 +784,8 @@ Transform2D::Transform2D( const Vector3D* verts,
 {
     // Get the bounding box of the projected points
   float w_max, w_min, h_max, h_min;
-  w_max = h_max = -msq_std::numeric_limits<float>::max();
-  w_min = h_min =  msq_std::numeric_limits<float>::max();
+  w_max = h_max = -std::numeric_limits<float>::max();
+  w_min = h_min =  std::numeric_limits<float>::max();
   for (unsigned i = 0; i < num_vert; ++i)
   {
     float w, h;

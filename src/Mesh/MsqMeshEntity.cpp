@@ -44,20 +44,11 @@ functionality is implemented in this file.
 #include "MsqVertex.hpp"
 #include "PatchData.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-   using std::vector;
-#endif
-
-#ifdef MSQ_USE_OLD_IO_HEADERS
-#  include <ostream.h>
-#else
-#  include <ostream>
-   using std::ostream;
-   using std::endl;
-#endif
+#include <vector>
+#include <ostream>
+using std::vector;
+using std::ostream;
+using std::endl;
 
 namespace MESQUITE_NS {
 
@@ -66,7 +57,7 @@ namespace MESQUITE_NS {
 //! this element was retrieved.
 //! The order of the vertices is the canonical order for this
 //! element's type.
-void MsqMeshEntity::get_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertices) const
+void MsqMeshEntity::get_vertex_indices(std::vector<std::size_t> &vertices) const
 {
   vertices.resize( vertex_count() );
   std::copy( vertexIndices, vertexIndices + vertex_count(), vertices.begin() );
@@ -79,20 +70,20 @@ void MsqMeshEntity::get_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertic
 //! element's type.
 //! The indices are placed appended to the end of the list.
 //! The list is not cleared before appending this entity's vertices.
-void MsqMeshEntity::append_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertex_list) const
+void MsqMeshEntity::append_vertex_indices(std::vector<std::size_t> &vertex_list) const
 {
   vertex_list.insert(vertex_list.end(),
                      vertexIndices,
                      vertexIndices + vertex_count());
 }
 
-void MsqMeshEntity::get_node_indices( msq_std::vector<msq_stdc::size_t>& indices ) const
+void MsqMeshEntity::get_node_indices( std::vector<std::size_t>& indices ) const
 {
   indices.resize( node_count() );
   std::copy( vertexIndices, vertexIndices + node_count(), indices.begin() );
 }
 
-void MsqMeshEntity::append_node_indices( msq_std::vector<msq_stdc::size_t>& indices ) const
+void MsqMeshEntity::append_node_indices( std::vector<std::size_t>& indices ) const
 {
   indices.insert( indices.end(), vertexIndices, vertexIndices + node_count() );
 }
@@ -288,8 +279,8 @@ double MsqMeshEntity::compute_signed_area(PatchData &pd, MsqError &err) {
   
 */
 void MsqMeshEntity::get_connected_vertices( 
-                                    msq_stdc::size_t vertex_index,
-                                    msq_std::vector<msq_stdc::size_t> &vert_indices,
+                                    std::size_t vertex_index,
+                                    std::vector<std::size_t> &vert_indices,
                                     MsqError &err)
 {
     //index is set to the index in the vertexIndices corresponding
@@ -419,166 +410,6 @@ void MsqMeshEntity::compute_corner_normals( Vector3D normals[],
                * (pd.vertex_by_index(prev_idx) - pd.vertex_by_index(this_idx));
     normals[i].normalize();
   }
-}
-
-/*!  \param pd  The PatchData the element belongs to. It contains the vertices coords.
-     \param c_m3d An array of Matrix3D objects. There should be one matrix per element corner
-            (4 for a tet, 8 for an hex). Each column of the matrix will contain a vector
-            corresponding to a corner edge. 
-     \param num_m3d The number of matrices in the c_m3d array. The function will check this number
-            corresponds to the number of corner in the element. If not, an error is set. 
-  */
-void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], int num_m3d, MsqError &err )
-{
-  const MsqVertex* vertices = pd.get_vertex_array(err); MSQ_ERRRTN(err); 
-  const size_t* v_i = &vertexIndices[0];
-
-  // If 2D element, we will get the surface normal 
-  Vector3D normals[4], vec1, vec2, vec3, vec4;
-
-  
-  switch(get_element_type()){
-    
-  case TRIANGLE:
-    if (num_m3d != 3) {
-      MSQ_SETERR(err)("num_m3d incompatible with element type.", MsqError::INVALID_ARG); 
-      return;
-    }
-    
-    compute_corner_normals( normals, pd, err ); MSQ_ERRRTN(err);
-
-    vec1 = vertices[v_i[1]]-vertices[v_i[0]];
-    vec2 = vertices[v_i[2]]-vertices[v_i[0]];
-    vec3 = vertices[v_i[2]]-vertices[v_i[1]];
-    
-    A[0].set_column(0, vec1);
-    A[0].set_column(1, vec2);
-    A[0].set_column(2, normals[0]*MSQ_3RT_2_OVER_6RT_3);
-    
-    A[1].set_column(0, vec3);
-    A[1].set_column(1, -vec1);
-    A[1].set_column(2, normals[1]*MSQ_3RT_2_OVER_6RT_3);
-
-    A[2].set_column(0, -vec2);
-    A[2].set_column(1, -vec3);
-    A[2].set_column(2, normals[2]*MSQ_3RT_2_OVER_6RT_3);
-
-    break;
-    
-  case QUADRILATERAL:
-    if (num_m3d != 4)  {
-      MSQ_SETERR(err)("num_m3d incompatible with element type.", MsqError::INVALID_ARG); 
-      return;
-    }
-    vec1 = vertices[v_i[1]]-vertices[v_i[0]];
-    vec2 = vertices[v_i[3]]-vertices[v_i[0]];
-    vec3 = vertices[v_i[2]]-vertices[v_i[1]];
-    vec4 = vertices[v_i[3]]-vertices[v_i[2]];
-    
-    compute_corner_normals( normals, pd, err ); MSQ_ERRRTN(err);
-
-    A[0].set_column(0, vec1);
-    A[0].set_column(1, vec2);
-    A[0].set_column(2, normals[0]);
-    
-    A[1].set_column(0, vec3);
-    A[1].set_column(1, -vec1);
-    A[1].set_column(2, normals[1]);
-
-    A[2].set_column(0, vec4);
-    A[2].set_column(1, -vec3);
-    A[2].set_column(2, normals[2]);
-
-    A[3].set_column(0, -vec2);
-    A[3].set_column(1, -vec4);
-    A[3].set_column(2, normals[3]);
-
-    break;
-    
-  case TETRAHEDRON:
-    if (num_m3d != 4) {
-      MSQ_SETERR(err)("num_m3d incompatible with element type.", MsqError::INVALID_ARG); 
-      return;
-    }
-    A[0].set_column(0, vertices[v_i[1]]-vertices[v_i[0]]);
-    A[0].set_column(1, vertices[v_i[2]]-vertices[v_i[0]]);
-    A[0].set_column(2, vertices[v_i[3]]-vertices[v_i[0]]);
-    
-    A[1].set_column(0, vertices[v_i[0]]-vertices[v_i[1]]);
-    A[1].set_column(1, vertices[v_i[3]]-vertices[v_i[1]]);
-    A[1].set_column(2, vertices[v_i[2]]-vertices[v_i[1]]);
-
-    A[2].set_column(0, vertices[v_i[3]]-vertices[v_i[2]]);
-    A[2].set_column(1, vertices[v_i[0]]-vertices[v_i[2]]);
-    A[2].set_column(2, vertices[v_i[1]]-vertices[v_i[2]]);
-
-    A[3].set_column(0, vertices[v_i[2]]-vertices[v_i[3]]);
-    A[3].set_column(1, vertices[v_i[1]]-vertices[v_i[3]]);
-    A[3].set_column(2, vertices[v_i[0]]-vertices[v_i[3]]);
-
-    break;
-    
-  case HEXAHEDRON:
-    if (num_m3d != 8) {
-      MSQ_SETERR(err)("num_m3d incompatible with element type.", MsqError::INVALID_ARG); 
-      return;
-    }
-    A[0].set_column(0, vertices[v_i[1]]-vertices[v_i[0]]);
-    A[0].set_column(1, vertices[v_i[3]]-vertices[v_i[0]]);
-    A[0].set_column(2, vertices[v_i[4]]-vertices[v_i[0]]);
-
-    A[1].set_column(0, vertices[v_i[2]]-vertices[v_i[1]]);
-    A[1].set_column(1, vertices[v_i[0]]-vertices[v_i[1]]);
-    A[1].set_column(2, vertices[v_i[5]]-vertices[v_i[1]]);
-
-    A[2].set_column(0, vertices[v_i[3]]-vertices[v_i[2]]);
-    A[2].set_column(1, vertices[v_i[1]]-vertices[v_i[2]]);
-    A[2].set_column(2, vertices[v_i[6]]-vertices[v_i[2]]);
-    
-    A[3].set_column(0, vertices[v_i[0]]-vertices[v_i[3]]);
-    A[3].set_column(1, vertices[v_i[2]]-vertices[v_i[3]]);
-    A[3].set_column(2, vertices[v_i[7]]-vertices[v_i[3]]);
-
-    A[4].set_column(0, vertices[v_i[7]]-vertices[v_i[4]]);
-    A[4].set_column(1, vertices[v_i[5]]-vertices[v_i[4]]);
-    A[4].set_column(2, vertices[v_i[0]]-vertices[v_i[4]]);
-    
-    A[5].set_column(0, vertices[v_i[4]]-vertices[v_i[5]]);
-    A[5].set_column(1, vertices[v_i[6]]-vertices[v_i[5]]);
-    A[5].set_column(2, vertices[v_i[1]]-vertices[v_i[5]]);
-    
-    A[6].set_column(0, vertices[v_i[5]]-vertices[v_i[6]]);
-    A[6].set_column(1, vertices[v_i[7]]-vertices[v_i[6]]);
-    A[6].set_column(2, vertices[v_i[2]]-vertices[v_i[6]]);
-    
-    A[7].set_column(0, vertices[v_i[6]]-vertices[v_i[7]]);
-    A[7].set_column(1, vertices[v_i[4]]-vertices[v_i[7]]);
-    A[7].set_column(2, vertices[v_i[3]]-vertices[v_i[7]]);
-
-    break;
-  
-  default: // generic code for any 3D element
-  {
-    const unsigned num_corners = corner_count();
-    unsigned num_adj;
-    const unsigned* adj_idx;
-    
-    for (unsigned i = 0; i < num_corners; ++i)
-    {
-      adj_idx = TopologyInfo::adjacent_vertices( mType, i, num_adj );
-      if (num_adj != 3) {
-        MSQ_SETERR(err)("element type not implemented.", MsqError::NOT_IMPLEMENTED);
-        return;
-      }
-      
-      A[i].set_column( 0, vertices[v_i[adj_idx[0]]] - vertices[v_i[i]] );
-      A[i].set_column( 1, vertices[v_i[adj_idx[1]]] - vertices[v_i[i]] );
-      A[i].set_column( 2, vertices[v_i[adj_idx[2]]] - vertices[v_i[i]] );
-    }
-    
-    break;
-  }      
-  }// end switch over element type
 }
 
 ostream& operator<<( ostream& stream, const MsqMeshEntity& entity )

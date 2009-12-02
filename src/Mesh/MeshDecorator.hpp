@@ -72,10 +72,10 @@ class MESQUITE_EXPORT MeshDecorator : public Mesh
 
     virtual int get_geometric_dimension(MsqError &err);
 
-    virtual void get_all_elements( msq_std::vector<ElementHandle>& elements,
+    virtual void get_all_elements( std::vector<ElementHandle>& elements,
                                    MsqError& err );
 
-    virtual void get_all_vertices( msq_std::vector<VertexHandle>& vertices,
+    virtual void get_all_vertices( std::vector<VertexHandle>& vertices,
                                    MsqError& err );
 
 //************ Vertex Properties ********************
@@ -122,8 +122,8 @@ class MESQUITE_EXPORT MeshDecorator : public Mesh
     virtual void vertices_get_attached_elements( 
                          const VertexHandle* vertex_array,
                          size_t num_vertex,
-                         msq_std::vector<ElementHandle>& elements,
-                         msq_std::vector<size_t>& offsets,
+                         std::vector<ElementHandle>& elements,
+                         std::vector<size_t>& offsets,
                          MsqError& err );
     
 //*************** Element Topology *************
@@ -131,8 +131,8 @@ class MESQUITE_EXPORT MeshDecorator : public Mesh
     virtual void elements_get_attached_vertices(
                                    const ElementHandle *elem_handles,
                                    size_t num_elems,
-                                   msq_std::vector<VertexHandle>& vert_handles,
-                                   msq_std::vector<size_t>& offsets, 
+                                   std::vector<VertexHandle>& vert_handles,
+                                   std::vector<size_t>& offsets, 
                                    MsqError &err);
     
 
@@ -142,18 +142,18 @@ class MESQUITE_EXPORT MeshDecorator : public Mesh
 
 //***************  Tags  ***********
 
-    virtual TagHandle tag_create( const msq_std::string& tag_name,
+    virtual TagHandle tag_create( const std::string& tag_name,
                                   TagType type, unsigned length,
                                   const void* default_value,
                                   MsqError &err);
 
     virtual void tag_delete( TagHandle handle, MsqError& err );
 
-    virtual TagHandle tag_get( const msq_std::string& name, 
+    virtual TagHandle tag_get( const std::string& name, 
                                MsqError& err );
 
     virtual void tag_properties( TagHandle handle,
-                                 msq_std::string& name_out,
+                                 std::string& name_out,
                                  TagType& type_out,
                                  unsigned& length_out,
                                  MsqError& err );

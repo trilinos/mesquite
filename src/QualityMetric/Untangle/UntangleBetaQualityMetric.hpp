@@ -76,7 +76,7 @@ namespace MESQUITE_NS
        {return mBeta;}
        
      MESQUITE_EXPORT virtual
-     msq_std::string get_name() const;
+     std::string get_name() const;
      
      MESQUITE_EXPORT virtual
      int get_negate_flag() const;

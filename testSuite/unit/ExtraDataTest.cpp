@@ -97,7 +97,7 @@ class TestExtraData : public Mesquite::ExtraData
                                    const size_t* element_map,
                                    MsqError& err );
                                    
-    msq_std::vector<size_t> vertexMap, elementMap;
+    std::vector<size_t> vertexMap, elementMap;
 };
 
 void TestExtraData::notify_patch_destroyed() { lastEvent = DESTROYED; }
@@ -111,8 +111,8 @@ void TestExtraData::notify_sub_patch( PatchData& p,
   subPatchPtr = &p;
   vertexMap.resize( p.num_nodes() );
   elementMap.resize( p.num_elements() );
-  msq_std::copy( vertex_map, vertex_map+p.num_nodes(), vertexMap.begin() );
-  msq_std::copy( element_map, element_map+p.num_elements(), elementMap.begin() );
+  std::copy( vertex_map, vertex_map+p.num_nodes(), vertexMap.begin() );
+  std::copy( element_map, element_map+p.num_elements(), elementMap.begin() );
 }
 
 void ExtraDataTest::test_initialize()
@@ -157,7 +157,7 @@ void ExtraDataTest::test_notify_destroyed()
 
 void ExtraDataTest::test_notify_subpatch()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   PatchData patch, subpatch;
   create_four_quads_patch( patch, err ); CPPUNIT_ASSERT(!err);
   
@@ -191,7 +191,7 @@ void ExtraDataTest::test_notify_subpatch()
 
 void ExtraDataTest::test_notify_new_patch_fill()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   PatchData patch;
   TestExtraData data1(patch);
   TestExtraData data2(patch);
@@ -211,7 +211,7 @@ void ExtraDataTest::test_notify_new_patch_fill()
 
 void ExtraDataTest::test_notify_new_patch_sub()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   PatchData patch, subpatch;
   TestExtraData data1(subpatch);
   TestExtraData data2(subpatch);

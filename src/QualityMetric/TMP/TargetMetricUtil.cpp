@@ -112,13 +112,13 @@ void surface_to_2d( const MsqMatrix<3,2>& App,
 
 static inline void append_elem_samples( PatchData& pd,
                                         size_t e,
-                                        msq_std::vector<size_t>& handles )
+                                        std::vector<size_t>& handles )
 {
   NodeSet samples = pd.get_samples( e );
   EntityTopology type = pd.element_by_index( e ).get_element_type();
   size_t curr_size = handles.size();
   handles.resize( curr_size + samples.num_nodes() );
-  msq_std::vector<size_t>::iterator i = handles.begin() + curr_size;
+  std::vector<size_t>::iterator i = handles.begin() + curr_size;
   for (unsigned j = 0; j < TopologyInfo::corners(type); ++j)
     if (samples.corner_node(j))
       *(i++) = ElemSampleQM::handle( Sample(0,j), e );
@@ -134,20 +134,20 @@ static inline void append_elem_samples( PatchData& pd,
                                         
 
 void get_sample_pt_evaluations( PatchData& pd,
-                                msq_std::vector<size_t>& handles,
+                                std::vector<size_t>& handles,
                                 bool free,
                                 MsqError& err )
 {
   handles.clear();
-  msq_std::vector<size_t> elems;
+  std::vector<size_t> elems;
   ElementQM::get_element_evaluations( pd, elems, free, err ); MSQ_ERRRTN(err);
-  for (msq_std::vector<size_t>::iterator i = elems.begin(); i != elems.end(); ++i)
+  for (std::vector<size_t>::iterator i = elems.begin(); i != elems.end(); ++i)
     append_elem_samples( pd, *i, handles );
 }
                    
 void get_elem_sample_points( PatchData& pd,
                              size_t elem,
-                             msq_std::vector<size_t>& handles,
+                             std::vector<size_t>& handles,
                              MsqError& err )
 {
   handles.clear();

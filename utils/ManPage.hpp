@@ -40,41 +40,41 @@
 class ManPage
 {
 public:
-  static msq_stdio::ostream& begin_bold( msq_stdio::ostream& str )
-    { return str << msq_stdio::endl << ".B" << msq_stdio::endl; }
-  static msq_stdio::ostream& end_bold( msq_stdio::ostream& str )
-    { return str << msq_stdio::endl; }
-  static msq_stdio::ostream& bold( msq_stdio::ostream& str, const msq_std::string& s )
+  static std::ostream& begin_bold( std::ostream& str )
+    { return str << std::endl << ".B" << std::endl; }
+  static std::ostream& end_bold( std::ostream& str )
+    { return str << std::endl; }
+  static std::ostream& bold( std::ostream& str, const std::string& s )
     { return end_bold( begin_bold(str) << s ); }
 
-  static msq_stdio::ostream& begin_italic( msq_stdio::ostream& str )
-    { return str << msq_stdio::endl << ".I" << msq_stdio::endl; }
-  static msq_stdio::ostream& end_italic( msq_stdio::ostream& str )
-    { return str << msq_stdio::endl; }
-  static msq_stdio::ostream& italic( msq_stdio::ostream& str, const msq_std::string& s )
+  static std::ostream& begin_italic( std::ostream& str )
+    { return str << std::endl << ".I" << std::endl; }
+  static std::ostream& end_italic( std::ostream& str )
+    { return str << std::endl; }
+  static std::ostream& italic( std::ostream& str, const std::string& s )
     { return end_italic( begin_italic(str) << s ); }
     
-  static msq_stdio::ostream& begin_section( msq_stdio::ostream& str, const msq_std::string& name )
-    { return str << msq_stdio::endl << ".SH " << name << msq_stdio::endl; }
+  static std::ostream& begin_section( std::ostream& str, const std::string& name )
+    { return str << std::endl << ".SH " << name << std::endl; }
     
-  static msq_stdio::ostream& begin_subsection( msq_stdio::ostream& str, const msq_std::string& name )
-    { return str << msq_stdio::endl << ".SS " << name << msq_stdio::endl; }
+  static std::ostream& begin_subsection( std::ostream& str, const std::string& name )
+    { return str << std::endl << ".SS " << name << std::endl; }
     
-  static msq_stdio::ostream& begin_paragraph( msq_stdio::ostream& str )
-    { return str << msq_stdio::endl << ".P " << msq_stdio::endl; }
+  static std::ostream& begin_paragraph( std::ostream& str )
+    { return str << std::endl << ".P " << std::endl; }
     
-  static msq_stdio::ostream& begin_hanging_paragraph( msq_stdio::ostream& str )
-    { return str << msq_stdio::endl << ".HP " << msq_stdio::endl; }
+  static std::ostream& begin_hanging_paragraph( std::ostream& str )
+    { return str << std::endl << ".HP " << std::endl; }
     
-  static msq_stdio::ostream& begin_indent( msq_stdio::ostream& str )
-    { return str << msq_stdio::endl << ".RS " << msq_stdio::endl; }
-  static msq_stdio::ostream& end_indent( msq_stdio::ostream& str )
-    { return str << msq_stdio::endl << ".RE " << msq_stdio::endl; }
+  static std::ostream& begin_indent( std::ostream& str )
+    { return str << std::endl << ".RS " << std::endl; }
+  static std::ostream& end_indent( std::ostream& str )
+    { return str << std::endl << ".RE " << std::endl; }
     
-  static msq_stdio::ostream& begin_manpage( msq_stdio::ostream& str, const msq_std::string& name, int section )
-    { return str << msq_stdio::endl << ".TH " << name << " " << section << msq_stdio::endl; }
+  static std::ostream& begin_manpage( std::ostream& str, const std::string& name, int section )
+    { return str << std::endl << ".TH " << name << " " << section << std::endl; }
     
-  static msq_stdio::ostream& write_text( msq_stdio::ostream& str, bool hanging_indent, const msq_std::string& text );
+  static std::ostream& write_text( std::ostream& str, bool hanging_indent, const std::string& text );
 };
 
 #endif

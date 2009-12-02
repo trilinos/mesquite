@@ -40,13 +40,8 @@
 #include "MsqDebug.hpp"
 #include "MsqError.hpp"
 
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-   using std::vector;
-#endif
-
+#include <vector>
+using std::vector;
 
 using namespace Mesquite;
 
@@ -56,13 +51,13 @@ EdgeLengthRangeQualityMetric::EdgeLengthRangeQualityMetric( double low_a, double
     lowVal(low_a)
 {
   if (lowVal > highVal)
-    msq_std::swap( lowVal, highVal );
+    std::swap( lowVal, highVal );
 }
 
 EdgeLengthRangeQualityMetric::~EdgeLengthRangeQualityMetric()
 {}
 
-msq_std::string EdgeLengthRangeQualityMetric::get_name() const
+std::string EdgeLengthRangeQualityMetric::get_name() const
   { return "Edge Length Range Metric"; }
   
 int EdgeLengthRangeQualityMetric::get_negate_flag() const
@@ -77,7 +72,7 @@ int EdgeLengthRangeQualityMetric::get_negate_flag() const
 bool EdgeLengthRangeQualityMetric::evaluate_common(PatchData &pd, 
                                              size_t this_vert,
                                              double &fval, 
-                                             msq_std::vector<size_t>& adj_verts,
+                                             std::vector<size_t>& adj_verts,
                                              MsqError &err)
 {
   fval=0.0;
@@ -124,7 +119,7 @@ bool EdgeLengthRangeQualityMetric::evaluate( PatchData& pd,
                                         double& value, 
                                         MsqError& err )
 {
-  msq_std::vector<size_t> verts;
+  std::vector<size_t> verts;
   bool rval = evaluate_common( pd, vertex, value, verts, err );
   return !MSQ_CHKERR(err) && rval;
 }
@@ -132,13 +127,13 @@ bool EdgeLengthRangeQualityMetric::evaluate( PatchData& pd,
 bool EdgeLengthRangeQualityMetric::evaluate_with_indices( PatchData& pd,
                                                      size_t vertex,
                                                      double& value,
-                                                     msq_std::vector<size_t>& indices,
+                                                     std::vector<size_t>& indices,
                                                      MsqError& err )
 {
   indices.clear();
   bool rval = evaluate_common( pd, vertex, value, indices, err );
   
-  msq_std::vector<size_t>::iterator r, w;
+  std::vector<size_t>::iterator r, w;
   for (r = w = indices.begin(); r != indices.end(); ++r) {
     if (*r < pd.num_free_vertices()) {
       *w = *r;

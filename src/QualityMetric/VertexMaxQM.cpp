@@ -47,9 +47,9 @@ VertexMaxQM::VertexMaxQM( ElemSampleQM* metric )
   
 VertexMaxQM::~VertexMaxQM() {}
 
-msq_std::string VertexMaxQM::get_name() const
+std::string VertexMaxQM::get_name() const
 {
-  msq_std::string result("VertexMaxQM(");
+  std::string result("VertexMaxQM(");
   result += mMetric->get_name();
   result += ")";
   return result;
@@ -70,8 +70,8 @@ bool VertexMaxQM::evaluate( PatchData& pd,
   double tmpval;
   bool tmpvalid;
 
-  value = -msq_std::numeric_limits<double>::infinity();
-  for (msq_std::vector<size_t>::iterator h = mHandles.begin(); h != mHandles.end(); ++h) {
+  value = -std::numeric_limits<double>::infinity();
+  for (std::vector<size_t>::iterator h = mHandles.begin(); h != mHandles.end(); ++h) {
     tmpvalid = qm->evaluate( pd, *h, tmpval, err ); MSQ_ERRZERO(err);
     if (!tmpvalid) 
       valid = false;
@@ -86,7 +86,7 @@ bool VertexMaxQM::evaluate( PatchData& pd,
 bool VertexMaxQM::evaluate_with_indices( PatchData& pd, 
                                          size_t handle, 
                                          double& value, 
-                                         msq_std::vector<size_t>& indices,
+                                         std::vector<size_t>& indices,
                                          MsqError& err )
 {
   ElemSampleQM* qm = get_quality_metric();
@@ -95,9 +95,9 @@ bool VertexMaxQM::evaluate_with_indices( PatchData& pd,
   bool valid = true;
   double tmpval;
   bool tmpvalid;
-  msq_std::vector<size_t>::iterator i, e, h;
+  std::vector<size_t>::iterator i, e, h;
 
-  value = -msq_std::numeric_limits<double>::infinity();
+  value = -std::numeric_limits<double>::infinity();
   for (h = mHandles.begin(); h != mHandles.end(); ++h) {
     mIndices.clear();
     tmpvalid = qm->evaluate_with_indices( pd, *h, tmpval, mIndices, err );
@@ -110,7 +110,7 @@ bool VertexMaxQM::evaluate_with_indices( PatchData& pd,
     size_t size = indices.size();
     e = indices.begin() + size;
     for (i = mIndices.begin(); i != mIndices.end(); ++i) {
-      if (msq_std::find( indices.begin(), e, *i ) == e) {
+      if (std::find( indices.begin(), e, *i ) == e) {
         indices.push_back(*i);
         e = indices.begin() + size;
       }

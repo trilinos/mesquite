@@ -107,7 +107,7 @@ namespace MESQUITE_NS
     
     PatchSet* get_patch_set();
     
-    MESQUITE_EXPORT msq_std::string get_name() const;
+    MESQUITE_EXPORT std::string get_name() const;
     
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);

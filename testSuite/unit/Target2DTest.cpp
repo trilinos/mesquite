@@ -88,7 +88,7 @@ public:
   
 template <class Metric> void Target2DTest<Metric>::test_ideal_eval()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   const double Avals[] = { 2, 1, 1, 2 };
   const double Bvals[] = { -0.1, -0.15, -0.25, -0.8 };
   const MsqMatrix<2,2> I(1.0), A(Avals), B(Bvals);
@@ -112,7 +112,7 @@ template <class Metric> void Target2DTest<Metric>::test_ideal_eval()
 }
 template <class Metric> void Target2DTest<Metric>::test_ideal_gradient()
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   const double Avals[] = { 2, 1, 1, 2 };
   const double Bvals[] = { -0.1, -0.15, -0.25, -0.8 };
   const MsqMatrix<2,2> I(1.0), A(Avals), B(Bvals);
@@ -138,7 +138,7 @@ template <class Metric> void Target2DTest<Metric>::test_ideal_gradient()
 
 template <class Metric> void Target2DTest<Metric>::test_inverted() 
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   const double A_vals[] = { 1,  0, 
                             0, -1 };
   MsqMatrix<2,2> A( A_vals ), W( 1.0 ), grad, hess[3];
@@ -176,7 +176,7 @@ template <class Metric> void Target2DTest<Metric>::test_non_ideal(
                                                      MsqMatrix<2,2> A,
                                                      MsqMatrix<2,2> W )
 {
-  MsqPrintError err(msq_stdio::cerr);
+  MsqPrintError err(std::cerr);
   MsqMatrix<2,2> grad;
   double val, eps = 1e-5;
   bool valid;
@@ -527,7 +527,7 @@ void Target2DTest<Metric>::compare_anaytic_and_numeric_hess()
 class GradTestMetric2D : public TargetMetric2D
 {
   public:
-    msq_std::string get_name() const { return "GradTest"; }
+    std::string get_name() const { return "GradTest"; }
   
     bool evaluate( const MsqMatrix<2,2>& A,
                    const MsqMatrix<2,2>& W,
@@ -640,7 +640,7 @@ void TargetMetric2DTest::test_numerical_gradient()
 class HessTestMetric2D : public TargetMetric2D
 {
   public:
-    msq_std::string get_name() const { return "HessTest"; }
+    std::string get_name() const { return "HessTest"; }
   
     bool evaluate( const MsqMatrix<2,2>& A,
                    const MsqMatrix<2,2>& W,

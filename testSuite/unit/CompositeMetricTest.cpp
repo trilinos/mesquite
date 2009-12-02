@@ -161,7 +161,7 @@ public:
 
 void CompositeMetricTestBase::test_evaluate( bool ideal, EntityTopology type )
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   PatchData pd;
   double act, ex;
   bool rval;
@@ -329,7 +329,7 @@ bool PowerQualityMetricTest<POWER>::evaluate( PatchData& pd, size_t h, double& v
 {
   bool rval = m1.evaluate( pd, h, val, err );
   MSQ_ERRFALSE(err);
-  val = msq_stdc::pow( val, POWER );
+  val = std::pow( val, POWER );
   return rval;
 }
 

@@ -38,6 +38,7 @@
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "ObjectiveFunctionTemplate.hpp"
 #include "UnitUtil.hpp"
+#include "MsqHessian.hpp"
 
 #include <memory>
 
@@ -188,7 +189,7 @@ static bool init_pd( PatchData& pd );
 static PatchData& patch() {
   static PatchData the_pd;
   static bool did_init = init_pd( the_pd );
-  assert(did_init);
+  CPPUNIT_ASSERT(did_init);
   return the_pd;
 }
 static bool init_pd( PatchData& pd ) {
@@ -209,7 +210,7 @@ static double evaluate_internal( ObjectiveFunction::EvalType type,
   vector<Vector3D> grad;
   vector<SymMatrix3D> diag;
   MsqHessian hess;
-  bool valid;
+  bool valid = false;
   double result;
   
   switch (test_mode) {
@@ -471,7 +472,7 @@ static void test_negate_flag( OFTestMode test_mode, ObjectiveFunctionTemplate* o
   of->set_quality_metric(&metric);
 
   MsqPrintError err(cout);
-  bool rval;
+  bool rval = false;
   double value[2];
   vector<Vector3D> grad[2];
   vector<SymMatrix3D> diag[2];
@@ -531,7 +532,7 @@ static void test_negate_flag( OFTestMode test_mode, ObjectiveFunctionTemplate* o
 
 inline void compare_numerical_gradient( ObjectiveFunctionTemplate* of )
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   IdealWeightInverseMeanRatio metric(err);
   ASSERT_NO_ERROR( err );
   of->set_quality_metric( &metric );
@@ -540,12 +541,12 @@ inline void compare_numerical_gradient( ObjectiveFunctionTemplate* of )
 
 static void compare_numerical_gradient( ObjectiveFunction* of )
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   PatchData pd;
   create_twelve_hex_patch( pd, err ); 
   ASSERT_NO_ERROR( err );
   
-  msq_std::vector<Vector3D> num_grad, ana_grad;
+  std::vector<Vector3D> num_grad, ana_grad;
   double num_val, ana_val;
   bool valid;
   
@@ -567,7 +568,7 @@ static void compare_numerical_gradient( ObjectiveFunction* of )
 
 inline void compare_hessian_gradient( ObjectiveFunctionTemplate* of )
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   IdealWeightInverseMeanRatio metric(err);
   ASSERT_NO_ERROR( err );
   of->set_quality_metric( &metric );
@@ -576,12 +577,12 @@ inline void compare_hessian_gradient( ObjectiveFunctionTemplate* of )
 
 static void compare_hessian_gradient( ObjectiveFunction* of )
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   PatchData pd;
   create_twelve_hex_patch( pd, err ); 
   ASSERT_NO_ERROR( err );
   
-  msq_std::vector<Vector3D> grad, hess_grad;
+  std::vector<Vector3D> grad, hess_grad;
   MsqHessian hess;
   double grad_val, hess_val;
   bool valid;
@@ -606,7 +607,7 @@ static void compare_hessian_gradient( ObjectiveFunction* of )
 
 inline void compare_diagonal_gradient( ObjectiveFunctionTemplate* of )
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   IdealWeightInverseMeanRatio metric(err);
   ASSERT_NO_ERROR( err );
   of->set_quality_metric( &metric );
@@ -615,13 +616,13 @@ inline void compare_diagonal_gradient( ObjectiveFunctionTemplate* of )
 
 static void compare_diagonal_gradient( ObjectiveFunction* of )
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   PatchData pd;
   create_twelve_hex_patch( pd, err ); 
   ASSERT_NO_ERROR( err );
   
-  msq_std::vector<Vector3D> grad, hess_grad;
-  msq_std::vector<SymMatrix3D> hess;
+  std::vector<Vector3D> grad, hess_grad;
+  std::vector<SymMatrix3D> hess;
   double grad_val, hess_val;
   bool valid;
   
@@ -643,7 +644,7 @@ static void compare_diagonal_gradient( ObjectiveFunction* of )
 
 inline void compare_hessian_diagonal( ObjectiveFunctionTemplate* of )
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   IdealWeightInverseMeanRatio metric(err);
   ASSERT_NO_ERROR( err );
   of->set_quality_metric( &metric );
@@ -652,13 +653,13 @@ inline void compare_hessian_diagonal( ObjectiveFunctionTemplate* of )
 
 static void compare_hessian_diagonal( ObjectiveFunction* of )
 {
-  MsqPrintError err(msq_stdio::cout);
+  MsqPrintError err(std::cout);
   PatchData pd;
   create_twelve_hex_patch( pd, err ); 
   ASSERT_NO_ERROR( err );
   
-  msq_std::vector<Vector3D> diag_grad, hess_grad;
-  msq_std::vector<SymMatrix3D> diag;
+  std::vector<Vector3D> diag_grad, hess_grad;
+  std::vector<SymMatrix3D> diag;
   MsqHessian hess;
   double diag_val, hess_val;
   bool valid;
@@ -754,7 +755,7 @@ static void test_handles_invalid_qm( OFTestMode test_mode,
   vector<SymMatrix3D> diag;
   MsqHessian hess;
   double result;
-  bool valid;
+  bool valid = false;
   
   switch (test_mode) {
     case EVAL:

@@ -58,9 +58,9 @@ QualityMetric::MetricType AddQualityMetric::get_metric_type() const
   return metric1.get_metric_type();
 }
 
-msq_std::string AddQualityMetric::get_name() const
+std::string AddQualityMetric::get_name() const
 {
-  return msq_std::string("Sum(") + metric1.get_name() + ", " + metric2.get_name() + ")";
+  return std::string("Sum(") + metric1.get_name() + ", " + metric2.get_name() + ")";
 }
 
 int AddQualityMetric::get_negate_flag() const
@@ -69,7 +69,7 @@ int AddQualityMetric::get_negate_flag() const
 }
 
 void AddQualityMetric::get_evaluations( PatchData& pd,
-                                        msq_std::vector<size_t>& handles,
+                                        std::vector<size_t>& handles,
                                         bool free_only,
                                         MsqError& err )
 {
@@ -98,7 +98,7 @@ bool AddQualityMetric::evaluate( PatchData& pd,
 bool AddQualityMetric::evaluate_with_indices( PatchData& pd,
                                               size_t handle,
                                               double& value,
-                                              msq_std::vector<size_t>& indices,
+                                              std::vector<size_t>& indices,
                                               MsqError& err )
 {
   double val1, val2;
@@ -107,11 +107,11 @@ bool AddQualityMetric::evaluate_with_indices( PatchData& pd,
   rval2 = metric2.evaluate_with_indices( pd, handle, val2, indices2, err ); MSQ_ERRZERO(err);
   
   indices.clear();
-  msq_std::sort( indices1.begin(), indices1.end() );
-  msq_std::sort( indices2.begin(), indices2.end() );
-  msq_std::set_union( indices1.begin(), indices1.end(),
+  std::sort( indices1.begin(), indices1.end() );
+  std::sort( indices2.begin(), indices2.end() );
+  std::set_union( indices1.begin(), indices1.end(),
                   indices2.begin(), indices2.end(),
-                  msq_std::back_inserter( indices ) );
+                  std::back_inserter( indices ) );
   
   value = val1 + val2;
   return rval1 && rval2;
@@ -120,11 +120,11 @@ bool AddQualityMetric::evaluate_with_indices( PatchData& pd,
 bool AddQualityMetric::evaluate_with_gradient( PatchData& pd,
                                                size_t handle,
                                                double& value,
-                                               msq_std::vector<size_t>& indices,
-                                               msq_std::vector<Vector3D>& gradient,
+                                               std::vector<size_t>& indices,
+                                               std::vector<Vector3D>& gradient,
                                                MsqError& err )
 {
-  msq_std::vector<size_t>::iterator i;
+  std::vector<size_t>::iterator i;
   size_t j;
   double val1, val2;
   bool rval1, rval2;
@@ -132,22 +132,22 @@ bool AddQualityMetric::evaluate_with_gradient( PatchData& pd,
   rval2 = metric2.evaluate_with_gradient( pd, handle, val2, indices2, grad2, err ); MSQ_ERRZERO(err);
   
   indices.resize( indices1.size() + indices2.size() );
-  i = msq_std::copy( indices1.begin(), indices1.end(), indices.begin() );
-  msq_std::copy( indices2.begin(), indices2.end(), i );
-  msq_std::sort( indices.begin(), indices.end() );
-  indices.erase( msq_std::unique( indices.begin(), indices.end() ), indices.end() );
+  i = std::copy( indices1.begin(), indices1.end(), indices.begin() );
+  std::copy( indices2.begin(), indices2.end(), i );
+  std::sort( indices.begin(), indices.end() );
+  indices.erase( std::unique( indices.begin(), indices.end() ), indices.end() );
   
   gradient.clear();
   gradient.resize( indices.size(), Vector3D(0.0) );
   for (j = 0; j < indices1.size(); ++j)
   {
-    i = msq_std::lower_bound( indices.begin(), indices.end(), indices1[j] );
+    i = std::lower_bound( indices.begin(), indices.end(), indices1[j] );
     size_t k = i - indices.begin();
     gradient[k] += grad1[j];
   }
   for (j = 0; j < indices2.size(); ++j)
   {
-    i = msq_std::lower_bound( indices.begin(), indices.end(), indices2[j] );
+    i = std::lower_bound( indices.begin(), indices.end(), indices2[j] );
     size_t k = i - indices.begin();
     gradient[k] += grad2[j];
   }
@@ -159,12 +159,12 @@ bool AddQualityMetric::evaluate_with_gradient( PatchData& pd,
 bool AddQualityMetric::evaluate_with_Hessian( PatchData& pd,
                                               size_t handle,
                                               double& value,
-                                              msq_std::vector<size_t>& indices,
-                                              msq_std::vector<Vector3D>& gradient,
-                                              msq_std::vector<Matrix3D>& Hessian,
+                                              std::vector<size_t>& indices,
+                                              std::vector<Vector3D>& gradient,
+                                              std::vector<Matrix3D>& Hessian,
                                               MsqError& err )
 {
-  msq_std::vector<size_t>::iterator i;
+  std::vector<size_t>::iterator i;
   size_t j, r, c, n, h;
   double val1, val2;
   bool rval1, rval2;
@@ -172,22 +172,22 @@ bool AddQualityMetric::evaluate_with_Hessian( PatchData& pd,
   rval2 = metric2.evaluate_with_Hessian( pd, handle, val2, indices2, grad2, Hess2, err ); MSQ_ERRZERO(err);
   
   indices.resize( indices1.size() + indices2.size() );
-  i = msq_std::copy( indices1.begin(), indices1.end(), indices.begin() );
-  msq_std::copy( indices2.begin(), indices2.end(), i );
-  msq_std::sort( indices.begin(), indices.end() );
-  indices.erase( msq_std::unique( indices.begin(), indices.end() ), indices.end() );
+  i = std::copy( indices1.begin(), indices1.end(), indices.begin() );
+  std::copy( indices2.begin(), indices2.end(), i );
+  std::sort( indices.begin(), indices.end() );
+  indices.erase( std::unique( indices.begin(), indices.end() ), indices.end() );
   
   gradient.clear();
   gradient.resize( indices.size(), Vector3D(0.0) );
   for (j = 0; j < indices1.size(); ++j)
   {
-    i = msq_std::lower_bound( indices.begin(), indices.end(), indices1[j] );
+    i = std::lower_bound( indices.begin(), indices.end(), indices1[j] );
     indices1[j] = i - indices.begin();
     gradient[indices1[j]] += grad1[j];
   }
   for (j = 0; j < indices2.size(); ++j)
   {
-    i = msq_std::lower_bound( indices.begin(), indices.end(), indices2[j] );
+    i = std::lower_bound( indices.begin(), indices.end(), indices2[j] );
     indices2[j] = i - indices.begin();
     gradient[indices2[j]] += grad2[j];
   }

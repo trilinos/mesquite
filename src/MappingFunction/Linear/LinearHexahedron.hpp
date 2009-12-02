@@ -56,7 +56,7 @@ namespace MESQUITE_NS {
  * \f$N_7(\xi,\eta,\zeta) = \frac{1}{8}(1-\xi)(1+\eta)(1+\zeta)\f$
  * 
  */ 
-class LinearHexahedron : public MappingFunction3D
+class MESQUITE_EXPORT LinearHexahedron : public MappingFunction3D
 {
 public:
 

@@ -52,7 +52,7 @@ class TrustRegion : public VertexMover, public PatchSetUser
     
     PatchSet* get_patch_set();
     
-    MESQUITE_EXPORT msq_std::string get_name() const;
+    MESQUITE_EXPORT std::string get_name() const;
     
   protected:
     
@@ -69,9 +69,9 @@ class TrustRegion : public VertexMover, public PatchSetUser
   
     PatchDataVerticesMemento* mMemento;
     MsqHessian mHess;
-    msq_std::vector<Vector3D> mGrad;
-    msq_std::vector<Vector3D> wVect, zVect, dVect, pVect, rVect;
-    msq_std::vector<double> preCond;
+    std::vector<Vector3D> mGrad;
+    std::vector<Vector3D> wVect, zVect, dVect, pVect, rVect;
+    std::vector<double> preCond;
 };
 
 } // namespace Mesquite

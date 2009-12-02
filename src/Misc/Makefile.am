@@ -46,7 +46,6 @@ MSQ_HDRS += \
 	$(SRC_MISC_DIR)/PlanarDomain.hpp \
 	$(SRC_MISC_DIR)/SphericalDomain.hpp \
 	$(SRC_MISC_DIR)/SymMatrix3D.hpp \
-	$(SRC_MISC_DIR)/TargetMatrix.hpp \
 	$(SRC_MISC_DIR)/Vector3D.hpp \
 	$(SRC_MISC_DIR)/VtkTypeInfo.hpp \
 	$(SRC_MISC_DIR)/XYRectangle.hpp

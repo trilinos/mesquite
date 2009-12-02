@@ -96,7 +96,7 @@ bool CompositeOFScalarAdd::evaluate( EvalType type,
 bool CompositeOFScalarAdd::evaluate_with_gradient( EvalType type, 
                                              PatchData& pd,
                                              double& value_out,
-                                             msq_std::vector<Vector3D>& grad_out,
+                                             std::vector<Vector3D>& grad_out,
                                              MsqError& err )
 {
   bool ok = objFunc->evaluate_with_gradient( type, pd, value_out, grad_out, err );
@@ -107,8 +107,8 @@ bool CompositeOFScalarAdd::evaluate_with_gradient( EvalType type,
 bool CompositeOFScalarAdd::evaluate_with_Hessian_diagonal( EvalType type, 
                                             PatchData& pd,
                                             double& value_out,
-                                            msq_std::vector<Vector3D>& grad_out,
-                                            msq_std::vector<SymMatrix3D>& diag_out,
+                                            std::vector<Vector3D>& grad_out,
+                                            std::vector<SymMatrix3D>& diag_out,
                                             MsqError& err )
 {
   bool ok = objFunc->evaluate_with_Hessian_diagonal( type, pd, value_out, grad_out, diag_out, err );
@@ -119,7 +119,7 @@ bool CompositeOFScalarAdd::evaluate_with_Hessian_diagonal( EvalType type,
 bool CompositeOFScalarAdd::evaluate_with_Hessian( EvalType type, 
                                             PatchData& pd,
                                             double& value_out,
-                                            msq_std::vector<Vector3D>& grad_out,
+                                            std::vector<Vector3D>& grad_out,
                                             MsqHessian& Hessian_out,
                                             MsqError& err )
 {

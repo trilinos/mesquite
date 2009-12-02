@@ -49,7 +49,7 @@ class DomainClassifier : public MeshDomain
   public:
   
     /**\brief Check that classification maps to B-Rep topology */
-    void test_valid_classification( Mesh* mesh, MsqError& err );
+    MESQUITE_EXPORT void test_valid_classification( Mesh* mesh, MsqError& err );
   
     /**\brief Classify mesh entities using tag values
      *
@@ -65,13 +65,14 @@ class DomainClassifier : public MeshDomain
      *\param id_array Array of integer MeshDomain IDs.
      *\param array_length Length of 'domain_array' and 'id_array'
      */
-    static void classify_by_tag( DomainClassifier& result,
-                                 Mesh* mesh,
-                                 const char* tag_name,
-                                 MeshDomain** domain_array,
-                                 const int* id_array,
-                                 unsigned array_length,
-                                 MsqError& err );
+    static MESQUITE_EXPORT
+	void classify_by_tag( DomainClassifier& result,
+                          Mesh* mesh,
+                          const char* tag_name,
+                          MeshDomain** domain_array,
+                          const int* id_array,
+                          unsigned array_length,
+                          MsqError& err );
   
     /**\brief Skin mesh and classify skin entities geometrically.
      *
@@ -95,13 +96,14 @@ class DomainClassifier : public MeshDomain
      *\param dimension_array Topological dimensiono of each MeshDomain
      *\param array_length Length of 'domain_array' and 'dimension_array'
      */
-    static void classify_skin_geometrically( DomainClassifier& result,
-                                        Mesh* mesh,
-                                        double tolerance,
-                                        MeshDomain** domain_array,
-                                        const int* dimension_array,
-                                        unsigned array_length,
-                                        MsqError& err );
+    MESQUITE_EXPORT static
+	void classify_skin_geometrically( DomainClassifier& result,
+                                      Mesh* mesh,
+                                      double tolerance,
+                                      MeshDomain** domain_array,
+                                      const int* dimension_array,
+                                      unsigned array_length,
+                                      MsqError& err );
 
     /**\brief Classify all mesh entities geometrically.
      *
@@ -124,20 +126,29 @@ class DomainClassifier : public MeshDomain
      *\param dimension_array Topological dimensiono of each MeshDomain
      *\param array_length Length of 'domain_array' and 'dimension_array'
      */
-   static void classify_geometrically( DomainClassifier& result,
-                                       Mesh* mesh,
-                                       double tolerance,
-                                       MeshDomain** domain_array,
-                                       const int* dimension_array,
-                                       unsigned array_length,
-                                       MsqError& err );
+   MESQUITE_EXPORT static
+   void classify_geometrically( DomainClassifier& result,
+                                Mesh* mesh,
+                                double tolerance,
+                                MeshDomain** domain_array,
+                                const int* dimension_array,
+                                unsigned array_length,
+                                MsqError& err );
   
     struct DomainSet {
-      DomainSet( MeshDomain* dom ) : domain(dom) {}
-      DomainSet() : domain(0) {}
+      MESQUITE_EXPORT DomainSet( MeshDomain* dom ) : domain(dom) {}
+      MESQUITE_EXPORT DomainSet() : domain(0) {}
       MeshDomain* domain;
-      msq_std::vector<Mesh::VertexHandle> vertices;
-      msq_std::vector<Mesh::ElementHandle> elements;
+	  MESQUITE_EXPORT void set_vertices( const std::vector<Mesh::VertexHandle>& verts ) 
+	    { vertices = verts; }
+	  MESQUITE_EXPORT void set_elements( const std::vector<Mesh::ElementHandle>& elems ) 
+	    { elements = elems; }
+	  MESQUITE_EXPORT void get_vertices( std::vector<Mesh::VertexHandle>& verts ) const
+	    { verts = vertices; }
+	  MESQUITE_EXPORT void get_elements( std::vector<Mesh::ElementHandle>& elems ) const
+	    { elems = elements; }
+      std::vector<Mesh::VertexHandle> vertices;
+      std::vector<Mesh::ElementHandle> elements;
     };
   
     /**\brief Specify classification explicitly for each entity.
@@ -153,42 +164,50 @@ class DomainClassifier : public MeshDomain
      *                        vertices associated with the domain.
      *\param array_length     Length of 'domain_set_array'
      */
-    static void classify_by_handle( DomainClassifier& result,
-                                    Mesh* mesh,
-                                    DomainSet* domain_set_array,
-                                    unsigned array_length,
-                                    MsqError& err );
+    MESQUITE_EXPORT static
+    void classify_by_handle( DomainClassifier& result,
+                             Mesh* mesh,
+                             DomainSet* domain_set_array,
+                             unsigned array_length,
+                             MsqError& err );
  
-    DomainClassifier() : deleteSubDomains(false)
+    MESQUITE_EXPORT DomainClassifier() : deleteSubDomains(false)
       {}
     
-    virtual ~DomainClassifier();
+    MESQUITE_EXPORT virtual ~DomainClassifier();
     
-    virtual void snap_to(Mesh::VertexHandle entity_handle,
+	MESQUITE_EXPORT
+	virtual void snap_to(Mesh::VertexHandle entity_handle,
                          Vector3D &coordinate) const;
     
+	MESQUITE_EXPORT
     virtual void vertex_normal_at(Mesh::VertexHandle entity_handle,
                                   Vector3D &coordinate) const;
+	MESQUITE_EXPORT
     virtual void element_normal_at(Mesh::ElementHandle entity_handle,
                                   Vector3D &coordinate) const;
                           
+	MESQUITE_EXPORT
     virtual void vertex_normal_at( const Mesh::VertexHandle* handles,
                                    Vector3D coordinates[],
                                    unsigned count,
                                    MsqError& err ) const;
                             
+	MESQUITE_EXPORT
     virtual void closest_point( Mesh::VertexHandle handle,
                                 const Vector3D& position,
                                 Vector3D& closest,
                                 Vector3D& normal,
                                 MsqError& err ) const;
                                 
+	MESQUITE_EXPORT
     virtual void domain_DoF( const Mesh::VertexHandle* handle_array,
                              unsigned short* dof_array,
                              size_t num_handles,
                              MsqError& err ) const;
     
       /**\brief Clear all data, including MeshDomain list */
+	MESQUITE_EXPORT
     void clear() {
       vertexList.clear();
       elementList.clear();
@@ -200,24 +219,28 @@ class DomainClassifier : public MeshDomain
       MeshDomain* domain;
     };
                                       
+ 	MESQUITE_EXPORT
     MeshDomain* find_vertex_domain( Mesh::VertexHandle vertex ) const
       { return find_domain( vertex, vertexList ); }
+	MESQUITE_EXPORT
     MeshDomain* find_element_domain( Mesh::ElementHandle element ) const
       { return find_domain( element, elementList ); }
       
+	MESQUITE_EXPORT
     void delete_sub_domains(bool yesno)
       { deleteSubDomains = yesno; }
 
+	MESQUITE_EXPORT
     void delete_all_sub_domains();
     
   private:
     bool deleteSubDomains;
     
     static MeshDomain* find_domain( Mesh::EntityHandle handle, 
-                                 const msq_std::vector<DomainBlock>& list );
+                                 const std::vector<DomainBlock>& list );
     
-    msq_std::vector<DomainBlock> vertexList;
-    msq_std::vector<DomainBlock> elementList;
+    std::vector<DomainBlock> vertexList;
+    std::vector<DomainBlock> elementList;
 };
 
 } // namespace Mesquite

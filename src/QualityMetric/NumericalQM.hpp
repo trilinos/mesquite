@@ -60,12 +60,12 @@ class NumericalQM : public QualityMetric
 
     MetricType get_metric_type() const;
 
-    msq_std::string get_name() const;
+    std::string get_name() const;
 
     int get_negate_flag() const;
 
     void get_evaluations( PatchData& pd, 
-                          msq_std::vector<size_t>& handles, 
+                          std::vector<size_t>& handles, 
                           bool free_vertices_only,
                           MsqError& err );
 
@@ -77,30 +77,30 @@ class NumericalQM : public QualityMetric
     bool evaluate_with_indices( PatchData& pd,
                    size_t handle,
                    double& value,
-                   msq_std::vector<size_t>& indices,
+                   std::vector<size_t>& indices,
                    MsqError& err );
 
     bool evaluate_with_gradient( PatchData& pd,
                    size_t handle,
                    double& value,
-                   msq_std::vector<size_t>& indices,
-                   msq_std::vector<Vector3D>& gradient,
+                   std::vector<size_t>& indices,
+                   std::vector<Vector3D>& gradient,
                    MsqError& err );
 
     bool evaluate_with_Hessian_diagonal( PatchData& pd,
                    size_t handle,
                    double& value,
-                   msq_std::vector<size_t>& indices,
-                   msq_std::vector<Vector3D>& gradient,
-                   msq_std::vector<SymMatrix3D>& Hessian_diagonal,
+                   std::vector<size_t>& indices,
+                   std::vector<Vector3D>& gradient,
+                   std::vector<SymMatrix3D>& Hessian_diagonal,
                    MsqError& err );
 
     bool evaluate_with_Hessian( PatchData& pd,
                    size_t handle,
                    double& value,
-                   msq_std::vector<size_t>& indices,
-                   msq_std::vector<Vector3D>& gradient,
-                   msq_std::vector<Matrix3D>& Hessian,
+                   std::vector<size_t>& indices,
+                   std::vector<Vector3D>& gradient,
+                   std::vector<Matrix3D>& Hessian,
                    MsqError& err );
 
   private:

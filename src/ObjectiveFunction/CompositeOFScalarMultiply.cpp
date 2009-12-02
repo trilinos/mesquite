@@ -98,12 +98,12 @@ bool CompositeOFScalarMultiply::evaluate( EvalType type,
 bool CompositeOFScalarMultiply::evaluate_with_gradient( EvalType type, 
                                              PatchData& pd,
                                              double& value_out,
-                                             msq_std::vector<Vector3D>& grad_out,
+                                             std::vector<Vector3D>& grad_out,
                                              MsqError& err )
 {
   bool ok = objFunc->evaluate_with_gradient( type, pd, value_out, grad_out, err );
   value_out *= mAlpha;
-  for (msq_std::vector<Vector3D>::iterator i = grad_out.begin(); i != grad_out.end(); ++i)
+  for (std::vector<Vector3D>::iterator i = grad_out.begin(); i != grad_out.end(); ++i)
     *i *= mAlpha;
   return !MSQ_CHKERR(err) && ok;
 }
@@ -111,8 +111,8 @@ bool CompositeOFScalarMultiply::evaluate_with_gradient( EvalType type,
 bool CompositeOFScalarMultiply::evaluate_with_Hessian_diagonal( EvalType type, 
                                             PatchData& pd,
                                             double& value_out,
-                                            msq_std::vector<Vector3D>& grad_out,
-                                            msq_std::vector<SymMatrix3D>& diag_out,
+                                            std::vector<Vector3D>& grad_out,
+                                            std::vector<SymMatrix3D>& diag_out,
                                             MsqError& err )
 {
   bool ok = objFunc->evaluate_with_Hessian_diagonal( type, pd, value_out, grad_out, diag_out, err );
@@ -127,13 +127,13 @@ bool CompositeOFScalarMultiply::evaluate_with_Hessian_diagonal( EvalType type,
 bool CompositeOFScalarMultiply::evaluate_with_Hessian( EvalType type, 
                                             PatchData& pd,
                                             double& value_out,
-                                            msq_std::vector<Vector3D>& grad_out,
+                                            std::vector<Vector3D>& grad_out,
                                             MsqHessian& Hessian_out,
                                             MsqError& err )
 {
   bool ok = objFunc->evaluate_with_Hessian( type, pd, value_out, grad_out, Hessian_out, err );
   value_out *= mAlpha;
-  for (msq_std::vector<Vector3D>::iterator i = grad_out.begin(); i != grad_out.end(); ++i)
+  for (std::vector<Vector3D>::iterator i = grad_out.begin(); i != grad_out.end(); ++i)
     *i *= mAlpha;
   Hessian_out.scale( mAlpha );
   return !MSQ_CHKERR(err) && ok;
