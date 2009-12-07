@@ -20,7 +20,8 @@ EXTRA_DIST = lgpl.txt \
              $(OLD_AM_GENERATED_HDRS:=.in) \
              $(OLD_AM_EXTRA_CONFIG) \
              $(INCLUDED_MAKEFILES) \
-	     cmake/*.cmake \
+             include/mesquite_config.win.h \
+	     $(srcdir)/cmake/*.cmake \
 	     CMakeLists.txt \
 	     src/CMakeLists.txt \
 	     utils/CMakeLists.txt \
