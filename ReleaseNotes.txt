@@ -1,4 +1,4 @@
-Since 2.0.0:
+2.1.0:
   - CMake-based build system and portability fixes restoring
      the ability to compile Mesquite on MS Windows.
   - Many new target metrics for volume elements
@@ -24,9 +24,9 @@ Since 2.0.0:
   - Remove unused code
   - Fix (benign) compilation warnings
   - Fix portability issues (particularly Windows)
-  - Fix definition of macros that might conflict with appliction
-     code being indrectly included by applications
-  - Fix bug in NodeSet class on w/ Microsoft compiler (only affects 
+  - Fix definition of macros that might be indirectly included by
+     application and conflict with application code
+  - Fix bug in NodeSet class with Microsoft compiler (only affects 
       experimental smoothing of higher-order elements)
   - Fix compilation of Mesquite unit tests with latest version of CppUnit
   - Fix bug in unit test: TMPQualityMetricTest
