@@ -40,6 +40,8 @@ SUBDIRS = test_1 \
 	  viscous_cfd \
 	  $(IMESH_TEST) $(EXO_TEST) $(UNIT_TEST)
 
+EXTRA_DIST = CMakeLists.txt
+
 # Override all-recursive so that "make" with no target 
 # skips subdirectories in testSuite.
 all-recursive:

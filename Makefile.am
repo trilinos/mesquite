@@ -23,9 +23,7 @@ EXTRA_DIST = lgpl.txt \
              include/mesquite_config.win.h \
 	     $(srcdir)/cmake/*.cmake \
 	     CMakeLists.txt \
-	     src/CMakeLists.txt \
-	     utils/CMakeLists.txt \
-	     itaps/CMakeLists.txt
+	     src/CMakeLists.txt 
 
 BUILT_SOURCES = include/Mesquite_all_headers.hpp
 MSQ_SRCS=

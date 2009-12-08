@@ -26,3 +26,5 @@ msqquality.1: msqquality$(EXEEXT)
 	./$< -M > $@ || touch $@
 
 MOSTLYCLEANFILES = $(man1_MANS)
+
+EXTRA_DIST = CMakeLists.txt

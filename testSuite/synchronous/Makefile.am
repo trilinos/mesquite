@@ -7,3 +7,4 @@ main_SOURCES = main.cpp
 main_DEPENDENCIES = $(LDADD)
 TESTS = $(check_PROGRAMS)
 MOSTLYCLEANFILES = *.vtk *.gpt *.gnuplot
+EXTRA_DIST = CMakeLists.txt
