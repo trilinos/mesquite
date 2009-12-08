@@ -70,4 +70,12 @@ IF(${PACKAGE_NAME}_ENABLE_IMESH)
   ADD_SUBDIRECTORY(imesh)
 ENDIF()
 
-ADD_SUBDIRECTORY(unit)
+# Cannot build unit tests with Windows DLL because
+# internal symbols are not exposed
+IF(WIN32 OR WIN64)
+  IF(NOT ${PACKAGE_NAME}_ENABLE_SHARED)
+    ADD_SUBDIRECTORY(unit)
+  ENDIF()
+ELSE()
+  ADD_SUBDIRECTORY(unit)
+ENDIF()
