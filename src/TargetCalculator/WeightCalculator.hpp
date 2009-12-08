@@ -42,7 +42,7 @@ namespace MESQUITE_NS {
 class PatchData;
 class MsqError;
 
-class WeightCalculator
+class MESQUITE_EXPORT WeightCalculator
 {
 public:
 

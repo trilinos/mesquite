@@ -378,7 +378,7 @@ namespace MESQUITE_NS
   }
   
   // output operator
-  std::ostream& operator<<(std::ostream &s, const Mesquite::Vector3D &v);
+  MESQUITE_EXPORT std::ostream& operator<<(std::ostream &s, const Mesquite::Vector3D &v);
   
   inline double Vector3D::distance_between(const Vector3D &p1,
                                            const Vector3D &p2)

@@ -321,16 +321,18 @@ namespace MESQUITE_NS
                                    const char* metric_value_tag_name = 0 );
     
       //! Does one sweep over the mesh and assess the quality with the metrics previously added.
-    virtual double loop_over_mesh( Mesh* mesh,
-                                   MeshDomain* domain,
-                                   const Settings* settings,
-                                   MsqError &err);
+    virtual MESQUITE_EXPORT
+    double loop_over_mesh( Mesh* mesh,
+                           MeshDomain* domain,
+                           const Settings* settings,
+                           MsqError &err);
 
       //! Does one sweep over the mesh and assess the quality with the metrics previously added.
-    virtual double loop_over_mesh( ParallelMesh* mesh,
-                                   MeshDomain* domain,
-                                   const Settings* settings,
-                                   MsqError &err);
+    virtual MESQUITE_EXPORT
+    double loop_over_mesh( ParallelMesh* mesh,
+                           MeshDomain* domain,
+                           const Settings* settings,
+                           MsqError &err);
 
       //! Do not print results of assessment.
     MESQUITE_EXPORT void disable_printing_results()
@@ -386,20 +388,20 @@ namespace MESQUITE_NS
     {
       public:
       
-        Assessor( QualityMetric* metric );
+        MESQUITE_EXPORT Assessor( QualityMetric* metric );
         
-        double get_average() const ;
-        double get_maximum() const { return maximum; }
-        double get_minimum() const { return minimum; }
-        double get_rms()     const ;
-        double get_stddev()  const ;
-        double get_power_mean() const;
-        double get_power() const   { return pMean; } 
-        int get_count() const { return count; }
+        MESQUITE_EXPORT double get_average() const ;
+        MESQUITE_EXPORT double get_maximum() const { return maximum; }
+        MESQUITE_EXPORT double get_minimum() const { return minimum; }
+        MESQUITE_EXPORT double get_rms()     const ;
+        MESQUITE_EXPORT double get_stddev()  const ;
+        MESQUITE_EXPORT double get_power_mean() const;
+        MESQUITE_EXPORT double get_power() const   { return pMean; } 
+        MESQUITE_EXPORT int get_count() const { return count; }
         
-        bool have_power_mean() const { return 0.0 != pMean; }
+        MESQUITE_EXPORT bool have_power_mean() const { return 0.0 != pMean; }
         
-        int get_invalid_element_count() const { return numInvalid; }
+        MESQUITE_EXPORT int get_invalid_element_count() const { return numInvalid; }
         
         /** Get historgram of data, if calculated.
          *\param lower_bound_out  The lower bound of the histogram
@@ -412,46 +414,47 @@ namespace MESQUITE_NS
          *              for histogram intervals between the lower and
          *              upper bounds.
          */
+        MESQUITE_EXPORT 
         void get_histogram( double& lower_bound_out,
                             double& upper_bound_out,
                             std::vector<int>& counts_out,
                             MsqError& err ) const;
                             
         /** Reset all calculated data */
-        void reset_data();
+        MESQUITE_EXPORT void reset_data();
        
         /** Print the histogram */
-        void print_histogram( std::ostream&, int width = 0 ) const;
+        MESQUITE_EXPORT void print_histogram( std::ostream&, int width = 0 ) const;
 
         /** Get the QualityMetric */
-        QualityMetric* get_metric() const { return qualMetric; }
+        MESQUITE_EXPORT QualityMetric* get_metric() const { return qualMetric; }
         
         /** Add a value to the running counts */
-        void add_value( double metric_value );
+        MESQUITE_EXPORT void add_value( double metric_value );
         
         /** Add a value to the hisogram data */
-        void add_hist_value( double metric_value );
+        MESQUITE_EXPORT void add_hist_value( double metric_value );
         
         /** Note invalid result */
-        void add_invalid_value() ;
+        MESQUITE_EXPORT void add_invalid_value() ;
         
-        bool have_histogram() const
+        MESQUITE_EXPORT bool have_histogram() const
           { return !histogram.empty(); }
         
         /** If range of histogram has not yet been determined,
           * calculate it from the min/max values.
           */
-        void calculate_histogram_range();
+        MESQUITE_EXPORT void calculate_histogram_range();
         
-        bool write_to_tag() const { return !tagName.empty(); }
+        MESQUITE_EXPORT bool write_to_tag() const { return !tagName.empty(); }
         
-        void set_stopping_function( bool value )
+        MESQUITE_EXPORT void set_stopping_function( bool value )
           { stoppingFunction = value; }
         
-        bool stopping_function( ) const
+        MESQUITE_EXPORT bool stopping_function( ) const
           { return stoppingFunction; }
         
-        double stopping_function_value() const;
+        MESQUITE_EXPORT double stopping_function_value() const;
         
       private:
       
@@ -497,6 +500,7 @@ namespace MESQUITE_NS
      * If the passed QualityMetric has not been registered with the
      * QualityAssessor instance, NULL is returned.
      */
+    MESQUITE_EXPORT
     const Assessor* get_results( QualityMetric* metric ) const;
     
     /** \brief Get list of all summary data.

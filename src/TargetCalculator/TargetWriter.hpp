@@ -50,15 +50,19 @@ class WeightCalculator;
 class TargetWriter : public Instruction
 {
 public:
+  MESQUITE_EXPORT
   TargetWriter( TargetCalculator* tc,
                 WeightCalculator* wc = 0,
                 std::string target_base_name = "MSQ_TARGET_MATRIX",
                 std::string weight_base_name = "MSQ_TARGET_WEIGHT") ;
                 
-  virtual ~TargetWriter();
+  MESQUITE_EXPORT virtual 
+  ~TargetWriter();
   
+  MESQUITE_EXPORT
   double loop_over_mesh( Mesh* mesh, MeshDomain*, const Settings*, MsqError& );
 
+  MESQUITE_EXPORT
   std::string get_name() const;
 
 private:

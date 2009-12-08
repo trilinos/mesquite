@@ -49,7 +49,7 @@ enum Axis {
  * R^3 vertex positions to 2D positions to use in graphics
  * file formats.
  */
-class Projection {
+class MESQUITE_EXPORT Projection {
   public:
       /** Project into specified plane - choice of up direction is arbitrary */
     Projection( PlanarDomain* domain );
@@ -82,8 +82,11 @@ class Projection {
  * Write a file that can be drawn in gnuplot with the command:
  * "plot 'filename' with lines"
  */
+MESQUITE_EXPORT
 void write_gnuplot( Mesh* mesh, const char* filename, MsqError& err );
+MESQUITE_EXPORT
 void write_gnuplot( PatchData& pd, const char* filename, MsqError& err );
+MESQUITE_EXPORT
 void write_gnuplot( Mesh* mesh, std::vector<Mesh::ElementHandle>& elems,
                     const char* filename, MsqError& err );
 
@@ -94,6 +97,7 @@ void write_gnuplot( Mesh* mesh, std::vector<Mesh::ElementHandle>& elems,
  * write a file foo.gnuplot that produces an animation of the
  * data by calling write_gnuplot_animator( n, foo, err );
  */
+MESQUITE_EXPORT
 void write_gnuplot_animator( int count, const char* basename, MsqError& err );
 
 /**\brief Write GNU plot commands to overlay a set of mesh timesteps in a single plot
@@ -102,6 +106,7 @@ void write_gnuplot_animator( int count, const char* basename, MsqError& err );
  * write a file foo.gnuplot that produces an overlay of the meshes in
  * each file by calling write_gnuplot_animator( n, foo, err );
  */
+MESQUITE_EXPORT
 void write_gnuplot_overlay( int count, const char* basename, MsqError& err );
 
 /** \brief Write mesh as a VTK file
@@ -112,7 +117,9 @@ void write_gnuplot_overlay( int count, const char* basename, MsqError& err );
  * tags/attributes.  If the Mesh is a MeshImpl, use the VTK writing
  * function provided in MeshImpl for a complete mesh export.
  */
+MESQUITE_EXPORT
 void write_vtk( Mesh* mesh, const char* filename, MsqError& err );
+MESQUITE_EXPORT
 void write_vtk( PatchData& pd, const char* filename, MsqError& err,
                 const Vector3D* OF_gradient = 0 );
 
@@ -129,6 +136,7 @@ inline int cm2pt( float cm     ) { return (int)(cm * 72.0f / 2.54f); }
  *\param width - The width of the output image, in points.
  *\param height - The height of the output image, in points.
  */
+MESQUITE_EXPORT
 void write_eps( Mesh* mesh, 
                 const char* filename, 
                 Projection proj, 
@@ -143,6 +151,7 @@ void write_eps( Mesh* mesh,
  *\param proj - SVG is a 2-D drawing format.  This argument
  *              specifies which 2-D projection of the 3-D mesh to write.
  */
+MESQUITE_EXPORT
 void write_svg( Mesh* mesh, 
                 const char* filename, 
                 Projection proj,
@@ -155,10 +164,12 @@ void write_svg( Mesh* mesh,
  * This writer will write only the triangles contained in the
  * passed mesh.  Any non-triangle elements will be ignored.
  */
+MESQUITE_EXPORT
 void write_stl( Mesh* mesh, const char* filename, MsqError& err ); 
 
 /**\brief Write EPS file containing single triangle in XY plane.
  */
+MESQUITE_EXPORT
 void write_eps_triangle( Mesh* mesh, 
                          Mesh::ElementHandle elem,
                          const char* filename, 
@@ -167,6 +178,7 @@ void write_eps_triangle( Mesh* mesh,
                          MsqError& err,
                          int width = in2pt( 6.5 ),
                          int height = in2pt( 9 ) );
+MESQUITE_EXPORT
 void write_eps_triangle( const Vector3D* coords, 
                          size_t num_vtx,
                          const char* filename, 

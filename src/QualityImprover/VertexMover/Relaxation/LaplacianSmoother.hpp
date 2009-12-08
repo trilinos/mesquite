@@ -53,13 +53,14 @@ namespace MESQUITE_NS
     /**
      *\param OF ObjectiveFunction used by some termination criteria
      */
-    LaplacianSmoother( ObjectiveFunction* OF = NULL ) : RelaxationSmoother(OF) {}
+    MESQUITE_EXPORT LaplacianSmoother( ObjectiveFunction* OF = NULL ) 
+      : RelaxationSmoother(OF) {}
     
-    virtual ~LaplacianSmoother();
-    virtual std::string get_name() const;
+    MESQUITE_EXPORT virtual ~LaplacianSmoother();
+    MESQUITE_EXPORT virtual std::string get_name() const;
   protected:
-    virtual void optimize_vertex_positions(PatchData &pd,
-                                         MsqError &err);
+    MESQUITE_EXPORT virtual 
+    void optimize_vertex_positions( PatchData &pd, MsqError &err );
   private:
     std::vector<size_t> adjVtxList;
   };

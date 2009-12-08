@@ -41,7 +41,7 @@ namespace MESQUITE_NS {
 class ElemSampleQM;
 
 /**\brief Use metric value as target weight */
-class MetricWeight : public WeightCalculator
+class MESQUITE_EXPORT MetricWeight : public WeightCalculator
 {
 public:
   MetricWeight( ElemSampleQM* metric ) : mMetric(metric) {}
