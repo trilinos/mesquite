@@ -4,7 +4,7 @@ BUILT_SOURCES += itaps/iMesh_protos.h \
                  itaps/iRel_protos.h
 
 EXTRA_DIST += $(top_srcdir)/itaps/mkprotos.sh \
-              CMakeLists.txt
+              $(top_srcdir)/itaps/CMakeLists.txt
 
 ITAPS_DIR = itaps
 MSQ_INCLUDES += -I$(top_srcdir)/$(ITAPS_DIR)

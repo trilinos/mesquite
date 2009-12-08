@@ -7,7 +7,5 @@ check_PROGRAMS = main
 main_SOURCES = main.cpp
 main_DEPENDENCIES = $(LDADD)
 TESTS = $(check_PROGRAMS)
-EXTRA_DIST = CMakeLists.txt
-
-EXTRA_DIST = reference.vtk figures.tex
+EXTRA_DIST = CMakeLists.txt reference.vtk figures.tex
 MOSTLYCLEANFILES = *.gpt Exp*.vtk
