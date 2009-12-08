@@ -66,7 +66,7 @@ namespace MESQUITE_NS
       Since the size of the object is fixed at compile time, the Matrix3D
       object is as fast as a double[9] array.
   */
-  class Matrix3D 
+  class MESQUITE_EXPORT Matrix3D 
   {
   protected:
     double v_[9];                  

@@ -51,15 +51,15 @@ namespace MESQUITE_NS
    class LInfTemplate :public ObjectiveFunctionTemplate
    {
    public:
-     LInfTemplate(QualityMetric *);
-     virtual ~LInfTemplate();
-     virtual bool evaluate( EvalType type, 
-                            PatchData& pd,
-                            double& value_out,
-                            bool free,
-                            MsqError& err ); 
-     virtual ObjectiveFunction* clone() const;
-     virtual void clear();
+     MESQUITE_EXPORT LInfTemplate(QualityMetric *);
+     MESQUITE_EXPORT virtual ~LInfTemplate();
+     MESQUITE_EXPORT virtual bool evaluate( EvalType type, 
+                                            PatchData& pd,
+                                            double& value_out,
+                                            bool free,
+                                            MsqError& err ); 
+     MESQUITE_EXPORT virtual ObjectiveFunction* clone() const;
+     MESQUITE_EXPORT virtual void clear();
    private:
      /** Temporary storage for qm sample handles */
      mutable std::vector<size_t> qmHandles;

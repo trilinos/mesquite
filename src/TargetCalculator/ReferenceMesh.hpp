@@ -48,7 +48,7 @@ class Mesh;
  * between vertices in the active mesh and vertices in the 
  * reference mesh.
  */
-class ReferenceMeshInterface
+class MESQUITE_EXPORT ReferenceMeshInterface
 {
 public:
   virtual ~ReferenceMeshInterface();
@@ -63,10 +63,11 @@ public:
 class ReferenceMesh : public ReferenceMeshInterface
 {
 public:
-  ReferenceMesh( Mesh* mesh ) : mMesh(mesh) {}
-  virtual ~ReferenceMesh();
+  MESQUITE_EXPORT ReferenceMesh( Mesh* mesh ) : mMesh(mesh) {}
+  MESQUITE_EXPORT virtual ~ReferenceMesh();
   
-  virtual void get_reference_vertex_coordinates( 
+  MESQUITE_EXPORT virtual 
+  void get_reference_vertex_coordinates( 
                            const Mesh::VertexHandle* vertices,
                            size_t num_vertices,
                            Vector3D* coordinates_out,

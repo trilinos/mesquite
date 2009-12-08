@@ -65,21 +65,25 @@ class TargetReader
 {
   public:
   
+    MESQUITE_EXPORT 
     TargetReader( std::string tag_base_name = "MSQ_TARGET_MATRIX" );
     
-    virtual ~TargetReader();
+    MESQUITE_EXPORT virtual 
+    ~TargetReader();
     
-    virtual bool get_3D_target( PatchData &pd,
-                                size_t element,
-                                Sample sample,
-                                MsqMatrix<3,3>& W_out,
-                                MsqError& err );
+    MESQUITE_EXPORT virtual 
+    bool get_3D_target( PatchData &pd,
+                        size_t element,
+                        Sample sample,
+                        MsqMatrix<3,3>& W_out,
+                        MsqError& err );
     
-    virtual bool get_2D_target( PatchData &pd,
-                                size_t element,
-                                Sample sample,
-                                MsqMatrix<3,2>& W_out,
-                                MsqError& err );
+    MESQUITE_EXPORT virtual 
+    bool get_2D_target( PatchData &pd,
+                        size_t element,
+                        Sample sample,
+                        MsqMatrix<3,2>& W_out,
+                        MsqError& err );
 
   private:
   

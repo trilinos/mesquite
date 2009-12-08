@@ -41,7 +41,7 @@ namespace MESQUITE_NS {
 class ElemSampleQM;
 
 /**\brief Use inverse of metric value as target weight */
-class InverseMetricWeight : public WeightCalculator
+class MESQUITE_EXPORT InverseMetricWeight : public WeightCalculator
 {
 public:
   InverseMetricWeight( ElemSampleQM* metric ) : mMetric(metric) {}

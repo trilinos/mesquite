@@ -41,7 +41,7 @@
 
 namespace MESQUITE_NS
 {
-  class Timer
+  class MESQUITE_EXPORT Timer
   {
   public:
     Timer();
@@ -63,7 +63,7 @@ namespace MESQUITE_NS
   };
   
   
-  class StopWatch
+  class MESQUITE_EXPORT StopWatch
   {
   public:
       // Creates the stopwatch.  The stopwatch is stopped
@@ -108,7 +108,7 @@ namespace MESQUITE_NS
     typedef size_t Key;
     
       // Create a new collection
-    StopWatchCollection()
+    MESQUITE_EXPORT StopWatchCollection()
       {}
     
       // Add a stopwatch to the collection.  Returns a non-zero
@@ -117,68 +117,68 @@ namespace MESQUITE_NS
       // collection, the Key of the existing StopWatch is returned
       // if 'fail_if_exists' is false, or zero is returned if
       // 'fail_if_exists' is true.
-    Key add(const std::string &name, bool fail_if_exists = true);
+    MESQUITE_EXPORT Key add(const std::string &name, bool fail_if_exists = true);
     
       // Gets the Key for an existing stopwatch.  If a stopwatch
       // with the given name does not exist, function returns zero.
-    Key get_key(const std::string &name) const;
+    MESQUITE_EXPORT Key get_key(const std::string &name) const;
 
       //!Gets the string associated with a key
-    std::string get_string(const Key key){
+    MESQUITE_EXPORT std::string get_string(const Key key){
         return mEntries[key-1].first;}
       //!Gets the string associated with a key      
-    void get_string(const Key key, std::string &new_string){
+    MESQUITE_EXPORT void get_string(const Key key, std::string &new_string){
       new_string=mEntries[key-1].first;}
     
       // Remove a specific stopwatch.
-    void remove(const Key key);
-    void remove(const std::string &name)
+    MESQUITE_EXPORT void remove(const Key key);
+    MESQUITE_EXPORT void remove(const std::string &name)
       { remove(get_key(name)); }
     
       // start a specific stopwatch
-    void start(const Key key);
-    void start(const std::string &name)
+    MESQUITE_EXPORT void start(const Key key);
+    MESQUITE_EXPORT void start(const std::string &name)
       { start(get_key(name)); }
     
       // stop a specific stopwatch
-    void stop(const Key key);
-    void stop(const std::string &name)
+    MESQUITE_EXPORT void stop(const Key key);
+    MESQUITE_EXPORT void stop(const std::string &name)
       { stop(get_key(name)); }
     
       // reset a specific stopwatch
-    void reset(const Key key);
-    void reset(const std::string &name)
+    MESQUITE_EXPORT void reset(const Key key);
+    MESQUITE_EXPORT void reset(const std::string &name)
       { reset(get_key(name)); }
     
       // Get the total time for a specific stopwatch, zero if
       // the stopwatch doesn't exist.
-    double total_time(const Key key) const;
-    double total_time(const std::string &name) const
+    MESQUITE_EXPORT double total_time(const Key key) const;
+    MESQUITE_EXPORT double total_time(const std::string &name) const
       { return total_time(get_key(name)); }
       // Get the number of times a StopWatch was started.
-    int number_of_starts(const Key key) const;
-    int number_of_starts(const std::string &name) const
+    MESQUITE_EXPORT int number_of_starts(const Key key) const;
+    MESQUITE_EXPORT int number_of_starts(const std::string &name) const
       { return number_of_starts(get_key(name));}
     
       //Gets the number of stop watches in the collection
-    int number_of_stop_watches(){
+    MESQUITE_EXPORT int number_of_stop_watches(){
       return (int) mEntries.size();}
 
-    void get_keys_sorted_by_time(std::vector<Key> &sorted_keys);
+    MESQUITE_EXPORT void get_keys_sorted_by_time(std::vector<Key> &sorted_keys);
     
   private:
     std::vector< std::pair<std::string, StopWatch> > mEntries;
   };
   
-  std::ostream& operator<<( std::ostream&, StopWatchCollection& coll );
+  MESQUITE_EXPORT std::ostream& operator<<( std::ostream&, StopWatchCollection& coll );
   
     // A stopWatchCollection available anywhere
   extern Mesquite::StopWatchCollection GlobalStopWatches;
 
-  inline void print_timing_diagnostics( int debugflag )
+  MESQUITE_EXPORT inline void print_timing_diagnostics( int debugflag )
     { MSQ_DBGOUT(debugflag) << GlobalStopWatches; }
 
-  inline void print_timing_diagnostics( std::ostream& stream )
+  MESQUITE_EXPORT inline void print_timing_diagnostics( std::ostream& stream )
     { stream << GlobalStopWatches; }
 
 

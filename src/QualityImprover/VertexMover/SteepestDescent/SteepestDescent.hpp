@@ -55,17 +55,23 @@ namespace MESQUITE_NS
   class SteepestDescent : public VertexMover, public PatchSetUser
   {
   public:
+    MESQUITE_EXPORT 
     SteepestDescent(ObjectiveFunction* of, bool Nash = true);
 
-    virtual ~SteepestDescent() { }
+    MESQUITE_EXPORT virtual
+    ~SteepestDescent() { }
     
-    virtual std::string get_name() const;
+    MESQUITE_EXPORT virtual
+    std::string get_name() const;
     
-    virtual PatchSet* get_patch_set();
+    MESQUITE_EXPORT virtual
+    PatchSet* get_patch_set();
     
+    MESQUITE_EXPORT
     bool project_gradient() const 
       { return projectGradient; }
     
+    MESQUITE_EXPORT
     void project_gradient( bool yesno ) 
       { projectGradient = yesno; }
     
@@ -76,12 +82,16 @@ namespace MESQUITE_NS
     //  { cosineStep = yesno; }
     
   protected:
-    virtual void initialize(PatchData &pd, MsqError &err);
-    virtual void optimize_vertex_positions(PatchData &pd,
-                                         MsqError &err);
-    virtual void initialize_mesh_iteration(PatchData &pd, MsqError &err);
-    virtual void terminate_mesh_iteration(PatchData &pd, MsqError &err);
-    virtual void cleanup();
+    MESQUITE_EXPORT virtual
+    void initialize( PatchData &pd, MsqError &err );
+    MESQUITE_EXPORT virtual
+    void optimize_vertex_positions( PatchData &pd, MsqError &err );
+    MESQUITE_EXPORT virtual
+    void initialize_mesh_iteration( PatchData &pd, MsqError &err );
+    MESQUITE_EXPORT virtual
+    void terminate_mesh_iteration( PatchData &pd, MsqError &err );
+    MESQUITE_EXPORT virtual
+    void cleanup();
   
   private:
     bool projectGradient;

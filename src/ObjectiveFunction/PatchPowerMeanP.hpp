@@ -50,6 +50,7 @@ class PatchPowerMeanP : public PMeanPTemplate
        *\param power   The exponent to use for the power-mean
        *\param qm      The quality metric.
        */
+    MESQUITE_EXPORT 
     PatchPowerMeanP( double power, QualityMetric* qm = 0 ) 
       : PMeanPTemplate(power, qm) {}
     
@@ -59,37 +60,43 @@ class PatchPowerMeanP : public PMeanPTemplate
        * default one would also copy the temporary arrays, which
        * would be a waste of time.
        */
+    MESQUITE_EXPORT
     PatchPowerMeanP( const PatchPowerMeanP& copy )
       : PMeanPTemplate( copy ) {}
     
+    MESQUITE_EXPORT
     virtual ~PatchPowerMeanP() 
       {}
 
-    virtual bool initialize_block_coordinate_descent( Mesh* mesh, 
-                                                      MeshDomain* domain, 
-                                                      PatchSet* user_set,
-                                                      MsqError& err );
+    MESQUITE_EXPORT virtual 
+    bool initialize_block_coordinate_descent( Mesh* mesh, 
+                                              MeshDomain* domain, 
+                                              PatchSet* user_set,
+                                              MsqError& err );
     
-    virtual bool evaluate( EvalType type, 
-                           PatchData& pd,
-                           double& value_out,
-                           bool free,
-                           MsqError& err ); 
+    MESQUITE_EXPORT virtual 
+    bool evaluate( EvalType type, 
+                   PatchData& pd,
+                   double& value_out,
+                   bool free,
+                   MsqError& err ); 
 
-    virtual bool evaluate_with_gradient( EvalType type, 
-                                         PatchData& pd,
-                                         double& value_out,
-                                         std::vector<Vector3D>& grad_out,
-                                         MsqError& err ); 
+    MESQUITE_EXPORT virtual
+    bool evaluate_with_gradient( EvalType type, 
+                                 PatchData& pd,
+                                 double& value_out,
+                                 std::vector<Vector3D>& grad_out,
+                                 MsqError& err ); 
     
-    virtual bool evaluate_with_Hessian( EvalType type, 
-                                        PatchData& pd,
-                                        double& value_out,
-                                        std::vector<Vector3D>& grad_out,
-                                        MsqHessian& Hessian_out,
-                                        MsqError& err ); 
+    MESQUITE_EXPORT virtual 
+    bool evaluate_with_Hessian( EvalType type, 
+                                PatchData& pd,
+                                double& value_out,
+                                std::vector<Vector3D>& grad_out,
+                                MsqHessian& Hessian_out,
+                                MsqError& err ); 
 
-    virtual ObjectiveFunction* clone() const;
+    MESQUITE_EXPORT virtual ObjectiveFunction* clone() const;
 };
 
 } // namespace Mesquite

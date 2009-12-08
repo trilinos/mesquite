@@ -45,24 +45,24 @@ class ElementPMeanP : public ElementQM, public PMeanPMetric
 {
 public:
 
-  ElementPMeanP( double p, ElemSampleQM* metric );
+  MESQUITE_EXPORT ElementPMeanP( double p, ElemSampleQM* metric );
   
-  virtual ~ElementPMeanP();
+  MESQUITE_EXPORT virtual ~ElementPMeanP();
   
-  ElemSampleQM* get_quality_metric() const 
+  MESQUITE_EXPORT ElemSampleQM* get_quality_metric() const 
     { return mMetric; }
   
-  virtual std::string get_name() const;
+  MESQUITE_EXPORT virtual std::string get_name() const;
 
-  virtual int get_negate_flag() const;
+  MESQUITE_EXPORT virtual int get_negate_flag() const;
 
-  virtual
+  MESQUITE_EXPORT virtual
   bool evaluate( PatchData& pd, 
                  size_t handle, 
                  double& value, 
                  MsqError& err );
 
-  virtual
+  MESQUITE_EXPORT virtual
   bool evaluate_with_gradient( PatchData& pd,
                  size_t handle,
                  double& value,
@@ -70,7 +70,7 @@ public:
                  std::vector<Vector3D>& gradient,
                  MsqError& err );
 
-  virtual
+  MESQUITE_EXPORT virtual
   bool evaluate_with_Hessian( PatchData& pd,
                  size_t handle,
                  double& value,
@@ -79,7 +79,7 @@ public:
                  std::vector<Matrix3D>& Hessian,
                  MsqError& err );
      
-  virtual
+  MESQUITE_EXPORT virtual
   bool evaluate_with_Hessian_diagonal( PatchData& pd,
                  size_t handle,
                  double& value,

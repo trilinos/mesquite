@@ -58,18 +58,18 @@ namespace MESQUITE_NS
    class ConditionNumberQualityMetric : public ElementQM, public AveragingQM
    {
   public:
-     ConditionNumberQualityMetric();
+     MESQUITE_EXPORT ConditionNumberQualityMetric();
      
        //! virtual destructor ensures use of polymorphism during destruction
-     virtual ~ConditionNumberQualityMetric()
+     MESQUITE_EXPORT virtual ~ConditionNumberQualityMetric()
         {}
      
-     virtual std::string get_name() const;
+     MESQUITE_EXPORT virtual std::string get_name() const;
 
       //! 1 if metric should be minimized, -1 if metric should be maximized.
-     virtual int get_negate_flag() const;
+     MESQUITE_EXPORT virtual int get_negate_flag() const;
 
-     virtual
+     MESQUITE_EXPORT virtual
      bool evaluate( PatchData& pd, 
                     size_t handle, 
                     double& value, 

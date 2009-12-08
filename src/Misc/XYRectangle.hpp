@@ -62,6 +62,7 @@ class XYRectangle : public Mesquite::MeshDomain
        * Create w x h rectangle with X range of [x, x+w] and
        * Y range of [y, y+h].
        */
+    MESQUITE_EXPORT
     XYRectangle( double w, double h, double x = 0, double y = 0 );
   
       /**\brief Classify mesh vertices against domain
@@ -70,28 +71,35 @@ class XYRectangle : public Mesquite::MeshDomain
        * or edges of the domain.  Will fail if any vertex is outside 
        * of the rectangle.
        */
+    MESQUITE_EXPORT
     void setup( Mesquite::Mesh* mesh, Mesquite::MsqError& err );
 
+    MESQUITE_EXPORT
     void snap_to( Mesquite::Mesh::VertexHandle entity_handle,
                   Mesquite::Vector3D &coordinate) const;
   
+    MESQUITE_EXPORT
     void vertex_normal_at( Mesquite::Mesh::VertexHandle entity_handle,
                            Mesquite::Vector3D &coordinate) const;
 
+    MESQUITE_EXPORT
     void element_normal_at( Mesquite::Mesh::ElementHandle entity_handle,
                             Mesquite::Vector3D &coordinate) const;
 
+    MESQUITE_EXPORT
     void vertex_normal_at( const Mesquite::Mesh::VertexHandle* handles,
                            Mesquite::Vector3D coordinates[],
                            unsigned count,
                            Mesquite::MsqError& err ) const;
     
+    MESQUITE_EXPORT
     void closest_point( Mesquite:: Mesh::VertexHandle handle,
                         const Mesquite::Vector3D& position,
                         Mesquite::Vector3D& closest,
                         Mesquite::Vector3D& normal,
                         Mesquite::MsqError& err ) const;
     
+    MESQUITE_EXPORT
     void domain_DoF( const Mesquite::Mesh::VertexHandle* handle_array,
                      unsigned short* dof_array,
                      size_t num_handles,

@@ -147,20 +147,33 @@ namespace MESQUITE_NS
   class NonSmoothDescent : public VertexMover 
   {
   public:
+    MESQUITE_EXPORT
     NonSmoothDescent(ElementQM* qm);
 
-    virtual ~NonSmoothDescent() { }
+    MESQUITE_EXPORT virtual
+    ~NonSmoothDescent() { }
     
-    virtual std::string get_name() const;
-    virtual PatchSet* get_patch_set();
+    MESQUITE_EXPORT virtual
+    std::string get_name() const;
+    
+    MESQUITE_EXPORT virtual
+    PatchSet* get_patch_set();
     
   protected:
-    virtual void initialize(PatchData &pd, MsqError &err);
-    virtual void optimize_vertex_positions(PatchData &pd,
-                                         MsqError &err);
-    virtual void initialize_mesh_iteration(PatchData &pd, MsqError &err);
-    virtual void terminate_mesh_iteration(PatchData &pd, MsqError &err);
-    virtual void cleanup();
+    MESQUITE_EXPORT virtual
+    void initialize(PatchData &pd, MsqError &err);
+    
+    MESQUITE_EXPORT virtual
+    void optimize_vertex_positions(PatchData &pd, MsqError &err);
+    
+    MESQUITE_EXPORT virtual
+    void initialize_mesh_iteration(PatchData &pd, MsqError &err);
+    
+    MESQUITE_EXPORT virtual
+    void terminate_mesh_iteration(PatchData &pd, MsqError &err);
+    
+    MESQUITE_EXPORT virtual
+    void cleanup();
     
   private:
       /* local copy of patch data */

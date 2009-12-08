@@ -64,14 +64,17 @@ class WeightReader
 {
   public:
   
+    MESQUITE_EXPORT
     WeightReader( std::string tag_base_name = "MSQ_TARGET_WEIGHT"  );
     
-    virtual ~WeightReader();
+    MESQUITE_EXPORT virtual 
+    ~WeightReader();
     
-    virtual double get_weight( PatchData &pd,
-                               size_t element,
-                               Sample Sample,
-                               MsqError& err );
+    MESQUITE_EXPORT virtual 
+    double get_weight( PatchData &pd,
+                       size_t element,
+                       Sample Sample,
+                       MsqError& err );
     
   private:
   
