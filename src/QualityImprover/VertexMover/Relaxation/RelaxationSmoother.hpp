@@ -8,7 +8,7 @@
 namespace MESQUITE_NS
 {
   /**\brief Base class for LaPlacian and other relaxation smoothers */
-  class MESQUITE_EXPORT RelaxationSmoother : public VertexMover
+  class RelaxationSmoother : public VertexMover
   {
   public:
     /**

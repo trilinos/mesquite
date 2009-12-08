@@ -71,7 +71,7 @@ namespace MESQUITE_NS {
            -# set_master_quality_improver(...)
            -# run_instructions(...)
   */
-  class MESQUITE_EXPORT InstructionQueue : public Settings
+  class InstructionQueue : public Settings
   {
 
   public:

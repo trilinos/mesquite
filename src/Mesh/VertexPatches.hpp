@@ -42,7 +42,7 @@ namespace MESQUITE_NS {
  *        into patches containing a single free vertex and the
  *        adjacent elements
  */
-class MESQUITE_EXPORT VertexPatches : public PatchSet
+class VertexPatches : public PatchSet
 {
 public:
 
@@ -50,27 +50,27 @@ public:
      *\param num_layers Number of layers of elements adjacent to each vertex
      *\param free_vertices_only Skip fixed vertices if true.
      */
-    inline 
+    MESQUITE_EXPORT inline 
     VertexPatches( unsigned num_layers = 1, bool free_vertices_only = true ) 
       : numLayers(num_layers), freeVertices(free_vertices_only) {}
     
     /**\brief Set number of layers of elements adjacent to each vertex */
-    inline
+    MESQUITE_EXPORT inline
     void set_num_layers( unsigned num_layers ) 
       { numLayers = num_layers; }
       
     /**\brief Get number of layers of elements adjacent to each vertex */
-    inline
+    MESQUITE_EXPORT inline
     unsigned get_num_layers() const
       { return numLayers; }
       
     /**\brief Skip fixed vertices if true. */
-    inline
+    MESQUITE_EXPORT inline
     void free_vertices_only( bool yesno )
       { freeVertices = yesno; }
       
     /**\brief Skip fixed vertices if true. */
-    inline
+    MESQUITE_EXPORT inline
     bool free_vertices_only() const
       { return freeVertices; }
 

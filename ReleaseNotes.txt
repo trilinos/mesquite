@@ -35,5 +35,6 @@
 
 2.1.2:
   - Fix tarball missing files for Windows/CMake build
-  
+  - Fix Windows DLL build issues (backport from main branch)
+
 

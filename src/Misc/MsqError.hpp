@@ -97,7 +97,7 @@ Mesquite::MsqError::setter(err, MSQ_FUNCTION,__FILE__,__LINE__).set
  * subclass MsqError, overriding set_error() and push()
  * to handle the error data as it is generated.
 */
-class MESQUITE_EXPORT MsqError {
+class MsqError {
 public:
 
     /* NOTE: If you add an error to this list, make sure
@@ -137,10 +137,10 @@ public:
   inline operator bool() const    { return NO_ERROR != errorCode; }
 
   //! \brief Initialize to cleared state.
-  MsqError() : errorCode(NO_ERROR) { } 
+  MESQUITE_EXPORT MsqError() : errorCode(NO_ERROR) { } 
   
   //! Destructor - empty but must declar virtual destrucor if virtual functions.
-  virtual ~MsqError();
+  MESQUITE_EXPORT virtual ~MsqError();
 
  /* ************************************************************ *
   *            Low-level access to error data
@@ -161,7 +161,7 @@ public:
   };
   
   //! Get error message
-  const char* error_message() const;
+  MESQUITE_EXPORT const char* error_message() const;
   
   //! Container type used to store stack trace.
   //! Return type for stack()
@@ -177,10 +177,10 @@ public:
   
   //! Add to back-trace of call stack.  Called by MSQ_CHKERR.
   //! Must always return true.
-  virtual bool push( const char* function, const char* file, int line );
+  MESQUITE_EXPORT virtual bool push( const char* function, const char* file, int line );
   
   //! Initialize the error object with the passed data.
-  virtual bool set_error( ErrorCode num, const char* msg = 0 );
+  MESQUITE_EXPORT virtual bool set_error( ErrorCode num, const char* msg = 0 );
   
   //!\class setter
   //! Used for implementing pre-processor macros for internal use
