@@ -4,6 +4,7 @@ check_PROGRAMS = main
 main_SOURCES = main.cpp
 main_DEPENDENCIES = $(top_builddir)/libmesquite.la
 TESTS = main
+EXTRA_DIST = CMakeLists.txt
 
 if WITH_IMESH_IMPL
 

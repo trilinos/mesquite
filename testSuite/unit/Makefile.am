@@ -135,4 +135,6 @@ MOSTLYCLEANFILES = hexagon.vtk \
 		   target_ideal.vtk \
 		   target_ref.vtk
 
+EXTRA_DIST = CMakeLists.txt
+
 		   

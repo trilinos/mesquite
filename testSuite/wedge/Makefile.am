@@ -4,3 +4,4 @@ check_PROGRAMS = main
 main_SOURCES = main.cpp
 main_DEPENDENCIES = $(LDADD)
 TESTS = $(check_PROGRAMS)
+EXTRA_DIST = CMakeLists.txt

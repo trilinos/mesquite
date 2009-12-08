@@ -41,6 +41,8 @@ SUBDIRS = test_1 \
 	  size_adapt_shape \
 	  $(IMESH_TEST) $(EXO_TEST) $(UNIT_TEST)
 
+EXTRA_DIST = CMakeLists.txt
+
 # Override all-recursive so that "make" with no target 
 # skips subdirectories in testSuite.
 all-recursive:
