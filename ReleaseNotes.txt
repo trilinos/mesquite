@@ -37,5 +37,7 @@
   - Fix tarball missing files for Windows/CMake build
   - Fix Windows DLL build issues (backport from main branch)
   - Export more symbols for Windows DLL
-  
+  - Disable CMake build of unit tests if CppUnit is not found
+
+
 
