@@ -34,5 +34,6 @@
       criteria were not used.
 
 2.1.2:
-  - Fix file required for windows build missing from tarball
+  - Fix tarball missing files for Windows/CMake build
+  
 

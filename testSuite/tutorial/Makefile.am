@@ -2,8 +2,7 @@
 LDADD = $(top_builddir)/libmesquite.la
 check_PROGRAMS = tutorial wrapper lowlevel
 TESTS = run
-EXTRA_DIST = run
-EXTRA_DIST = CMakeLists.txt
+EXTRA_DIST = CMakeLists.txt run
 
 tutorial_SOURCES = tutorial.cpp
 tutorial_DEPENDENCIES = $(LDADD)
