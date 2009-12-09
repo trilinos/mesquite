@@ -146,12 +146,12 @@ required by the ExodusII library.  The default is to look in the ExodusII
 directory.
 \end{description}
 
-% \subsection{Compiling on Microsoft Windows}
-% The Mesquite source package includes project and workspace files for Microsoft Visual C++ 6.0 or later.  To build Mesquite with Visual C++ 6.0:
-% \begin{itemize}
-% \item Open the Workspace file: \texttt{mesquite/mswindows/mesquite.dsw}.
-% \item Set the active project to \texttt{mesquite\_lib} to create a static library or \texttt{mesquite\_dll} to build Mesquite as a DLL.
-% \item Select between a debug or release build in the project settings.  
-% \item Select \texttt{Build mesquite.lib} (or \texttt{Build mesquite.dll}) from the \texttt{Build} menu.
-% \end{itemize}
+\subsection{Compiling on Microsoft Windows (CMake build)}
 
+The Mesquite source includes the necessary input files to generate Microsoft
+Visual Studio project files using the CMake utility.  You will need to 
+download and install the CMake utility for Windows if you have not already done so.  It is available at: \url{http://www.cmake.org/cmake/resources/software.html}
+
+Using the graphical verison of the CMake utility, select the folder containing the Mesquite source and enter a folder in which you would like the CMake output and compiled code to be stored.  Select the \texttt{Configure} button.  You will be presented with a group of configuration options.  Modify any desired options and click the \texttt{Configure} button again.  Each time you change one or more configuration options, you must click the \texttt{Configure} button to update the list of available options.  When you have finished changing build options, click the \texttt{Generate} button to generate Visual Studio input files and exit the CMake utility.
+
+The build folder you specified in the CMake utility should now contain the necessary input files to build Mesquite using Microsoft Visual C++.  
