@@ -173,6 +173,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/Control/Wrappers)
 APPEND_SET(HEADERS
   Control/Wrappers/LaplacianIQ.hpp
   Control/Wrappers/ShapeImprovementWrapper.hpp
+  Control/Wrappers/SizeAdaptShapeWrapper.hpp
   Control/Wrappers/PaverMinEdgeLengthWrapper.hpp 
   Control/Wrappers/ViscousCFDTetShapeWrapper.hpp 
   Control/Wrappers/Wrapper.hpp 
@@ -181,6 +182,7 @@ APPEND_SET(HEADERS
 APPEND_SET(SOURCES
   Control/Wrappers/LaplacianIQ.cpp
   Control/Wrappers/ShapeImprovementWrapper.cpp
+  Control/Wrappers/SizeAdaptShapeWrapper.cpp
   Control/Wrappers/PaverMinEdgeLengthWrapper.cpp
   Control/Wrappers/ViscousCFDTetShapeWrapper.cpp
   Control/Wrappers/Wrapper.cpp 
