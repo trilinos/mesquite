@@ -1,9 +1,5 @@
 
 
-# Check for libraries
-FIND_LIBRARY( CPPUNIT_LIBRARY NAMES cppunit )
-FIND_PATH( CPPUNIT_INCLUDES cppunit/extensions/HelperMacros.h )
-
 SET( unit_tests
      ArrayMeshTest 
      AspectRatioGammaTest 

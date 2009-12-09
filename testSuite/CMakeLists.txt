@@ -70,12 +70,18 @@ IF(${PACKAGE_NAME}_ENABLE_IMESH)
   ADD_SUBDIRECTORY(imesh)
 ENDIF()
 
+# Check for libraries
+FIND_LIBRARY( CPPUNIT_LIBRARY NAMES cppunit )
+FIND_PATH( CPPUNIT_INCLUDES cppunit/extensions/HelperMacros.h )
+
 # Cannot build unit tests with Windows DLL because
 # internal symbols are not exposed
-IF(WIN32 OR WIN64)
-  IF(NOT ${PACKAGE_NAME}_ENABLE_SHARED)
+IF (EXISTS ${CPPUNIT_LIBRARY} AND IS_DIRECTORY ${CPPUNIT_INCLUDES})
+  IF(WIN32 OR WIN64)
+    IF(NOT ${PACKAGE_NAME}_ENABLE_SHARED)
+      ADD_SUBDIRECTORY(unit)
+    ENDIF()
+  ELSE()
     ADD_SUBDIRECTORY(unit)
   ENDIF()
-ELSE()
-  ADD_SUBDIRECTORY(unit)
 ENDIF()
