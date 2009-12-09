@@ -56,7 +56,7 @@ ENDMACRO()
 # MINOR_VERSION:   For a version string of the form m.n.p..., n
 # PATCH_VERSION:   For a version string of the form m.n.p..., p
 
-file( READ "configure.in" configure_IN )
+file( READ "configure.ac" configure_IN )
 string( REGEX REPLACE "^.*AC_INIT *\\([^,]+, *([^, )]+).*$" "\\1" VERSION_STRING "${configure_IN}" )
 string( REGEX REPLACE "^([0-9]+)(\\..*)?$" "\\1" MAJOR_VERSION "${VERSION_STRING}" )
 string( REGEX REPLACE "^[0-9]+\\.([0-9]+)(\\..*)?$" "\\1" MINOR_VERSION "${VERSION_STRING}" )
