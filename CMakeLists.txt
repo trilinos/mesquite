@@ -118,10 +118,12 @@ ADD_OPTION_AND_DEFINE(${PACKAGE_NAME}_ENABLE_IREL
   "Enable IREL functionality."
   OFF )
 
-ADD_OPTION_AND_DEFINE(${PACKAGE_NAME}_ENABLE_IMESHP
-  HAVE_Mesquite_IMESHP
-  "Enable IMESHP functionality."
-  OFF )
+IF (TPL_ENABLE_MPI)
+  ADD_OPTION_AND_DEFINE(${PACKAGE_NAME}_ENABLE_IMESHP
+    HAVE_Mesquite_IMESHP
+    "Enable IMESHP functionality."
+    OFF )
+ENDIF()
 
 #this needs to be done more like the mesquite version where 
 #there is a loop to determine the value. Not sure how to do
