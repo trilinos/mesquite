@@ -15,7 +15,7 @@ endif
 
 htmldir = @htmldir@/html
 if WITH_DOXYGEN_HTML
-  html_DATA = html
+  html_DATA = html/*
 else
   html_DATA =
 endif
