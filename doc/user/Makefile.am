@@ -52,6 +52,12 @@ pdf: users-guide.pdf
 ps: users-guide.ps
 
 
+install-pdf-local: install-pdfDATA
+
+install-ps-local: install-psDATA
+
+install-dvi-local: install-dviDATA
+
 MOSTLYCLEANFILES = *.aux *.bbl *.blg *.lof *.log *.lot *.toc 
 CLEANFILES = users-guide.dvi users-guide.pdf users-guide.ps
 
