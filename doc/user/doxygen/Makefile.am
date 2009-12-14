@@ -20,7 +20,9 @@ else
   html_DATA =
 endif
 
+.PHONY: html html/*
 html: html/index.html
+html/*: html/index.html
 
 html/index.html latex/refman.tex: Mesquite-user.dox
 	$(DOXYGEN) $<
@@ -50,4 +52,4 @@ install-ps-local: install-psDATA
 
 install-dvi-local: install-dviDATA
 
-install-html-local: install-htmlDATA
+install-html-local: install-htmlDATA html
