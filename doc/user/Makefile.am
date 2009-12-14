@@ -13,6 +13,7 @@ UG_SRCS = users-guide.tex \
 	intro.tex \
 	mesh.tex \
 	plan.tex \
+        parallel.tex \
 	install.tex \
 	examples.tex \
 	support.tex \
@@ -23,6 +24,7 @@ UG_SRCS = users-guide.tex \
         hole_in_square.ps \
         msq-paradigm.eps \
         square_rand.eps \
+        parallel_mesh.eps \
         mesquite.bib
 
 EXTRA_DIST = $(UG_SRCS)

@@ -1,0 +1,219 @@
+\chapter{Using Mesquite in Parallel}
+\label{sec:meshes}
+
+Large meshes are often partitioned across many parallel processors either because they are too large to fit into the memory of a single machine or in order to speed up the computation. Even if it would be possible to assemble all partitions on a single processor, smooth the mesh, and repartition the result, such an approach would be very I/O inefficient. Moreover, for larger meshes such an approach would quickly run out of memory and fail. Therefore Mesquite supports smoothing meshes in parallel.
+
+Assuming the mesh exists in partitioned form the user has to provide Mesquite with three things:
+\begin{itemize}
+\item a processor ID of type \texttt{int} for every vertex that determines which processor owns a vertex and is in charge for smoothing this vertex,
+\item a global ID of type \texttt{size\_t} for every vertex that (at least in combination with the processor ID) is globally unique,
+\item all necessary ghost elements and ghost nodes along the partition boundary must exist.
+\end{itemize}
+
+The following copies of elements and vertices must exist: Elements must exist on all processors that own one or more of the vertices they reference. Vertices must exist on all processors that have some element referencing them.
+
+The \texttt{Mesquite::ParallelMesh} class (\texttt{ParallelMeshInterface.hpp}) inherits \texttt{Mesquite::Mesh} and defines the interface Mesquite uses to interact with parallel mesh data. It contains the following additional pure virtual (or abstract) functions:
+\begin{itemize}
+\item get processor ids for given vertices,
+\item get global ids for given vertices,
+\item set and get a pointer to a \texttt{Mesquite::ParallelHelper} object.
+\end{itemize}
+
+To allow Mesquite direct access to the way you store the parallel mesh data you must inherit \texttt{Mesquite::ParallelMesh} and also implement your own get processor ID and get global ID functionality. The \texttt{Mesquite::ParallelHelper} class takes care of all the underlying communication using MPI. You will always use the \texttt{Mesquite::ParallelHelperImpl} implementation that we provide.
+
+Alternatively you can turn any existing mesh of type \texttt{Mesquite::Mesh} into a parallel mesh of type \texttt{Mesquite::ParallelMesh} by using the \texttt{Mesquite::ParallelMeshImpl} implementation we provide. On creation it needs a pointer to an object of type \texttt{Mesquite::Mesh} and the names of two tags. It is expected that every vertex is properly tagged with the processor ID tag being of type INT and the global ID tag being of type HANDLE.
+
+\section{Using \texttt{Mesquite::ParallelMeshImpl}}
+
+The following is a simple example of using the ParallelMeshImpl object to smooth a parallel mesh.
+
+\begin{verbatim}
+  /* init MPI */
+  int rank, nprocs;
+  MPI_Init(&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+
+  /* create file names */
+  char filename[128], outfilename[128];
+  sprintf(filename, ''part-%d-of-%d.vtk'', rank+1, nprocs);
+  sprintf(outfilename, ''part-%d-of-%d-smooth.vtk'', rank+1, nprocs);
+
+  /* load mesh */
+  Mesquite::MsqError err;
+  Mesquite::MeshImpl mesh;
+  mesh.read_vtk(filename, err);
+  if (err) {cerr << err; return 1;}
+
+  /* create parallel mesh */
+  Mesquite::ParallelMeshImpl parallel_mesh(&mesh, ``GID'', ``PID'');
+  Mesquite::ParallelHelperImpl helper;
+  helper.set_communicator(MPI_COMM_WORLD);
+  helper.set_parallel_mesh(&parallel_mesh);
+  parallel_mesh.set_parallel_helper(&helper);
+
+  /* create the instruction queue */
+  Mesquite::InstructionQueue queue;
+  Mesquite::IdealWeightInverseMeanRatio inverseMeanRatio(err);
+  if (err) {cerr << err; return 1;}
+  inverseMeanRatio.set_averaging_method(Mesquite::QualityMetric::LINEAR, err);
+  if (err) {cerr << err; return 1;}
+  Mesquite::LPtoPTemplate obj_func(&inverseMeanRatio, 2, err);
+  if (err) {cerr << err; return 1;}
+  Mesquite::FeasibleNewton alg(&obj_func);
+  alg.use_global_patch();
+  // alg.use_element_on_vertex_patch();
+  Mesquite::QualityAssessor qual_assess(&inverseMeanRatio, 0);
+  queue.add_quality_assessor(&qual_assess,err);
+  if (err) {cerr << err; return 1;}
+  Mesquite::TerminationCriterion termInner;
+  Mesquite::TerminationCriterion termOuter;
+  termInner.add_absolute_gradient_L2_norm(1e-3);
+  termInner.add_relative_successive_improvement(1e-3);
+  termInner.add_iteration_limit(5);
+  termOuter.add_iteration_limit(1);
+  alg.set_outer_termination_criterion(&termOuter);
+  alg.set_inner_termination_criterion(&termInner);
+  queue.set_master_quality_improver(&alg, err);
+  if (err) {cerr << err; return 1;}
+  queue.add_quality_assessor(&qual_assess,err);
+  if (err) {cerr << err; return 1;}
+
+  /* smooth the parallel mesh */
+  queue.run_instructions(&parallel_mesh, err);
+  if (err) {cerr << err; return 1;}
+
+  /* write mesh */
+  mesh.write_vtk(outfilename,err);
+  if (err) {cerr << err; return 1;}
+
+  MPI_Finalize();
+\end{verbatim}
+
+\section{Using \texttt{Mesquite::ParallelShapeImprovementWrapper}}
+
+The following is a simple example of using the ParallelShapeImprovementWrapper.
+
+\begin{verbatim}
+  /* init MPI */
+  int rank, nprocs;
+  MPI_Init(&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+
+  /* create file names */
+  char filename[128], outfilename[128];
+  sprintf(filename, ''part-%d-of-%d.vtk'', rank+1, nprocs);
+  sprintf(outfilename, ''part-%d-of-%d-smooth.vtk'', rank+1, nprocs);
+
+  /* load mesh */
+  Mesquite::MsqError err;
+  Mesquite::MeshImpl mesh;
+  mesh.read_vtk(filename, err);
+  if (err) {cerr << err; return 1;}
+
+  /* create parallel mesh */
+  Mesquite::ParallelMeshImpl parallel_mesh(&mesh, ``GID'', ``PID'');
+  Mesquite::ParallelHelperImpl helper;
+  helper.set_communicator(MPI_COMM_WORLD);
+  helper.set_parallel_mesh(&parallel_mesh);
+  parallel_mesh.set_parallel_helper(&helper);
+
+  /* creates a wrapper */
+  ParallelShapeImprovementWrapper wrapper(err);
+  if (err) {cerr << err; return 1;}
+
+  /* launches optimization on mesh */
+  wrapper.run_instructions(&parallel_mesh, err);
+  if (err) {cerr << err; return 1;}
+
+  /* write mesh */
+  mesh.write_vtk(outfilename,err);
+  if (err) {cerr << err; return 1;}
+
+  MPI_Finalize();
+\end{verbatim}
+
+\section{ITAPS iMeshP Interface}
+
+The ITAPS Working Group has defined a standard API for exchange of parallel mesh data between applications. Mesquite can access a parallel mesh through an iMeshP interface using the \texttt{Mesquite::MsqIMeshP} class declared in \texttt{MsqIMeshP.hpp}.  This class is an ``adaptor'':  it presents the iMeshP interface as the \texttt{Mesquite::ParallelMesh} interface.  
+
+\section{Using \texttt{Mesquite::Mesquite::MsqIMeshP}}
+
+The following is a simple example of using ITAPS iMeshP interface to use Mesquite.
+
+\begin{verbatim}
+  /* init MPI */
+  int rank, nprocs;
+  MPI_Init(&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+
+  /* create a new mesh */
+  int err;
+  iMesh_Instance mesh;
+  iMesh_newMesh(NULL, &mesh, &err, 0); CHK_ERR(err);
+  iBase_EntitySetHandle root_set;
+  iMesh_getRootSet(mesh, &root_set, &err); CHK_ERR(err);
+
+  /* create a new partition */
+  iMeshP_PartitionHandle partition;
+  iMeshP_createPartitionAll(mesh, MPI_COMM_WORLD, &partition, &err); CHK_ERR(err);
+
+  /* load mesh */
+  iMeshP_loadAll(mesh, partition, root_set, ``testmesh'', NULL, &err, strlen(testmesh), 0); CHK_ERR(err);
+
+  /* create ghost entities */
+  iMeshP_createGhostEntsAll(mesh, partition, 3, 1, 1, 0, &err); CHK_ERR(err);
+
+  /* create msqimeshp */
+  Mesquite::MsqError merr;
+  Mesquite::MsqIMeshP* msqimeshp = new Mesquite::MsqIMeshP(mesh, partition, root_set, iBase_REGION, merr);
+
+   /* create the instruction queue */
+  Mesquite::InstructionQueue queue;
+  Mesquite::IdealWeightInverseMeanRatio inverseMeanRatio(err);
+  if (err) {cerr << err; return 1;}
+  inverseMeanRatio.set_averaging_method(Mesquite::QualityMetric::LINEAR, err);
+  if (err) {cerr << err; return 1;}
+  Mesquite::LPtoPTemplate obj_func(&inverseMeanRatio, 2, err);
+  if (err) {cerr << err; return 1;}
+  Mesquite::FeasibleNewton alg(&obj_func);
+  alg.use_global_patch();
+  // alg.use_element_on_vertex_patch();
+  Mesquite::QualityAssessor qual_assess(&inverseMeanRatio, 0);
+  queue.add_quality_assessor(&qual_assess,err);
+  if (err) {cerr << err; return 1;}
+  Mesquite::TerminationCriterion termInner;
+  Mesquite::TerminationCriterion termOuter;
+  termInner.add_absolute_gradient_L2_norm(1e-3);
+  termInner.add_relative_successive_improvement(1e-3);
+  termInner.add_iteration_limit(5);
+  termOuter.add_iteration_limit(1);
+  alg.set_outer_termination_criterion(&termOuter);
+  alg.set_inner_termination_criterion(&termInner);
+  queue.set_master_quality_improver(&alg, err);
+  if (err) {cerr << err; return 1;}
+  queue.add_quality_assessor(&qual_assess,err);
+  if (err) {cerr << err; return 1;}
+
+  /* smooth parallel mesh msqimeshp */
+  queue.run_instructions(msqimeshp, err);
+  if (err) {cerr << err; return 1;}
+
+  /* delete msqimeshp */
+  delete msqimeshp;
+
+  /* delete ghost entities */
+  iMeshP_deleteGhostEntsAll(mesh, partition, &err); CHK_ERR(err);
+
+  /* save mesh */
+  iMeshP_saveAll(mesh, partition, root_set, ``smoothmesh'', NULL, &err, strlen(``smoothmesh''), 0); CHK_ERR(err);
+
+  /* cleanup */
+  iMeshP_destroyPartitionAll(mesh, partition, &err); CHK_ERR(err);
+  iMesh_dtor(mesh, &err); CHK_ERR(err);
+
+  MPI_Finalize();
+
+\end{verbatim}
