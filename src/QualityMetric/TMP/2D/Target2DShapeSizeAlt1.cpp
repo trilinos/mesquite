@@ -41,7 +41,7 @@ std::string Target2DShapeSizeAlt1::get_name() const
   { return "ShapeSize1"; }
 
 /** \f$ \mu(T) = \frac{|T|^2+2}{2\psi(T)} - 1 \f$
- *  \f$ \psi(T) = \sqrt{|T|^2 + 2 \tau}\f$
+ *  \f$ \psi(T) = \sqrt{|T|^2 + 2 \tau} \f$
  *  \f$ \tau = det(T) \f$
  */
 bool Target2DShapeSizeAlt1::evaluate( const MsqMatrix<2,2>& A, 

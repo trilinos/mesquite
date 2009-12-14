@@ -43,7 +43,7 @@
 
 namespace MESQUITE_NS {
 
-/**\brief \f$ R *= s */
+/**\brief \f$ R *= s \f$ */
 template <unsigned D> inline
 void hess_scale_t( MsqMatrix<D,D> R[D*(D+1)/2], double alpha );
 
@@ -312,9 +312,9 @@ void second_deriv_wrt_product_factor( MsqMatrix<2,2> R[3],
                                       const MsqMatrix<2,2>& Z )
 { second_deriv_wrt_product_factor_t<2>( R, Z ); }
 
-/**\brief \f$ R = \aplha * \frac{\partial^2 \psi(T)}{\partial T^2} \f$
+/**\brief \f$ R = \alpha * \frac{\partial^2 \psi(T)}{\partial T^2} \f$
  *
- * \f$ \psi = \root{|T|^2 + 2\tau} \f$
+ * \f$ \psi = \sqrt{|T|^2 + 2\tau} \f$
  */
 inline
 void set_scaled_2nd_deriv_wrt_psi( MsqMatrix<2,2> R[3],
