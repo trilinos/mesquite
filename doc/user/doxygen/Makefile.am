@@ -42,3 +42,11 @@ MesquiteAPI.ps: latex/refman.ps
 MesquiteAPI.pdf: MesquiteAPI.ps
 	ps2pdf $< $@
 
+
+install-pdf-local: install-pdfDATA
+
+install-ps-local: install-psDATA
+
+install-dvi-local: install-dviDATA
+
+install-html-local: install-htmlDATA
