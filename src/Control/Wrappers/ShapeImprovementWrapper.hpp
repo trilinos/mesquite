@@ -65,11 +65,13 @@ namespace MESQUITE_NS {
     MESQUITE_EXPORT
     ShapeImprovementWrapper(MsqError& err,
                             double cpu_time = 0.0, 
-                            double grad_norm =1.e-6);
+                            double grad_norm =1.e-6,
+                            int parallel_iterations = 10);
       //Constructor sets the instructions in the queue.
     MESQUITE_EXPORT
     ShapeImprovementWrapper(double cpu_time = 0.0, 
-                            double grad_norm =1.e-6);
+                            double grad_norm =1.e-6,
+                            int parallel_iterations = 10);
 
   protected:
   
@@ -88,6 +90,7 @@ namespace MESQUITE_NS {
       // constants
     const double untBeta;
     const double successiveEps;
+    int parallelIterations;
   };
   
   

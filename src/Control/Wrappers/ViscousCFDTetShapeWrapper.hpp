@@ -43,6 +43,7 @@ class MESQUITE_EXPORT ViscousCFDTetShapeWrapper : public Wrapper
   private:
     double dCutoff, aVal;
     int iterationLimit;
+    int parallelIterations;
     double maxVtxMovement;
 
     MESQUITE_EXPORT
@@ -67,10 +68,12 @@ class MESQUITE_EXPORT ViscousCFDTetShapeWrapper : public Wrapper
     ViscousCFDTetShapeWrapper( double max_vertex_movement,
                                double a = 0.4395, 
                                double d_prime = 135,
-                               int max_iterations = 50 )
+                               int max_iterations = 50,
+                               int parallel_iterations = 10 )
       : dCutoff(d_prime), 
         aVal(a), 
         iterationLimit( max_iterations ),
+        parallelIterations( parallel_iterations ),
         maxVtxMovement( max_vertex_movement )
       {}
 

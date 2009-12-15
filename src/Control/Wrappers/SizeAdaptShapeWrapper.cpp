@@ -84,10 +84,12 @@ void SizeAdaptShapeWrapper::run_wrapper( Mesh* mesh,
   
     // create solver
   TrustRegion solver( &of );
-  TerminationCriterion tc;
+  TerminationCriterion tc, ptc;
   tc.add_absolute_vertex_movement( maxVtxMovement );
   tc.add_iteration_limit( iterationLimit );
+  ptc.add_iteration_limit( pmesh ? parallelIterations : 1 );
   solver.set_inner_termination_criterion( &tc );
+  solver.set_outer_termination_criterion( &ptc );
   q.set_master_quality_improver( &solver, err ); MSQ_ERRRTN(err);
   q.add_quality_assessor( qa, err );
 

@@ -42,6 +42,7 @@ class MESQUITE_EXPORT PaverMinEdgeLengthWrapper : public Wrapper
 {
   private:
     int iterationLimit;
+    int parallelIterations;
     double maxVtxMovement;
 
     MESQUITE_EXPORT
@@ -62,8 +63,10 @@ class MESQUITE_EXPORT PaverMinEdgeLengthWrapper : public Wrapper
      *                            steps.
      */
     PaverMinEdgeLengthWrapper( double max_vertex_movement,
-                          int max_iterations = 50 )
+                               int max_iterations = 50,
+                               int parallel_iterations = 10 )
                         : iterationLimit( max_iterations ),
+                          parallelIterations( parallel_iterations ),
                           maxVtxMovement( max_vertex_movement )
       {}
 

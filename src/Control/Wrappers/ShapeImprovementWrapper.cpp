@@ -60,19 +60,23 @@ const double DEF_SUC_EPS = 1e-4;
   norm termination criteria.  The default value is 1.e-6.*/
 ShapeImprovementWrapper::ShapeImprovementWrapper(MsqError& ,
                                                  double cpu_time,
-                                                 double grad_norm) 
+                                                 double grad_norm,
+                                                 int parallel_iterations) 
  : maxTime(cpu_time), 
    gradNorm(grad_norm),
    untBeta(DEF_UNT_BETA),
-   successiveEps(DEF_SUC_EPS)
+   successiveEps(DEF_SUC_EPS),
+   parallelIterations(parallel_iterations)
 {}
 
 ShapeImprovementWrapper::ShapeImprovementWrapper(double cpu_time,
-                                                 double grad_norm) 
+                                                 double grad_norm,
+                                                 int parallel_iterations) 
  : maxTime(cpu_time), 
    gradNorm(grad_norm),
    untBeta(DEF_UNT_BETA),
-   successiveEps(DEF_SUC_EPS)
+   successiveEps(DEF_SUC_EPS),
+   parallelIterations(parallel_iterations)
 {}
  
  
@@ -105,7 +109,7 @@ void ShapeImprovementWrapper::run_wrapper( Mesh* mesh,
   qa->add_quality_assessment( &inverse_mean_ratio );
   term_inner.add_absolute_gradient_L2_norm( gradNorm );
   term_inner.add_relative_successive_improvement( successiveEps );
-  term_outer.add_iteration_limit( 1 );
+  term_outer.add_iteration_limit( pmesh ? parallelIterations : 1 );
   feas_newt.set_inner_termination_criterion( &term_inner );
   feas_newt.set_outer_termination_criterion( &term_outer );
 

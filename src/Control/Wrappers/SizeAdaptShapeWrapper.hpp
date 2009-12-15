@@ -42,6 +42,7 @@ class MESQUITE_EXPORT SizeAdaptShapeWrapper : public Wrapper
 {
   private:
     int iterationLimit;
+    int parallelIterations;
     double maxVtxMovement;
 
     void run_wrapper( Mesh* mesh,
@@ -61,8 +62,10 @@ class MESQUITE_EXPORT SizeAdaptShapeWrapper : public Wrapper
      *                            steps.
      */
     SizeAdaptShapeWrapper( double max_vertex_movement,
-                           int max_iterations = 50 )
+                           int max_iterations = 50,
+                           int parallel_iterations = 10 )
                          : iterationLimit( max_iterations ),
+                           parallelIterations( parallel_iterations ),
                            maxVtxMovement( max_vertex_movement )
       {}
 

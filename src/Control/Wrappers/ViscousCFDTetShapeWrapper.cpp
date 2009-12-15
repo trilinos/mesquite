@@ -123,10 +123,12 @@ void ViscousCFDTetShapeWrapper::run_wrapper( Mesh* mesh,
   
   // Create optimizer
   TrustRegion solver( &obj_func );
-  TerminationCriterion term;
+  TerminationCriterion term, ptc;
   term.add_iteration_limit( iterationLimit );
   term.add_absolute_vertex_movement( maxVtxMovement );
+  ptc.add_iteration_limit( pmesh ? parallelIterations : 1 );
   solver.set_inner_termination_criterion( &term );
+  solver.set_outer_termination_criterion( &ptc );
   
   // Create instruction queue
   qa->add_quality_assessment( &metric1 );
