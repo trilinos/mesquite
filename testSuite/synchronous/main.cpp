@@ -231,7 +231,8 @@ void create_input_mesh( double mid_x , MeshImpl& mesh, MsqError& err )
           << "1 0 1" << std::endl
           << "1 0 1" << std::endl
           ;
-          
+  vtkfile.close();
+           
   mesh.read_vtk( temp_file, err );
   remove( temp_file );
 }

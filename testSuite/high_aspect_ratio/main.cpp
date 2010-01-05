@@ -383,7 +383,7 @@ void create_input_mesh( const MeshParams& p,
           <<  F << " 0 " << F  << std::endl
           << "1 " << F << " 1" << std::endl
           ;
-          
+  vtkfile.close();
   mesh.read_vtk( temp_file, err );
   std::remove( temp_file );
   MSQ_CHKERR(err);
