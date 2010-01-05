@@ -32,8 +32,6 @@
   - Fix bug in unit test: TMPQualityMetricTest
   - Fix bug in PaverMinEdgeLengthWrapper where user-specified termination
       criteria were not used.
-
-2.1.2:
   - Fix tarball missing files for Windows/CMake build
   - Fix Windows DLL build issues (backport from main branch)
   - Export more symbols for Windows DLL
