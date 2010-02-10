@@ -10,6 +10,15 @@ ELSE()
   MACRO(APPEND_SET VARNAME)
     SET(${VARNAME} ${${VARNAME}} ${ARGN})
   ENDMACRO()
+  
+  FUNCTION(PACKAGE_ADD_LIBRARY name)
+    LIST(REMOVE_ITEM ARGV "${name}" "HEADERS" "SOURCES")
+    IF(${PACKAGE_NAME}_ENABLE_SHARED)
+      ADD_LIBRARY( ${name} SHARED ${ARGV} )
+    ELSE()
+      ADD_LIBRARY( ${name} STATIC ${ARGV} )
+    ENDIF()
+  ENDFUNCTION()
 ENDIF()
 
 #
@@ -52,46 +61,6 @@ IF (TPL_ENABLE_MPI)
     )
 ENDIF()
 
-IF(${PACKAGE_NAME}_ENABLE_IMESH)
-  APPEND_SET(HEADERS
-    Mesh/MsqIMesh.hpp
-    )
-
-  APPEND_SET(SOURCES
-    Mesh/MsqIMesh.cpp
-    )
-ENDIF()
-
-IF(${PACKAGE_NAME}_ENABLE_IGEOM)
-  APPEND_SET(HEADERS
-    Mesh/MsqIGeom.hpp
-    )
-
-  APPEND_SET(SOURCES
-    Mesh/MsqIGeom.cpp
-    )
-ENDIF()
-
-IF(${PACKAGE_NAME}_ENABLE_IREL)
-  APPEND_SET(HEADERS
-    Mesh/MsqIRel.hpp
-    )
-
-  APPEND_SET(SOURCES
-    Mesh/MsqIRel.cpp
-    )
-ENDIF()
-
-IF(${PACKAGE_NAME}_ENABLE_IMESHP)
-  APPEND_SET(HEADERS
-    Mesh/MsqIMeshP.hpp
-    )
-
-  APPEND_SET(SOURCES
-    Mesh/MsqIMeshP.cpp
-    )
-ENDIF()
-
 APPEND_SET(HEADERS
   Mesh/ArrayMesh.hpp
   Mesh/ElementPatches.hpp
@@ -127,8 +96,6 @@ APPEND_SET(SOURCES
   Mesh/MeshImplData.cpp
   Mesh/MeshImplTags.cpp
   Mesh/MeshWriter.cpp
-  Mesh/MsqIBase.cpp
-  Mesh/MsqIBase.hpp
   Mesh/MsqMeshEntity.cpp
   Mesh/MsqVertex.cpp
   Mesh/ParallelMeshImpl.cpp
@@ -302,6 +269,10 @@ APPEND_SET(SOURCES
   Misc/VtkTypeInfo.cpp
   Misc/XYRectangle.cpp
   )
+IF(IMESH_DEFS OR IGEOM_DEFS OR IREL_DEFS)
+  APPEND_SET(SOURCES Misc/MsqIBase.cpp Misc/MsqIBase.hpp)
+ENDIF()
+
 
 #
 # src/ObjectiveFuntion
@@ -875,55 +846,55 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps)
 #
 # Generate Fortran name mangling headers
 #
-ADD_CUSTOM_COMMAND( 
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h
-  COMMAND ${CMAKE_COMMAND}
-  ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMesh.h 
-          -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h 
-          -D prefix:STRING=iMesh 
-          -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMesh.h
-  COMMENT "Running custom command"
-  )
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h PROPERTIES GENERATED true)
-
-ADD_CUSTOM_COMMAND( 
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h
-  COMMAND ${CMAKE_COMMAND}
-  ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMeshP.h 
-          -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h 
-          -D prefix:STRING=iMeshP 
-          -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMeshP.h
-  COMMENT "Running custom command"
-  )
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h PROPERTIES GENERATED true)
-
-ADD_CUSTOM_COMMAND( 
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iGeom_protos.h
-  COMMAND ${CMAKE_COMMAND}
-  ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iGeom.h 
-          -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iGeom_protos.h 
-          -D prefix:STRING=iGeom 
-          -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iGeom.h
-  COMMENT "Running custom command"
-  )
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h PROPERTIES GENERATED true)
-
-ADD_CUSTOM_COMMAND( 
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iRel_protos.h
-  COMMAND ${CMAKE_COMMAND}
-  ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iRel.h 
-          -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iRel_protos.h 
-          -D prefix:STRING=iRel 
-          -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iRel.h
-  COMMENT "Running custom command"
-  )
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h PROPERTIES GENERATED true)
-
-
+# ADD_CUSTOM_COMMAND( 
+#   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h
+#   COMMAND ${CMAKE_COMMAND}
+#   ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMesh.h 
+#           -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h 
+#           -D prefix:STRING=iMesh 
+#           -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
+#   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMesh.h
+#   COMMENT "Running custom command"
+#   )
+# SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h PROPERTIES GENERATED true)
+# 
+# ADD_CUSTOM_COMMAND( 
+#   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h
+#   COMMAND ${CMAKE_COMMAND}
+#   ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMeshP.h 
+#           -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h 
+#           -D prefix:STRING=iMeshP 
+#           -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
+#   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMeshP.h
+#   COMMENT "Running custom command"
+#   )
+# SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h PROPERTIES GENERATED true)
+# 
+# ADD_CUSTOM_COMMAND( 
+#   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iGeom_protos.h
+#   COMMAND ${CMAKE_COMMAND}
+#   ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iGeom.h 
+#           -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iGeom_protos.h 
+#           -D prefix:STRING=iGeom 
+#           -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
+#   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iGeom.h
+#   COMMENT "Running custom command"
+#   )
+# SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h PROPERTIES GENERATED true)
+# 
+# ADD_CUSTOM_COMMAND( 
+#   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iRel_protos.h
+#   COMMAND ${CMAKE_COMMAND}
+#   ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iRel.h 
+#           -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iRel_protos.h 
+#           -D prefix:STRING=iRel 
+#           -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ITAPSFortranMangling.cmake
+#   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iRel.h
+#   COMMENT "Running custom command"
+#   )
+# SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h PROPERTIES GENERATED true)
+# 
+# 
 #APPEND_SET(HEADERS
 #  ../itaps/iBase.h
 #  ../itaps/iBase_FCDefs.h
@@ -974,23 +945,11 @@ APPEND_SET(HEADERS ${all_file} )
 # C) Define the targets for package's library(s)
 #
 
-IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
-
-  PACKAGE_ADD_LIBRARY(
-    mesquite
-    HEADERS ${HEADERS}
-    SOURCES ${SOURCES}
-    )
-
-ELSE()
-
-  IF(${PACKAGE_NAME}_ENABLE_SHARED)
-    ADD_LIBRARY( mesquite SHARED ${SOURCES} ${HEADERS} )
-  ELSE()
-    ADD_LIBRARY( mesquite STATIC ${SOURCES} ${HEADERS} )
-  ENDIF()
-
-ENDIF()
+PACKAGE_ADD_LIBRARY(
+  mesquite
+  HEADERS ${HEADERS}
+  SOURCES ${SOURCES}
+  )
 
 MACRO(APPEND_DEFINE VARNAME OPT_FLAG)
   IF (${OPT_FLAG})

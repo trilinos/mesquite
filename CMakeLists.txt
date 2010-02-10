@@ -90,6 +90,14 @@ CHECK_INCLUDE_FILE(sys/ioctl.h HAVE_SYS_IOCTL_H)
 CHECK_INCLUDE_FILE(dlfcn.h     HAVE_DLFCN_H)
 CHECK_INCLUDE_FILE(fcntl.h     HAVE_FCNTL_H)
 
+#check for ITAPS files
+FIND_FILE( IMESH_DEFS  iMesh-Defs.inc ENV IMESH_DEFS  )
+FIND_FILE( IGEOM_DEFS  iGeom-Defs.inc ENV IGEOM_DEFS  )
+FIND_FILE( IREL_DEFS   iMesh-Defs.inc ENV IREL_DEFS   )
+IF (TPL_ENABLE_MPI)
+  FIND_FILE( IMESHP_DEFS iMesh-Defs.inc ENV IMESHP_DEFS )
+ENDIF()
+
 IF(NOT HAVE_TIMES AND NOT HAVE_CLOCK)
   MESSAGE( FATAL_ERROR
     "\n***"
@@ -102,28 +110,6 @@ ADD_OPTION_AND_DEFINE(${PACKAGE_NAME}_ENABLE_SHARED
   HAVE_Mesquite_SHARED
   "Build as shared library (e.g. Linux *.so, or Windows *.dll)."
   OFF )
-
-ADD_OPTION_AND_DEFINE(${PACKAGE_NAME}_ENABLE_IMESH
-  HAVE_Mesquite_IMESH
-  "Enable IMESH functionality."
-  OFF )
-
-ADD_OPTION_AND_DEFINE(${PACKAGE_NAME}_ENABLE_IGEOM
-  HAVE_Mesquite_IGEOM
-  "Enable IGEOM functionality."
-  OFF )
-
-ADD_OPTION_AND_DEFINE(${PACKAGE_NAME}_ENABLE_IREL
-  HAVE_Mesquite_IREL
-  "Enable IREL functionality."
-  OFF )
-
-IF (TPL_ENABLE_MPI)
-  ADD_OPTION_AND_DEFINE(${PACKAGE_NAME}_ENABLE_IMESHP
-    HAVE_Mesquite_IMESHP
-    "Enable IMESHP functionality."
-    OFF )
-ENDIF()
 
 #this needs to be done more like the mesquite version where 
 #there is a loop to determine the value. Not sure how to do

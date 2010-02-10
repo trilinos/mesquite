@@ -214,11 +214,11 @@ AC_LANG_CPLUSPLUS
 #------------------------------------------------------------------------------
 # Fortran stuff for ITAPS
 #------------------------------------------------------------------------------
-AC_PROG_FC
-AC_ARG_VAR([FC], [FORTRAN compiler command])
-if test "x$FC" != "x"; then
-  AC_FC_WRAPPERS
-fi
+dnl AC_PROG_FC
+dnl AC_ARG_VAR([FC], [FORTRAN compiler command])
+dnl if test "x$FC" != "x"; then
+dnl   AC_FC_WRAPPERS
+dnl fi
 
 #------------------------------------------------------------------------------
 # LIBTOOL
@@ -635,31 +635,18 @@ AM_CONDITIONAL([WITH_CPPUNIT],[test "x$HAVE_CPPUNIT" = "xyes"])
 # ITAPS
 #------------------------------------------------------------------------------
 
-AC_ARG_ENABLE([itaps],
-              [AC_HELP_STRING([--disable-itaps],[Disable support for all ITAPS interfaces])],
-              [ITAPS_DEFAULT=$enableval],[ITAPS_DEFAULT=yes])
-if test "x$ITAPS_DEFAULT" != "xno"; then
-  if test "x$ITAPS_DEFAULT" != "xyes"; then
-    AC_MSG_ERROR([Invalid argument to --disable-itaps])
+ITAPS_API([imesh], [IMESH], [iMesh])
+ITAPS_API([igeom], [IGEOM], [iGeom])
+ITAPS_API([irel],  [IREL],  [iRel],  [IMESH], [IGEOM])
+ITAPS_API([imeshp],[IMESHP],[iMeshP],[IMESH])
+
+if test "x$ENABLE_ITAPS" = "xyes"; then
+  if test "x$IBASE_INCL" = "x"; then
+    AC_MSG_ERROR([Cannot enable support for any ITAPS API w/out iBase.h])
   fi
 fi
-ITAPS_API( [irel],   [IREL],   [iRel],  [$ITAPS_DEFAULT] )
-ITAPS_API( [imesh],  [IMESH],  [iMesh], [$ENABLE_IREL]   )
-ITAPS_API( [igeom],  [IGEOM],  [iGeom], [$ENABLE_IREL]   )
-if test "xyes" != "x$WITH_MPI"; then
-  HAVE_IMESHP=no
-elif test "xyes" = "x$WITH_IMESH_IMPL"; then
-  old_CPPFLAGS="$CPPFLAGS"
-  SNL_MAKE_INC_VAR( [$IMESH_DEFS], [IMESH_INCLUDEDIR], [CPPFLAGS="$CPPFLAGS $make_val"] )
-  AC_CHECK_HEADER( [iMeshP.h], [HAVE_IMESHP=yes], [HAVE_IMESHP=no] )
-  CPPFLAGS="$old_CPPFLAGS"
-else
-  HAVE_IMESHP=no
-fi
-AC_ARG_ENABLE([imeshp],
-              [AC_HELP_STRING([--enable-imeshp],[Build support for itaps parallel mesh API])],
-              [ENABLE_IMESHP=$enableval],[ENABLE_IMESHP=$HAVE_IMESHP])
-AM_CONDITIONAL([ENABLE_IMESHP],[test "xyes" = "x$ENABLE_IMESHP"])
+AM_CPPFLAGS="${AM_CPPFLAGS} ${IBASE_INCL}"
+AM_CONDITIONAL([ENABLE_ITAPS],[test "x$ENABLE_ITAPS" = "xyes"])
 
 #------------------------------------------------------------------------------
 # The End
@@ -702,9 +689,9 @@ AC_SUBST(UTIL_MAKE_INCLUDE)
 # mesquite.
 AC_CONFIG_HEADERS([include/junk_config.h])
 AC_CONFIG_HEADERS([include/mesquite_config.h
-                   include/mesquite_version.h
-                   itaps/iBase_FCDefs.h])
+                   include/mesquite_version.h])
 AC_CONFIG_FILES([Makefile
+                 itaps/Makefile
                  meshFiles/Makefile
                  testSuite/Makefile
                  testSuite/meshfiles.h

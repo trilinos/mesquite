@@ -44,7 +44,7 @@ using std::string;
 #include "Vector3D.hpp"
 #include "MsqVertex.hpp"
 #include "MsqIMesh.hpp"
-#include "cppunit/extensions/HelperMacros.h"
+#include "UnitUtil.hpp"
 
 using namespace Mesquite;
 

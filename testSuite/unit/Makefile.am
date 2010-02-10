@@ -12,6 +12,7 @@ if WITH_CPPUNIT
   CPPUNIT_LDFLAGS_SET = @CPPUNIT_LDFLAGS@
 else
   TESTS = no_cpp_unit
+  msq_test_DEPENDENCIES = 
   CPPUNIT_CPPFLAGS_SET = 
   CPPUNIT_LDFLAGS_SET = 
 endif
@@ -26,14 +27,17 @@ no_cpp_unit:
 	@echo "exit 0" >> $@
 	@chmod a+x $@
 
-if WITH_IMESH_IMPL
+if ENABLE_IMESH
   IMESH_TEST_SRC = iMeshTest.cpp
-  IMESH_LDADD = $(IMESH_LIBS)
+  IMESH_LDADD = $(top_builddir)/itaps/libmsqimesh.la $(IMESH_LIBS)
+  IMESH_DEP = $(top_builddir)/itaps/libmsqimesh.la
 else
   IMESH_TEST_SRC =
   IMESH_LDADD = 
+  IMESH_DEP =
 endif
 LDADD += $(IMESH_LDADD)
+msq_test_DEPENDENCIES += $(IMESH_DEP)
 
 if WITH_EXODUS
   EXODUS_TEST_SRC = ExodusTest.cpp

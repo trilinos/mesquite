@@ -1,37 +1,62 @@
-BUILT_SOURCES += itaps/iMesh_protos.h \
-                 itaps/iMeshP_protos.h \
-                 itaps/iGeom_protos.h \
-                 itaps/iRel_protos.h
+if ENABLE_IMESH
+  IMESH_LIB = libmsqimesh.la
+else
+  IMESH_LIB = 
+endif
 
-EXTRA_DIST += $(top_srcdir)/itaps/mkprotos.sh \
-              $(top_srcdir)/itaps/CMakeLists.txt
+if ENABLE_IGEOM
+  IGEOM_LIB = libmsqigeom.la
+else
+  IGEOM_LIB = 
+endif
 
-ITAPS_DIR = itaps
-MSQ_INCLUDES += -I$(top_srcdir)/$(ITAPS_DIR)
-INCLUDED_MAKEFILES += $(ITAPS_DIR)/Makefile.am
+if ENABLE_IREL
+  IREL_LIB = libmsqirel.la
+else
+  IREL_LIB = 
+endif
 
-MSQ_HDRS += \
-	$(ITAPS_DIR)/iBase.h \
-	$(ITAPS_DIR)/iBase_FCDefs.h \
-	$(ITAPS_DIR)/iMesh.h \
-	$(ITAPS_DIR)/iMesh_protos.h \
-	$(ITAPS_DIR)/iMeshP.h \
-	$(ITAPS_DIR)/iMeshP_protos.h \
-	$(ITAPS_DIR)/iGeom.h \
-	$(ITAPS_DIR)/iGeom_protos.h \
-	$(ITAPS_DIR)/iRel.h \
-	$(ITAPS_DIR)/iRel_protos.h 
+if ENABLE_IMESHP
+  IMESHP_LIB = libmsqimeshp.la
+else
+  IMESHP_LIB = 
+endif
 
-itaps/iMesh_protos.h: itaps/iMesh.h
-	$(top_srcdir)/itaps/mkprotos.sh iMesh $< $@
 
-itaps/iMeshP_protos.h: itaps/iMeshP.h
-	$(top_srcdir)/itaps/mkprotos.sh iMeshP $< $@
+lib_LTLIBRARIES = $(IMESH_LIB) $(IGEOM_LIB) $(IREL_LIB) $(IMESHP_LIB)
 
-itaps/iGeom_protos.h: itaps/iGeom.h
-	$(top_srcdir)/itaps/mkprotos.sh iGeom $< $@
+libmsqimesh_la_includedir = $(includedir)
+libmsqimesh_la_SOURCES = MsqIMesh.cpp 
+libmsqimesh_la_include_HEADERS = MsqIMesh.hpp 
+libmsqimesh_la_LIBADD = $(top_builddir)/libmesquite.la $(IMESH_LIBS)
 
-itaps/iRel_protos.h: itaps/iRel.h
-	$(top_srcdir)/itaps/mkprotos.sh iRel $< $@
+libmsqigeom_la_includedir = $(includedir)
+libmsqigeom_la_SOURCES = MsqIGeom.cpp 
+libmsqigeom_la_include_HEADERS = MsqIGeom.hpp 
+libmsqigeom_la_LIBADD = $(top_builddir)/libmesquite.la $(IGEOM_LIBS)
+
+libmsqirel_la_includedir = $(includedir)
+libmsqirel_la_SOURCES = MsqIRel.cpp 
+libmsqirel_la_include_HEADERS = MsqIRel.hpp 
+libmsqirel_la_LIBADD = libmsqigeom.la libmsqimesh.la $(IREL_LIBS)
+
+libmsqimeshp_la_includedir = $(includedir)
+libmsqimeshp_la_SOURCES = MsqIMeshP.cpp 
+libmsqimeshp_la_include_HEADERS = MsqIMeshP.hpp 
+libmsqimeshp_la_LIBADD = libmsqimesh.la $(IMESHP_LIBS)
+
+AM_CPPFLAGS = $(CPPFLAGS) \
+              -I$(top_builddir)/include \
+              -I$(top_srcdir)/include \
+              -I$(top_srcdir)/src/Mesh \
+              -I$(top_srcdir)/src/Misc \
+              -I$(top_srcdir)/src/Control \
+              $(IMESH_INCL) \
+              $(IGEOM_INCL) \
+              $(IREL_INCL) \
+              $(IMESHP_INCL) 
+
+EXTRA_DIST = CMakeLists.txt
+
 
 

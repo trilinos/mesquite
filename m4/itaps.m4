@@ -43,57 +43,107 @@ fi
 #   1) The interface name in lowercase (e.g. imesh)
 #   2) The interface name in uppercase (e.g. IMESH)
 #   3) The interface name in preferred case (e.g. iMesh)
-#   4) Default value (yes/no)
+#   4) Interface required for this interface (all caps)
+#   5) Second required interface (all caps)
 #
 # Sets and declares substitutions for:
 #    ENABLE_IFACE=yes/no
-#    WITH_IFACE_IMPL=yes/no
 #    IFACE_DEFS=empty/path to defs file
 #    IFACE_LIBS=empty/ld args for linking implementation
-# Sets AUTOMAKE conditionals for ENABLE_IFACE and WITH_IFACE_IMPL
-# Sets the folling shell variables:
-#    IFACE_ARG=yes/no/directory
+#    IFACE_INCL=cpp flag for include path for API header
+#    ENABLE_ITAPS=yes
+#    IBASE_INCL=cpp flag for locating iBase.h
+# Sets AUTOMAKE conditionals for ENABLE_IFACE 
 ##############################################################################
 
 AC_DEFUN([ITAPS_API], [
 
-AC_ARG_ENABLE( [$1], 
-[AC_HELP_STRING([--disable-$1],
-  [Do not build support for ITAPS $1 interface.])
-AC_HELP_STRING([--enable-$1=DIR],
-  [Build support for ITAPS $1 interface.  Optionally specify implementation.])],
-  [$2_ARG=$enableval],[$2_ARG=$4])
+AC_ARG_VAR([$2_DEFS],[Path to $3-Defs.inc])
 
-$2_DEFS=
-$2_LIBS=
-if test "xno" = "x${$2_ARG}"; then
+# If no value is set, default to 'disabled'
+if test "x${$2_DEFS}" = "x"; then
+  $2_DEFS=no
+fi
+
+AC_ARG_WITH( [$1], 
+[AC_HELP_STRING([--with-$1=<path>],
+  [Path to $3-Defs.inc (enable $3)])],
+  [$2_DEFS=$withval])
+
+# If option is disabled
+if test "x${$2_DEFS}" == "xno"; then
+  $2_DEFS=
   ENABLE_$2=no
-  WITH_$2_IMPL=no
-elif test "xyes" = "x${$2_ARG}"; then
-  ENABLE_$2=yes
-  WITH_$2_IMPL=no
+  $2_LIBS=
+  $2_INCL=
 else
-  ENABLE_$2=yes
-  WITH_$2_IMPL=yes
-  for subdir in . lib include; do
-    if test -f "${$2_ARG}/$subdir/$3-Defs.inc"; then
-      $2_DEFS=${$2_ARG}/$subdir/$3-Defs.inc
-      break
+  # Verify that we have any required interfaces
+  if test "x" != "x$4"; then
+    if test "x$ENABLE_$4" != "xyes"; then
+      AC_MSG_ERROR([Cannot enable $3 w/out $4])
     fi
-  done
-  if test "x" = "x${$2_DEFS}"; then
-    AC_MSG_ERROR("$3-Defs.inc not found in ${$2_ARG}")
-  else
-    SNL_MAKE_INC_VAR( [${$2_DEFS}], [$2_LIBS], [$2_LIBS="$make_val"] )
+    if test "x" != "x$5"; then
+      if test "x$ENABLE_$5" != "xyes"; then
+        AC_MSG_ERROR([Cannot enable $3 w/out $5])
+      fi
+    fi
   fi
+
+  # Verify that Defs file exists
+  AC_CHECK_FILE( [${$2_DEFS}], [], [AC_MSG_ERROR([Invalid --with-$1 option or $2_DEFS value])] )
+
+  # Extract values from Makefile stub
+  SNL_MAKE_INC_VAR( [${$2_DEFS}], [$2_LIBS], [$2_LIBS="$make_val"] )
+  SNL_MAKE_INC_VAR( [${$2_DEFS}], [$2_INCLUDES], [$2_INCL="$make_val"] )
+
+  # Set up testing environment
+  AC_LANG_PUSH([C])
+  old_LIBS="$LIBS"
+  LIBS="$LIBS ${$2_LIBS}"
+  ALL_INCL="${$2_INCL}"
+  if test "x" != "x$4"; then
+    ALL_INCL="$ALL_INCL ${$4_INCL}"
+    LIBS="$LIBS ${$4_LIBS}"
+    if test "x" != "x$5"; then
+      ALL_INCL="$ALL_INCL ${$5_INCL}"
+      LIBS="$LIBS ${$5_LIBS}"
+    fi
+  fi
+  old_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS ${ALL_INCL}"
+  
+  # If common header hasn't been located yet, check for it
+  if test "x$IBASE_INCL" == "x"; then
+    ENABLE_ITAPS=yes
+    AC_CHECK_HEADER([iBase.h],[IBASE_INCL="$ALL_INCL"])
+  fi
+  
+  # Check for existence of interface definition header
+  AC_CHECK_HEADER([$3.h],[],[AC_MSG_ERROR([Broken $3: $3.h not found with ${$2_INCL} from ${$2_DEFS}])])
+  # Check library.  Note: we cannot use AC_CHECK_LIB because
+  # of Fortran name-mangling crap in ITAPS headers
+  AC_MSG_CHECKING([for $3_dtor in $3 library])
+  AC_LINK_IFELSE(
+   [AC_LANG_PROGRAM([#include <$3.h>],[$3_dtor(($3_Instance)0,(int*)0)])],
+   [AC_MSG_RESULT([yes])],
+   [AC_MSG_RESULT([no])
+    AC_MSG_ERROR([$3 library unsuable: $2_LIBS=\"${$2_LIBS}\" from ${$2_DEFS}])]
+   )
+   
+   # Resore environment
+   LIBS="$old_LIBS"
+   CPPFLAGS="$old_CPPFLAGS"
+   AC_LANG_POP([C])
+   
+   ENABLE_$2=yes
+   ENABLE_IBASE=yes
 fi
 
 AC_SUBST(ENABLE_$2)
-AC_SUBST(WITH_$2_IMPL)
 AC_SUBST($2_DEFS)
 AC_SUBST($2_LIBS)
+AC_SUBST($2_INCL)
 AM_CONDITIONAL([ENABLE_$2],[test "xyes" = "x$ENABLE_$2"])
-AM_CONDITIONAL([WITH_$2_IMPL],[test "xyes" = "xWITH_$2_IMPL"])
 
 ])
 

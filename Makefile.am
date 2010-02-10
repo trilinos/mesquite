@@ -4,16 +4,16 @@ LIBTOOL = @LIBTOOL@ @MSQ_LIBTOOL_FLAGS@
 AM_LDFLAGS = @AM_LDFLAGS@
 AM_CPPFLAGS = @AM_CPPFLAGS@
 
-SUBDIRS = . doc testSuite utils meshFiles
+SUBDIRS = . itaps doc testSuite utils meshFiles
 
 
 # Need to be explicit about these for old versions of automake
 OLD_AM_GENERATED_HDRS = include/mesquite_config.h \
-                        include/mesquite_version.h \
-                        itaps/iBase_FCDefs.h 
+                        include/mesquite_version.h 
 OLD_AM_EXTRA_CONFIG = m4/cxxflags.m4 \
                       m4/cxx.m4 \
-                      m4/util.m4
+                      m4/util.m4 \
+		      m4/itaps.m4
  
 EXTRA_DIST = lgpl.txt \
              mkconfigure \
@@ -69,9 +69,6 @@ include src/QualityMetric/TMP/3D/Makefile.am
 include src/QualityMetric/Untangle/Makefile.am
 include src/QualityMetric/Volume/Makefile.am
 include src/TargetCalculator/Makefile.am
-include itaps/Makefile.am
-MSQ_INCLUDES += -I$(top_srcdir)/itaps -I$(top_builddir)/itaps 
-
 
 libmesquite_la_includedir = $(includedir)
 libmesquite_la_SOURCES = $(MSQ_SRCS) 
@@ -85,7 +82,7 @@ libmesquite_la_include_HEADERS = include/Mesquite.hpp \
 				 include/ParallelHelperInterface.hpp \
                                  $(MSQ_HDRS)
 libmesquite_la_LIBADD = $(MESQUITE_LIBS)
-AM_CPPFLAGS += -Iinclude -Iitaps \
+AM_CPPFLAGS += -Iinclude \
                -I$(top_srcdir)/include  \
                $(MSQ_INCLUDES)
 

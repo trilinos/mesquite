@@ -2,6 +2,13 @@ SRC_MISC_DIR = src/Misc
 MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_MISC_DIR)
 INCLUDED_MAKEFILES += $(SRC_MISC_DIR)/Makefile.am
 
+if ENABLE_ITAPS
+  MSQ_ITAPS_COMMON_SRC = $(SRC_MISC_DIR)/MsqIBase.cpp \
+                         $(SRC_MISC_DIR)/MsqIBase.hpp
+else
+  MSQ_ITAPS_COMMON_SRC =
+endif
+
 MSQ_SRCS += \
 	$(SRC_MISC_DIR)/BoundedCylinderDomain.cpp \
 	$(SRC_MISC_DIR)/CylinderDomain.cpp \
@@ -22,7 +29,8 @@ MSQ_SRCS += \
 	$(SRC_MISC_DIR)/SphericalDomain.cpp \
 	$(SRC_MISC_DIR)/Vector3D.cpp \
 	$(SRC_MISC_DIR)/VtkTypeInfo.cpp \
-	$(SRC_MISC_DIR)/XYRectangle.cpp
+	$(SRC_MISC_DIR)/XYRectangle.cpp \
+        $(MSQ_ITAPS_COMMON_SRC)
 
 
 MSQ_HDRS += \
