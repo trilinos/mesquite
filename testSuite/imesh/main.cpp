@@ -284,6 +284,8 @@ Mesh* get_imesh_mesh( const char* file_name )
     cerr << err << endl;
     return 0;
   }
+  
+  return result;
 }
   
 
