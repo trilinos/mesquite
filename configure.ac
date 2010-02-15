@@ -701,6 +701,7 @@ AC_CONFIG_FILES([Makefile
                  testSuite/convert/Makefile
                  testSuite/headers/Makefile
                  testSuite/idft_time/Makefile
+                 testSuite/igeom/Makefile
                  testSuite/imesh/Makefile
                  testSuite/laplacian_test/Makefile
                  testSuite/laplacian_wrapper_test/Makefile

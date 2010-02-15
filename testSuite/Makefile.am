@@ -4,6 +4,12 @@ else
   IMESH_TEST =
 endif
 
+if ENABLE_IGEOM
+  IGEOM_TEST = igeom
+else
+  IGEOM_TEST =
+endif
+
 if WITH_EXODUS
   EXO_TEST = convert 
 else
@@ -39,7 +45,8 @@ SUBDIRS = test_1 \
 	  higher_order \
 	  viscous_cfd \
 	  size_adapt_shape \
-	  $(IMESH_TEST) $(EXO_TEST) $(UNIT_TEST)
+	  $(IMESH_TEST) $(IGEOM_TEST) \
+          $(EXO_TEST) $(UNIT_TEST)
 
 EXTRA_DIST = CMakeLists.txt
 
