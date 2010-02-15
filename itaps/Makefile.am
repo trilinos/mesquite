@@ -51,6 +51,7 @@ AM_CPPFLAGS = $(CPPFLAGS) \
               -I$(top_srcdir)/src/Mesh \
               -I$(top_srcdir)/src/Misc \
               -I$(top_srcdir)/src/Control \
+              -I$(top_srcdir)/src/MappingFunction \
               $(IMESH_INCL) \
               $(IGEOM_INCL) \
               $(IREL_INCL) \
