@@ -164,12 +164,11 @@ int MsqCommonIGeom::normal( const iBase_EntityHandle* geom_handles,
   
     // copy input coordinates into array
   coordArray.clear();
-  coordArray.resize( 3*count );
-  memcpy( &coordArray[0], coords, 3 * count * sizeof(double) );
-  
+  coordArray.insert( coordArray.begin(), &coords[0][0], &coords[0][0] + 3*count );
+   
     // define junk variables required for ITAPS "consistancy"
-  int junk_1 = count, junk_2 = count;
-  double* norm_ptr = reinterpret_cast<double*>(coords);
+  int junk_1 = count*3, junk_2 = count*3;
+  double* norm_ptr = &coords[0][0];
   
     // get the normals
   int ierr;
@@ -178,7 +177,7 @@ int MsqCommonIGeom::normal( const iBase_EntityHandle* geom_handles,
                        count,
                        iBase_INTERLEAVED,
                        &coordArray[0],
-                       count,
+                       count*3,
                        &norm_ptr,
                        &junk_1,
                        &junk_2,
