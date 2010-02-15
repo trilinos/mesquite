@@ -645,8 +645,9 @@ if test "x$ENABLE_ITAPS" = "xyes"; then
     AC_MSG_ERROR([Cannot enable support for any ITAPS API w/out iBase.h])
   fi
 fi
-AM_CPPFLAGS="${AM_CPPFLAGS} ${IBASE_INCL}"
+AM_CPPFLAGS="${AM_CPPFLAGS}"
 AM_CONDITIONAL([ENABLE_ITAPS],[test "x$ENABLE_ITAPS" = "xyes"])
+AC_SUBST(IBASE_INCL)
 
 #------------------------------------------------------------------------------
 # The End

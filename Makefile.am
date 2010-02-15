@@ -84,7 +84,8 @@ libmesquite_la_include_HEADERS = include/Mesquite.hpp \
 libmesquite_la_LIBADD = $(MESQUITE_LIBS)
 AM_CPPFLAGS += -Iinclude \
                -I$(top_srcdir)/include  \
-               $(MSQ_INCLUDES)
+               $(MSQ_INCLUDES) \
+	       $(IBASE_INCL)
 
 include/Mesquite_all_headers.hpp: $(MSQ_HDRS)
 	@echo "Generating $@..."
@@ -117,6 +118,7 @@ testSuite/cppflags.make: $(MSQ_HDRS)
 	@echo "	-I\$$(top_builddir)/testSuite \\"         >> $@
 	@echo "	-I\$$(top_srcdir)/itaps \\"               >> $@ 
 	@echo "	-I\$$(top_builddir)/itaps"                >> $@
+	@echo "	\$$(IBASE_INCL)"                          >> $@
 
 MOSTLYCLEANFILES = include/Mesquite_all_headers.hpp 
 DISTCLEANFILES = testSuite/cppflags.make $(OLD_AM_GENERATED_HDRS)
