@@ -40,5 +40,5 @@
   
 2.1.2:
   - Fix broken support for iGeom/iRel APIs
-
+  - Fix broken slave flag support in iMesh adaptor
 
