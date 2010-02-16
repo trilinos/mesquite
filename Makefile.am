@@ -105,7 +105,7 @@ include/Mesquite_all_headers.hpp: $(MSQ_HDRS)
 	@echo '#endif'                                  >> $@ 
 
 $(RECURSIVE_TARGETS) distdir: testSuite/cppflags.make
-testSuite/cppflags.make: $(MSQ_HDRS)
+testSuite/cppflags.make: $(MSQ_HDRS) Makefile.am config.status
 	@echo "Generating $@..."
 	@echo "INCLUDES = -I\$$(top_srcdir)/include \\"    > $@
 	@for flag in $(MSQ_INCLUDES); do \
@@ -117,7 +117,7 @@ testSuite/cppflags.make: $(MSQ_HDRS)
 	@echo "	-I\$$(top_builddir)/include \\"           >> $@ 
 	@echo "	-I\$$(top_builddir)/testSuite \\"         >> $@
 	@echo "	-I\$$(top_srcdir)/itaps \\"               >> $@ 
-	@echo "	-I\$$(top_builddir)/itaps"                >> $@
+	@echo "	-I\$$(top_builddir)/itaps \\"             >> $@
 	@echo "	\$$(IBASE_INCL)"                          >> $@
 
 MOSTLYCLEANFILES = include/Mesquite_all_headers.hpp 
