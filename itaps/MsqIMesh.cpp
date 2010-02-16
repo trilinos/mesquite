@@ -163,7 +163,7 @@ namespace MESQUITE_NS {
       // Get tag for slaved flag
   if (slaved_tag_name == 0)
     slaved_tag_name = VERTEX_SLAVED_TAG_NAME;
-  iMesh_getTagHandle( meshInstance, fixed_tag_name, 
+  iMesh_getTagHandle( meshInstance, slaved_tag_name, 
                       &slavedTag, &ierr,
                       strlen(slaved_tag_name) );
   if (iBase_SUCCESS == ierr) {
