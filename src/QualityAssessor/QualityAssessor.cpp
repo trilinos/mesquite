@@ -154,9 +154,62 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
   set_stopping_assessment( metric, histogram_intervals, power_mean, metric_value_tag_name );
 }
 
-QualityAssessor::~QualityAssessor()
-  { }
+QualityAssessor::QualityAssessor( const QualityAssessor& copy ) :
+  qualityAssessorName(copy.qualityAssessorName),
+  assessList(copy.assessList),
+  invertedElementCount(copy.invertedElementCount),
+  invertedSampleCount(copy.invertedSampleCount),
+  elementCount(copy.elementCount),
+  sampleCount(copy.sampleCount),
+  freeElementCount(copy.freeElementCount),
+  outputStream(copy.outputStream),
+  printSummary(copy.printSummary),
+  invertedTagName(copy.invertedTagName),
+  fixedTagName(copy.fixedTagName),
+  skipFixedSamples(copy.skipFixedSamples)
+{
+  list_type::iterator iter;
+  for (iter = assessList.begin(); iter != assessList.end(); ++iter) 
+    (*iter)->referenceCount++;
+}
 
+QualityAssessor& QualityAssessor::operator=( const QualityAssessor& copy )
+{
+  list_type::iterator iter;
+  for (iter = assessList.begin(); iter != assessList.end(); ++iter) {
+    Assessor* assessor = *iter;
+    if (0 == --assessor->referenceCount)
+      delete assessor;
+  }
+
+  qualityAssessorName = copy.qualityAssessorName;
+  assessList = copy.assessList;
+  invertedElementCount = copy.invertedElementCount;
+  invertedSampleCount = copy.invertedSampleCount;
+  elementCount = copy.elementCount;
+  sampleCount = copy.sampleCount;
+  freeElementCount = copy.freeElementCount;
+  printSummary = copy.printSummary;
+  invertedTagName = copy.invertedTagName;
+  fixedTagName = copy.fixedTagName;
+  skipFixedSamples = copy.skipFixedSamples;
+  
+  for (iter = assessList.begin(); iter != assessList.end(); ++iter) 
+    (*iter)->referenceCount++;
+    
+  return *this;
+}  
+
+QualityAssessor::~QualityAssessor()
+{
+  list_type::iterator iter;
+  for (iter = assessList.begin(); iter != assessList.end(); ++iter) {
+    Assessor* assessor = *iter;
+    if (0 == --assessor->referenceCount)
+      delete assessor;
+  }
+}
+ 
 double QualityAssessor::Assessor::get_average() const
 {
   return count ? sum/count : 0;
@@ -199,16 +252,16 @@ void QualityAssessor::add_quality_assessment( QualityMetric* metric,
                                               const char* tag_name )
 { 
   list_type::iterator i = find_or_add( metric );
-  i->pMean = power_mean;
+  (*i)->pMean = power_mean;
   if (histogram_intervals > 0)
-    i->histogram.resize( histogram_intervals+2 );
+    (*i)->histogram.resize( histogram_intervals+2 );
   else
-    i->histogram.clear();
-  i->haveHistRange = false;
+    (*i)->histogram.clear();
+  (*i)->haveHistRange = false;
   if (!tag_name)
-    i->tagName.clear();
+    (*i)->tagName.clear();
   else
-    i->tagName = tag_name;
+    (*i)->tagName = tag_name;
 }
 
 QualityAssessor::list_type::iterator QualityAssessor::find_or_add( QualityMetric* qm )
@@ -217,20 +270,22 @@ QualityAssessor::list_type::iterator QualityAssessor::find_or_add( QualityMetric
   
     // If metric is already in list, find it
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
-    if (iter->qualMetric == qm )
+    if ((*iter)->qualMetric == qm )
       break;
   
     // If metric not found in list, add it
   if (iter == assessList.end())
   {
+    Assessor* new_assessor = new Assessor(qm);
+    new_assessor->referenceCount = 1;
     if (qm->get_metric_type() == QualityMetric::VERTEX_BASED)
     {
-      assessList.push_back( Assessor(qm) );
+      assessList.push_back( new_assessor );
       iter = --assessList.end();
     }
     else
     {
-      assessList.push_front( Assessor(qm) );
+      assessList.push_front( new_assessor );
       iter = assessList.begin();
     }
   }
@@ -242,7 +297,7 @@ QualityAssessor::list_type::iterator QualityAssessor::find_stopping_assessment()
 {
   list_type::iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
-    if (iter->stopping_function())
+    if ((*iter)->stopping_function())
       break;
   return iter;
 }
@@ -264,20 +319,20 @@ void QualityAssessor::set_stopping_assessment( QualityMetric* metric,
 {
   list_type::iterator i = find_stopping_assessment();
   if (i != assessList.end())
-    i->set_stopping_function(false);
+    (*i)->set_stopping_function(false);
 
   i = find_or_add( metric );
-  i->pMean = power_mean;
+  (*i)->pMean = power_mean;
   if (histogram_intervals > 0)
-    i->histogram.resize( histogram_intervals+2 );
+    (*i)->histogram.resize( histogram_intervals+2 );
   else
-    i->histogram.clear();
-  i->haveHistRange = false;
+    (*i)->histogram.clear();
+  (*i)->haveHistRange = false;
   if (!tag_name)
-    i->tagName.clear();
+    (*i)->tagName.clear();
   else
-    i->tagName = tag_name;
-  i->set_stopping_function(true);
+    (*i)->tagName = tag_name;
+  (*i)->set_stopping_function(true);
 }
 
 
@@ -301,15 +356,15 @@ void QualityAssessor::add_histogram_assessment( QualityMetric* metric,
   if (intervals < 1)
     intervals = 1;
   list_type::iterator i = find_or_add( metric );
-  i->pMean = power_mean;
-  i->histMin = min_val;
-  i->histMax = max_val;
-  i->haveHistRange = min_val < max_val;
-  i->histogram.resize( intervals + 2 );
+  (*i)->pMean = power_mean;
+  (*i)->histMin = min_val;
+  (*i)->histMax = max_val;
+  (*i)->haveHistRange = min_val < max_val;
+  (*i)->histogram.resize( intervals + 2 );
   if (!tag_name)
-    i->tagName.clear();
+    (*i)->tagName.clear();
   else
-    i->tagName = tag_name;
+    (*i)->tagName = tag_name;
 } 
 
 
@@ -419,8 +474,8 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
   }
   list_type::iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter) {
-    if (iter->write_to_tag()) {
-      iter->tagHandle = get_tag( mesh, iter->tagName, Mesh::DOUBLE, 1, err );
+    if ((*iter)->write_to_tag()) {
+      (*iter)->tagHandle = get_tag( mesh, (*iter)->tagName, Mesh::DOUBLE, 1, err );
       MSQ_ERRZERO(err);
     }
   }
@@ -444,16 +499,16 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
   bool need_second_pass_for_vertices = false;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
   {
-    if (iter->get_metric()->get_metric_type() == QualityMetric::VERTEX_BASED)
+    if ((*iter)->get_metric()->get_metric_type() == QualityMetric::VERTEX_BASED)
       break;
 
-    if (iter->have_histogram() && !iter->haveHistRange)
+    if ((*iter)->have_histogram() && !(*iter)->haveHistRange)
       need_second_pass_for_elements = true;
   }
   elem_end = iter;
   for ( ; iter != assessList.end(); ++iter)
   {
-    if (iter->have_histogram() && !iter->haveHistRange)
+    if ((*iter)->have_histogram() && !(*iter)->haveHistRange)
       need_second_pass_for_vertices = true;
   }
   
@@ -522,36 +577,36 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
         {
           double value = 0.0;
           metric_handles.clear();
-          QualityMetric* qm = iter->get_metric();
+          QualityMetric* qm = (*iter)->get_metric();
           qm->get_single_pass( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
           for (std::vector<size_t>::iterator j = metric_handles.begin(); 
                j != metric_handles.end(); ++j) 
           {
-            bool valid = iter->get_metric()->evaluate( patch, *j, value, err ); MSQ_ERRZERO(err);
-            iter->add_value(value);
+            bool valid = (*iter)->get_metric()->evaluate( patch, *j, value, err ); MSQ_ERRZERO(err);
+            (*iter)->add_value(value);
             if (!valid) 
-              iter->add_invalid_value();
+              (*iter)->add_invalid_value();
           }
             // we don't do tag stuff unless metric is truely element-based
             // (only one value per element)
-          if (iter->write_to_tag() && metric_handles.size() == 1) {
+          if ((*iter)->write_to_tag() && metric_handles.size() == 1) {
             Mesh::ElementHandle h = patch.get_element_handles_array()[0];
-            mesh->tag_set_element_data( iter->tagHandle, 1, &h, &value, err ); MSQ_ERRZERO(err);
+            mesh->tag_set_element_data( (*iter)->tagHandle, 1, &h, &value, err ); MSQ_ERRZERO(err);
           }
         }
           // If second pass, only do metrics for which the
           // histogram hasn't been calculated yet.
-        else if (iter->have_histogram() && !iter->haveHistRange)
+        else if ((*iter)->have_histogram() && !(*iter)->haveHistRange)
         {
           metric_handles.clear();
-          QualityMetric* qm = iter->get_metric();
+          QualityMetric* qm = (*iter)->get_metric();
           qm->get_evaluations( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
           for (std::vector<size_t>::iterator j = metric_handles.begin(); 
                j != metric_handles.end(); ++j) 
           {
             double value;
-            iter->get_metric()->evaluate( patch, *j, value, err ); MSQ_ERRZERO(err);
-            iter->add_hist_value(value);
+            (*iter)->get_metric()->evaluate( patch, *j, value, err ); MSQ_ERRZERO(err);
+            (*iter)->add_hist_value(value);
           }
         }
       }
@@ -560,18 +615,18 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
 
       // Fix up any histogram ranges which were calculated
     for (iter = assessList.begin(); iter != elem_end; ++iter)
-      if (iter->have_histogram() && !iter->haveHistRange)
+      if ((*iter)->have_histogram() && !(*iter)->haveHistRange)
         if (first_pass) {
           if (helper) {
-            helper->communicate_min_max_to_all(&(iter->minimum), &(iter->maximum), err); 
+            helper->communicate_min_max_to_all(&((*iter)->minimum), &((*iter)->maximum), err); 
             MSQ_ERRZERO(err);
           }
         
-          iter->calculate_histogram_range();
+          (*iter)->calculate_histogram_range();
 // Uncomment the following to have the QA keep the first
 // calculated histogram range for all subsequent iterations.
 //          else
-//            iter->haveHistRange = true;
+//            (*iter)->haveHistRange = true;
         }
   } while (first_pass && need_second_pass_for_elements);
       
@@ -603,35 +658,35 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
           {
             double value = 0.0;
             metric_handles.clear();
-            QualityMetric* qm = iter->get_metric();
+            QualityMetric* qm = (*iter)->get_metric();
             qm->get_single_pass( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
             for (std::vector<size_t>::iterator j = metric_handles.begin(); 
                  j != metric_handles.end(); ++j) 
             {
-              bool valid = iter->get_metric()->evaluate( patch, *j, value, err ); MSQ_ERRZERO(err);
-              iter->add_value(value);
+              bool valid = (*iter)->get_metric()->evaluate( patch, *j, value, err ); MSQ_ERRZERO(err);
+              (*iter)->add_value(value);
               if (!valid) 
-                iter->add_invalid_value();
+                (*iter)->add_invalid_value();
             }
               // we don't do tag stuff unless metric is truely vertex-based
               // (only one value per vertex)
-            if (iter->write_to_tag() && metric_handles.size() == 1) {
-              mesh->tag_set_vertex_data( iter->tagHandle, 1, &vert_handle, &value, err ); MSQ_ERRZERO(err);
+            if ((*iter)->write_to_tag() && metric_handles.size() == 1) {
+              mesh->tag_set_vertex_data( (*iter)->tagHandle, 1, &vert_handle, &value, err ); MSQ_ERRZERO(err);
             }
           }
             // If second pass, only do metrics for which the
             // histogram hasn't been calculated yet.
-          else if (iter->have_histogram() && !iter->haveHistRange)
+          else if ((*iter)->have_histogram() && !(*iter)->haveHistRange)
           {
             metric_handles.clear();
-            QualityMetric* qm = iter->get_metric();
+            QualityMetric* qm = (*iter)->get_metric();
             qm->get_evaluations( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
             for (std::vector<size_t>::iterator j = metric_handles.begin(); 
                  j != metric_handles.end(); ++j) 
             {
               double value;
-              iter->get_metric()->evaluate( patch, *j, value, err ); MSQ_ERRZERO(err);
-              iter->add_hist_value(value);
+              (*iter)->get_metric()->evaluate( patch, *j, value, err ); MSQ_ERRZERO(err);
+              (*iter)->add_hist_value(value);
             }
           }
         }
@@ -640,17 +695,17 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
   
         // Fix up any histogram ranges which were calculated
       for (iter = elem_end; iter != assessList.end(); ++iter)
-        if (iter->have_histogram() && !iter->haveHistRange)
+        if ((*iter)->have_histogram() && !(*iter)->haveHistRange)
           if (first_pass) {
             if (helper) {
-              helper->communicate_min_max_to_all(&(iter->minimum), &(iter->maximum), err); 
+              helper->communicate_min_max_to_all(&((*iter)->minimum), &((*iter)->maximum), err); 
               MSQ_ERRZERO(err);
             }
-            iter->calculate_histogram_range();
+            (*iter)->calculate_histogram_range();
 // Uncomment the following to have the QA keep the first
 // calculated histogram range for all subsequent iterations.
 //          else
-//            iter->haveHistRange = true;
+//            (*iter)->haveHistRange = true;
           }
     } while (first_pass && need_second_pass_for_vertices);
   }  
@@ -658,19 +713,19 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
   if (helper) {
     for (iter = assessList.begin(); iter != assessList.end(); ++iter) {
 
-      helper->communicate_min_max_to_zero(&(iter->minimum), &(iter->maximum), err);
+      helper->communicate_min_max_to_zero(&((*iter)->minimum), &((*iter)->maximum), err);
       MSQ_ERRZERO(err);
 
-      helper->communicate_sums_to_zero(&freeElementCount, &invertedElementCount, &elementCount, &invertedSampleCount, &sampleCount, &(iter->count), &(iter->numInvalid), &(iter->sum), &(iter->sqrSum), err);
+      helper->communicate_sums_to_zero(&freeElementCount, &invertedElementCount, &elementCount, &invertedSampleCount, &sampleCount, &((*iter)->count), &((*iter)->numInvalid), &((*iter)->sum), &((*iter)->sqrSum), err);
       MSQ_ERRZERO(err);
 
-      if (iter->have_power_mean()) {
-        helper->communicate_power_sum_to_zero( &(iter->pMean), err );
+      if ((*iter)->have_power_mean()) {
+        helper->communicate_power_sum_to_zero( &((*iter)->pMean), err );
         MSQ_ERRZERO(err);
       }
 
-      if (iter->have_histogram()) {
-        helper->communicate_histogram_to_zero(iter->histogram, err);
+      if ((*iter)->have_histogram()) {
+        helper->communicate_histogram_to_zero((*iter)->histogram, err);
         MSQ_ERRZERO(err);
       }
     }
@@ -681,7 +736,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
     print_summary( this->outputStream );
   
   list_type::iterator i = find_stopping_assessment();
-  return i == assessList.end() ? 0 : i->stopping_function_value();
+  return i == assessList.end() ? 0 : (*i)->stopping_function_value();
 }
 
 bool QualityAssessor::invalid_elements( ) const
@@ -689,7 +744,7 @@ bool QualityAssessor::invalid_elements( ) const
   bool result = false;
   list_type::const_iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
-    if (iter->get_invalid_element_count())
+    if ((*iter)->get_invalid_element_count())
       result = true;
   return result;
 }
@@ -698,7 +753,7 @@ void QualityAssessor::reset_data()
 {
   list_type::iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
-    iter->reset_data();
+    (*iter)->reset_data();
   invertedElementCount = -1;
   invertedSampleCount = -1;
 }
@@ -710,7 +765,8 @@ QualityAssessor::Assessor::Assessor( QualityMetric* metric )
     histMin(1.0),
     histMax(0.0),
     tagHandle(0),
-    stoppingFunction(false)
+    stoppingFunction(false),
+    referenceCount(0)
 {
   reset_data();
 }
@@ -719,8 +775,17 @@ const QualityAssessor::Assessor* QualityAssessor::get_results( QualityMetric* me
 {
   list_type::const_iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
-    if (iter->get_metric() == metric)
-      return &*iter;
+    if ((*iter)->get_metric() == metric)
+      return *iter;
+  return 0;
+}
+
+const QualityAssessor::Assessor* QualityAssessor::get_results( const char* name ) const
+{
+  list_type::const_iterator iter;
+  for (iter = assessList.begin(); iter != assessList.end(); ++iter)
+    if ((*iter)->get_metric()->get_name() == name)
+      return *iter;
   return 0;
 }
 
@@ -862,12 +927,12 @@ void QualityAssessor::print_summary( std::ostream& stream ) const
   list_type::const_iterator iter;
   bool some_invalid = false;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter) {
-    if (iter->get_invalid_element_count()) {
+    if ((*iter)->get_invalid_element_count()) {
       some_invalid = true;
-      stream << "  " << iter->get_invalid_element_count()
-             << " OF " << iter->get_count()
+      stream << "  " << (*iter)->get_invalid_element_count()
+             << " OF " << (*iter)->get_count()
              << " ENTITIES EVALUATED TO AN UNDEFINED VALUE FOR " 
-             << iter->get_metric()->get_name()
+             << (*iter)->get_metric()->get_name()
              << std::endl << std::endl;
     }
   }
@@ -879,8 +944,8 @@ void QualityAssessor::print_summary( std::ostream& stream ) const
     // Check if a user-define power-mean was calculated for any of the metrics
   std::set<double> pmeans;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
-    if (iter->have_power_mean())
-      pmeans.insert( iter->get_power() );
+    if ((*iter)->have_power_mean())
+      pmeans.insert( (*iter)->get_power() );
       
     // If power-mean of 1 or 2 was requested, change titles rather
     // than printing redundant values
@@ -906,8 +971,8 @@ void QualityAssessor::print_summary( std::ostream& stream ) const
   }
   unsigned namewidth = 0;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
-    if (iter->get_metric()->get_name().size() > namewidth)
-      namewidth = iter->get_metric()->get_name().size();
+    if ((*iter)->get_metric()->get_name().size() > namewidth)
+      namewidth = (*iter)->get_metric()->get_name().size();
   if (namewidth > maxnwidth)
     namewidth = maxnwidth;
   if (namewidth < 7)  // at least enough width for the column header
@@ -932,45 +997,45 @@ void QualityAssessor::print_summary( std::ostream& stream ) const
     // print metric values
   for (iter = assessList.begin(); iter != assessList.end(); ++iter) {
       // print name
-    stream << std::setw(namewidth) << iter->get_metric()->get_name();
-    if (iter->get_metric()->get_name().size() > namewidth) 
+    stream << std::setw(namewidth) << (*iter)->get_metric()->get_name();
+    if ((*iter)->get_metric()->get_name().size() > namewidth) 
       stream << std::endl << std::setw(namewidth) << " ";
       // print minimum
-    stream << std::setw(NUMW) << iter->get_minimum();
+    stream << std::setw(NUMW) << (*iter)->get_minimum();
       // print power-means with P less than 1.0
     for (piter = pmeans.begin(); piter != pmeans.end() && *piter < 1.0; ++piter) {
-      if (iter->have_power_mean() && iter->get_power() == *piter) 
-        stream << std::setw(NUMW) << iter->get_power_mean();
+      if ((*iter)->have_power_mean() && (*iter)->get_power() == *piter) 
+        stream << std::setw(NUMW) << (*iter)->get_power_mean();
       else
         stream << std::setw(NUMW) << " ";
     }
       // print average
-    stream << std::setw(NUMW) << iter->get_average();
+    stream << std::setw(NUMW) << (*iter)->get_average();
       // print power-means with P less than 2.0
     for ( ; piter != pmeans.end() && *piter < 2.0; ++piter) {
-      if (iter->have_power_mean() && iter->get_power() == *piter) 
-        stream << std::setw(NUMW) << iter->get_power_mean();
+      if ((*iter)->have_power_mean() && (*iter)->get_power() == *piter) 
+        stream << std::setw(NUMW) << (*iter)->get_power_mean();
       else
         stream << std::setw(NUMW) << " ";
     }
       // print RMS
-    stream << std::setw(NUMW) << iter->get_rms();
+    stream << std::setw(NUMW) << (*iter)->get_rms();
       // print power-means with P greater than 2.0
     for ( ; piter != pmeans.end(); ++piter) {
-      if (iter->have_power_mean() && iter->get_power() == *piter) 
-        stream << std::setw(NUMW) << iter->get_power_mean();
+      if ((*iter)->have_power_mean() && (*iter)->get_power() == *piter) 
+        stream << std::setw(NUMW) << (*iter)->get_power_mean();
       else
         stream << std::setw(NUMW) << " ";
     }
       // print maximum and standard deviation
-    stream << std::setw(NUMW) << iter->get_maximum();
-    stream << std::setw(NUMW) << iter->get_stddev();
+    stream << std::setw(NUMW) << (*iter)->get_maximum();
+    stream << std::setw(NUMW) << (*iter)->get_stddev();
     stream << std::endl;
   }
   
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
-    if (iter->have_histogram())
-      iter->print_histogram( stream, get_terminal_width() );
+    if ((*iter)->have_histogram())
+      (*iter)->print_histogram( stream, get_terminal_width() );
 }
 
 

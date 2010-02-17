@@ -490,9 +490,11 @@ namespace MESQUITE_NS
         
         /** Value is return value for all of QualityAssessor */
         bool stoppingFunction;
+        
+        int referenceCount;
     };    
         
-    typedef std::list<Assessor> list_type;
+    typedef std::list<Assessor*> list_type;
         
     /** \brief Request summary data for a specific QualityMetric 
      * This method allows the application to request the summary
@@ -502,6 +504,15 @@ namespace MESQUITE_NS
      */
     MESQUITE_EXPORT
     const Assessor* get_results( QualityMetric* metric ) const;
+        
+    /** \brief Request summary data for a specific QualityMetric 
+     * This method allows the application to request the summary
+     * data for a metric it has registered with the QualityAssessor.
+     * If the passed QualityMetric has not been registered with the
+     * QualityAssessor instance, NULL is returned.
+     */
+    MESQUITE_EXPORT
+    const Assessor* get_results( const char* metric_name ) const;
     
     /** \brief Get list of all summary data.
      *  Return a const reference to the internal list of 
@@ -509,7 +520,13 @@ namespace MESQUITE_NS
      */
    const list_type& get_all_results() const
       { return assessList; }
-      
+   
+   MESQUITE_EXPORT
+   QualityAssessor( const QualityAssessor& copy );
+   
+   MESQUITE_EXPORT
+   QualityAssessor& operator=( const QualityAssessor& copy );
+   
   private:
 
       //! Common code for serial and parallel loop_over_mesh
