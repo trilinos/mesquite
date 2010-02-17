@@ -57,6 +57,7 @@ int main( int argc, char* argv[] )
   RotateArg rotate_arg( &xform );
   ScaleArg scale_arg( &xform );
   TranslateArg translate_arg( &xform );
+  CLArgs::ToggleArg freeonly, skin;
 
   CLArgs args( "vtkxform", "Transform a mesh",
                "Apply one or more transformations to vertex coordinates "
@@ -75,6 +76,9 @@ int main( int argc, char* argv[] )
   args.double_list_flag( TRANSLATE_FLAG, "Specify translation of vertex coordinates.", &translate_arg );
   args.limit_list_flag( TRANSLATE_FLAG, 3, TRANSLATE_VALS );
 
+  args.toggle_flag( 'f', "Do not move fixed vertices.", &freeonly );
+  args.toggle_flag( 'k', "Mark boundary vertices as fixed", &skin );
+
   args.add_required_arg( "input_file" );
   args.add_required_arg( "output_file" );
   
@@ -92,10 +96,20 @@ int main( int argc, char* argv[] )
   mesh.read_vtk( input_file.c_str(), err );
   if (err) {
     std::cerr << err << std::endl 
-                    << "Failed to read file: " << input_file << std::endl;
+              << "Failed to read file: " << input_file << std::endl;
     return 1;
   }
   
+  if (skin.value()) {
+    mesh.mark_skin_fixed( err, false );
+    if (err) {
+      std::cerr << err << std::endl
+                << "Failed to skin mesh from file: " << input_file << std::endl;
+      return 1;
+    }
+  }
+  
+  xform.skip_fixed_vertices( freeonly.value() );
   xform.loop_over_mesh( &mesh, 0, 0, err );
   if (err) {
     std::cerr << err << std::endl ;

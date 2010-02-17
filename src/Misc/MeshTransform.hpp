@@ -56,8 +56,13 @@ namespace MESQUITE_NS
   class MeshTransform : public Instruction 
   {
   public:
-    MESQUITE_EXPORT MeshTransform() : mMat(1,0,0,0,1,0,0,0,1), mVec(0.0) {}
-    MESQUITE_EXPORT MeshTransform(Matrix3D &in_mat, Vector3D &in_vec);
+    MESQUITE_EXPORT MeshTransform(bool skip_fixed = false) 
+      : mMat(1,0,0,0,1,0,0,0,1), mVec(0.0), skipFixed(skip_fixed)
+       {}
+    MESQUITE_EXPORT MeshTransform(Matrix3D &in_mat, Vector3D &in_vec,
+                                  bool skip_fixed = false)
+      : mMat(in_mat), mVec(in_vec), skipFixed(skip_fixed)
+      {}
 
       // virtual destructor ensures use of polymorphism during destruction
     MESQUITE_EXPORT virtual ~MeshTransform() { };
@@ -75,10 +80,13 @@ namespace MESQUITE_NS
     MESQUITE_EXPORT void add_scale( double factor );
     MESQUITE_EXPORT void add_scale( const Vector3D& factors );
     
+    bool skipping_fixed_vertices() const { return skipFixed; }
+    void skip_fixed_vertices(bool yesno) { skipFixed = yesno; }
     
   private:
     Matrix3D mMat;//!Matrix for the affine transformation
     Vector3D mVec;//!Vector for the affine transformation
+    bool skipFixed;
   };
 
   

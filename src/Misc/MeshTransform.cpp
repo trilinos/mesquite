@@ -41,16 +41,6 @@
 #include "MsqError.hpp"
 
 namespace MESQUITE_NS {
-/*! Constructor
-\param in_mat Matrix component of transform.  Specifies rotation,
-              scaling, and reflection.
-\param in_vec Vector component of transform.  Specifies translation.
-*/
-  MeshTransform::MeshTransform(Matrix3D &in_mat, Vector3D &in_vec)
-  {
-    mMat = in_mat;
-    mVec = in_vec;
-  }
   
 /*! 
   Actually apply the affine transformation
@@ -72,6 +62,15 @@ namespace MESQUITE_NS {
       mesh->vertices_get_coordinates( &*iter, &vertex, 1, err );
       if (MSQ_CHKERR(err))
         return 1.0;
+      
+      if (skipFixed) {
+        bool fixed;
+        mesh->vertices_get_fixed_flag( &*iter, &fixed, 1, err );
+        if (MSQ_CHKERR(err))
+          return 1.0;
+        if (fixed)
+          continue;
+      }
       
       vertex = mMat * vertex + mVec;
       
