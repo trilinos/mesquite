@@ -708,6 +708,7 @@ AC_CONFIG_FILES([Makefile
                  testSuite/laplacian_wrapper_test/Makefile
                  testSuite/pyramid/Makefile
                  testSuite/simple_hybrid_test/Makefile
+                 testSuite/shape_improve/Makefile
                  testSuite/test_1/Makefile
                  testSuite/transform/Makefile
                  testSuite/tutorial/Makefile

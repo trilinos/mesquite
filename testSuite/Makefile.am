@@ -30,6 +30,7 @@ SUBDIRS = test_1 \
 	  analytical_grad_3D\
 	  algorithm_test\
 	  simple_hybrid_test\
+	  shape_improve\
 	  wrapper_tests\
 	  tutorial\
 	  transform \
