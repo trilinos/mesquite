@@ -35,18 +35,19 @@
 
 #include "Mesquite.hpp"
 #include "Sample.hpp"
+#include "MsqMatrix.hpp"
+#include "MeshInterface.hpp"
 #include <stddef.h>
 
 namespace MESQUITE_NS {
 
 class PatchData;
 class MsqError;
-template <unsigned R, unsigned C> class MsqMatrix;
+class ReferenceMeshInterface;
 
 class MESQUITE_EXPORT TargetCalculator
 {
 public:
-
   virtual ~TargetCalculator() {}
 
   /**\brief Get a target matrix
@@ -74,6 +75,141 @@ public:
                               Sample sample,
                               MsqMatrix<3,2>& W_out,
                               MsqError& err ) = 0;
+  /**\brief Factor some existing target or Jacobian matrix
+   *
+   * Utility method for subclasses to use in their implementation
+   * of get_3D_target.
+   *\param W       The matrix to factor
+   *\param Lambda  Output: the size factor of W
+   *\praam V       Output: the orientation factor of V
+   *\param Q       Output: the skew factor of W
+   *\param Delta   Output: the aspect ratio factor of W
+   *\return bool   True if W can be factored, false otherwise.
+   */
+  static bool factor_3D( const MsqMatrix<3,3>& W,
+                         double& Lambda,
+                         MsqMatrix<3,3>& V,
+                         MsqMatrix<3,3>& Q,
+                         MsqMatrix<3,3>& Delta,
+                         MsqError& err );
+
+  /**\brief Factor some existing target or Jacobian matrix
+   *
+   * Utility method for subclasses to use in their implementation
+   * of get_2D_target
+   *\param W       The matrix to factor
+   *\param Lambda  Output: the size factor of W
+   *\praam V       Output: the orientation factor of V
+   *\param Q       Output: the skew factor of W
+   *\param Delta   Output: the aspect ratio factor of W
+   *\return bool   True if W can be factored, false otherwise.
+   */
+  static bool factor_2D( const MsqMatrix<3,2>& W,
+                         double& Lambda,
+                         MsqMatrix<3,2>& V,
+                         MsqMatrix<2,2>& Q,
+                         MsqMatrix<2,2>& Delta,
+                         MsqError& err );
+
+  /**\brief Get size component of W */
+  static double size( const MsqMatrix<3,3>& W );
+  /**\brief Get size component of W */
+  static double size( const MsqMatrix<3,2>& W );
+  /**\brief Get size component of W */
+  static double size( const MsqMatrix<2,2>& W );
+
+  /**\brief Get skew component of W */
+  static MsqMatrix<3,3> skew( const MsqMatrix<3,3>& W );
+  /**\brief Get skew component of W */
+  static MsqMatrix<2,2> skew( const MsqMatrix<3,2>& W );
+  
+
+  /**\brief Create a new orientation matrix
+   *
+   * Create an orientation matrix tsuch that
+   * the first and second Jacobian columns of W are aligned to 
+   * the passed vectors.
+   */
+  static MsqMatrix<3,3> new_orientation_3D( const MsqVector<3>& b1,
+                                            const MsqVector<3>& b2 );
+  /**\brief Create a new orientation matrix
+   *
+   * Create an orientation matrix such that
+   * the first and second Jacobian columns of W are aligned to 
+   * the passed vectors.
+   */
+  static MsqMatrix<3,2> new_orientation_2D( const MsqVector<3>& b1,
+                                            const MsqVector<3>& b2 );
+
+  /**\brief Get skew matrix for an ideally shaped element */
+  static void ideal_skew_3D( EntityTopology element_type,
+                             Sample s,
+                             const PatchData& pd,
+                             MsqMatrix<3,3>& W,
+                             MsqError& err );
+
+  /**\brief Get skew matrix for an ideally shaped element */
+  static void ideal_skew_2D( EntityTopology element_type,
+                             Sample s,
+                             const PatchData& pd,
+                             MsqMatrix<2,2>& W,
+                             MsqError& err );
+
+  /**\brief Create a new aspect ratio matrix
+   *
+   * Create an aspect ratio matrix such that the ratio of column
+   * lengths is proportional to the ratio of the corresponding pair
+   * of values in the passed vector.
+   */
+  static MsqMatrix<3,3> new_aspect_3D( const MsqVector<3>& r );
+
+  /**\brief Create a new aspect ratio matrix
+   *
+   * Create an aspect ratio matrix such that the ratio of column
+   * lengths is proportional to the ratio of the corresponding pair
+   * of values in the passed vector.
+   */
+  static MsqMatrix<2,2> new_aspect_2D( const MsqVector<2>& r );
+
+  /**\brief Create a new aspect ratio matrix
+   *
+   * Create an aspect ratio matrix such that the ratio of column
+   * lengths is the passed value.
+   */
+  static MsqMatrix<2,2> new_aspect_2D( double rho );
+
+  /**\brief Calculate the Jacobian given element vertex coordinates */
+  static void jacobian_3D( PatchData& pd,  // for mapping function list
+                           EntityTopology element_type,
+                           int num_nodes,
+                           Sample location,
+                           const Vector3D* coords,
+                           MsqMatrix<3,3>& W_out,
+                           MsqError& err );
+
+  /**\brief Calculate the Jacobian given element vertex coordinates */
+  static void jacobian_2D( PatchData& pd,  // for mapping function list
+                           EntityTopology element_type,
+                           int num_nodes,
+                           Sample location,
+                           const Vector3D* coords,
+                           MsqMatrix<3,2>& W_out,
+                           MsqError& err );
+
+
+  static void get_refmesh_Jacobian_3D( ReferenceMeshInterface* ref_mesh,
+                                       PatchData& active_mesh,
+                                       size_t element_no,
+                                       Sample sample_no,
+                                       MsqMatrix<3,3>& W_out,
+                                       MsqError& err );
+
+  static void get_refmesh_Jacobian_2D( ReferenceMeshInterface* ref_mesh,
+                                       PatchData& active_mesh,
+                                       size_t element_no,
+                                       Sample sample_no,
+                                       MsqMatrix<3,2>& W_out,
+                                       MsqError& err );
 };
 
 

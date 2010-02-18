@@ -47,13 +47,8 @@ bool RefMeshTargetCalculator::get_3D_target( PatchData& pd,
                                              MsqMatrix<3,3>& W_out,
                                              MsqError& err )
 {
-  NodeSet ho_bits = get_vertex_coords( pd, element, err ); MSQ_ERRZERO(err);
-  MsqMeshEntity& elem = pd.element_by_index( element );
-  EntityTopology type = elem.get_element_type();
-  const MappingFunction3D* func = pd.get_mapping_function_3D( type );
-  jacobianCalc.get_Jacobian_3D( func, ho_bits, sample, &tmpCoords[0], 
-                                elem.node_count(), W_out, err ); MSQ_ERRZERO(err);
-  return true;
+  get_refmesh_Jacobian_3D( refMesh, pd, element, sample, W_out, err );
+  return MSQ_CHKERR(err);;
 }
 
 bool RefMeshTargetCalculator::get_2D_target( PatchData& pd, 
@@ -62,48 +57,8 @@ bool RefMeshTargetCalculator::get_2D_target( PatchData& pd,
                                              MsqMatrix<3,2>& W_out,
                                              MsqError& err )
 {
-  NodeSet ho_bits = get_vertex_coords( pd, element, err ); MSQ_ERRFALSE(err);
-  MsqMeshEntity& elem = pd.element_by_index( element );
-  EntityTopology type = elem.get_element_type();
-  const MappingFunction2D* func = pd.get_mapping_function_2D( type );
-  jacobianCalc.get_Jacobian_2D( func, ho_bits, sample, &tmpCoords[0], 
-                                elem.node_count(), W_out, err ); MSQ_ERRZERO(err);
-  return true;
-}
-
-NodeSet RefMeshTargetCalculator::get_vertex_coords( PatchData& pd, 
-                                                     size_t elem_idx,  
-                                                     MsqError& err )
-{
-  NodeSet bits;
-  MsqMeshEntity& elem = pd.element_by_index( elem_idx );
-  const EntityTopology type = elem.get_element_type();
-  
-  const unsigned n = elem.node_count();
-  tmpCoords.resize( n );
-  tmpHandles.resize( n );
-  
-  const std::size_t* vtx_idx = elem.get_vertex_index_array();
-  const Mesh::VertexHandle* vtx_hdl = pd.get_vertex_handles_array();
-  
-  for (unsigned i = 0; i < n; ++i)
-    tmpHandles[i] = vtx_hdl[vtx_idx[i]];
-  
-  refMesh->get_reference_vertex_coordinates( &tmpHandles[0], n, &tmpCoords[0], err );
-  if (MSQ_CHKERR(err)) return NodeSet();
-
-  bool midedge, midface, midvol;
-  TopologyInfo::higher_order( type, n, midedge, midface, midvol, err );
-  if (MSQ_CHKERR(err)) return NodeSet();
-  
-  if (midedge) 
-    bits.set_all_mid_edge_nodes(type);
-  if (midface)
-    bits.set_all_mid_face_nodes(type);
-  if (TopologyInfo::dimension(type) == 3 && midvol)
-    bits.set_mid_region_node();
- 
-  return bits;
+  get_refmesh_Jacobian_2D( refMesh, pd, element, sample, W_out, err );
+  return MSQ_CHKERR(err);;
 }
 
 } // namespace Mesquite

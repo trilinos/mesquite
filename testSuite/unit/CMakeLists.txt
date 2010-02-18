@@ -4,6 +4,7 @@ SET( unit_tests
      ArrayMeshTest 
      AspectRatioGammaTest 
      AveragingQMTest
+     BCDTest
      BoundedCylinderDomainTest
      CachingTargetTest
      CompositeMetricTest
@@ -23,7 +24,6 @@ SET( unit_tests
      IdealWeightMeanRatioTest
      IdealWeightInverseMeanRatioTest
      InstructionQueueTest
-     TMPQualityMetricTest
      LinearMappingFunctionTest
      LVQDTargetTest
      MappingFunctionTest
@@ -55,19 +55,20 @@ SET( unit_tests
      Target2DSurfOrientTest
      Target2DTest
      Target3DTest
+     TargetCalculatorTest
      TargetReadWriteTest
      TerminationCriterionTest
      TetLagrangeShapeTest
      TriLagrangeShapeTest
      TopologyInfoTest
      TMPDerivsTest
+     TMPQualityMetricTest
      UntangleBetaTest
      Vector3DTest
      VertexConditionNumberTest
      VertexCullingRegressionTest
      VtkTest
-     XYRectangleTest
-     BCDTest )
+     XYRectangleTest )
 
 SET( unit_libs ${CPPUNIT_LIBRARY} )
 

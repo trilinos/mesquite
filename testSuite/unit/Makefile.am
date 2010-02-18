@@ -55,6 +55,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	ArrayMeshTest.cpp \
 	AspectRatioGammaTest.cpp \
 	AveragingQMTest.cpp \
+	BCDTest.cpp \
 	BoundedCylinderDomainTest.cpp \
 	CachingTargetTest.cpp \
 	CompositeMetricTest.cpp \
@@ -74,7 +75,6 @@ msq_test_SOURCES = msq_test_main.cpp \
 	IdealWeightMeanRatioTest.cpp \
 	IdealWeightInverseMeanRatioTest.cpp \
 	InstructionQueueTest.cpp \
-	TMPQualityMetricTest.cpp \
 	LinearMappingFunctionTest.cpp \
 	LVQDTargetTest.cpp \
 	MappingFunctionTest.cpp \
@@ -106,19 +106,20 @@ msq_test_SOURCES = msq_test_main.cpp \
 	Target2DSurfOrientTest.cpp \
 	Target2DTest.cpp \
 	Target3DTest.cpp \
+	TargetCalculatorTest.cpp \
 	TargetReadWriteTest.cpp \
 	TerminationCriterionTest.cpp \
 	TetLagrangeShapeTest.cpp \
 	TriLagrangeShapeTest.cpp \
 	TopologyInfoTest.cpp \
         TMPDerivsTest.cpp \
+	TMPQualityMetricTest.cpp \
 	UntangleBetaTest.cpp \
 	Vector3DTest.cpp \
 	VertexConditionNumberTest.cpp \
 	VertexCullingRegressionTest.cpp \
 	VtkTest.cpp \
 	XYRectangleTest.cpp \
-	BCDTest.cpp \
         $(IMESH_TEST_SRC) \
         $(EXODUS_TEST_SRC)
 

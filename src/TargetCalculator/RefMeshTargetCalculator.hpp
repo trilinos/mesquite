@@ -82,12 +82,6 @@ public:
                       MsqError& err );
 
 private:
-
-  NodeSet get_vertex_coords( PatchData& pd, size_t elem, MsqError& err );
-
-  std::vector<Vector3D> tmpCoords;
-  std::vector<Mesh::VertexHandle> tmpHandles;
-  JacobianCalculator jacobianCalc;
   ReferenceMeshInterface* refMesh;
 };
 

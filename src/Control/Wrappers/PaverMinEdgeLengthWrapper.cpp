@@ -45,7 +45,6 @@
 #include "IdealTargetCalculator.hpp"
 #include "Target2DShapeSizeBarrier.hpp"
 #include "Target3DShapeSizeBarrier.hpp"
-#include "TargetSize.hpp"
 #include "RefMeshTargetCalculator.hpp"
 #include "ReferenceMesh.hpp"
 
@@ -133,13 +132,13 @@ double calculate_average_lambda( Mesh* mesh,
     {
       MsqMatrix<3,2> W;
       tc->get_2D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
-      lambda += TargetSize::factor_size( W );
+      lambda += TargetCalculator::size( W );
     }
     else
     {
       MsqMatrix<3,3> W;
       tc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
-      lambda += TargetSize::factor_size( W );
+      lambda += TargetCalculator::size( W );
     }
   }
   return lambda/handles.size();

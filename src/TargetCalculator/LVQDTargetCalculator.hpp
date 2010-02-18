@@ -38,11 +38,6 @@
 
 namespace MESQUITE_NS {
 
-class TargetSize;
-class TargetOrientation;
-class TargetSkew;
-class TargetAspect;
-
 /** \brief Construct target matrices from factors of guide matrices
  *
  * Given a set of guide matrices, extract certain properties
@@ -57,10 +52,10 @@ class TargetAspect;
 class LVQDTargetCalculator : public TargetCalculator
 {
 public:
-  LVQDTargetCalculator( TargetSize*        lambda_source,
-                        TargetOrientation* V_source,
-                        TargetSkew*        Q_source,
-                        TargetAspect*      delta_source );
+  LVQDTargetCalculator( TargetCalculator* lambda_source,
+                        TargetCalculator* V_source,
+                        TargetCalculator* Q_source,
+                        TargetCalculator* delta_source );
 
   ~LVQDTargetCalculator();
   
@@ -77,10 +72,12 @@ public:
                       MsqError& err );
   
 private:
-  TargetSize* lambdaGuide;
-  TargetOrientation* vGuide;
-  TargetSkew* qGuide;
-  TargetAspect* dGuide;
+  int add_source( TargetCalculator* source );
+
+  TargetCalculator* uniqueGuides[4]; //!< Up to 4 unique target sources
+  int numUniqueGuides;               //!< Number of unique target sources
+  int lambdaIdx, vIdx, qIdx, deltaIdx; //!< Index into uniqueGuides for respective source,
+                                       //!< or -1 for no source.
 };
 
 } // namespace Mesquite

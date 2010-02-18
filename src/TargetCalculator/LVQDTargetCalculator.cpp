@@ -34,23 +34,36 @@
 #include "LVQDTargetCalculator.hpp"
 #include "MsqMatrix.hpp"
 #include "MsqError.hpp"
-#include "TargetSize.hpp"
-#include "TargetOrientation.hpp"
-#include "TargetSkew.hpp"
-#include "TargetAspect.hpp"
+#include <algorithm>
+#include <assert.h>
 
 namespace MESQUITE_NS {
 
+int LVQDTargetCalculator::add_source( TargetCalculator* source )
+{
+  if (!source)
+    return -1;
+  int idx = std::find( uniqueGuides, uniqueGuides+numUniqueGuides, source ) - uniqueGuides;
+  if (idx == numUniqueGuides) {
+    assert(idx < 4);
+    uniqueGuides[idx] = source;
+    ++numUniqueGuides;
+  }
+  return idx;
+}
+
 LVQDTargetCalculator::LVQDTargetCalculator( 
-                        TargetSize*        lambda_source,
-                        TargetOrientation* V_source,
-                        TargetSkew*        Q_source,
-                        TargetAspect*      D_source )
-  : lambdaGuide( lambda_source ),
-    vGuide( V_source ),
-    qGuide( Q_source ),
-    dGuide( D_source )
-{ }
+                        TargetCalculator* lambda_source,
+                        TargetCalculator* V_source,
+                        TargetCalculator* Q_source,
+                        TargetCalculator* delta_source )
+  : numUniqueGuides(0)
+{ 
+  lambdaIdx = add_source( lambda_source );
+  vIdx      = add_source( V_source );
+  qIdx      = add_source( Q_source );
+  deltaIdx  = add_source( delta_source );
+}
 
 LVQDTargetCalculator::~LVQDTargetCalculator() {}
 
@@ -60,36 +73,45 @@ bool LVQDTargetCalculator::get_3D_target( PatchData& pd,
                                           MsqMatrix<3,3>& W_out,
                                           MsqError& err )
 {
-  double size;
+  double lambda[4];
+  MsqMatrix<3,3> V[4], Q[4], delta[4], W;
   bool valid;
-  if (lambdaGuide) {
-    valid = lambdaGuide->get_size( pd, element, sample, size, err ); 
+  
+  for (int i = 0; i < numUniqueGuides; ++i) {
+    valid = uniqueGuides[i]->get_3D_target( pd, element, sample, W, err );
     if (MSQ_CHKERR(err) || !valid)
       return false;
+    valid = factor_3D( W, lambda[i], V[i], Q[i], delta[i], err );
+    if (MSQ_CHKERR(err) || !valid)
+      return false;
+  }
+  
+  if (vIdx >= 0) {
+    W_out = V[vIdx];
+    if (lambdaIdx >= 0)
+      W_out *= lambda[lambdaIdx];
+    if (qIdx >= 0)
+      W_out = W_out * Q[qIdx];
+    if (deltaIdx >= 0)
+      W_out = W_out * delta[deltaIdx];
+  }
+  else if (qIdx >= 0) {
+    W_out = Q[qIdx];
+    if (lambdaIdx >= 0)
+      W_out *= lambda[lambdaIdx];
+    if (deltaIdx >= 0)
+      W_out = W_out * delta[deltaIdx];
+  }
+  else if (deltaIdx >= 0) {
+    W_out = delta[deltaIdx];
+    if (lambdaIdx >= 0)
+      W_out *= lambda[lambdaIdx];
+  }
+  else if (lambdaIdx >= 0) {
+    W_out = MsqMatrix<3,3>(lambda[lambdaIdx]);
   }
   else {
-    size = 1.0;
-  }
-  W_out = MsqMatrix<3,3>(size);
-
-  MsqMatrix<3,3> M;
-  if (vGuide) {
-    valid = vGuide->get_orient_3D( pd, element, sample, M, err ); 
-    if (MSQ_CHKERR(err) || !valid)
-      return false;
-    W_out = W_out * M;
-  }
-  if (qGuide) {
-    valid = qGuide->get_skew_3D( pd, element, sample, M, err ); 
-    if (MSQ_CHKERR(err) || !valid)
-      return false;
-    W_out = W_out * M;
-  }
-  if (dGuide) {
-    valid = dGuide->get_aspect_3D( pd, element, sample, M, err ); 
-    if (MSQ_CHKERR(err) || !valid)
-      return false;
-    W_out = W_out * M;
+    W_out = MsqMatrix<3,3>(1.0);
   }
 
   return true;
@@ -101,42 +123,50 @@ bool LVQDTargetCalculator::get_2D_target( PatchData& pd,
                                           MsqMatrix<3,2>& W_out,
                                           MsqError& err )
 {
-  double size;
+  double lambda[4];
+  MsqMatrix<3,2> V[4], W;
+  MsqMatrix<2,2> Q[4], delta[4];
   bool valid;
-  if (lambdaGuide) {
-    valid = lambdaGuide->get_size( pd, element, sample, size, err ); 
-    if (MSQ_CHKERR(err) || !valid)
-      return false;
-  }
-  else {
-    size = 1.0;
-  }
-  MsqMatrix<2,2> M2(size);
   
-  if (qGuide) {
-    MsqMatrix<2,2> M;
-    valid = qGuide->get_skew_2D( pd, element, sample, M, err );
+  for (int i = 0; i < numUniqueGuides; ++i) {
+    valid = uniqueGuides[i]->get_2D_target( pd, element, sample, W, err );
     if (MSQ_CHKERR(err) || !valid)
       return false;
-    M2 = M2 * M;
+    valid = factor_2D( W, lambda[i], V[i], Q[i], delta[i], err );
+    if (MSQ_CHKERR(err) || !valid)
+      return false;
   }
-  if (dGuide) {
-    MsqMatrix<2,2> M;
-    valid = dGuide->get_aspect_2D( pd, element, sample, M, err );
-    if (MSQ_CHKERR(err) || !valid)
-      return false;
-    M2 = M2 * M;
+  
+  if (vIdx >= 0) {
+    W_out = V[vIdx];
+    if (lambdaIdx >= 0)
+      W_out *= lambda[lambdaIdx];
+    if (qIdx >= 0)
+      W_out = W_out * Q[qIdx];
+    if (deltaIdx >= 0)
+      W_out = W_out * delta[deltaIdx];
   }
-  if (vGuide) {
-    valid = vGuide->get_orient_2D( pd, element, sample, W_out, err );
-    if (MSQ_CHKERR(err) || !valid)
-      return false;
-    W_out = W_out * M2;
+  else if (qIdx >= 0) {
+    W_out(0,0) = Q[qIdx](0,0); W_out(0,1) = Q[qIdx](0,1);
+    W_out(1,0) = Q[qIdx](1,0); W_out(1,1) = Q[qIdx](1,1);
+    W_out(2,0) = 0.0;          W_out(2,1) = 0.0;
+    if (lambdaIdx >= 0)
+      W_out *= lambda[lambdaIdx];
+    if (deltaIdx >= 0)
+      W_out = W_out * delta[deltaIdx];
+  }
+  else if (deltaIdx >= 0) {
+    W_out(0,0) = delta[deltaIdx](0,0); W_out(0,1) = delta[deltaIdx](0,1);
+    W_out(1,0) = delta[deltaIdx](1,0); W_out(1,1) = delta[deltaIdx](1,1);
+    W_out(2,0) = 0.0;                  W_out(2,1) = 0.0;
+    if (lambdaIdx >= 0)
+      W_out *= lambda[lambdaIdx];
+  }
+  else if (lambdaIdx >= 0) {
+    W_out = MsqMatrix<3,2>(lambda[lambdaIdx]);
   }
   else {
-    W_out.set_row( 0, M2.row(0) );
-    W_out.set_row( 1, M2.row(1) );
-    W_out(2,0) = W_out(2,1) = 0.0;
+    W_out = MsqMatrix<3,2>(1.0);
   }
 
   return true;

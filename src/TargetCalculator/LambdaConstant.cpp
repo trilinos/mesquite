@@ -34,7 +34,6 @@
 #include "LambdaConstant.hpp"
 #include "MsqMatrix.hpp"
 #include "MsqError.hpp"
-#include "TargetSize.hpp"
 
 namespace MESQUITE_NS {
 
@@ -54,7 +53,7 @@ bool LambdaConstant::get_3D_target( PatchData& pd,
   bool valid = mTarget->get_3D_target( pd, element, sample, W_out, err );
   if (MSQ_CHKERR(err) || !valid)
     return false;
-  double lambda = TargetSize::factor_size( W_out );
+  double lambda = this->size( W_out );
   if (lambda < 1e-50)
     return false;
   W_out *= mLambda/lambda;
@@ -70,7 +69,7 @@ bool LambdaConstant::get_2D_target( PatchData& pd,
   bool valid = mTarget->get_2D_target( pd, element, sample, W_out, err );
   if (MSQ_CHKERR(err) || !valid)
     return false;
-  double lambda = TargetSize::factor_size( W_out );
+  double lambda = this->size( W_out );
   if (lambda < 1e-50)
     return false;
   W_out *= mLambda/lambda;
