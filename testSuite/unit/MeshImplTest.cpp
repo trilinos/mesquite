@@ -57,12 +57,14 @@ class MeshImplTest : public CppUnit::TestFixture
 public:
 
   CPPUNIT_TEST_SUITE( MeshImplTest );
+  CPPUNIT_TEST( test_zero_length_data );
   CPPUNIT_TEST( skin_mesh_2D );
   CPPUNIT_TEST( skin_mesh_3D );
   CPPUNIT_TEST( skin_mesh_mixed );
   CPPUNIT_TEST( skin_mesh_higher_order );
   CPPUNIT_TEST_SUITE_END();
 
+  void test_zero_length_data();
   void skin_mesh_2D();
   void skin_mesh_3D();
   void skin_mesh_mixed();
@@ -109,6 +111,100 @@ void MeshImplTest::dump_mesh( const char* filename, MeshImpl& mesh, MsqError& er
   }
 }
 
+
+void MeshImplTest::test_zero_length_data()
+{
+  const size_t num_vtx = 2, zero = 0;
+  const double vtx_coords1[] = { 0, 0, 0 };
+  const double vtx_coords2[] = { 1, 1, 1 };
+  const double* coords[num_vtx] = { vtx_coords1, vtx_coords2 };
+  const bool fixed[num_vtx] = { false, false };
+  std::vector<Mesh::ElementHandle> elems;
+  std::vector<Mesh::VertexHandle> verts;
+  MsqError err;
+  const int* conn[2];
+  EntityTopology type = TRIANGLE;
+
+  MeshImpl no_elem1( 2, 0, TRIANGLE, fixed, coords, 0 );
+  verts.clear();
+  no_elem1.get_all_vertices( verts, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( num_vtx, verts.size() );
+  elems.clear();
+  no_elem1.get_all_elements( elems, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( zero, elems.size() );
+
+  MeshImpl no_elem2( 2, 0, 0, fixed, coords, 0 );
+  verts.clear();
+  no_elem2.get_all_vertices( verts, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( num_vtx, verts.size() );
+  elems.clear();
+  no_elem2.get_all_elements( elems, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( zero, elems.size() );
+
+  MeshImpl no_elem3( 2, 0, TRIANGLE, fixed, coords, conn );
+  verts.clear();
+  no_elem3.get_all_vertices( verts, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( num_vtx, verts.size() );
+  elems.clear();
+  no_elem3.get_all_elements( elems, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( zero, elems.size() );
+
+  MeshImpl no_elem4( 2, 0, &type, fixed, coords, conn );
+  verts.clear();
+  no_elem4.get_all_vertices( verts, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( num_vtx, verts.size() );
+  elems.clear();
+  no_elem4.get_all_elements( elems, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( zero, elems.size() );
+  
+  MeshImpl no_vert1( 0, 0, TRIANGLE, 0, 0, 0 );
+  verts.clear();
+  no_vert1.get_all_vertices( verts, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( zero, verts.size() );
+  elems.clear();
+  no_vert1.get_all_elements( elems, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( zero, elems.size() );
+
+  MeshImpl no_vert2( 0, 0, 0, 0, 0, 0 );
+  verts.clear();
+  no_vert2.get_all_vertices( verts, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( zero, verts.size() );
+  elems.clear();
+  no_vert2.get_all_elements( elems, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( zero, elems.size() );
+  
+  MeshImpl no_vert3( 0, 0, TRIANGLE, fixed, coords, 0 );
+  verts.clear();
+  no_vert3.get_all_vertices( verts, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( zero, verts.size() );
+  elems.clear();
+  no_vert3.get_all_elements( elems, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( zero, elems.size() );
+
+  MeshImpl no_vert4( 0, 0, 0, fixed, coords, 0 );
+  verts.clear();
+  no_vert4.get_all_vertices( verts, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( zero, verts.size() );
+  elems.clear();
+  no_vert4.get_all_elements( elems, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT_EQUAL( zero, elems.size() );
+}
 
 void MeshImplTest::skin_mesh_2D()
 {
