@@ -51,18 +51,18 @@ namespace MESQUITE_NS
   MsqIMeshP::MsqIMeshP( iMesh_Instance mesh, iMeshP_PartitionHandle partition,
 			iBase_EntitySetHandle meshset, iBase_EntityType type,
                         MsqError& err,
-			const char* fixed_tag_name,
-			const char* slaved_tag_name)
-    : MsqIMesh(mesh, meshset, type, err, fixed_tag_name, slaved_tag_name), 
+			const iBase_TagHandle* fixed_tag,
+			const iBase_TagHandle* slaved_tag )
+    : MsqIMesh(mesh, meshset, type, err, fixed_tag, slaved_tag), 
       partitionInstance(partition)
   {
   }
 
   MsqIMeshP::MsqIMeshP( iMesh_Instance mesh, iMeshP_PartitionHandle partition,
                         MsqError& err,
-			const char* fixed_tag_name,
-			const char* slaved_tag_name )
-    : MsqIMesh(mesh, err, fixed_tag_name, slaved_tag_name), 
+			const iBase_TagHandle* fixed_tag,
+			const iBase_TagHandle* slaved_tag  )
+    : MsqIMesh(mesh, err, fixed_tag, slaved_tag), 
       partitionInstance(partition)
   {
   }

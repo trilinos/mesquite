@@ -57,13 +57,13 @@ public:
   MsqIMeshP(iMesh_Instance imesh, iMeshP_PartitionHandle partition,
 	   iBase_EntitySetHandle meshset, iBase_EntityType element_dimension,
            MsqError& err,
-	   const char* fixed_tag_name = VERTEX_FIXED_TAG_NAME,
-	   const char* slaved_tag_name= VERTEX_SLAVED_TAG_NAME );
+	   const iBase_TagHandle* fixed_tag = 0,
+	   const iBase_TagHandle* slaved_tag= 0 );
   
   MsqIMeshP(iMesh_Instance imesh, iMeshP_PartitionHandle partition,
             MsqError& err,
-	   const char* fixed_tag_name = VERTEX_FIXED_TAG_NAME,
-	   const char* slaved_tag_name= VERTEX_SLAVED_TAG_NAME);
+	    const iBase_TagHandle* fixed_tag = 0,
+	    const iBase_TagHandle* slaved_tag= 0 );
   
 //********** Inherited Functions from ParallelMesh ****************
 

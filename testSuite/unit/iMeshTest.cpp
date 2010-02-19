@@ -31,6 +31,7 @@ using std::endl;
 #include <map>
 #include <set>
 #include <vector>
+#include <algorithm>
 using std::set;
 using std::map;
 using std::vector;
@@ -116,7 +117,6 @@ class iMeshTest : public CppUnit::TestFixture
 
     MsqIMesh* myMesh;
     iMesh_Instance myIMesh;
-    iBase_TagHandle fixedTag, slavedTag;
     
     Mesh::VertexHandle vtxIndexToHandle[7];
     Mesh::ElementHandle triIndexToHandle[7];
@@ -135,13 +135,19 @@ class iMeshTest : public CppUnit::TestFixture
     void setUp();
     void tearDown();
     
+    void testVertexFlag(bool fixed, iBase_TagValueType type);
+    void testVertexFlagNone( bool fixed );
+    
     void matchVertexCoordinates();
     void matchElementConnectivity();
     void testVertexIterator();
     void testVertexByte();
-    void testVertexFlag(bool fixed);
-    void testFixedFlag() { testVertexFlag(true); }
-    void testSlavedFlag() { testVertexFlag(false); }
+    void testFixedFlag() { testVertexFlag(true,iBase_INTEGER); }
+    void testSlavedFlag() { testVertexFlag(false,iBase_INTEGER); }
+    void testFixedFlagByte() { testVertexFlag(true,iBase_BYTES); }
+    void testSlavedFlagByte() { testVertexFlag(false,iBase_BYTES); }
+    void testFixedFlagNone() { testVertexFlagNone(true); }
+    void testSlavedFlagNone() { testVertexFlagNone(false); }
     void testVertexAdjacency();
     void testElementConnectivity();
     void testElementTopology();
@@ -207,14 +213,6 @@ void iMeshTest::setUp()
   
   iBase_EntitySetHandle root_set;
   iMesh_getRootSet( myIMesh, &root_set, &ierr );
-  CPPUNIT_ASSERT_EQUAL( (int)iBase_SUCCESS, ierr );
-  
-  iMesh_createTag( myIMesh, VERTEX_FIXED_TAG_NAME, 1, iBase_INTEGER, &fixedTag,
-                   &ierr, strlen(VERTEX_FIXED_TAG_NAME) );
-  CPPUNIT_ASSERT_EQUAL( (int)iBase_SUCCESS, ierr );
-  
-  iMesh_createTag( myIMesh, VERTEX_SLAVED_TAG_NAME, 1, iBase_INTEGER, &slavedTag,
-                   &ierr, strlen(VERTEX_SLAVED_TAG_NAME) );
   CPPUNIT_ASSERT_EQUAL( (int)iBase_SUCCESS, ierr );
           
   myMesh = new MsqIMesh( myIMesh, root_set, iBase_ALL_TYPES, err );
@@ -417,11 +415,17 @@ void iMeshTest::testVertexByte()
   CPPUNIT_ASSERT( !err );
   CPPUNIT_ASSERT( !memcmp( bytes, bytes2, num_pts ) );
 }  
-  
-void iMeshTest::testVertexFlag( bool fixed )
+
+void iMeshTest::testVertexFlagNone( bool fixed )
 {
-  iBase_TagHandle tag = fixed ? fixedTag : slavedTag;
-  int ierr;
+  if (fixed) {
+    myMesh->clear_fixed_tag();
+    CPPUNIT_ASSERT( NULL == myMesh->get_fixed_tag() );
+  }
+  else {
+    myMesh->clear_slaved_tag();
+    CPPUNIT_ASSERT( NULL == myMesh->get_slaved_tag() );
+  }
   
     // get all vertices
   MsqPrintError err(cout);
@@ -429,17 +433,74 @@ void iMeshTest::testVertexFlag( bool fixed )
   myMesh->get_all_vertices( handles, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!handles.empty());
-  iBase_EntityHandle* ihandles = reinterpret_cast<iBase_EntityHandle*>(&handles[0]);
-  
-    // define alternating values for flag
-  std::vector<int> values(handles.size(),!fixed);
-  for (size_t i = 0; i < handles.size(); i+=2)
-    values[i] = fixed;
-  
-    // set flag on vertices
-  iMesh_setIntArrData( myIMesh, ihandles, handles.size(), tag, &values[0], values.size(), &ierr );
+
+  bool* b = new bool[handles.size()];
+  std::fill( b, b+handles.size(), true );
+  if (fixed)
+    myMesh->vertices_get_fixed_flag( &handles[0], b, handles.size(), err );
+  else
+    myMesh->vertices_get_slaved_flag( &handles[0], b, handles.size(), err );
+  size_t first_true = std::find( b, b+handles.size(), true ) - b;
+  delete [] b;
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL(  handles.size(), first_true );
+}
+
+
+void iMeshTest::testVertexFlag( bool fixed, iBase_TagValueType type )
+{
+  int ierr;
+  MsqPrintError err(cout);
+  iBase_TagHandle tag;
+
+  const char* name = fixed ? "fixed" : "slaved";
+  iMesh_createTag( myIMesh, name, 1, type, &tag, &ierr, strlen(name) );
   CPPUNIT_ASSERT_EQUAL( (int)iBase_SUCCESS, ierr );
 
+  if (fixed) {
+    myMesh->set_fixed_tag( tag, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT( NULL != myMesh->get_fixed_tag() );
+    CPPUNIT_ASSERT_EQUAL( tag, *(myMesh->get_fixed_tag()) );
+  }
+  else {
+    myMesh->set_slaved_tag( tag, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT( NULL != myMesh->get_slaved_tag() );
+    CPPUNIT_ASSERT_EQUAL( tag, *(myMesh->get_slaved_tag()) );
+  }
+  
+    // get all vertices
+  std::vector<Mesh::VertexHandle> handles;
+  myMesh->get_all_vertices( handles, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!handles.empty());
+  iBase_EntityHandle* ihandles = reinterpret_cast<iBase_EntityHandle*>(&handles[0]);
+  
+  if (type == iBase_INTEGER) {
+      // define alternating values for flag
+    std::vector<int> values(handles.size(),!fixed);
+    for (size_t i = 0; i < handles.size(); i+=2)
+      values[i] = fixed;
+
+      // set flag on vertices
+    iMesh_setIntArrData( myIMesh, ihandles, handles.size(), tag, &values[0], values.size(), &ierr );
+    CPPUNIT_ASSERT_EQUAL( (int)iBase_SUCCESS, ierr );
+  }
+  else if (type == iBase_BYTES ) {
+       // define alternating values for flag
+    std::vector<char> values(handles.size(),!fixed);
+    for (size_t i = 0; i < handles.size(); i+=2)
+      values[i] = fixed;
+
+      // set flag on vertices
+    iMesh_setArrData( myIMesh, ihandles, handles.size(), tag, &values[0], values.size(), &ierr );
+    CPPUNIT_ASSERT_EQUAL( (int)iBase_SUCCESS, ierr );
+  }
+  else {
+    CPPUNIT_ASSERT(!"Unexpected tag data type in test code"); 
+  }
+  
     // get flag through MsqIMesh
   bool* b = new bool[handles.size()];
   if (fixed)
@@ -452,7 +513,7 @@ void iMeshTest::testVertexFlag( bool fixed )
   
     // check flag values
   for (size_t i = 0; i < handles.size(); ++i)
-    CPPUNIT_ASSERT_EQUAL( !!values[i], (bool)flags[i] );
+    CPPUNIT_ASSERT_EQUAL( ((!(i%2)) == fixed), (bool)flags[i] );
 }
 
 void iMeshTest::testVertexAdjacency()

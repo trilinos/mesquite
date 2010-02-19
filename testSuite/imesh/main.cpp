@@ -277,8 +277,15 @@ Mesh* get_imesh_mesh( const char* file_name )
     return 0;
   }
 
+  iBase_TagHandle fixed_tag;
+  iMesh_getTagHandle( imesh_mesh, "fixed", &fixed_tag, &ierr, strlen("fixed") );
+  if (iBase_SUCCESS != ierr) {
+    iMesh_dtor( imesh_mesh, &ierr );
+    return 0;
+  }
+
   MsqError err;
-  Mesh* result = new Mesquite::MsqIMesh( imesh_mesh, root_set, iBase_ALL_TYPES, err, "fixed" );
+  Mesh* result = new Mesquite::MsqIMesh( imesh_mesh, root_set, iBase_ALL_TYPES, err, &fixed_tag );
   if (MSQ_CHKERR(err)) {
     delete result;
     cerr << err << endl;

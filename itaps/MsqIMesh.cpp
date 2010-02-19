@@ -50,17 +50,15 @@ namespace MESQUITE_NS {
                       iBase_EntitySetHandle meshset, 
 		      iBase_EntityType type,
                       MsqError& err,
-		      const char* fixed_tag_name,
-		      const char* slaved_tag_name)
+		      const iBase_TagHandle* fixed_tag,
+		      const iBase_TagHandle* slaved_tag)
   : meshInstance(mesh), 
     inputSetType( iBase_ALL_TYPES ),
     inputSet(0),
     byteTag(0), createdByteTag(false),
-    fixedTag(0), createdFixedTag(false),
-    slavedTag(0),
     geometricDimension(0)
   {
-    init_active_mesh( mesh, err, fixed_tag_name, slaved_tag_name ); 
+    init_active_mesh( mesh, err, fixed_tag, slaved_tag ); 
     MSQ_ERRRTN(err);  
     set_active_set( meshset, type, err );
     MSQ_ERRRTN(err);  
@@ -68,17 +66,15 @@ namespace MESQUITE_NS {
 
   MsqIMesh::MsqIMesh( iMesh_Instance mesh, 
                       MsqError& err,
-		      const char* fixed_tag_name,
-		      const char* slaved_tag_name)
+		      const iBase_TagHandle* fixed_tag,
+		      const iBase_TagHandle* slaved_tag)
   : meshInstance(mesh), 
     inputSetType( iBase_ALL_TYPES ),
     inputSet(0),
     byteTag(0), createdByteTag(false),
-    fixedTag(0), createdFixedTag(false),
-    slavedTag(0),
     geometricDimension(0)
   {
-    init_active_mesh( mesh, err, fixed_tag_name, slaved_tag_name ); 
+    init_active_mesh( mesh, err, fixed_tag, slaved_tag ); 
     MSQ_ERRRTN(err);  
     
     int ierr;
@@ -96,6 +92,9 @@ namespace MESQUITE_NS {
 
   MsqIMesh::~MsqIMesh() 
   {
+    int ierr;
+    if (createdByteTag)
+      iMesh_destroyTag( meshInstance, byteTag, true, &ierr );
   }
 
   iMesh_Instance MsqIMesh::get_imesh_instance() const
@@ -108,11 +107,48 @@ namespace MESQUITE_NS {
     return inputSet;
   }
 
-  void MsqIMesh::init_active_mesh( iMesh_Instance mesh, 
-                                   MsqError& err,
-				   const char* fixed_tag_name,
-				   const char* slaved_tag_name )
-  {
+iBase_TagValueType MsqIMesh::check_valid_flag_tag( iBase_TagHandle tag,
+                                                   const char* which_flag,
+                                                   MsqError& err )
+{
+  int ierr, size, type;
+  const int MAX_NAME_LEN = 127;
+  char name[MAX_NAME_LEN+1];
+
+  std::fill( name, name+sizeof(name), '\0' );
+  iMesh_getTagName( meshInstance, tag, name, &ierr, MAX_NAME_LEN );
+  name[MAX_NAME_LEN-1] = '\0'; // make sure strings are null-terminated
+  if (iBase_SUCCESS != ierr) {
+    MSQ_SETERR(err)(MsqError::INVALID_ARG,
+                    "Invalid tag handle for vertex %s flag",
+                    which_flag );
+    return iBase_ENTITY_HANDLE;
+  }
+  iMesh_getTagSizeBytes( meshInstance, tag, &size, &ierr );
+  if (iBase_SUCCESS != ierr || size != sizeof(int)) {
+    MSQ_SETERR(err)( MsqError::INVALID_STATE,
+		     "Tag \"%s\" exists with invalid size", 
+		     name );
+    return iBase_ENTITY_HANDLE;
+  }
+
+  iMesh_getTagType( meshInstance, tag, &type, &ierr );
+  if (iBase_SUCCESS != ierr || (type != iBase_INTEGER && type != iBase_BYTES)) {
+    MSQ_SETERR(err)( MsqError::INVALID_STATE,
+		     "Tag \"%s\" exists with invalid type", 
+		     name );
+    return iBase_ENTITY_HANDLE;
+  }
+  return static_cast<iBase_TagValueType>(type);
+}
+
+void MsqIMesh::init_active_mesh( iMesh_Instance mesh, 
+                                 MsqError& err,
+				 const iBase_TagHandle* fixed_tag,
+				 const iBase_TagHandle* slaved_tag )
+{
+  int ierr;
+
   // Initialize topology map 
   
   const size_t mapsize = sizeof(topologyMap) / sizeof(Mesquite::EntityTopology);
@@ -132,59 +168,22 @@ namespace MESQUITE_NS {
   topologyMap[iMesh_PRISM        ] = Mesquite::PRISM;
   topologyMap[iMesh_PYRAMID      ] = Mesquite::PYRAMID;
   
-      // Get tag for fixed flag
-  if (fixed_tag_name == 0)
-    fixed_tag_name = VERTEX_FIXED_TAG_NAME;
-  int ierr;
-  iMesh_getTagHandle( meshInstance, fixed_tag_name, 
-                      &fixedTag, &ierr,
-                      strlen(fixed_tag_name) );
-  if (iBase_SUCCESS == ierr) {
-    int size, type;
-    iMesh_getTagSizeBytes( meshInstance, fixedTag, &size, &ierr );
-    if (iBase_SUCCESS != ierr || size != sizeof(int)) {
-      MSQ_SETERR(err)( MsqError::INVALID_STATE,
-		       "Tag \"%s\" exists with invalid size", 
-		       fixed_tag_name );
-      return;
-    }
-    iMesh_getTagType( meshInstance, fixedTag, &type, &ierr );
-    if (iBase_SUCCESS != ierr || type != iBase_INTEGER) {
-      MSQ_SETERR(err)( MsqError::INVALID_STATE,
-		       "Tag \"%s\" exists with invalid type", 
-		       fixed_tag_name );
-      return;
-    }
-  }
-  else {
-    fixedTag = 0;
+      // Check that fixed tag is valid
+  haveFixedTag = false;
+  if (fixed_tag) {
+    fixedTagType = check_valid_flag_tag( *fixed_tag, "fixed", err );
+    MSQ_ERRRTN(err);
+    haveFixedTag = true;
+    fixedTag = *fixed_tag;
   }
   
-      // Get tag for slaved flag
-  if (slaved_tag_name == 0)
-    slaved_tag_name = VERTEX_SLAVED_TAG_NAME;
-  iMesh_getTagHandle( meshInstance, slaved_tag_name, 
-                      &slavedTag, &ierr,
-                      strlen(slaved_tag_name) );
-  if (iBase_SUCCESS == ierr) {
-    int size, type;
-    iMesh_getTagSizeBytes( meshInstance, slavedTag, &size, &ierr );
-    if (iBase_SUCCESS != ierr || size != sizeof(int)) {
-      MSQ_SETERR(err)( MsqError::INVALID_STATE,
-		       "Tag \"%s\" exists with invalid size", 
-		       slaved_tag_name );
-      return;
-    }
-    iMesh_getTagType( meshInstance, slavedTag, &type, &ierr );
-    if (iBase_SUCCESS != ierr || type != iBase_INTEGER) {
-      MSQ_SETERR(err)( MsqError::INVALID_STATE,
-		       "Tag \"%s\" exists with invalid type", 
-		       slaved_tag_name );
-      return;
-    }
-  }
-  else {
-    slavedTag = 0;
+      // Check that slaved tag is valid
+  haveSlavedTag = false;
+  if (slaved_tag) {
+    slavedTagType = check_valid_flag_tag( *slaved_tag, "slaved", err );
+    MSQ_ERRRTN(err);
+    haveSlavedTag = true;
+    slavedTag = *slaved_tag;
   }
   
     // Get/create tag for vertex byte
@@ -204,6 +203,7 @@ namespace MESQUITE_NS {
 		       VERTEX_BYTE_TAG_NAME );
       return;
     }
+    createdByteTag = true;
   }
   else {
     int size, type;
@@ -228,6 +228,47 @@ namespace MESQUITE_NS {
     return;
   }
 }
+
+
+void MsqIMesh::set_fixed_tag( iBase_TagHandle tag, MsqError& err )
+{
+  iBase_TagValueType t = check_valid_flag_tag( tag, "fixed", err );
+  MSQ_ERRRTN(err);
+  fixedTag = tag;
+  fixedTagType = t;
+  haveFixedTag = true;
+}
+
+void MsqIMesh::clear_fixed_tag()
+{
+  haveFixedTag = false;
+}
+
+const iBase_TagHandle* MsqIMesh::get_fixed_tag() const
+{
+  return haveFixedTag ? &fixedTag : 0;
+}
+
+void MsqIMesh::set_slaved_tag( iBase_TagHandle tag, MsqError& err )
+{
+  iBase_TagValueType t = check_valid_flag_tag( tag, "slaved", err );
+  MSQ_ERRRTN(err);
+  slavedTag = tag;
+  slavedTagType = t;
+  haveSlavedTag = true;
+}
+
+void MsqIMesh::clear_slaved_tag()
+{
+  haveSlavedTag = false;
+}
+
+const iBase_TagHandle* MsqIMesh::get_slaved_tag() const
+{
+  return haveSlavedTag ? &slavedTag : 0;
+}
+
+
 
 void MsqIMesh::set_active_set( iBase_EntitySetHandle elem_set, 
                                iBase_EntityType type_in,
@@ -254,8 +295,66 @@ int MsqIMesh::get_geometric_dimension(Mesquite::MsqError &err)
   return geometricDimension;
 }
     
- 
+
 //************ Vertex Properties ********************
+
+void MsqIMesh::get_flag_data( iBase_TagHandle tag,
+                              bool have_tag,
+                              iBase_TagValueType type,
+                              const VertexHandle vert_array[],
+                              bool flag_array[],
+                              size_t num_vtx, 
+                              MsqError& err )
+{
+  if (!num_vtx)
+    return;
+
+  if (!have_tag) {
+    memset( flag_array, 0, num_vtx * sizeof(bool) );
+    return;
+  }
+
+  assert( sizeof(VertexHandle) == sizeof(iBase_EntityHandle) );
+  const iBase_EntityHandle* arr = reinterpret_cast<const iBase_EntityHandle*>(vert_array);
+
+  int ierr, alloc = num_vtx, size = 0;
+  assert((size_t)alloc == num_vtx); // size_t can hold larger values than int if 64-bit
+
+  if (type == iBase_INTEGER) {
+    std::vector<int> values(num_vtx);
+    int* ptr = &values[0];
+    iMesh_getIntArrData( meshInstance, arr, num_vtx, tag, &ptr, &alloc, &size, &ierr );
+    for (int i = 0; i < size; ++i)
+      flag_array[i] = !!values[i];
+  }
+  else if (type == iBase_BYTES) {
+    if (sizeof(bool) == sizeof(char)) {  // always true?
+      char* ptr = reinterpret_cast<char*>(flag_array);
+      iMesh_getArrData( meshInstance, arr, num_vtx, tag, &ptr, &alloc, &size, &ierr );
+    }
+    else {
+      std::vector<char> values(num_vtx);
+      char* ptr = &values[0];
+      iMesh_getArrData( meshInstance, arr, num_vtx, tag, &ptr, &alloc, &size, &ierr );
+      for (int i = 0; i < size; ++i)
+        flag_array[i] = !!values[i];
+    }
+  }
+  else {
+    MSQ_SETERR(err)("Invalid tag type for vertex flag data", MsqError::INVALID_STATE);
+    return ;
+  }
+  
+    // check if query for tag data failed
+  if (iBase_SUCCESS != ierr) {
+    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
+    return;
+  }
+  
+    // make sure we got back the requested number of values
+  assert( static_cast<size_t>(size) == num_vtx );
+}
+
 // Returns true or false, indicating whether the vertex
 // is allowed to be repositioned.  True indicates that the vertex
 // is fixed and cannot be moved.  Note that this is a read-only
@@ -266,27 +365,7 @@ void MsqIMesh::vertices_get_fixed_flag(
   bool bool_array[],
   size_t num_vtx, MsqError &err)
 {
-    // If mesh does not contain a fixed tag, assume no vertices are fixed
-  if (!fixedTag) {
-    memset( bool_array, 0, num_vtx * sizeof(bool) );
-    return;
-  }
-  if (!num_vtx)
-    return;
-  
-  std::vector<int> values(num_vtx);
-  int ierr, junk = num_vtx, junk2 = num_vtx;
-  int* ptr = &values[0];
-  assert( sizeof(VertexHandle) == sizeof(iBase_EntityHandle) );
-  const iBase_EntityHandle* arr = reinterpret_cast<const iBase_EntityHandle*>(vert_array);
-  iMesh_getIntArrData( meshInstance, arr, num_vtx, fixedTag, &ptr, &junk, &junk2, &ierr );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-    return;
-  }
-  
-  for (size_t i = 0; i < num_vtx; ++i)
-    bool_array[i] = values[i];
+  get_flag_data( fixedTag, haveFixedTag, fixedTagType, vert_array, bool_array, num_vtx, err );
 }
 
 
@@ -295,29 +374,7 @@ void MsqIMesh::vertices_get_slaved_flag(
   bool bool_array[],
   size_t num_vtx, MsqError &err)
 {
-    // If mesh does not contain a fixed tag, assume no vertices are fixed
-  if (!slavedTag) {
-    MSQ_SETERR(err)("Slaved tag not defined in mesh.  "
-                    "Cannot support Settings::SLAVE_FLAG",
-                     MsqError::NOT_IMPLEMENTED);
-    return;
-  }
-  if (!num_vtx)
-    return;
-  
-  std::vector<int> values(num_vtx);
-  int ierr, junk = num_vtx, junk2 = num_vtx;
-  int* ptr = &values[0];
-  assert( sizeof(VertexHandle) == sizeof(iBase_EntityHandle) );
-  const iBase_EntityHandle* arr = reinterpret_cast<const iBase_EntityHandle*>(vert_array);
-  iMesh_getIntArrData( meshInstance, arr, num_vtx, slavedTag, &ptr, &junk, &junk2, &ierr );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-    return;
-  }
-  
-  for (size_t i = 0; i < num_vtx; ++i)
-    bool_array[i] = values[i];
+  get_flag_data( slavedTag, haveSlavedTag, slavedTagType, vert_array, bool_array, num_vtx, err );
 }
 
 // Get vertex coordinates 

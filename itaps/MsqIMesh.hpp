@@ -43,17 +43,6 @@ namespace MESQUITE_NS {
  */
 const char* const VERTEX_BYTE_TAG_NAME  = "MesquiteVertexByte";
 
-/** The name of the tag (integer) Mesquite expects to be non-zero
- *  for vertices which are not to be moved by Mesquite
- */
-const char* const VERTEX_FIXED_TAG_NAME = "MesquiteVertexFixed";
-
-/** The name of the tag (integer) Mesquite expects to be non-zero
- *  for vertices that are higher-order nodes slaved to their logical
- *  position.
- */
-const char* const VERTEX_SLAVED_TAG_NAME = "MesquiteVertexSlaved";
-
 /**\class MsqIMesh
  *\brief Mesquite iMesh Adapter
  *
@@ -68,21 +57,80 @@ public:
   MsqIMesh();
   virtual ~MsqIMesh();
 
+  /**\brief Create iMesh adaptor instance
+   *\param imesh      The iMesh instance to interact with
+   *\param meshset    The set of elements for which to optimize the quality
+   *
+   *\param element_dimension Optimize the subset of the elements in
+   *                  'meshset' with this dimension.  Pass iBase_ALL_TYPES
+   *                  for both iBase_FACE and iBase_REGION elements.
+   *                  If 'meshset' is the root set, then this argument is
+   *                  typically either iBase_FACE or iBase_REGION.
+   *
+   *\param fixed_tag  A pointer to the tag handle designating a tag 
+   *                  containing fixed flags for vertices.  The tag must
+   *                  have size==1 and type==iBase_INTEGER or iBase_BYTES.  
+   *                  A value of one for a vertex indicates that the vertex 
+   *                  position is fixed.  A value of zero indicates a free 
+   *                  vertex (a vertex that Mesquite may move to improve 
+   *                  mesh quality.)  If this tag is not specified, then 
+   *                  the boundary constraints of the optimization must be
+   *                  specified using an MsqIRel instance.
+   *
+   *\param slaved_tag A pointer to the tag handle designating a tag 
+   *                  containing slaved flags for vertices.  The tag must
+   *                  have size==1 and type==iBase_INTEGER or iBase_BYTES.
+   *                  This tag value is ignored for corner vertices of 
+   *                  elements.  The concept of 'slaved' is applicable only 
+   *                  to non-corner vertices in higher-order elements. A 
+   *                  value of one for a vertex indicates that the vertex 
+   *                  position should is a fucntion of the element shape 
+   *                  function, while a zero value indicates that the 
+   *                  element shape function is a function of the vertex 
+   *                  position.
+   */
   MsqIMesh( iMesh_Instance imesh, iBase_EntitySetHandle meshset,
 	    iBase_EntityType element_dimension,
             MsqError& err,
-	    const char* fixed_tag_name = VERTEX_FIXED_TAG_NAME,
-	    const char* slaved_tag_name= VERTEX_SLAVED_TAG_NAME );
+	    const iBase_TagHandle* fixed_tag = 0,
+	    const iBase_TagHandle* slaved_tag= 0 );
   
+  /**\brief Create iMesh adaptor instance
+   * 
+   * This constructor is provided for the creation of an MsqIMesh instance
+   * that is to be re-used for multiple optimization calls for different
+   * sets of elements.  set_active_set must be called to define the
+   * subset of the mesh to optimize before an instance constructed with
+   * this constructor may be used in an optimization.
+   *
+   *\param imesh      The iMesh instance to interact with
+   *
+   *\param fixed_tag  A pointer to the tag handle designating a tag 
+   *                  containing fixed flags for vertices.  The tag must
+   *                  have size==1 and type==iBase_INTEGER or iBase_BYTES.  
+   *                  A value of one for a vertex indicates that the vertex 
+   *                  position is fixed.  A value of zero indicates a free 
+   *                  vertex (a vertex that Mesquite may move to improve 
+   *                  mesh quality.)  If this tag is not specified, then 
+   *                  the boundary constraints of the optimization must be
+   *                  specified using an MsqIRel instance.
+   *
+   *\param slaved_tag A pointer to the tag handle designating a tag 
+   *                  containing slaved flags for vertices.  The tag must
+   *                  have size==1 and type==iBase_INTEGER or iBase_BYTES.
+   *                  This tag value is ignored for corner vertices of 
+   *                  elements.  The concept of 'slaved' is applicable only 
+   *                  to non-corner vertices in higher-order elements. A 
+   *                  value of one for a vertex indicates that the vertex 
+   *                  position should is a fucntion of the element shape 
+   *                  function, while a zero value indicates that the 
+   *                  element shape function is a function of the vertex 
+   *                  position.
+   */
   MsqIMesh( iMesh_Instance imesh, 
             MsqError& err,
-	    const char* fixed_tag_name = VERTEX_FIXED_TAG_NAME,
-	    const char* slaved_tag_name= VERTEX_SLAVED_TAG_NAME  );
-  
-  virtual void init_active_mesh( iMesh_Instance mesh, 
-                                 MsqError& err,
-				 const char* fixed_tag_name = VERTEX_FIXED_TAG_NAME,
-				 const char* slaved_tag_name = VERTEX_SLAVED_TAG_NAME );
+	    const iBase_TagHandle* fixed_tag = 0,
+	    const iBase_TagHandle* slaved_tag= 0 );
     
   /** \brief set mesh to be smoothed.
    *
@@ -95,9 +143,16 @@ public:
    *                  mesh elements and vertices for which quality 
    *                  is to be improved.
    */
-  virtual void set_active_set( iBase_EntitySetHandle meshset, 
-                               iBase_EntityType element_dimension,
-                               MsqError& err );
+  void set_active_set( iBase_EntitySetHandle meshset, 
+                       iBase_EntityType element_dimension,
+                       MsqError& err );
+  
+  void set_fixed_tag( iBase_TagHandle tag, MsqError& err ); //!< Set tag for vertex fixed flag
+  void set_slaved_tag( iBase_TagHandle tag, MsqError& err );//!< Set tag for vertex slaved flag
+  void clear_fixed_tag();  //!< No tag for vertex fixed flag
+  void clear_slaved_tag(); //!< No tag for vertex fixed flag
+  const iBase_TagHandle* get_fixed_tag() const;  //!< Get tag for vertex fixed flag
+  const iBase_TagHandle* get_slaved_tag() const; //!< Get tag for vertex slaved flag
   
   virtual iMesh_Instance get_imesh_instance() const;
   virtual iBase_EntitySetHandle get_entity_set() const;
@@ -303,7 +358,11 @@ public:
 
 
   protected:
-        
+    
+    iBase_TagValueType check_valid_flag_tag( iBase_TagHandle tag,
+                                              const char* which_flag,
+                                              MsqError& err );
+    
     void set_int_tag( void* tag, void* meshset, int value, MsqError& err );
 
       /** \brief  Call TSTTM::Arr::getEntArrAdj
@@ -330,6 +389,20 @@ public:
     iMesh_Instance meshInstance;
 
   private:
+  
+    void init_active_mesh( iMesh_Instance mesh, 
+                           MsqError& err,
+        		   const iBase_TagHandle* fixed_tag,
+        		   const iBase_TagHandle* slaved_tag );
+
+    void get_flag_data( iBase_TagHandle tag,
+                        bool have_tag,
+                        iBase_TagValueType type,
+                        const VertexHandle vert_array[],
+                        bool flag_array[],
+                        size_t num_vtx, 
+                        MsqError& err );
+
       /** \brief Set tag values */
     void tag_set_data ( TagHandle handle,
                         size_t num_elems,
@@ -372,14 +445,16 @@ public:
     bool createdByteTag;
     /** Handle for tag used to hold vertex-fixed flag */
     iBase_TagHandle fixedTag;
-    /** Fixed tag was created in constructor */
-    bool createdFixedTag;
+    /** fixedTag handle is valid */
+    bool haveFixedTag;
+    /** iBase_TYPE for fixed tag */
+    iBase_TagValueType fixedTagType;
     /** Handle for tag used to hold vertex-slaved flag */
     iBase_TagHandle slavedTag;
-    /** Handle for the tag used internally to remove duplicates from lists */
-//    TagHandle vertexIndexTag;
-    /** vertexIndexTag was created in constructor */
-//    bool createdVertexIndexTag;
+    /** slavedTag handle is valid */
+    bool haveSlavedTag;
+    /** iBase_TYPE for slaved tag */
+    iBase_TagValueType slavedTagType;
     /** Dimension is queried once during create and cached */
     int geometricDimension;
     /** Map iMesh_EntityTopology to Mesquite::EntityTopology */
