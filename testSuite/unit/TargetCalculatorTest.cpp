@@ -84,7 +84,15 @@ private:
 
   CPPUNIT_TEST_SUITE_END();
   
+    // define some matrices for use in testing.
+  MsqMatrix<3,3> V3D_Z45, V3D_X90, Q3D_45, D3D_123;
+  MsqMatrix<3,2> V2D_Z45, V2D_X90;
+  MsqMatrix<2,2> Q2D_45, D2D_21;
+  
 public:
+
+  TargetCalculatorTest();
+  void setUp();
 
   void test_factor_2D();
   void test_factor_3D();
@@ -129,6 +137,49 @@ public:
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TargetCalculatorTest, "TargetCalculatorTest");
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TargetCalculatorTest, "Unit");
+
+TargetCalculatorTest::TargetCalculatorTest()
+{
+  const double cos45 = MSQ_SQRT_TWO/2.0;
+  const double rotation_3D_Z45[9] = { cos45, -cos45, 0,
+                                      cos45,  cos45, 0,
+                                          0,      0, 1 };
+  const double rotation_2D_Z45[6] = { cos45, -cos45,
+                                      cos45,  cos45,
+                                          0,      0 };
+                                          
+  const double rotation_3D_X90[9] = { 1,  0,  0,
+                                      0,  0, -1,
+                                      0,  1,  0 };
+  const double rotation_2D_X90[6] = { 1,  0,
+                                      0,  0,
+                                      0,  1 };
+                                      
+  const double rc45 = sqrt(cos45);
+  const double skew_2D_45[4] = { 1/rc45, rc45,
+                                 0,      rc45 };
+  const double skew_3D_45[9] = { 1, cos45, cos45,
+                                 0, cos45, 1 - cos45,
+                                 0,     0, sqrt(MSQ_SQRT_TWO-1) };
+                                 
+  const double aspect_2D_2x[4] = { MSQ_SQRT_TWO, 0,
+                                   0,            MSQ_SQRT_TWO/2 };
+  const double r6 = Mesquite::cbrt(1.0/6.0);
+  const double aspect_3D_123[9] = { r6,    0,    0,
+                                     0, 2*r6,    0,
+                                     0,    0, 3*r6 };
+                                     
+  V3D_Z45 = MsqMatrix<3,3>(rotation_3D_Z45);
+  V3D_X90 = MsqMatrix<3,3>(rotation_3D_X90);
+  Q3D_45  = MsqMatrix<3,3>(skew_3D_45);
+  Q3D_45  *= 1/Mesquite::cbrt(det(Q3D_45));
+  D3D_123 = MsqMatrix<3,3>(aspect_3D_123);
+  
+  V2D_Z45 = MsqMatrix<3,2>(rotation_2D_Z45);
+  V2D_X90 = MsqMatrix<3,2>(rotation_2D_X90);
+  Q2D_45  = MsqMatrix<2,2>(skew_2D_45);
+  D2D_21  = MsqMatrix<2,2>(aspect_2D_2x);
+}
 
 template <unsigned D> inline
 void TargetCalculatorTest::check_valid_V( MsqMatrix<3,D> V )
@@ -180,6 +231,23 @@ void TargetCalculatorTest::check_valid_delta( MsqMatrix<D,D> delta )
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, delta(1,2), EPS );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, delta(2,1), EPS );
   }
+}
+
+void TargetCalculatorTest::setUp()
+{
+    // test the test: make sure we're testing with 
+    // valid matrix factors.
+    
+  check_valid_V( V3D_Z45 );
+  check_valid_V( V3D_X90 );
+  check_valid_V( V2D_Z45 );
+  check_valid_V( V2D_X90 );
+  
+  check_valid_Q( Q3D_45 );
+  check_valid_Q( Q2D_45 );
+  
+  check_valid_delta( D3D_123 );
+  check_valid_delta( D2D_21 );
 }
 
 void TargetCalculatorTest::test_factor_2D()
@@ -247,6 +315,16 @@ void TargetCalculatorTest::test_factor_2D()
   check_valid_delta( delta );
   W = lambda * V * Q* delta;
   ASSERT_MATRICES_EQUAL( W2, W, EPS );
+  
+  // try a more elaborate test
+  const double e = exp(1);
+  W2 = e * V2D_Z45 * Q2D_45 * D2D_21;
+  valid = TargetCalculator::factor_2D( W2, lambda, V, Q, delta, err );
+  CPPUNIT_ASSERT( valid && !err );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( e, lambda, EPS );
+  ASSERT_MATRICES_EQUAL( V2D_Z45, V, EPS );
+  ASSERT_MATRICES_EQUAL( Q2D_45, Q, EPS );
+  ASSERT_MATRICES_EQUAL( D2D_21, delta, EPS );
 }
 
 void TargetCalculatorTest::test_factor_3D()
@@ -314,6 +392,16 @@ void TargetCalculatorTest::test_factor_3D()
   check_valid_delta( delta );
   W = lambda * V * Q* delta;
   ASSERT_MATRICES_EQUAL( W2, W, EPSBIG );
+  
+  // try a more elaborate test
+  const double e = exp(1);
+  W2 = e * V3D_Z45 * Q3D_45 * D3D_123;
+  valid = TargetCalculator::factor_3D( W2, lambda, V, Q, delta, err );
+  CPPUNIT_ASSERT( valid && !err );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( e, lambda, EPS );
+  ASSERT_MATRICES_EQUAL( V3D_Z45, V, EPS );
+  ASSERT_MATRICES_EQUAL( Q3D_45, Q, EPS );
+  ASSERT_MATRICES_EQUAL( D3D_123, delta, EPS );
 }
 
 void TargetCalculatorTest::test_factor_2D_zero()
@@ -408,6 +496,9 @@ void TargetCalculatorTest::test_skew_2D()
   TargetCalculator::factor_2D( W, lambda, V, Q, delta, err );
   ASSERT_NO_ERROR(err);
   ASSERT_MATRICES_EQUAL( Q, TargetCalculator::skew(W), EPS );
+  
+  W = MsqMatrix<3,2>(6) * Q2D_45;
+  ASSERT_MATRICES_EQUAL( Q2D_45, TargetCalculator::skew(W), EPS );
 }
 
 void TargetCalculatorTest::test_skew_3D()
@@ -436,6 +527,9 @@ void TargetCalculatorTest::test_skew_3D()
   TargetCalculator::factor_3D( W, lambda, V, Q, delta, err );
   ASSERT_NO_ERROR(err);
   ASSERT_MATRICES_EQUAL( Q, TargetCalculator::skew(W), 2*EPS );
+  
+  W = MsqMatrix<3,3>(2.1) * Q3D_45;
+  ASSERT_MATRICES_EQUAL( Q3D_45, TargetCalculator::skew(W), EPS );
 }
 
 void TargetCalculatorTest::test_ideal_skew_tri()

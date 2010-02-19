@@ -124,8 +124,8 @@ bool TargetCalculator::factor_3D( const MsqMatrix<3,3>& A,
   Q(0,1) = a1dota2 * inv_la1 * inv_la2;
   Q(1,1) = lx * inv_la1 * inv_la2;
   Q(2,1) = 0.0;
-  Q(0,2) = (A.column(0) % A.column(2)) * inv_la1 * inv_la2;
-  Q(1,2) = (a1xa2 % (A.column(0) * A.column(2))) * inv_lx * inv_la1 * inv_la2;
+  Q(0,2) = (A.column(0) % A.column(2)) * inv_la1 * inv_la3;
+  Q(1,2) = (a1xa2 % (A.column(0) * A.column(2))) * inv_lx * inv_la1 * inv_la3;
   Q(2,2) = fabs(alpha) * inv_lx * inv_la3;
   Q *= len_prod_rt3 / Lambda;
   
