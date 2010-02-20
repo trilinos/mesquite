@@ -286,9 +286,9 @@ const int TriCorners[6] = { 0, 0,
                             1, 0, 
                             0, 1 };
 
-const int PrismCorners[18] = { -1, 0, 0,
-                               -1, 1, 0,
-                               -1, 0, 1,
+const int PrismCorners[18] = {  0, 0, 0,
+                                0, 1, 0,
+                                0, 0, 1,
                                 1, 0, 0,
                                 1, 1, 0,
                                 1, 0, 1 };
@@ -475,7 +475,7 @@ void LinearMappingFunctionTest::test_linear_prism_coeff_faces()
 
 void LinearMappingFunctionTest::test_linear_prism_coeff_center()
 {
-  double xi[3] = { 0, 1./3, 1./3 };
+  double xi[3] = { 0.5, 1./3, 1./3 };
   do_coeff_test( prism, 3, prism_coeff, 1, xi );
 }
 
@@ -651,7 +651,7 @@ void LinearMappingFunctionTest::test_linear_prism_deriv_faces()
 
 void LinearMappingFunctionTest::test_linear_prism_deriv_center()
 {
-  double xi[3] = { 0, 1./3, 1./3 };
+  double xi[3] = { 0.5, 1./3, 1./3 };
   do_deriv_test( prism, 3, prism_deriv, 1, xi );
 }
   
@@ -738,12 +738,12 @@ void LinearMappingFunctionTest::tri_coeff( double xi[2], double coeff[3] )
 
 void LinearMappingFunctionTest::prism_coeff( double xi[3], double coeff[6] )
 {
-  coeff[0] = 0.5 * (1 - xi[0]) * (1 - xi[1] - xi[2]);
-  coeff[1] = 0.5 * (1 - xi[0]) * xi[1];
-  coeff[2] = 0.5 * (1 - xi[0]) * xi[2];
-  coeff[3] = 0.5 * (1 + xi[0]) * (1 - xi[1] - xi[2]);
-  coeff[4] = 0.5 * (1 + xi[0]) * xi[1];
-  coeff[5] = 0.5 * (1 + xi[0]) * xi[2];
+  coeff[0] = (1 - xi[0]) * (1 - xi[1] - xi[2]);
+  coeff[1] = (1 - xi[0]) * xi[1];
+  coeff[2] = (1 - xi[0]) * xi[2];
+  coeff[3] =      xi[0]  * (1 - xi[1] - xi[2]);
+  coeff[4] =      xi[0]  * xi[1];
+  coeff[5] =      xi[0]  * xi[2];
 }
 
 void LinearMappingFunctionTest::pyr_coeff( double xi[3], double coeff[5] )
@@ -794,29 +794,29 @@ void LinearMappingFunctionTest::tri_deriv( double*, double coeff[6] )
 
 void LinearMappingFunctionTest::prism_deriv( double xi[3], double coeff[18] )
 {
-  coeff[ 0] = -0.5 * (1.0 - xi[1] - xi[2]);
-  coeff[ 1] = -0.5 * (1.0 - xi[0]);
-  coeff[ 2] = -0.5 * (1.0 - xi[0]);
+  coeff[ 0] = xi[1] + xi[2] - 1.0;;
+  coeff[ 1] = xi[0] - 1.0;
+  coeff[ 2] = xi[0] - 1.0;
   
-  coeff[ 3] = -0.5 * xi[1];
-  coeff[ 4] =  0.5 * (1.0 - xi[0]);
-  coeff[ 5] =  0.0;
+  coeff[ 3] = -xi[1];
+  coeff[ 4] = 1.0 - xi[0];
+  coeff[ 5] = 0.0;
   
-  coeff[ 6] = -0.5 * xi[2];
-  coeff[ 7] =  0.0;
-  coeff[ 8] =  0.5 * (1.0 - xi[0]);
+  coeff[ 6] = -xi[2];
+  coeff[ 7] = 0.0;
+  coeff[ 8] = 1.0 - xi[0];
   
-  coeff[ 9] =  0.5 * (1.0 - xi[1] - xi[2]);
-  coeff[10] = -0.5 * (1.0 + xi[0]);
-  coeff[11] = -0.5 * (1.0 + xi[0]);
+  coeff[ 9] =  1.0 - xi[1] - xi[2];
+  coeff[10] = -xi[0];
+  coeff[11] = -xi[0];
   
-  coeff[12] =  0.5 * xi[1];
-  coeff[13] =  0.5 * (1.0 + xi[0]);
+  coeff[12] =  xi[1];
+  coeff[13] =  xi[0];
   coeff[14] =  0.0;
   
-  coeff[15] =  0.5 * xi[2];
+  coeff[15] =  xi[2];
   coeff[16] =  0.0;
-  coeff[17] =  0.5 * (1.0 + xi[0]);
+  coeff[17] =  xi[0];
 }
 
 void LinearMappingFunctionTest::pyr_deriv( double xi[3], double coeff[15] )
@@ -1111,7 +1111,7 @@ void LinearMappingFunctionTest::do_ideal_test( MappingFunction2D& mf )
 void LinearMappingFunctionTest::do_ideal_test( MappingFunction3D& mf )
 {
   MsqError err;
-  MsqMatrix<3,3> W;
+  MsqMatrix<3,3> W, I(1.0);
   mf.ideal( Sample(3,0), W, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(W), 1e-6 );
@@ -1127,10 +1127,10 @@ void LinearMappingFunctionTest::do_ideal_test( MappingFunction3D& mf )
   
     // Matrices should be a rotation of each other.
     // First, calculate tentative rotation matrix
-  MsqMatrix<3,3> R = inverse(W_exp) * W;
+  MsqMatrix<3,3> R = W * inverse(W_exp);
     // next check that it is a rotation
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(R), 1e-6 ); // no scaling
-  ASSERT_MATRICES_EQUAL( transpose(R), inverse(R), 1e-6 ); // orthogonal
+  ASSERT_MATRICES_EQUAL( I, transpose(R) * R, 1e-6 ); // orthogonal
 }
 
                  

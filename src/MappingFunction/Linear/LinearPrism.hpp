@@ -39,13 +39,18 @@ namespace MESQUITE_NS {
 
 /**\brief Linear mapping function for a prism element
  *
- * \f$\vec{x}(\vec{\xi})=\sum_{i=1}^6 N_i(\vec{\xi})\vec{x_i}\f$
- * - \f$N_1(\vec{\xi})=\frac{1}{2}(1-\xi)(1-\eta-\zeta)\f$
- * - \f$N_2(\vec{\xi})=\frac{1}{2}(1-\xi)\eta\f$
- * - \f$N_3(\vec{\xi})=\frac{1}{2}(1-\xi)\zeta\f$
- * - \f$N_4(\vec{\xi})=\frac{1}{2}(1+\xi)(1-\eta-\zeta)\f$
- * - \f$N_5(\vec{\xi})=\frac{1}{2}(1+\xi)\eta\f$
- * - \f$N_6(\vec{\xi})=\frac{1}{2}(1+\xi)\zeta\f$
+ * \f$ \vec{x}(\vec{\xi})=\sum_{i=1}^6 N_i(\vec{\xi})\vec{x_i} \f$
+ * - \f$ N_1(\vec{\xi})=(1-\xi)(1-\eta-\zeta) \f$
+ * - \f$ N_2(\vec{\xi})=(1-\xi)(\eta)         \f$
+ * - \f$ N_3(\vec{\xi})=(1-\xi)(\zeta)        \f$
+ * - \f$ N_4(\vec{\xi})=(  \xi)(1-\eta-\zeta) \f$
+ * - \f$ N_5(\vec{\xi})=(  \xi)(\eta)         \f$
+ * - \f$ N_6(\vec{\xi})=(  \xi)(\zeta)        \f$
+ * \f$ \xi,\eta,\zeta \in [0,1] \f$
+ * \f$ \eta + \zeta \leq 1 \f$
+ *
+ * The logical center of the element is at: 
+ * \f$ (\xi,\eta,\zeta) = (0,\third,\third) \f$
  */ 
 class MESQUITE_EXPORT LinearPrism : public MappingFunction3D
 {

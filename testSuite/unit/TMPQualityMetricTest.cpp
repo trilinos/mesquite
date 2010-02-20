@@ -875,7 +875,7 @@ void TMPQualityMetricTest::compare_analytical_and_numerical_hessians( QualityMet
 
           //if (!utest_mat_equal(Hess1[h],Hess2[h2],0.001))
           //  assert(false);
-          CPPUNIT_ASSERT_MATRICES_EQUAL( Hess1[h], Hess2[h2], 0.005 );
+          CPPUNIT_ASSERT_MATRICES_EQUAL( Hess1[h], Hess2[h2], 0.05 );
         }
       }
     }
@@ -943,7 +943,7 @@ void TMPQualityMetricTest::compare_analytical_and_numerical_diagonals( QualityMe
         unsigned r2 = it - indices2.begin();
         //if (!utest_mat_equal(Hess1[h],Hess2[r2],0.001))
         //  assert(false);
-        CPPUNIT_ASSERT_MATRICES_EQUAL( Hess1[h], Hess2[r2], 0.005 );
+        CPPUNIT_ASSERT_MATRICES_EQUAL( Hess1[h], Hess2[r2], 0.05 );
         h += indices1.size() - r;
       }
     }

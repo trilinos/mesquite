@@ -158,18 +158,18 @@ static void derivatives_at_corner( unsigned corner,
                                    MsqVector<3>* d_coeff_d_xi_out,
                                    size_t& num_vtx )
 {
-  int tri = (corner / 3); // 0 for xi=-1, 1 for xi=1
-  int tv = corner % 3;    // offset of corner with xi=+/-1 triangle
+  int tri = (corner / 3); // 0 for xi=0, 1 for xi=1
+  int tv = corner % 3;    // index of corner with xi=constant triangle
 
   num_vtx = 4;
-    // three vertices within the xi=+/-1 triangle
+    // three vertices within the xi=constant triangle
   vertex_indices_out[0] = 3*tri;
   vertex_indices_out[1] = 3*tri+1;
   vertex_indices_out[2] = 3*tri+2;
     // vertex adjacent to corner in other triangle
   vertex_indices_out[3] = 3 - 6*tri + corner;
   
-    // three vertices within the xi=+/-1 triangle
+    // three vertices within the xi=constant triangle
   d_coeff_d_xi_out[0][0] =  0.0;
   d_coeff_d_xi_out[0][1] = -1.0;
   d_coeff_d_xi_out[0][2] = -1.0;
@@ -180,9 +180,9 @@ static void derivatives_at_corner( unsigned corner,
   d_coeff_d_xi_out[2][1] =  0.0;
   d_coeff_d_xi_out[2][2] =  1.0;
     // fix dxi value for input corner
-  d_coeff_d_xi_out[tv][0] = tri - 0.5; 
+  d_coeff_d_xi_out[tv][0] = 2*tri - 1; 
     // vertex adjacent to corner in other triangle
-  d_coeff_d_xi_out[3][0] =  0.5 - tri;
+  d_coeff_d_xi_out[3][0] =  1 - 2*tri;
   d_coeff_d_xi_out[3][1] =  0.0;
   d_coeff_d_xi_out[3][2] =  0.0;
 }
@@ -196,11 +196,11 @@ static void derivatives_at_mid_edge( unsigned edge,
   int opp; // vertex opposite edge in same triagle
   
   switch (edge/3) {
-    case 0:  // triangle at xi = -1
+    case 0:  // triangle at xi = 0
       opp = (edge+2)%3;
 
       num_vtx = 5;
-        // vertices in this xi = -1 triagnle
+        // vertices in this xi = 0 triagnle
       vertex_indices_out[0] = 0;
       vertex_indices_out[1] = 1;
       vertex_indices_out[2] = 2;
@@ -208,25 +208,25 @@ static void derivatives_at_mid_edge( unsigned edge,
       vertex_indices_out[3] = 3 + edge;
       vertex_indices_out[4] = 3 + (edge+1)%3;
 
-        // vertices in this xi = -1 triagnle
-      d_coeff_d_xi_out[0][0] = -0.25;
-      d_coeff_d_xi_out[0][1] = -1.00;
-      d_coeff_d_xi_out[0][2] = -1.00;
-      d_coeff_d_xi_out[1][0] = -0.25;
-      d_coeff_d_xi_out[1][1] =  1.00;
-      d_coeff_d_xi_out[1][2] =  0.00;
-      d_coeff_d_xi_out[2][0] = -0.25;
-      d_coeff_d_xi_out[2][1] =  0.00;
-      d_coeff_d_xi_out[2][2] =  1.00;
-        // clear dxi for vertex opposite edge in xi = -1 triangle
+        // vertices in this xi = 0 triagnle
+      d_coeff_d_xi_out[0][0] = -0.5;
+      d_coeff_d_xi_out[0][1] = -1.0;
+      d_coeff_d_xi_out[0][2] = -1.0;
+      d_coeff_d_xi_out[1][0] = -0.5;
+      d_coeff_d_xi_out[1][1] =  1.0;
+      d_coeff_d_xi_out[1][2] =  0.0;
+      d_coeff_d_xi_out[2][0] = -0.5;
+      d_coeff_d_xi_out[2][1] =  0.0;
+      d_coeff_d_xi_out[2][2] =  1.0;
+        // clear dxi for vertex opposite edge in xi = 0 triangle
       d_coeff_d_xi_out[opp][0] = 0.0;
         // adjacent vertices in xi = 1 triangle
-      d_coeff_d_xi_out[3][0] =  0.25;
-      d_coeff_d_xi_out[3][1] =  0.00;
-      d_coeff_d_xi_out[3][2] =  0.00;
-      d_coeff_d_xi_out[4][0] =  0.25;
-      d_coeff_d_xi_out[4][1] =  0.00;
-      d_coeff_d_xi_out[4][2] =  0.00;
+      d_coeff_d_xi_out[3][0] =  0.5;
+      d_coeff_d_xi_out[3][1] =  0.0;
+      d_coeff_d_xi_out[3][2] =  0.0;
+      d_coeff_d_xi_out[4][0] =  0.5;
+      d_coeff_d_xi_out[4][1] =  0.0;
+      d_coeff_d_xi_out[4][2] =  0.0;
       break;
 
     case 1:  // lateral edges (not in either triangle)
@@ -259,8 +259,8 @@ static void derivatives_at_mid_edge( unsigned edge,
       d_coeff_d_xi_out[5][2] =  0.5;
       
         // set dxi values for end points of edge
-      d_coeff_d_xi_out[(edge-3)][0] = -0.5;
-      d_coeff_d_xi_out[ edge   ][0] =  0.5;
+      d_coeff_d_xi_out[(edge-3)][0] = -1;
+      d_coeff_d_xi_out[ edge   ][0] =  1;
       break;
     
     case 2:  // triangle at xi = 1
@@ -275,25 +275,25 @@ static void derivatives_at_mid_edge( unsigned edge,
       vertex_indices_out[3] = edge - 6;
       vertex_indices_out[4] = (edge-5)%3;
 
-        // vertices in this xi = -1 triagnle
-      d_coeff_d_xi_out[0][0] =  0.25;
-      d_coeff_d_xi_out[0][1] = -1.00;
-      d_coeff_d_xi_out[0][2] = -1.00;
-      d_coeff_d_xi_out[1][0] =  0.25;
-      d_coeff_d_xi_out[1][1] =  1.00;
-      d_coeff_d_xi_out[1][2] =  0.00;
-      d_coeff_d_xi_out[2][0] =  0.25;
-      d_coeff_d_xi_out[2][1] =  0.00;
-      d_coeff_d_xi_out[2][2] =  1.00;
-        // clear dxi for vertex opposite edge in xi = -1 triangle
+        // vertices in this xi = 1 triagnle
+      d_coeff_d_xi_out[0][0] =  0.5;
+      d_coeff_d_xi_out[0][1] = -1.0;
+      d_coeff_d_xi_out[0][2] = -1.0;
+      d_coeff_d_xi_out[1][0] =  0.5;
+      d_coeff_d_xi_out[1][1] =  1.0;
+      d_coeff_d_xi_out[1][2] =  0.0;
+      d_coeff_d_xi_out[2][0] =  0.5;
+      d_coeff_d_xi_out[2][1] =  0.0;
+      d_coeff_d_xi_out[2][2] =  1.0;
+        // clear dxi for vertex opposite edge in xi = 1 triangle
       d_coeff_d_xi_out[opp][0] = 0.0;
-        // adjacent vertices in xi = 1 triangle
-      d_coeff_d_xi_out[3][0] = -0.25;
-      d_coeff_d_xi_out[3][1] =  0.00;
-      d_coeff_d_xi_out[3][2] =  0.00;
-      d_coeff_d_xi_out[4][0] = -0.25;
-      d_coeff_d_xi_out[4][1] =  0.00;
-      d_coeff_d_xi_out[4][2] =  0.00;
+        // adjacent vertices in xi = 0 triangle
+      d_coeff_d_xi_out[3][0] = -0.5;
+      d_coeff_d_xi_out[3][1] =  0.0;
+      d_coeff_d_xi_out[3][2] =  0.0;
+      d_coeff_d_xi_out[4][0] = -0.5;
+      d_coeff_d_xi_out[4][1] =  0.0;
+      d_coeff_d_xi_out[4][2] =  0.0;
       break;
   }
 }
@@ -312,28 +312,27 @@ static void derivatives_at_mid_face( unsigned face,
   
   int opp; // start vtx of edge opposite from quad face
   int tri_offset; // offset in d_coeff_d_xi_out for triangle containing edge
-  double sixth;
   
   if (face < 3) { // quad face
       // set all values
-    d_coeff_d_xi_out[0][0] = -0.25;
-    d_coeff_d_xi_out[0][1] = -0.50;
-    d_coeff_d_xi_out[0][2] = -0.50;
-    d_coeff_d_xi_out[1][0] = -0.25;
-    d_coeff_d_xi_out[1][1] =  0.50;
-    d_coeff_d_xi_out[1][2] =  0.00;
-    d_coeff_d_xi_out[2][0] = -0.25;
-    d_coeff_d_xi_out[2][1] =  0.00;
-    d_coeff_d_xi_out[2][2] =  0.50;
-    d_coeff_d_xi_out[3][0] =  0.25;
-    d_coeff_d_xi_out[3][1] = -0.50;
-    d_coeff_d_xi_out[3][2] = -0.50;
-    d_coeff_d_xi_out[4][0] =  0.25;
-    d_coeff_d_xi_out[4][1] =  0.50;
-    d_coeff_d_xi_out[4][2] =  0.00;
-    d_coeff_d_xi_out[5][0] =  0.25;
-    d_coeff_d_xi_out[5][1] =  0.00;
-    d_coeff_d_xi_out[5][2] =  0.50;
+    d_coeff_d_xi_out[0][0] = -0.5;
+    d_coeff_d_xi_out[0][1] = -0.5;
+    d_coeff_d_xi_out[0][2] = -0.5;
+    d_coeff_d_xi_out[1][0] = -0.5;
+    d_coeff_d_xi_out[1][1] =  0.5;
+    d_coeff_d_xi_out[1][2] =  0.0;
+    d_coeff_d_xi_out[2][0] = -0.5;
+    d_coeff_d_xi_out[2][1] =  0.0;
+    d_coeff_d_xi_out[2][2] =  0.5;
+    d_coeff_d_xi_out[3][0] =  0.5;
+    d_coeff_d_xi_out[3][1] = -0.5;
+    d_coeff_d_xi_out[3][2] = -0.5;
+    d_coeff_d_xi_out[4][0] =  0.5;
+    d_coeff_d_xi_out[4][1] =  0.5;
+    d_coeff_d_xi_out[4][2] =  0.0;
+    d_coeff_d_xi_out[5][0] =  0.5;
+    d_coeff_d_xi_out[5][1] =  0.0;
+    d_coeff_d_xi_out[5][2] =  0.5;
       // clear dxi for ends of edge opposite from face
     opp = (face+2)%3;
     d_coeff_d_xi_out[opp][0] = 0.0;
@@ -341,23 +340,23 @@ static void derivatives_at_mid_face( unsigned face,
   }
   else { // triangular faces
       // set all xi values, zero all other values
-    sixth = 1./6;
-    d_coeff_d_xi_out[0][0] = -sixth;
+    const double third = 1./3;
+    d_coeff_d_xi_out[0][0] = -third;
     d_coeff_d_xi_out[0][1] =  0;
     d_coeff_d_xi_out[0][2] =  0;
-    d_coeff_d_xi_out[1][0] = -sixth;
+    d_coeff_d_xi_out[1][0] = -third;
     d_coeff_d_xi_out[1][1] =  0;
     d_coeff_d_xi_out[1][2] =  0;
-    d_coeff_d_xi_out[2][0] = -sixth;
+    d_coeff_d_xi_out[2][0] = -third;
     d_coeff_d_xi_out[2][1] =  0;
     d_coeff_d_xi_out[2][2] =  0;
-    d_coeff_d_xi_out[3][0] =  sixth;
+    d_coeff_d_xi_out[3][0] =  third;
     d_coeff_d_xi_out[3][1] =  0;
     d_coeff_d_xi_out[3][2] =  0;
-    d_coeff_d_xi_out[4][0] =  sixth;
+    d_coeff_d_xi_out[4][0] =  third;
     d_coeff_d_xi_out[4][1] =  0;
     d_coeff_d_xi_out[4][2] =  0;
-    d_coeff_d_xi_out[5][0] =  sixth;
+    d_coeff_d_xi_out[5][0] =  third;
     d_coeff_d_xi_out[5][1] =  0;
     d_coeff_d_xi_out[5][2] =  0;
       // set deta and dzeta values for vertices in same triangle as edge
@@ -372,7 +371,7 @@ static void derivatives_at_mid_elem( size_t* vertex_indices_out,
                                      MsqVector<3>* d_coeff_d_xi_out,
                                      size_t& num_vtx )
 {
-  const double sixth = 1./6;
+  const double third = 1./3;
   
   num_vtx = 6;;
   vertex_indices_out[0] = 0;
@@ -382,22 +381,22 @@ static void derivatives_at_mid_elem( size_t* vertex_indices_out,
   vertex_indices_out[4] = 4;
   vertex_indices_out[5] = 5;
   
-  d_coeff_d_xi_out[0][0] = -sixth;
+  d_coeff_d_xi_out[0][0] = -third;
   d_coeff_d_xi_out[0][1] = -0.5;
   d_coeff_d_xi_out[0][2] = -0.5;
-  d_coeff_d_xi_out[1][0] = -sixth;
+  d_coeff_d_xi_out[1][0] = -third;
   d_coeff_d_xi_out[1][1] =  0.5;
   d_coeff_d_xi_out[1][2] =  0.0;
-  d_coeff_d_xi_out[2][0] = -sixth;
+  d_coeff_d_xi_out[2][0] = -third;
   d_coeff_d_xi_out[2][1] =  0.0;
   d_coeff_d_xi_out[2][2] =  0.5;
-  d_coeff_d_xi_out[3][0] =  sixth;
+  d_coeff_d_xi_out[3][0] =  third;
   d_coeff_d_xi_out[3][1] = -0.5;
   d_coeff_d_xi_out[3][2] = -0.5;
-  d_coeff_d_xi_out[4][0] =  sixth;
+  d_coeff_d_xi_out[4][0] =  third;
   d_coeff_d_xi_out[4][1] =  0.5;
   d_coeff_d_xi_out[4][2] =  0.0;
-  d_coeff_d_xi_out[5][0] =  sixth;
+  d_coeff_d_xi_out[5][0] =  third;
   d_coeff_d_xi_out[5][1] =  0.0;
   d_coeff_d_xi_out[5][2] =  0.5;
 }
@@ -437,12 +436,12 @@ void LinearPrism::ideal( Sample ,
                          MsqMatrix<3,3>& J,
                          MsqError&  ) const
 {
-  const double a = 0.66090107608336479; // 2^(-1/3) * 3^(-1/6)
-  const double b = 1.1447142425533319;  // cbrt(1.5)
+  const double a = 0.52455753171082409;  // 2^(-2/3) * 3^(-1/6)
+  const double b = 0.90856029641606983;  // a * sqrt(3) = 1/2 cbrt(6)
 
-  J(0,0) = 0.0; J(0,1) = 2*a;  J(0,2) = a;
-  J(1,0) = 0.0; J(1,1) = 0.0;  J(1,2) = b;
-  J(2,0) = a  ; J(2,1) = 0.0;  J(2,2) = 0.0;
+  J(0,0) = 2*a; J(0,1) = 0.0;  J(0,2) = 0.0;
+  J(1,0) = 0.0; J(1,1) = 2*a;  J(1,2) = a;
+  J(2,0) = 0.0; J(2,1) = 0.0;  J(2,2) = b;
 }
 
 } // namespace Mesquite
