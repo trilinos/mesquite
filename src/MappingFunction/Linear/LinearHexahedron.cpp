@@ -187,21 +187,21 @@ static void derivatives_at_corner( unsigned corner,
   vertex_indices_out[2] = adj_in_eta;
   vertex_indices_out[3] = adj_in_zeta;
   
-  d_coeff_d_xi_out[0][0] =   xi_sign * 0.5;
-  d_coeff_d_xi_out[0][1] =  eta_sign * 0.5;
-  d_coeff_d_xi_out[0][2] = zeta_sign * 0.5;
+  d_coeff_d_xi_out[0][0] =   xi_sign;
+  d_coeff_d_xi_out[0][1] =  eta_sign;
+  d_coeff_d_xi_out[0][2] = zeta_sign;
   
-  d_coeff_d_xi_out[1][0] =  -xi_sign * 0.5;
-  d_coeff_d_xi_out[1][1] =             0.0;
-  d_coeff_d_xi_out[1][2] =             0.0;
+  d_coeff_d_xi_out[1][0] =  -xi_sign ;
+  d_coeff_d_xi_out[1][1] =       0.0;
+  d_coeff_d_xi_out[1][2] =       0.0;
   
-  d_coeff_d_xi_out[2][0] =             0.0;
-  d_coeff_d_xi_out[2][1] = -eta_sign * 0.5;
-  d_coeff_d_xi_out[2][2] =             0.0;
+  d_coeff_d_xi_out[2][0] =       0.0;
+  d_coeff_d_xi_out[2][1] = -eta_sign;
+  d_coeff_d_xi_out[2][2] =       0.0;
   
-  d_coeff_d_xi_out[3][0] =             0.0;
-  d_coeff_d_xi_out[3][1] =             0.0;
-  d_coeff_d_xi_out[3][2] =-zeta_sign * 0.5;
+  d_coeff_d_xi_out[3][0] =       0.0;
+  d_coeff_d_xi_out[3][1] =       0.0;
+  d_coeff_d_xi_out[3][2] =-zeta_sign;
 }
 
 
@@ -227,29 +227,29 @@ static void derivatives_at_mid_edge( unsigned edge,
   vertex_indices_out[4] = edge_beg_orth2[edge];
   vertex_indices_out[5] = edge_end_orth2[edge];
   
-  d_coeff_d_xi_out[0][direction] =  sign_dir * 0.50;
-  d_coeff_d_xi_out[0][ortho1   ] =  sign_or1 * 0.25;
-  d_coeff_d_xi_out[0][ortho2   ] =  sign_or2 * 0.25;
+  d_coeff_d_xi_out[0][direction] =  sign_dir;
+  d_coeff_d_xi_out[0][ortho1   ] =  sign_or1 * 0.5;
+  d_coeff_d_xi_out[0][ortho2   ] =  sign_or2 * 0.5;
   
-  d_coeff_d_xi_out[1][direction] = -sign_dir * 0.50;
-  d_coeff_d_xi_out[1][ortho1   ] =  sign_or1 * 0.25;
-  d_coeff_d_xi_out[1][ortho2   ] =  sign_or2 * 0.25;
+  d_coeff_d_xi_out[1][direction] = -sign_dir;
+  d_coeff_d_xi_out[1][ortho1   ] =  sign_or1 * 0.5;
+  d_coeff_d_xi_out[1][ortho2   ] =  sign_or2 * 0.5;
  
-  d_coeff_d_xi_out[2][direction] =             0.00;
-  d_coeff_d_xi_out[2][ortho1   ] = -sign_or1 * 0.25;
-  d_coeff_d_xi_out[2][ortho2   ] =             0.00;
+  d_coeff_d_xi_out[2][direction] =             0.0;
+  d_coeff_d_xi_out[2][ortho1   ] = -sign_or1 * 0.5;
+  d_coeff_d_xi_out[2][ortho2   ] =             0.0;
  
-  d_coeff_d_xi_out[3][direction] =             0.00;
-  d_coeff_d_xi_out[3][ortho1   ] = -sign_or1 * 0.25;
-  d_coeff_d_xi_out[3][ortho2   ] =             0.00;
+  d_coeff_d_xi_out[3][direction] =             0.0;
+  d_coeff_d_xi_out[3][ortho1   ] = -sign_or1 * 0.5;
+  d_coeff_d_xi_out[3][ortho2   ] =             0.0;
  
-  d_coeff_d_xi_out[4][direction] =             0.00;
-  d_coeff_d_xi_out[4][ortho1   ] =             0.00;
-  d_coeff_d_xi_out[4][ortho2   ] = -sign_or2 * 0.25;
+  d_coeff_d_xi_out[4][direction] =             0.0;
+  d_coeff_d_xi_out[4][ortho1   ] =             0.0;
+  d_coeff_d_xi_out[4][ortho2   ] = -sign_or2 * 0.5;
  
-  d_coeff_d_xi_out[5][direction] =             0.00;
-  d_coeff_d_xi_out[5][ortho1   ] =             0.00;
-  d_coeff_d_xi_out[5][ortho2   ] = -sign_or2 * 0.25;
+  d_coeff_d_xi_out[5][direction] =             0.0;
+  d_coeff_d_xi_out[5][ortho1   ] =             0.0;
+  d_coeff_d_xi_out[5][ortho2   ] = -sign_or2 * 0.5;
 }
 
 
@@ -285,35 +285,35 @@ static void derivatives_at_mid_face( unsigned face,
   vertex_indices_out[6] = face_vtx[face_opp[face]][2];
   vertex_indices_out[7] = face_vtx[face_opp[face]][3];
   
-  d_coeff_d_xi_out[0][ortho_dir] = ortho_sign * 0.125;
-  d_coeff_d_xi_out[0][face_dir1] = vtx_signs[0][face_dir1] * 0.25;
-  d_coeff_d_xi_out[0][face_dir2] = vtx_signs[0][face_dir2] * 0.25;
+  d_coeff_d_xi_out[0][ortho_dir] = ortho_sign * 0.25;
+  d_coeff_d_xi_out[0][face_dir1] = vtx_signs[0][face_dir1] * 0.5;
+  d_coeff_d_xi_out[0][face_dir2] = vtx_signs[0][face_dir2] * 0.5;
   
-  d_coeff_d_xi_out[1][ortho_dir] = ortho_sign * 0.125;
-  d_coeff_d_xi_out[1][face_dir1] = vtx_signs[1][face_dir1] * 0.25;
-  d_coeff_d_xi_out[1][face_dir2] = vtx_signs[1][face_dir2] * 0.25;
+  d_coeff_d_xi_out[1][ortho_dir] = ortho_sign * 0.25;
+  d_coeff_d_xi_out[1][face_dir1] = vtx_signs[1][face_dir1] * 0.5;
+  d_coeff_d_xi_out[1][face_dir2] = vtx_signs[1][face_dir2] * 0.5;
   
-  d_coeff_d_xi_out[2][ortho_dir] = ortho_sign * 0.125;
-  d_coeff_d_xi_out[2][face_dir1] = vtx_signs[2][face_dir1] * 0.25;
-  d_coeff_d_xi_out[2][face_dir2] = vtx_signs[2][face_dir2] * 0.25;
+  d_coeff_d_xi_out[2][ortho_dir] = ortho_sign * 0.25;
+  d_coeff_d_xi_out[2][face_dir1] = vtx_signs[2][face_dir1] * 0.5;
+  d_coeff_d_xi_out[2][face_dir2] = vtx_signs[2][face_dir2] * 0.5;
   
-  d_coeff_d_xi_out[3][ortho_dir] = ortho_sign * 0.125;
-  d_coeff_d_xi_out[3][face_dir1] = vtx_signs[3][face_dir1] * 0.25;
-  d_coeff_d_xi_out[3][face_dir2] = vtx_signs[3][face_dir2] * 0.25;
+  d_coeff_d_xi_out[3][ortho_dir] = ortho_sign * 0.25;
+  d_coeff_d_xi_out[3][face_dir1] = vtx_signs[3][face_dir1] * 0.5;
+  d_coeff_d_xi_out[3][face_dir2] = vtx_signs[3][face_dir2] * 0.5;
   
-  d_coeff_d_xi_out[4][ortho_dir] = -ortho_sign * 0.125;
+  d_coeff_d_xi_out[4][ortho_dir] = -ortho_sign * 0.25;
   d_coeff_d_xi_out[4][face_dir1] = 0.0;
   d_coeff_d_xi_out[4][face_dir2] = 0.0;
   
-  d_coeff_d_xi_out[5][ortho_dir] = -ortho_sign * 0.125;
+  d_coeff_d_xi_out[5][ortho_dir] = -ortho_sign * 0.25;
   d_coeff_d_xi_out[5][face_dir1] = 0.0;
   d_coeff_d_xi_out[5][face_dir2] = 0.0;
   
-  d_coeff_d_xi_out[6][ortho_dir] = -ortho_sign * 0.125;
+  d_coeff_d_xi_out[6][ortho_dir] = -ortho_sign * 0.25;
   d_coeff_d_xi_out[6][face_dir1] = 0.0;
   d_coeff_d_xi_out[6][face_dir2] = 0.0;
   
-  d_coeff_d_xi_out[7][ortho_dir] = -ortho_sign * 0.125;
+  d_coeff_d_xi_out[7][ortho_dir] = -ortho_sign * 0.25;
   d_coeff_d_xi_out[7][face_dir1] = 0.0;
   d_coeff_d_xi_out[7][face_dir2] = 0.0;
 }
@@ -333,37 +333,37 @@ static void derivatives_at_mid_elem( size_t* vertex_indices_out,
   vertex_indices_out[6] = 6;
   vertex_indices_out[7] = 7;
   
-  d_coeff_d_xi_out[0][0] = -0.125;
-  d_coeff_d_xi_out[0][1] = -0.125;
-  d_coeff_d_xi_out[0][2] = -0.125;
+  d_coeff_d_xi_out[0][0] = -0.25;
+  d_coeff_d_xi_out[0][1] = -0.25;
+  d_coeff_d_xi_out[0][2] = -0.25;
 
-  d_coeff_d_xi_out[1][0] =  0.125;
-  d_coeff_d_xi_out[1][1] = -0.125;
-  d_coeff_d_xi_out[1][2] = -0.125;
+  d_coeff_d_xi_out[1][0] =  0.25;
+  d_coeff_d_xi_out[1][1] = -0.25;
+  d_coeff_d_xi_out[1][2] = -0.25;
 
-  d_coeff_d_xi_out[2][0] =  0.125;
-  d_coeff_d_xi_out[2][1] =  0.125;
-  d_coeff_d_xi_out[2][2] = -0.125;
+  d_coeff_d_xi_out[2][0] =  0.25;
+  d_coeff_d_xi_out[2][1] =  0.25;
+  d_coeff_d_xi_out[2][2] = -0.25;
 
-  d_coeff_d_xi_out[3][0] = -0.125;
-  d_coeff_d_xi_out[3][1] =  0.125;
-  d_coeff_d_xi_out[3][2] = -0.125;
+  d_coeff_d_xi_out[3][0] = -0.25;
+  d_coeff_d_xi_out[3][1] =  0.25;
+  d_coeff_d_xi_out[3][2] = -0.25;
 
-  d_coeff_d_xi_out[4][0] = -0.125;
-  d_coeff_d_xi_out[4][1] = -0.125;
-  d_coeff_d_xi_out[4][2] =  0.125;
+  d_coeff_d_xi_out[4][0] = -0.25;
+  d_coeff_d_xi_out[4][1] = -0.25;
+  d_coeff_d_xi_out[4][2] =  0.25;
 
-  d_coeff_d_xi_out[5][0] =  0.125;
-  d_coeff_d_xi_out[5][1] = -0.125;
-  d_coeff_d_xi_out[5][2] =  0.125;
+  d_coeff_d_xi_out[5][0] =  0.25;
+  d_coeff_d_xi_out[5][1] = -0.25;
+  d_coeff_d_xi_out[5][2] =  0.25;
 
-  d_coeff_d_xi_out[6][0] =  0.125;
-  d_coeff_d_xi_out[6][1] =  0.125;
-  d_coeff_d_xi_out[6][2] =  0.125;
+  d_coeff_d_xi_out[6][0] =  0.25;
+  d_coeff_d_xi_out[6][1] =  0.25;
+  d_coeff_d_xi_out[6][2] =  0.25;
 
-  d_coeff_d_xi_out[7][0] = -0.125;
-  d_coeff_d_xi_out[7][1] =  0.125;
-  d_coeff_d_xi_out[7][2] =  0.125;
+  d_coeff_d_xi_out[7][0] = -0.25;
+  d_coeff_d_xi_out[7][1] =  0.25;
+  d_coeff_d_xi_out[7][2] =  0.25;
 }
 
 

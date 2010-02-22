@@ -39,21 +39,21 @@ namespace MESQUITE_NS {
  *
  * \f$\vec{x}(\xi,\eta,\zeta) = \sum_{i=0}^{7} N_i(\xi,\eta,\zeta) \vec{x_i}\f$
  * 
- * \f$N_0(\xi,\eta,\zeta) = \frac{1}{8}(1-\xi)(1-\eta)(1-\zeta)\f$
+ * \f$N_0(\xi,\eta,\zeta) = (1-\xi)(1-\eta)(1-\zeta)\f$
  * 
- * \f$N_1(\xi,\eta,\zeta) = \frac{1}{8}(1+\xi)(1-\eta)(1-\zeta)\f$
+ * \f$N_1(\xi,\eta,\zeta) =    \xi (1-\eta)(1-\zeta)\f$
  * 
- * \f$N_2(\xi,\eta,\zeta) = \frac{1}{8}(1+\xi)(1+\eta)(1-\zeta)\f$
+ * \f$N_2(\xi,\eta,\zeta) =    \xi    \eta (1-\zeta)\f$
  * 
- * \f$N_3(\xi,\eta,\zeta) = \frac{1}{8}(1-\xi)(1+\eta)(1-\zeta)\f$
+ * \f$N_3(\xi,\eta,\zeta) = (1-\xi)   \eta (1-\zeta)\f$
  * 
- * \f$N_4(\xi,\eta,\zeta) = \frac{1}{8}(1-\xi)(1-\eta)(1+\zeta)\f$
+ * \f$N_4(\xi,\eta,\zeta) = (1-\xi)(1-\eta)   \zeta \f$
  * 
- * \f$N_5(\xi,\eta,\zeta) = \frac{1}{8}(1+\xi)(1-\eta)(1+\zeta)\f$
+ * \f$N_5(\xi,\eta,\zeta) =    \xi (1-\eta)   \zeta \f$
  * 
- * \f$N_6(\xi,\eta,\zeta) = \frac{1}{8}(1+\xi)(1+\eta)(1+\zeta)\f$
+ * \f$N_6(\xi,\eta,\zeta) =    \xi    \eta    \zeta \f$
  * 
- * \f$N_7(\xi,\eta,\zeta) = \frac{1}{8}(1-\xi)(1+\eta)(1+\zeta)\f$
+ * \f$N_7(\xi,\eta,\zeta) = (1-\xi)   \eta    \zeta \f$
  * 
  */ 
 class MESQUITE_EXPORT LinearHexahedron : public MappingFunction3D

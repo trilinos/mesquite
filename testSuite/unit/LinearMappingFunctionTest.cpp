@@ -262,14 +262,14 @@ void LinearMappingFunctionTest::tearDown() {}
  *                             Xi values at element corners
  *******************************************************************************/
 
-const int HexSign[8][3] = { { -1, -1, -1 },
-                            {  1, -1, -1 },
-                            {  1,  1, -1 },
-                            { -1,  1, -1 },
-                            { -1, -1,  1 },
-                            {  1, -1,  1 },
-                            {  1,  1,  1 },
-                            { -1,  1,  1 } };
+const int HexCorners[8][3] = { {  0,  0,  0 },
+                               {  1,  0,  0 },
+                               {  1,  1,  0 },
+                               {  0,  1,  0 },
+                               {  0,  0,  1 },
+                               {  1,  0,  1 },
+                               {  1,  1,  1 },
+                               {  0,  1,  1 } };
 
 const int QuadCorners[4][2] = { {  0,  0 },
                                 {  1,  0 },
@@ -351,27 +351,27 @@ void LinearMappingFunctionTest::xi_at_faces( EntityTopology type, double* xi, co
 void LinearMappingFunctionTest::test_linear_hex_coeff_corners()
 { 
   double xi[24];
-  xi_at_corners( HEXAHEDRON, xi, &HexSign[0][0] );
+  xi_at_corners( HEXAHEDRON, xi, &HexCorners[0][0] );
   do_coeff_test( hex, 0, hex_coeff, 8, xi );
 }
   
 void LinearMappingFunctionTest::test_linear_hex_coeff_edges()
 {
   double xi[36];
-  xi_at_edges( HEXAHEDRON, xi, &HexSign[0][0] );
+  xi_at_edges( HEXAHEDRON, xi, &HexCorners[0][0] );
   do_coeff_test( hex, 1, hex_coeff, 12, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_hex_coeff_faces()
 {
   double xi[18];
-  xi_at_faces( HEXAHEDRON, xi, &HexSign[0][0] );
+  xi_at_faces( HEXAHEDRON, xi, &HexCorners[0][0] );
   do_coeff_test( hex, 2, hex_coeff, 6, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_hex_coeff_center()
 {
-  double xi[3] = { 0, 0, 0 };
+  double xi[3] = { 0.5, 0.5, 0.5 };
   do_coeff_test( hex, 3, hex_coeff, 1, xi );
 }
 
@@ -527,27 +527,27 @@ void LinearMappingFunctionTest::test_linear_pyr_coeff_center()
 void LinearMappingFunctionTest::test_linear_hex_deriv_corners()
 { 
   double xi[24];
-  xi_at_corners( HEXAHEDRON, xi, &HexSign[0][0] );
+  xi_at_corners( HEXAHEDRON, xi, &HexCorners[0][0] );
   do_deriv_test( hex, 0, hex_deriv, 8, xi );
 }
   
 void LinearMappingFunctionTest::test_linear_hex_deriv_edges()
 {
   double xi[36];
-  xi_at_edges( HEXAHEDRON, xi, &HexSign[0][0] );
+  xi_at_edges( HEXAHEDRON, xi, &HexCorners[0][0] );
   do_deriv_test( hex, 1, hex_deriv, 12, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_hex_deriv_faces()
 {
   double xi[18];
-  xi_at_faces( HEXAHEDRON, xi, &HexSign[0][0] );
+  xi_at_faces( HEXAHEDRON, xi, &HexCorners[0][0] );
   do_deriv_test( hex, 2, hex_deriv, 6, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_hex_deriv_center()
 {
-  double xi[3] = { 0, 0, 0 };
+  double xi[3] = { 0.5, 0.5, 0.5 };
   do_deriv_test( hex, 3, hex_deriv, 1, xi );
 }
 
@@ -703,12 +703,14 @@ void LinearMappingFunctionTest::test_linear_pyr_deriv_center()
     
 void LinearMappingFunctionTest::hex_coeff( double xi[3], double coeff[8] )
 {
-  for (unsigned i = 0; i < 8; ++i)
-  {
-    coeff[i] = 0.125;
-    for (unsigned j = 0; j < 3; ++j)
-      coeff[i] *= 1 + HexSign[i][j] * xi[j];
-  }
+  coeff[0] = (1-xi[0]) * (1-xi[1]) * (1-xi[2]);
+  coeff[1] =    xi[0]  * (1-xi[1]) * (1-xi[2]);
+  coeff[2] =    xi[0]  *    xi[1]  * (1-xi[2]);
+  coeff[3] = (1-xi[0]) *    xi[1]  * (1-xi[2]);
+  coeff[4] = (1-xi[0]) * (1-xi[1]) *    xi[2] ;
+  coeff[5] =    xi[0]  * (1-xi[1]) *    xi[2] ;
+  coeff[6] =    xi[0]  *    xi[1]  *    xi[2] ;
+  coeff[7] = (1-xi[0]) *    xi[1]  *    xi[2] ;
 }
 
 void LinearMappingFunctionTest::tet_coeff( double xi[3], double coeff[4] )
@@ -759,11 +761,37 @@ void LinearMappingFunctionTest::pyr_coeff( double xi[3], double coeff[5] )
 
 void LinearMappingFunctionTest::hex_deriv( double xi[3], double coeff[24] )
 {
-  for (unsigned i = 0; i < 8; ++i)
-    for (unsigned j = 0; j < 3; ++j)
-      coeff[3*i+j] = 0.125 * HexSign[i][j] *
-                     (1 + HexSign[i][(j+1)%3] * xi[(j+1)%3]) *
-                     (1 + HexSign[i][(j+2)%3] * xi[(j+2)%3]);
+  coeff[3*0+0] = - (1-xi[1]) * (1-xi[2]);
+  coeff[3*0+1] = - (1-xi[0]) * (1-xi[2]);
+  coeff[3*0+2] = - (1-xi[0]) * (1-xi[1]);
+
+  coeff[3*1+0] =   (1-xi[1]) * (1-xi[2]);
+  coeff[3*1+1] = -    xi[0]  * (1-xi[2]);
+  coeff[3*1+2] = -    xi[0]  * (1-xi[1]);
+
+  coeff[3*2+0] =      xi[1]  * (1-xi[2]);
+  coeff[3*2+1] =      xi[0]  * (1-xi[2]);
+  coeff[3*2+2] = -    xi[0]  *    xi[1] ;
+
+  coeff[3*3+0] = -    xi[1]  * (1-xi[2]);
+  coeff[3*3+1] =   (1-xi[0]) * (1-xi[2]);
+  coeff[3*3+2] = - (1-xi[0]) *    xi[1] ;
+
+  coeff[3*4+0] = - (1-xi[1]) *    xi[2] ;
+  coeff[3*4+1] = - (1-xi[0]) *    xi[2] ;
+  coeff[3*4+2] =   (1-xi[0]) * (1-xi[1]);
+
+  coeff[3*5+0] =   (1-xi[1]) *    xi[2] ;
+  coeff[3*5+1] = -    xi[0]  *    xi[2] ;
+  coeff[3*5+2] =      xi[0]  * (1-xi[1]);
+
+  coeff[3*6+0] =      xi[1]  *    xi[2] ;
+  coeff[3*6+1] =      xi[0]  *    xi[2] ;
+  coeff[3*6+2] =      xi[0]  *    xi[1] ;
+
+  coeff[3*7+0] = -    xi[1]  *    xi[2] ;
+  coeff[3*7+1] =   (1-xi[0]) *    xi[2] ;
+  coeff[3*7+2] =   (1-xi[0]) *    xi[1] ;
 }
 
 void LinearMappingFunctionTest::tet_deriv( double*, double coeff[12] )
