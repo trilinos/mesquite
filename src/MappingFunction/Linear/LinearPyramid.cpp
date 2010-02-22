@@ -216,9 +216,9 @@ static void coefficients_at_mid_face( unsigned face,
     indices_out[0] = face;
     indices_out[1] = (face+1)%4;
     indices_out[2] = 4;
-    coeff_out[0] = MSQ_ONE_THIRD;
-    coeff_out[1] = MSQ_ONE_THIRD;
-    coeff_out[2] = MSQ_ONE_THIRD;
+    coeff_out[0] = 0.25;
+    coeff_out[1] = 0.25;
+    coeff_out[2] = 0.50;
   }
 }
 
@@ -227,11 +227,11 @@ static void coefficients_at_mid_elem( double* coeff_out,
                                       size_t& num_coeff )
 {
   num_coeff = 5;
-  coeff_out[0] = 0.2;
-  coeff_out[1] = 0.2;
-  coeff_out[2] = 0.2;
-  coeff_out[3] = 0.2;
-  coeff_out[4] = 0.2;
+  coeff_out[0] = 0.125;
+  coeff_out[1] = 0.125;
+  coeff_out[2] = 0.125;
+  coeff_out[3] = 0.125;
+  coeff_out[4] = 0.500;
   indices_out[0] = 0;
   indices_out[1] = 1;
   indices_out[2] = 2;
@@ -300,14 +300,14 @@ void LinearPyramid::derivatives( Sample loc,
       break;
     case 2:
       if (loc.number == 4) {
-        set_equal_derivatives( 0.50, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+        set_equal_derivatives( 0.5, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       }
       else {
-        set_edge_derivatives( loc.number, 1./3, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+        set_edge_derivatives( loc.number, 0.25, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       }
       break;
     case 3:
-      set_equal_derivatives( 0.40, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      set_equal_derivatives( 0.25, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     default:
       MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);

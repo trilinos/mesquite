@@ -57,14 +57,14 @@ namespace MESQUITE_NS {
  * - \f$ \vec{\xi}_{e7}=( 0,           1,           \frac{1}{2}) \f$
  *
  * and mid-face the coordinates are:
- * - \f$ \vec{\xi}_{f0}=( \frac{1}{2}, 0,           \frac{1}{3}) \f$
- * - \f$ \vec{\xi}_{f1}=( 1,           \frac{1}{2}, \frac{1}{3}) \f$
- * - \f$ \vec{\xi}_{f2}=( \frac{1}{2}, 1,           \frac{1}{3}) \f$
- * - \f$ \vec{\xi}_{f3}=( 0,           \frac{1}{2}, \frac{1}{3}) \f$
+ * - \f$ \vec{\xi}_{f0}=( \frac{1}{2}, 0,           \frac{1}{2}) \f$
+ * - \f$ \vec{\xi}_{f1}=( 1,           \frac{1}{2}, \frac{1}{2}) \f$
+ * - \f$ \vec{\xi}_{f2}=( \frac{1}{2}, 1,           \frac{1}{2}) \f$
+ * - \f$ \vec{\xi}_{f3}=( 0,           \frac{1}{2}, \frac{1}{2}) \f$
  * - \f$ \vec{\xi}_{f4}=( \frac{1}{2}, \frac{1}{2}, 0)           \f$
  *
  * and the mid-element coorindates are
- * - \f$ \vec{\xi}_m=( \frac{1}{2}, \frac{1}{2}, \frac{1}{5}) \f$
+ * - \f$ \vec{\xi}_m=( \frac{1}{2}, \frac{1}{2}, \frac{1}{2}) \f$
  */ 
 class MESQUITE_EXPORT LinearPyramid : public MappingFunction3D
 {

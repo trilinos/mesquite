@@ -504,17 +504,17 @@ void LinearMappingFunctionTest::test_linear_pyr_coeff_edges()
 
 void LinearMappingFunctionTest::test_linear_pyr_coeff_faces()
 {
-  double xi[15] = { 0.5, 0.0, 1./3,
-                    1.0, 0.5, 1./3,
-                    0.5, 1.0, 1./3,
-                    0.0, 0.5, 1./3,
+  double xi[15] = { 0.5, 0.0, 0.5,
+                    1.0, 0.5, 0.5,
+                    0.5, 1.0, 0.5,
+                    0.0, 0.5, 0.5,
                     0.5, 0.5, 0.0 };
   do_coeff_test( pyr, 2, pyr_coeff, 5, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_pyr_coeff_center()
 {
-  double xi[3] = { 0.5, 0.5, 0.2 };
+  double xi[3] = { 0.5, 0.5, 0.5 };
   do_coeff_test( pyr, 3, pyr_coeff, 1, xi );
 }
 
@@ -682,17 +682,17 @@ void LinearMappingFunctionTest::test_linear_pyr_deriv_edges()
 
 void LinearMappingFunctionTest::test_linear_pyr_deriv_faces()
 {
-  double xi[15] = { 0.5, 0.0, 1./3,
-                    1.0, 0.5, 1./3,
-                    0.5, 1.0, 1./3,
-                    0.0, 0.5, 1./3,
+  double xi[15] = { 0.5, 0.0, 0.5,
+                    1.0, 0.5, 0.5,
+                    0.5, 1.0, 0.5,
+                    0.0, 0.5, 0.5,
                     0.5, 0.5, 0.0 };
   do_deriv_test( pyr, 2, pyr_deriv, 5, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_pyr_deriv_center()
 {
-  double xi[3] = { 0.5, 0.5, 0.2 };
+  double xi[3] = { 0.5, 0.5, 0.5 };
   do_deriv_test( pyr, 3, pyr_deriv, 1, xi );
 }
 
