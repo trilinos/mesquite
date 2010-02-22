@@ -53,23 +53,23 @@ static inline void set_equal_derivatives( double value,
     
   derivs[0][0] = -value;
   derivs[0][1] = -value;
-  derivs[0][2] = -0.125;
+  derivs[0][2] = -0.25;
   
   derivs[1][0] =  value;
   derivs[1][1] = -value;
-  derivs[1][2] = -0.125;
+  derivs[1][2] = -0.25;
   
   derivs[2][0] =  value;
   derivs[2][1] =  value;
-  derivs[2][2] = -0.125;
+  derivs[2][2] = -0.25;
   
   derivs[3][0] = -value;
   derivs[3][1] =  value;
-  derivs[3][2] = -0.125;
+  derivs[3][2] = -0.25;
   
   derivs[4][0] =  0.0;
   derivs[4][1] =  0.0;
-  derivs[4][2] =  0.5;
+  derivs[4][2] =  1.0;
 }
 
 static inline void set_edge_derivatives( unsigned base_corner,
@@ -95,11 +95,11 @@ static inline void set_edge_derivatives( unsigned base_corner,
 
   derivs[0][  direction] =  2 * dir_sign * value;
   derivs[0][1-direction] =      oth_sign * value;
-  derivs[0][2] = -0.25;
+  derivs[0][2] = -0.5;
 
   derivs[1][  direction] = -2 * dir_sign * value;
   derivs[1][1-direction] =      oth_sign * value;
-  derivs[1][2] = -0.25;
+  derivs[1][2] = -0.5;
 
   derivs[2][  direction] =  0.0;
   derivs[2][1-direction] = -oth_sign * value;
@@ -111,7 +111,7 @@ static inline void set_edge_derivatives( unsigned base_corner,
 
   derivs[4][0] = 0.0;
   derivs[4][1] = 0.0;
-  derivs[4][2] = 0.5;
+  derivs[4][2] = 1.0;
 }
 
 static inline void set_corner_derivatives( unsigned corner,
@@ -136,7 +136,7 @@ static inline void set_corner_derivatives( unsigned corner,
 
   derivs[0][0] =  dxi_value;
   derivs[0][1] =  deta_value;
-  derivs[0][2] = -0.5;
+  derivs[0][2] = -1.0;
 
   derivs[1][0] = -dxi_value;
   derivs[1][1] =  0.0;
@@ -148,7 +148,7 @@ static inline void set_corner_derivatives( unsigned corner,
 
   derivs[3][0] =  0.0;
   derivs[3][1] =  0.0;
-  derivs[3][2] =  0.5;
+  derivs[3][2] =  1.0;
 }
 
 EntityTopology LinearPyramid::element_topology() const
@@ -227,11 +227,11 @@ static void coefficients_at_mid_elem( double* coeff_out,
                                       size_t& num_coeff )
 {
   num_coeff = 5;
-  coeff_out[0] = 0.1875;
-  coeff_out[1] = 0.1875;
-  coeff_out[2] = 0.1875;
-  coeff_out[3] = 0.1875;
-  coeff_out[4] = 0.25;
+  coeff_out[0] = 0.2;
+  coeff_out[1] = 0.2;
+  coeff_out[2] = 0.2;
+  coeff_out[3] = 0.2;
+  coeff_out[4] = 0.2;
   indices_out[0] = 0;
   indices_out[1] = 1;
   indices_out[2] = 2;
@@ -287,27 +287,27 @@ void LinearPyramid::derivatives( Sample loc,
         set_equal_derivatives( 0.0, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       }
       else {
-        set_corner_derivatives( loc.number, 0.5, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+        set_corner_derivatives( loc.number, 1.0, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       }
       break;
     case 1:
       if (loc.number < 4) {
-        set_edge_derivatives( loc.number, 0.25, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+        set_edge_derivatives( loc.number, 0.50, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       }
       else {
-        set_corner_derivatives( loc.number-4, 0.25, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+        set_corner_derivatives( loc.number-4, 0.50, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       }    
       break;
     case 2:
       if (loc.number == 4) {
-        set_equal_derivatives( 0.25, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+        set_equal_derivatives( 0.50, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       }
       else {
-        set_edge_derivatives( loc.number, 1./6, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+        set_edge_derivatives( loc.number, 1./3, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       }
       break;
     case 3:
-      set_equal_derivatives( 0.1875, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      set_equal_derivatives( 0.40, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     default:
       MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);

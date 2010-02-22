@@ -481,40 +481,40 @@ void LinearMappingFunctionTest::test_linear_prism_coeff_center()
 
 void LinearMappingFunctionTest::test_linear_pyr_coeff_corners()
 {
-  double xi[15] = { -1, -1, -1,
-                     1, -1, -1,
-                     1,  1, -1,
-                    -1,  1, -1,
+  double xi[15] = {  0,  0,  0,
+                     1,  0,  0,
+                     1,  1,  0,
+                     0,  1,  0,
                      0,  0,  1 };
   do_coeff_test( pyr, 0, pyr_coeff, 5, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_pyr_coeff_edges()
 {
-  double xi[24] = { 0, -1, -1,
-                    1,  0, -1,
-                    0,  1, -1,
-                   -1,  0, -1,
-                   -1, -1,  0,
-                    1, -1,  0,
-                    1,  1,  0,
-                   -1,  1,  0 };
+  double xi[24] = { 0.5, 0.0, 0.0,
+                    1.0, 0.5, 0.0,
+                    0.5, 1.0, 0.0,
+                    0.0, 0.5, 0.0,
+                    0.0, 0.0, 0.5,
+                    1.0, 0.0, 0.5,
+                    1.0, 1.0, 0.5,
+                    0.0, 1.0, 0.5 };
   do_coeff_test( pyr, 1, pyr_coeff, 8, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_pyr_coeff_faces()
 {
-  double xi[15] = { 0, -1, -1./3,
-                    1,  0, -1./3,
-                    0,  1, -1./3,
-                   -1,  0, -1./3,
-                    0,  0, -1 };
+  double xi[15] = { 0.5, 0.0, 1./3,
+                    1.0, 0.5, 1./3,
+                    0.5, 1.0, 1./3,
+                    0.0, 0.5, 1./3,
+                    0.5, 0.5, 0.0 };
   do_coeff_test( pyr, 2, pyr_coeff, 5, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_pyr_coeff_center()
 {
-  double xi[3] = { 0, 0, -0.5 };
+  double xi[3] = { 0.5, 0.5, 0.2 };
   do_coeff_test( pyr, 3, pyr_coeff, 1, xi );
 }
 
@@ -659,40 +659,40 @@ void LinearMappingFunctionTest::test_linear_prism_deriv_center()
 
 void LinearMappingFunctionTest::test_linear_pyr_deriv_corners()
 {
-  double xi[15] = { -1, -1, -1,
-                     1, -1, -1,
-                     1,  1, -1,
-                    -1,  1, -1,
-                     0,  0,  1 };
+  double xi[15] = {  0,  0,  0,
+                     1,  0,  0,
+                     1,  1,  0,
+                     0,  1,  0,
+                     0.5,  0.5,  1 };
   do_deriv_test( pyr, 0, pyr_deriv, 5, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_pyr_deriv_edges()
 {
-  double xi[24] = { 0, -1, -1,
-                    1,  0, -1,
-                    0,  1, -1,
-                   -1,  0, -1,
-                   -1, -1,  0,
-                    1, -1,  0,
-                    1,  1,  0,
-                   -1,  1,  0 };
+  double xi[24] = { 0.5, 0.0, 0.0,
+                    1.0, 0.5, 0.0,
+                    0.5, 1.0, 0.0,
+                    0.0, 0.5, 0.0,
+                    0.0, 0.0, 0.5,
+                    1.0, 0.0, 0.5,
+                    1.0, 1.0, 0.5,
+                    0.0, 1.0, 0.5 };
   do_deriv_test( pyr, 1, pyr_deriv, 8, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_pyr_deriv_faces()
 {
-  double xi[15] = { 0, -1, -1./3,
-                    1,  0, -1./3,
-                    0,  1, -1./3,
-                   -1,  0, -1./3,
-                    0,  0, -1 };
+  double xi[15] = { 0.5, 0.0, 1./3,
+                    1.0, 0.5, 1./3,
+                    0.5, 1.0, 1./3,
+                    0.0, 0.5, 1./3,
+                    0.5, 0.5, 0.0 };
   do_deriv_test( pyr, 2, pyr_deriv, 5, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_pyr_deriv_center()
 {
-  double xi[3] = { 0, 0, -0.5 };
+  double xi[3] = { 0.5, 0.5, 0.2 };
   do_deriv_test( pyr, 3, pyr_deriv, 1, xi );
 }
 
@@ -748,11 +748,11 @@ void LinearMappingFunctionTest::prism_coeff( double xi[3], double coeff[6] )
 
 void LinearMappingFunctionTest::pyr_coeff( double xi[3], double coeff[5] )
 {
-  coeff[0] = 0.125 * (1 - xi[0]) * (1 - xi[1]) * (1 - xi[2]);
-  coeff[1] = 0.125 * (1 + xi[0]) * (1 - xi[1]) * (1 - xi[2]);
-  coeff[2] = 0.125 * (1 + xi[0]) * (1 + xi[1]) * (1 - xi[2]);
-  coeff[3] = 0.125 * (1 - xi[0]) * (1 + xi[1]) * (1 - xi[2]);
-  coeff[4] = 0.500 *                             (1 + xi[2]);
+  coeff[0] = (1 - xi[0]) * (1 - xi[1]) * (1 - xi[2]);
+  coeff[1] =      xi[0]  * (1 - xi[1]) * (1 - xi[2]);
+  coeff[2] =      xi[0]  *      xi[1]  * (1 - xi[2]);
+  coeff[3] = (1 - xi[0]) *      xi[1]  * (1 - xi[2]);
+  coeff[4] =                                  xi[2] ;
 }
 
 /*******************************************************************************
@@ -821,19 +821,25 @@ void LinearMappingFunctionTest::prism_deriv( double xi[3], double coeff[18] )
 
 void LinearMappingFunctionTest::pyr_deriv( double xi[3], double coeff[15] )
 {
-  static int c[4][2] = { { -1, -1 },
-                         {  1, -1 },
-                         {  1,  1 },
-                         { -1,  1 } };
+  coeff[3*0+0] = -(1-xi[1])*(1-xi[2]);
+  coeff[3*0+1] = -(1-xi[0])*(1-xi[2]);
+  coeff[3*0+2] = -(1-xi[0])*(1-xi[1]);
   
-  for (int n = 0; n < 4; ++n) {
-    coeff[3*n  ] =  0.125 * c[n][0] * (1 + c[n][1] * xi[1]) * (1 - xi[2]);
-    coeff[3*n+1] =  0.125 * c[n][1] * (1 + c[n][0] * xi[0]) * (1 - xi[2]);
-    coeff[3*n+2] = -0.125 * (1 + c[n][0] * xi[0]) * (1 + c[n][1] * xi[1]);
-  }
-  coeff[12] = 0.0;
-  coeff[13] = 0.0;
-  coeff[14] = 0.5;
+  coeff[3*1+0] =  (1-xi[1])*(1-xi[2]);
+  coeff[3*1+1] =    -xi[0] *(1-xi[2]);
+  coeff[3*1+2] =    -xi[0] *(1-xi[1]);
+  
+  coeff[3*2+0] =     xi[1] *(1-xi[2]);
+  coeff[3*2+1] =     xi[0] *(1-xi[2]);
+  coeff[3*2+2] =    -xi[0] *   xi[1] ;
+  
+  coeff[3*3+0] =    -xi[1] *(1-xi[2]);
+  coeff[3*3+1] =  (1-xi[0])*(1-xi[2]);
+  coeff[3*3+2] =    -xi[1] *(1-xi[0]);
+  
+  coeff[3*4+0] = 0.0;
+  coeff[3*4+1] = 0.0;
+  coeff[3*4+2] = 1.0;
 }
 
 /*******************************************************************************

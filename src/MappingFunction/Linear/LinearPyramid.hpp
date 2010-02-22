@@ -40,31 +40,31 @@ namespace MESQUITE_NS {
 /**\brief Linear mapping function for a pyramid element
  *
  * \f$\vec{x}(\vec{\xi})=\sum_{i=0}^5 N_i(\vec{\xi})\vec{x_i}\f$
- * - \f$N_0(\vec{\xi})=\frac{1}{8}(1-\xi)(1-\eta)(1-\zeta)\f$
- * - \f$N_1(\vec{\xi})=\frac{1}{8}(1+\xi)(1-\eta)(1-\zeta)\f$
- * - \f$N_2(\vec{\xi})=\frac{1}{8}(1+\xi)(1+\eta)(1-\zeta)\f$
- * - \f$N_3(\vec{\xi})=\frac{1}{8}(1-\xi)(1+\eta)(1-\zeta)\f$
- * - \f$N_4(\vec{\xi})=\frac{1}{2}(1+\zeta)\f$
+ * - \f$ N_0(\vec{\xi})=(1-\xi)(1-\eta)(1-\zeta) \f$
+ * - \f$ N_1(\vec{\xi})=   \xi (1-\eta)(1-\zeta) \f$
+ * - \f$ N_2(\vec{\xi})=   \xi    \eta (1-\zeta) \f$
+ * - \f$ N_3(\vec{\xi})=(1-\xi)   \eta (1-\zeta) \f$
+ * - \f$ N_4(\vec{\xi})=\zeta \f$
  *
  * Where the mid-edge coordinates are:
- * - \f$\vec{\xi}_{e0}=( 0,-1,-1)\f$
- * - \f$\vec{\xi}_{e1}=( 1, 0,-1)\f$
- * - \f$\vec{\xi}_{e2}=( 0, 1,-1)\f$
- * - \f$\vec{\xi}_{e3}=(-1, 0,-1)\f$
- * - \f$\vec{\xi}_{e4}=(-1,-1, 0)\f$
- * - \f$\vec{\xi}_{e5}=( 1,-1, 0)\f$
- * - \f$\vec{\xi}_{e6}=( 1, 1, 0)\f$
- * - \f$\vec{\xi}_{e7}=(-1, 1, 0)\f$
+ * - \f$ \vec{\xi}_{e0}=( \frac{1}{2}, 0,           0) \f$
+ * - \f$ \vec{\xi}_{e1}=( 1,           \frac{1}{2}, 0) \f$
+ * - \f$ \vec{\xi}_{e2}=( \frac{1}{2}, 1,           0) \f$
+ * - \f$ \vec{\xi}_{e3}=( 0,           \frac{1}{2}, 0) \f$
+ * - \f$ \vec{\xi}_{e4}=( 0,           0,           \frac{1}{2}) \f$
+ * - \f$ \vec{\xi}_{e5}=( 1,           0,           \frac{1}{2}) \f$
+ * - \f$ \vec{\xi}_{e6}=( 1,           1,           \frac{1}{2}) \f$
+ * - \f$ \vec{\xi}_{e7}=( 0,           1,           \frac{1}{2}) \f$
  *
  * and mid-face the coordinates are:
- * - \f$\vec{\xi}_{f0}=( 0,-1,\frac{1}{3})\f$
- * - \f$\vec{\xi}_{f1}=( 1, 0,\frac{1}{3})\f$
- * - \f$\vec{\xi}_{f2}=( 0, 1,\frac{1}{3})\f$
- * - \f$\vec{\xi}_{f3}=(-1, 0,\frac{1}{3})\f$
- * - \f$\vec{\xi}_{f4}=( 0, 0, -1)\f$
+ * - \f$ \vec{\xi}_{f0}=( \frac{1}{2}, 0,           \frac{1}{3}) \f$
+ * - \f$ \vec{\xi}_{f1}=( 1,           \frac{1}{2}, \frac{1}{3}) \f$
+ * - \f$ \vec{\xi}_{f2}=( \frac{1}{2}, 1,           \frac{1}{3}) \f$
+ * - \f$ \vec{\xi}_{f3}=( 0,           \frac{1}{2}, \frac{1}{3}) \f$
+ * - \f$ \vec{\xi}_{f4}=( \frac{1}{2}, \frac{1}{2}, 0)           \f$
  *
  * and the mid-element coorindates are
- * - \f$\vec{\xi}_m=( 0, 0,-\frac{1}{2})\f$
+ * - \f$ \vec{\xi}_m=( \frac{1}{2}, \frac{1}{2}, \frac{1}{5}) \f$
  */ 
 class MESQUITE_EXPORT LinearPyramid : public MappingFunction3D
 {
