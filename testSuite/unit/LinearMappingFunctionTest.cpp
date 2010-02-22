@@ -271,10 +271,10 @@ const int HexSign[8][3] = { { -1, -1, -1 },
                             {  1,  1,  1 },
                             { -1,  1,  1 } };
 
-const int QuadSign[4][2] = { { -1, -1 },
-                             {  1, -1 },
-                             {  1,  1 },
-                             { -1,  1 } };
+const int QuadCorners[4][2] = { {  0,  0 },
+                                {  1,  0 },
+                                {  1,  1 },
+                                {  0,  1 } };
 
 
 const int TetCorners[12] = { 0, 0, 0, 
@@ -378,14 +378,14 @@ void LinearMappingFunctionTest::test_linear_hex_coeff_center()
 void LinearMappingFunctionTest::test_linear_quad_coeff_corners()
 { 
   double xi[8];
-  xi_at_corners( QUADRILATERAL, xi, &QuadSign[0][0] );
+  xi_at_corners( QUADRILATERAL, xi, &QuadCorners[0][0] );
   do_coeff_test( quad, 0, quad_coeff, 4, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_quad_coeff_edges()
 {
   double xi[8];
-  xi_at_edges( QUADRILATERAL, xi, &QuadSign[0][0] );
+  xi_at_edges( QUADRILATERAL, xi, &QuadCorners[0][0] );
   do_coeff_test( quad, 1, quad_coeff, 4, xi );
 }
 
@@ -396,7 +396,7 @@ void LinearMappingFunctionTest::test_linear_quad_coeff_faces()
 
 void LinearMappingFunctionTest::test_linear_quad_coeff_center()
 {
-  double xi[2] = { 0, 0 };
+  double xi[2] = { 0.5, 0.5 };
   do_coeff_test( quad, 2, quad_coeff, 1, xi );
 }
 
@@ -554,14 +554,14 @@ void LinearMappingFunctionTest::test_linear_hex_deriv_center()
 void LinearMappingFunctionTest::test_linear_quad_deriv_corners()
 { 
   double xi[8];
-  xi_at_corners( QUADRILATERAL, xi, &QuadSign[0][0] );
+  xi_at_corners( QUADRILATERAL, xi, &QuadCorners[0][0] );
   do_deriv_test( quad, 0, quad_deriv, 4, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_quad_deriv_edges()
 {
   double xi[8];
-  xi_at_edges( QUADRILATERAL, xi, &QuadSign[0][0] );
+  xi_at_edges( QUADRILATERAL, xi, &QuadCorners[0][0] );
   do_deriv_test( quad, 1, quad_deriv, 4, xi );
 }
 
@@ -572,7 +572,7 @@ void LinearMappingFunctionTest::test_linear_quad_deriv_faces()
 
 void LinearMappingFunctionTest::test_linear_quad_deriv_center()
 {
-  double xi[2] = { 0, 0 };
+  double xi[2] = { 0.5, 0.5 };
   do_deriv_test( quad, 2, quad_deriv, 1, xi );
 }
 
@@ -721,12 +721,10 @@ void LinearMappingFunctionTest::tet_coeff( double xi[3], double coeff[4] )
 
 void LinearMappingFunctionTest::quad_coeff( double xi[2], double coeff[4] )
 {
-  for (unsigned i = 0; i < 4; ++i)
-  {
-    coeff[i] = 0.25;
-    for (unsigned j = 0; j < 2; ++j)
-      coeff[i] *= 1 + QuadSign[i][j] * xi[j];
-  }
+  coeff[0] = (1-xi[0]) * (1-xi[1]);
+  coeff[1] =    xi[0]  * (1-xi[1]);
+  coeff[2] =    xi[0]  *    xi[1] ;
+  coeff[3] = (1-xi[0]) *    xi[1] ;
 }
 
 void LinearMappingFunctionTest::tri_coeff( double xi[2], double coeff[3] )
@@ -779,9 +777,17 @@ void LinearMappingFunctionTest::tet_deriv( double*, double coeff[12] )
 
 void LinearMappingFunctionTest::quad_deriv( double xi[2], double coeff[8] )
 {
-  for (unsigned i = 0; i < 4; ++i)
-    for (unsigned j = 0; j < 2; ++j)
-      coeff[2*i+j] = 0.25 * QuadSign[i][j] * (1 + QuadSign[i][1-j] * xi[1-j]);
+  coeff[2*0+0] = xi[1] - 1;
+  coeff[2*0+1] = xi[0] - 1;
+  
+  coeff[2*1+0] = 1 - xi[1];
+  coeff[2*1+1] = -xi[0];
+  
+  coeff[2*2+0] = xi[1];
+  coeff[2*2+1] = xi[0];
+  
+  coeff[2*3+0] = -xi[1];
+  coeff[2*3+1] = 1 - xi[0];
 }
 
 void LinearMappingFunctionTest::tri_deriv( double*, double coeff[6] )

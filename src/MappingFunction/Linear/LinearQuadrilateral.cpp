@@ -101,12 +101,12 @@ static void derivatives_at_corner( unsigned corner,
   vertex_indices[1] = adj_in_xi;
   vertex_indices[2] = adj_in_eta;
   
-  derivs[0][0] = 0.5 * sign[ xi][corner];
-  derivs[0][1] = 0.5 * sign[eta][corner];
-  derivs[1][0] = 0.5 * sign[ xi][adj_in_xi ];
+  derivs[0][0] = sign[ xi][corner];
+  derivs[0][1] = sign[eta][corner];
+  derivs[1][0] = sign[ xi][adj_in_xi ];
   derivs[1][1] = 0.0;
   derivs[2][0] = 0.0;
-  derivs[2][1] = 0.5 * sign[eta][adj_in_eta];
+  derivs[2][1] = sign[eta][adj_in_eta];
 }
 
 static void derivatives_at_mid_edge( unsigned edge, 
@@ -127,15 +127,15 @@ static void derivatives_at_mid_edge( unsigned edge,
   vertices[2] = 2;
   vertices[3] = 3;
   
-  derivs[start_vtx][direction] = 0.5 * sign[direction][start_vtx];
-  derivs[  end_vtx][direction] = 0.5 * sign[direction][  end_vtx];
+  derivs[start_vtx][direction] = sign[direction][start_vtx];
+  derivs[  end_vtx][direction] = sign[direction][  end_vtx];
   derivs[othr1_vtx][direction] = 0.0;
   derivs[othr2_vtx][direction] = 0.0;
  
-  derivs[0][orthogonal] = 0.25 * sign[orthogonal][0];
-  derivs[1][orthogonal] = 0.25 * sign[orthogonal][1];
-  derivs[2][orthogonal] = 0.25 * sign[orthogonal][2];
-  derivs[3][orthogonal] = 0.25 * sign[orthogonal][3];
+  derivs[0][orthogonal] = 0.5 * sign[orthogonal][0];
+  derivs[1][orthogonal] = 0.5 * sign[orthogonal][1];
+  derivs[2][orthogonal] = 0.5 * sign[orthogonal][2];
+  derivs[3][orthogonal] = 0.5 * sign[orthogonal][3];
 }
 
 
@@ -144,10 +144,10 @@ static void derivatives_at_mid_elem( size_t* vertices,
                                      size_t& num_vtx )
 {
   num_vtx = 4;
-  vertices[0] = 0; derivs[0][0] = -0.25; derivs[0][1] = -0.25;
-  vertices[1] = 1; derivs[1][0] =  0.25; derivs[1][1] = -0.25;
-  vertices[2] = 2; derivs[2][0] =  0.25; derivs[2][1] =  0.25;
-  vertices[3] = 3; derivs[3][0] = -0.25; derivs[3][1] =  0.25;
+  vertices[0] = 0; derivs[0][0] = -0.5; derivs[0][1] = -0.5;
+  vertices[1] = 1; derivs[1][0] =  0.5; derivs[1][1] = -0.5;
+  vertices[2] = 2; derivs[2][0] =  0.5; derivs[2][1] =  0.5;
+  vertices[3] = 3; derivs[3][0] = -0.5; derivs[3][1] =  0.5;
 }
 
 void LinearQuadrilateral::derivatives( Sample loc,

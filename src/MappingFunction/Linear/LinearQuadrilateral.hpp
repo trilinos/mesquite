@@ -44,13 +44,13 @@ namespace MESQUITE_NS {
  *
  * \f$\vec{x}(\xi,\eta) = \sum_{i=0}^{3} N_i(\xi,\eta) \vec{x_i}\f$
  * 
- * \f$N_0(\xi,\eta) = \frac{1}{4}(1-\xi)(1-\eta)\f$
+ * \f$N_0(\xi,\eta) = (1-\xi)(1-\eta)\f$
  * 
- * \f$N_1(\xi,\eta) = \frac{1}{4}(1+\xi)(1-\eta)\f$
+ * \f$N_1(\xi,\eta) =    \xi (1-\eta)\f$
  * 
- * \f$N_2(\xi,\eta) = \frac{1}{4}(1+\xi)(1+\eta)\f$
+ * \f$N_2(\xi,\eta) =    \xi    \eta \f$
  * 
- * \f$N_3(\xi,\eta) = \frac{1}{4}(1-\xi)(1+\eta)\f$
+ * \f$N_3(\xi,\eta) = (1-\xi)   \eta\f$
  */
 class MESQUITE_EXPORT LinearQuadrilateral : public MappingFunction2D
 {
