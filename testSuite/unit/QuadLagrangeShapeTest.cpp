@@ -126,37 +126,59 @@ class QuadLagrangeShapeTest : public CppUnit::TestFixture
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(QuadLagrangeShapeTest, "QuadLagrangeShapeTest");
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(QuadLagrangeShapeTest, "Unit");
 
-// 2nd order lagrange polynomial indices indexed by (vertex,xi/eta)
+// Indices
 enum { XI = 0, ETA = 1 };
-static double N0(double xi, double eta) { return 0.25*(1 - xi)*(1 - eta); }
-static double N1(double xi, double eta) { return 0.25*(1 + xi)*(1 - eta); }
-static double N2(double xi, double eta) { return 0.25*(1 + xi)*(1 + eta); }
-static double N3(double xi, double eta) { return 0.25*(1 - xi)*(1 + eta); }
-static double N4(double xi, double eta) { return 0.5*(1 - xi*xi)*(1 - eta); }
-static double N5(double xi, double eta) { return 0.5*(1 - eta*eta)*(1 + xi); }
-static double N6(double xi, double eta) { return 0.5*(1 - xi*xi)*(1 + eta); }
-static double N7(double xi, double eta) { return 0.5*(1 - eta*eta)*(1 - xi); }
-static double N8(double xi, double eta) { return (1 - xi*xi)*(1 - eta*eta); }
+// Parameter range
+const double min_xi = -1;
+const double max_xi =  1;
+const double mid_xi = 0.5*(min_xi + max_xi);
 
-static double dN0dxi(double xi, double eta) { return -0.25*(1 - eta); }
-static double dN1dxi(double xi, double eta) { return  0.25*(1 - eta); }
-static double dN2dxi(double xi, double eta) { return  0.25*(1 + eta); }
-static double dN3dxi(double xi, double eta) { return -0.25*(1 + eta); }
-static double dN4dxi(double xi, double eta) { return -xi*(1 - eta); }
-static double dN5dxi(double xi, double eta) { return  0.5*(1 - eta*eta); }
-static double dN6dxi(double xi, double eta) { return -xi*(1 + eta); }
-static double dN7dxi(double xi, double eta) { return -0.5*(1 - eta*eta); }
-static double dN8dxi(double xi, double eta) { return -2.0*xi*(1 - eta*eta); }
+// Some lagrange polynomial terms
+static double l11( double xi ) { return 0.5 * (1 - xi); }
+static double l12( double xi ) { return 0.5 * (1 + xi); }
+static double l22( double xi ) { return 1 - xi*xi; }
+// First derivatives of lagrange polynomial terms
+static double dl11( double    ) { return -0.5; }
+static double dl12( double    ) { return  0.5; }
+static double dl22( double xi ) { return -2 * xi; }
 
-static double dN0deta(double xi, double eta) { return -0.25*(1 - xi); }
-static double dN1deta(double xi, double eta) { return -0.25*(1 + xi); }
-static double dN2deta(double xi, double eta) { return  0.25*(1 + xi); }
-static double dN3deta(double xi, double eta) { return  0.25*(1 - xi); }
-static double dN4deta(double xi, double eta) { return -0.5*(1 - xi*xi); }
-static double dN5deta(double xi, double eta) { return -eta*(1 + xi); }
-static double dN6deta(double xi, double eta) { return  0.5*(1 - xi*xi); }
-static double dN7deta(double xi, double eta) { return -eta*(1 - xi); }
-static double dN8deta(double xi, double eta) { return -2.0*eta*(1 - xi*xi); }
+// Mapping function weights.  See pg. 135 of Hughes and 'eval' method below
+// for an explanation of why we begin with linear element weight functions
+// for the corner nodes and a mixture of quadratic and linear weight
+// functions for mid-edge nodes.
+
+// Linear quad weights at corners
+static double N0(double xi, double eta) { return l11(xi) * l11(eta); }
+static double N1(double xi, double eta) { return l12(xi) * l11(eta); }
+static double N2(double xi, double eta) { return l12(xi) * l12(eta); }
+static double N3(double xi, double eta) { return l11(xi) * l12(eta); }
+// Mixture of linear and quadratic weight functions for mid-side nodes
+static double N4(double xi, double eta) { return l22(xi) * l11(eta); }
+static double N5(double xi, double eta) { return l12(xi) * l22(eta); }
+static double N6(double xi, double eta) { return l22(xi) * l12(eta); }
+static double N7(double xi, double eta) { return l11(xi) * l22(eta); }
+// Quadratic element weight function for mid-element node
+static double N8(double xi, double eta) { return l22(xi) * l22(eta); }
+// Derivatives of above weight functions wrt xi
+static double dN0dxi(double xi, double eta) { return dl11(xi) * l11(eta); }
+static double dN1dxi(double xi, double eta) { return dl12(xi) * l11(eta); }
+static double dN2dxi(double xi, double eta) { return dl12(xi) * l12(eta); }
+static double dN3dxi(double xi, double eta) { return dl11(xi) * l12(eta); }
+static double dN4dxi(double xi, double eta) { return dl22(xi) * l11(eta); }
+static double dN5dxi(double xi, double eta) { return dl12(xi) * l22(eta); }
+static double dN6dxi(double xi, double eta) { return dl22(xi) * l12(eta); }
+static double dN7dxi(double xi, double eta) { return dl11(xi) * l22(eta); }
+static double dN8dxi(double xi, double eta) { return dl22(xi) * l22(eta); }
+// Derivatives of above weight functions wrt eta
+static double dN0deta(double xi, double eta) { return l11(xi) * dl11(eta); }
+static double dN1deta(double xi, double eta) { return l12(xi) * dl11(eta); }
+static double dN2deta(double xi, double eta) { return l12(xi) * dl12(eta); }
+static double dN3deta(double xi, double eta) { return l11(xi) * dl12(eta); }
+static double dN4deta(double xi, double eta) { return l22(xi) * dl11(eta); }
+static double dN5deta(double xi, double eta) { return l12(xi) * dl22(eta); }
+static double dN6deta(double xi, double eta) { return l22(xi) * dl12(eta); }
+static double dN7deta(double xi, double eta) { return l11(xi) * dl22(eta); }
+static double dN8deta(double xi, double eta) { return l22(xi) * dl22(eta); }
 
 typedef double (*N_t)(double, double);
 static const N_t N_a[9] = { &N0, &N1, &N2, &N3, &N4, &N5, &N6, &N7, &N8 };
@@ -227,15 +249,15 @@ static void get_partial_wrt_eta( NodeSet nodebits, double xi, double eta,
 
 
 // Pre-defined sample points (xi and eta values)
-static const double corners[4][2] = { { -1, -1 },
-                                      {  1, -1 },
-                                      {  1,  1 },
-                                      { -1,  1 } };
-static const double midedge[4][2] = { {  0, -1 },
-                                      {  1,  0 },
-                                      {  0,  1 },
-                                      { -1,  0 } };
-static const double midelem[2] = { 0, 0 };
+static const double corners[4][2] = { { min_xi, min_xi },
+                                      { max_xi, min_xi },
+                                      { max_xi, max_xi },
+                                      { min_xi, max_xi } };
+static const double midedge[4][2] = { { mid_xi, min_xi },
+                                      { max_xi, mid_xi },
+                                      { mid_xi, max_xi },
+                                      { min_xi, mid_xi } };
+static const double midelem[2] = { mid_xi, mid_xi };
 
 static void check_valid_indices( const size_t* vertices, size_t num_vtx, NodeSet nodeset )
 {
