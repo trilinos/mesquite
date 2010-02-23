@@ -76,6 +76,7 @@ using std::cerr;
 using std::endl;
 
 const int MAX_ITERATIONS = 1000;
+const double QEL = 2.0; // edge length of ideal quad
 
 class HigherOrderTest : public CppUnit::TestFixture
 {
@@ -441,7 +442,7 @@ int quad_mid_edge_nodes_edge_center( const Vector3D& p2,
                                      double epsilon )
 {
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(2.0, 0.0, 0.0);
+  const Vector3D p1(QEL, 0.0, 0.0);
   const Vector3D e0 = 0.5*(p0+p1);
   const Vector3D e1 = 0.5*(p1+p2);
   const Vector3D e2 = 0.5*(p2+p3);
@@ -467,12 +468,12 @@ static void get_ideal_quad( Vector3D& p2,
                             Vector3D& p6,
                             Vector3D& p7 )
 {
-  p2.set( 2.0, 2.0, 0 );
-  p3.set( 0.0, 2.0, 0 );
-  p4.set( 1.0, 0.0, 0 );
-  p5.set( 2.0, 1.0, 0 );
-  p6.set( 1.0, 2.0, 0 );
-  p7.set( 0.0, 1.0, 0 );
+  p2.set( QEL,   QEL,   0 );
+  p3.set( 0.0,   QEL,   0 );
+  p4.set( QEL/2, 0.0,   0 );
+  p5.set( QEL,   QEL/2, 0 );
+  p6.set( QEL/2, QEL,   0 );
+  p7.set( 0.0,   QEL/2, 0 );
 }
 
 void HigherOrderTest::test_quad_basic_ideal()
@@ -481,7 +482,7 @@ void HigherOrderTest::test_quad_basic_ideal()
   const double eps = 5e-2;
   Vector3D p2, p3, p4, p5, p6, p7;
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(2.0, 0.0, 0.0);
+  const Vector3D p1(QEL, 0.0, 0.0);
   
     // try starting with the optimal result
   get_ideal_quad( p2, p3, p4, p5, p6, p7 );
@@ -489,8 +490,8 @@ void HigherOrderTest::test_quad_basic_ideal()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_EQUAL( 0, quad_all_in_xy_plane( p2, p3, p4, p5, p6, p7, eps ) );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 2, 2, 0 ), p2, eps );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 2, 0 ), p3, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( QEL, QEL, 0 ), p2, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0,   QEL, 0 ), p3, eps );
   int midok = quad_mid_edge_nodes_edge_center( p2, p3, p4, p5, p6, p7, eps );
   CPPUNIT_ASSERT_EQUAL( 0, midok );
 }
@@ -501,11 +502,11 @@ void HigherOrderTest::test_quad_basic_mid_spin()
   const double eps = 5e-2;
   Vector3D p2, p3, p4, p5, p6, p7;
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(2.0, 0.0, 0.0);
+  const Vector3D p1(QEL, 0.0, 0.0);
   
     // try moving the mid-edge nodes along the edge away from the edge center
-  p2.set(2,2,0);
-  p3.set(0,2,0);
+  p2.set(QEL,QEL,0);
+  p3.set(0  ,QEL,0);
   double f = 0.4;
   p4 = f*p0 + (1-f)*p1;
   p5 = f*p1 + (1-f)*p2;
@@ -517,8 +518,8 @@ void HigherOrderTest::test_quad_basic_mid_spin()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_EQUAL( 0, quad_all_in_xy_plane( p2, p3, p4, p5, p6, p7, eps ) );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 2, 2, 0 ), p2, eps );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 2, 0 ), p3, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( QEL, QEL, 0 ), p2, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0,   QEL, 0 ), p3, eps );
   int midok = quad_mid_edge_nodes_edge_center( p2, p3, p4, p5, p6, p7, eps );
   CPPUNIT_ASSERT_EQUAL( 0, midok );
 }
@@ -529,22 +530,22 @@ void HigherOrderTest::test_quad_basic_mid_convex()
   const double eps = 5e-2;
   Vector3D p2, p3, p4, p5, p6, p7;
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(2.0, 0.0, 0.0);
+  const Vector3D p1(QEL, 0.0, 0.0);
   
     // try square corners with all egdes convex
   get_ideal_quad( p2, p3, p4, p5, p6, p7 );
-  p4 += Vector3D( 0.0, -0.4, 0);
-  p5 += Vector3D( 0.4,  0.0, 0);
-  p6 += Vector3D( 0.0,  0.4, 0);
-  p7 += Vector3D(-0.4,  0.0, 0);
+  p4 += Vector3D( 0.0,     -0.2*QEL, 0);
+  p5 += Vector3D( 0.2*QEL,  0.0,     0);
+  p6 += Vector3D( 0.0,      0.2*QEL, 0);
+  p7 += Vector3D(-0.2*QEL,  0.0,     0);
 //  crit.write_mesh_steps( "quad_basic_mid_convex", TerminationCriterion::VTK );
   basic_quad_test( p2, p3, p4, p5, p6, p7, err );
 //  crit.write_mesh_steps( "", TerminationCriterion::NOTYPE );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_EQUAL( 0, quad_all_in_xy_plane( p2, p3, p4, p5, p6, p7, eps ) );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 2, 2, 0 ), p2, eps );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 2, 0 ), p3, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( QEL, QEL, 0 ), p2, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(   0, QEL, 0 ), p3, eps );
   int midok = quad_mid_edge_nodes_edge_center( p2, p3, p4, p5, p6, p7, eps );
   CPPUNIT_ASSERT_EQUAL( 0, midok );
 }
@@ -555,19 +556,19 @@ void HigherOrderTest::test_quad_basic_left_down()
   const double eps = 5e-2;
   Vector3D p2, p3, p4, p5, p6, p7;
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(2.0, 0.0, 0.0);
+  const Vector3D p1(QEL, 0.0, 0.0);
   
     // try moving the top left vertex down, also move mid-edge nodes proportionally
   get_ideal_quad( p2, p3, p4, p5, p6, p7 );
-  p3 -= Vector3D(0.0,0.0,1.0);
+  p3 -= Vector3D(0.0,0.0,QEL/2);
   p6 = 0.5*(p2+p3);
   p7 = 0.5*(p0+p3);
   basic_quad_test( p2, p3, p4, p5, p6, p7, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_EQUAL( 0, quad_all_in_xy_plane( p2, p3, p4, p5, p6, p7, eps ) );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 2, 2, 0 ), p2, eps );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 2, 0 ), p3, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( QEL, QEL, 0 ), p2, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(   0, QEL, 0 ), p3, eps );
   int midok = quad_mid_edge_nodes_edge_center( p2, p3, p4, p5, p6, p7, eps );
   CPPUNIT_ASSERT_EQUAL( 0, midok );
 }
@@ -578,12 +579,12 @@ void HigherOrderTest::test_quad_basic_top_down()
   const double eps = 5e-2;
   Vector3D p2, p3, p4, p5, p6, p7;
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(2.0, 0.0, 0.0);
+  const Vector3D p1(QEL, 0.0, 0.0);
   
     // try moving the top two vertices down, also move mid-edge nodes proportionally
   get_ideal_quad( p2, p3, p4, p5, p6, p7 );
-  p2 -= Vector3D(0.0,1.0,0.0);
-  p3 -= Vector3D(0.0,1.0,0.0);
+  p2 -= Vector3D(0.0,QEL/2,0.0);
+  p3 -= Vector3D(0.0,QEL/2,0.0);
   p5 = 0.5*(p1+p2);
   p6 = 0.5*(p2+p3);
   p7 = 0.5*(p0+p3);
@@ -591,8 +592,8 @@ void HigherOrderTest::test_quad_basic_top_down()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_EQUAL( 0, quad_all_in_xy_plane( p2, p3, p4, p5, p6, p7, eps ) );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 2, 2, 0 ), p2, eps );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 2, 0 ), p3, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( QEL, QEL, 0 ), p2, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(   0, QEL, 0 ), p3, eps );
   int midok = quad_mid_edge_nodes_edge_center( p2, p3, p4, p5, p6, p7, eps );
   CPPUNIT_ASSERT_EQUAL( 0, midok );
 }
@@ -603,19 +604,19 @@ void HigherOrderTest::test_quad_basic_right_up()
   const double eps = 5e-2;
   Vector3D p2, p3, p4, p5, p6, p7;
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(2.0, 0.0, 0.0);
+  const Vector3D p1(QEL, 0.0, 0.0);
   
     // try moving the top right vertex up, also move mid-edge nodes proportionally
   get_ideal_quad( p2, p3, p4, p5, p6, p7 );
-  p2 += Vector3D(0.0,4.0,0.0);
+  p2 += Vector3D(0.0,QEL*2,0.0);
   p5 = 0.5*(p1+p2);
   p6 = 0.5*(p2+p3);
   basic_quad_test( p2, p3, p4, p5, p6, p7, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_EQUAL( 0, quad_all_in_xy_plane( p2, p3, p4, p5, p6, p7, eps ) );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 2, 2, 0 ), p2, eps );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 2, 0 ), p3, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( QEL, QEL, 0 ), p2, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(   0, QEL, 0 ), p3, eps );
   int midok = quad_mid_edge_nodes_edge_center( p2, p3, p4, p5, p6, p7, eps );
   CPPUNIT_ASSERT_EQUAL( 0, midok );
 }
@@ -626,19 +627,19 @@ void HigherOrderTest::test_quad_basic_left_over()
   const double eps = 5e-2;
   Vector3D p2, p3, p4, p5, p6, p7;
   const Vector3D p0(0.0, 0.0, 0.0);
-  const Vector3D p1(2.0, 0.0, 0.0);
+  const Vector3D p1(QEL, 0.0, 0.0);
   
     // try moving the top left vertex to the right, also move mid-edge nodes proportionally
   get_ideal_quad( p2, p3, p4, p5, p6, p7 );
-  p3 -= Vector3D(1.0, 0.0, 0.0);
+  p3 -= Vector3D(QEL/2, 0.0, 0.0);
   p6 = 0.5*(p2+p3);
   p7 = 0.5*(p0+p3);
   basic_quad_test( p2, p3, p4, p5, p6, p7, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_EQUAL( 0, quad_all_in_xy_plane( p2, p3, p4, p5, p6, p7, eps ) );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 2, 2, 0 ), p2, eps );
-  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( 0, 2, 0 ), p3, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( QEL, QEL, 0 ), p2, eps );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(   0, QEL, 0 ), p3, eps );
   int midok = quad_mid_edge_nodes_edge_center( p2, p3, p4, p5, p6, p7, eps );
   CPPUNIT_ASSERT_EQUAL( 0, midok );
 }
@@ -973,7 +974,7 @@ void HigherOrderTest::basic_quad_test( Vector3D& p2,
   const int NVTX = 8;
   const int NELEM = 1;
   double coords[DIM*NVTX] = {    0.0,    0.0,    0.0,
-                                 2.0,    0.0,    0.0,
+                                 QEL,    0.0,    0.0,
                               p2.x(), p2.y(), p2.z(),
                               p3.x(), p3.y(), p3.z(),
                               p4.x(), p4.y(), p4.z(),
