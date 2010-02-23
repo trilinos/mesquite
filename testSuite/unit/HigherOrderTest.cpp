@@ -76,7 +76,7 @@ using std::cerr;
 using std::endl;
 
 const int MAX_ITERATIONS = 1000;
-const double QEL = 2.0; // edge length of ideal quad
+const double QEL = 1.0; // edge length of ideal quad
 
 class HigherOrderTest : public CppUnit::TestFixture
 {

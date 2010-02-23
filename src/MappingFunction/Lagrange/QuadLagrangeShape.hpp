@@ -41,15 +41,15 @@ namespace MESQUITE_NS {
  * This class implements the MappingFunction interface, providing
  * a Lagrange shape function for quadrilateral elements.
  *
- * \f$\vec{x}(\xi,\eta) = sum_{i=0}^{n-1} N_i(\xi,\eta) \vec{x_i}\f$
+ * \f$\vec{x}(\xi,\eta) = \sum_{i=0}^{n-1} N_i(\xi,\eta) \vec{x_i}\f$
  * 
  * \f$N_a = l^2_b(\xi) l^2_c(\eta)\f$
  *
- * \f$l^2_1(\xi) = \frac{1}{2} \xi (\xi - 1)\f$
+ * \f$l^2_1(\xi) = (\xi - 1) (2 \xi - 1)\f$
  *
- * \f$l^2_2(\xi) = 1 - \xi^2\f$
+ * \f$l^2_2(\xi) = 4 \xi (1 - \xi)\f$
  *
- * \f$l^2_3(\xi) = \frac{1}{2} \xi (\xi + 1)\f$
+ * \f$l^2_3(\xi) = \xi (2 \xi - 1)\f$
  *
  * \f$\begin{array}{ccc}
  *    a & b & c \\ \hline

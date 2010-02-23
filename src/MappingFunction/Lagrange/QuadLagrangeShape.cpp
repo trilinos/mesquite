@@ -120,12 +120,12 @@ static void derivatives_at_corner( unsigned corner,
   static const unsigned eta_adj_corners[] = { 3, 2, 1, 0 };
   static const unsigned eta_adj_edges[]   = { 3, 1, 1, 3 };
   
-  static const double corner_xi[]  = { -0.5,  0.5,  0.5, -0.5 }; // xi values by corner
-  static const double corner_eta[] = { -0.5, -0.5,  0.5,  0.5 }; // eta values by corner
-  static const double other_xi[]   = {  0.5, -0.5, -0.5,  0.5 }; // xi values for adjacent corner in xi direction
-  static const double other_eta[]  = {  0.5,  0.5, -0.5, -0.5 }; // eta values for adjcent corner in eta direction
-  static const double mid_xi[]     = {  1.0, -1.0, -1.0,  1.0 }; // xi values for mid-node in xi direction
-  static const double mid_eta[]    = {  1.0,  1.0, -1.0, -1.0 }; // eta values for mid-node in eta direction
+  static const double corner_xi[]  = { -1,  1,  1, -1 }; // xi values by corner
+  static const double corner_eta[] = { -1, -1,  1,  1 }; // eta values by corner
+  static const double other_xi[]   = {  1, -1, -1,  1 }; // xi values for adjacent corner in xi direction
+  static const double other_eta[]  = {  1,  1, -1, -1 }; // eta values for adjcent corner in eta direction
+  static const double mid_xi[]     = {  2, -2, -2,  2 }; // xi values for mid-node in xi direction
+  static const double mid_eta[]    = {  2,  2, -2, -2 }; // eta values for mid-node in eta direction
   
   num_vtx = 3;
   vertices[0] = corner;
@@ -164,14 +164,14 @@ static void derivatives_at_mid_edge( unsigned edge,
                                      MsqVector<2>* derivs,
                                      size_t& num_vtx )
 {
-  static const double values[][9] = { {-0.25, -0.25, 0.25,  0.25, -0.5,  1.0,  0.5,  1.0,  2.0},
-                                      {-0.25,  0.25, 0.25, -0.25, -1.0,  0.5, -1.0, -0.5, -2.0},
-                                      {-0.25, -0.25, 0.25,  0.25, -0.5, -1.0,  0.5, -1.0, -2.0},
-                                      {-0.25,  0.25, 0.25, -0.25,  1.0,  0.5,  1.0, -0.5,  2.0} };
-  static const double edge_values[][2] = { {-0.5,  0.5},
-                                           {-0.5,  0.5},
-                                           { 0.5, -0.5},
-                                           { 0.5, -0.5} }; 
+  static const double values[][9] = { {-0.5, -0.5, 0.5,  0.5, -1.0,  2.0,  1.0,  2.0,  4.0},
+                                      {-0.5,  0.5, 0.5, -0.5, -2.0,  1.0, -2.0, -1.0, -4.0},
+                                      {-0.5, -0.5, 0.5,  0.5, -1.0, -2.0,  1.0, -2.0, -4.0},
+                                      {-0.5,  0.5, 0.5, -0.5,  2.0,  1.0,  2.0, -1.0,  4.0} };
+  static const double edge_values[][2] = { {-1,  1},
+                                           {-1,  1},
+                                           { 1, -1},
+                                           { 1, -1} }; 
   const unsigned prev_corner = edge;           // index of start vertex of edge
   const unsigned next_corner = (edge+1)%4;     // index of end vertex of edge
   const unsigned is_eta_edge = edge % 2;       // edge is xi = +/- 0
@@ -271,10 +271,10 @@ static void derivatives_at_mid_elem( NodeSet nodeset,
     // below should produce the same result.
   if (!nodeset.have_any_mid_node()) {
     num_vtx = 4;
-    vertices[0] = 0; derivs[0][0] = -0.25; derivs[0][1] = -0.25;
-    vertices[1] = 1; derivs[1][0] =  0.25; derivs[1][1] = -0.25;
-    vertices[2] = 2; derivs[2][0] =  0.25; derivs[2][1] =  0.25;
-    vertices[3] = 3; derivs[3][0] = -0.25; derivs[3][1] =  0.25;
+    vertices[0] = 0; derivs[0][0] = -0.5; derivs[0][1] = -0.5;
+    vertices[1] = 1; derivs[1][0] =  0.5; derivs[1][1] = -0.5;
+    vertices[2] = 2; derivs[2][0] =  0.5; derivs[2][1] =  0.5;
+    vertices[3] = 3; derivs[3][0] = -0.5; derivs[3][1] =  0.5;
     return;
   }
   
@@ -283,32 +283,32 @@ static void derivatives_at_mid_elem( NodeSet nodeset,
     // N_0
   if (!nodeset.both_edge_nodes(0,3)) {  // if eiter adjacent mid-edge node is missing
     vertices[num_vtx] = 0;
-    derivs[num_vtx][0] = nodeset.mid_edge_node(3) ? 0.0 : -0.25;
-    derivs[num_vtx][1] = nodeset.mid_edge_node(0) ? 0.0 : -0.25;
+    derivs[num_vtx][0] = nodeset.mid_edge_node(3) ? 0.0 : -0.5;
+    derivs[num_vtx][1] = nodeset.mid_edge_node(0) ? 0.0 : -0.5;
     ++num_vtx;
   }
   
     // N_1
   if (!nodeset.both_edge_nodes(0,1)) {  // if eiter adjacent mid-edge node is missing
     vertices[num_vtx] = 1;
-    derivs[num_vtx][0] = nodeset.mid_edge_node(1) ? 0.0 :  0.25;
-    derivs[num_vtx][1] = nodeset.mid_edge_node(0) ? 0.0 : -0.25;
+    derivs[num_vtx][0] = nodeset.mid_edge_node(1) ? 0.0 :  0.5;
+    derivs[num_vtx][1] = nodeset.mid_edge_node(0) ? 0.0 : -0.5;
     ++num_vtx;
   }
   
     // N_2
   if (!nodeset.both_edge_nodes(1,2)) {  // if eiter adjacent mid-edge node is missing
     vertices[num_vtx] = 2;
-    derivs[num_vtx][0] = nodeset.mid_edge_node(1) ? 0.0 :  0.25;
-    derivs[num_vtx][1] = nodeset.mid_edge_node(2) ? 0.0 :  0.25;
+    derivs[num_vtx][0] = nodeset.mid_edge_node(1) ? 0.0 :  0.5;
+    derivs[num_vtx][1] = nodeset.mid_edge_node(2) ? 0.0 :  0.5;
     ++num_vtx;
   }
   
     // N_3
   if (!nodeset.both_edge_nodes(2,3)) {  // if eiter adjacent mid-edge node is missing
     vertices[num_vtx] = 3;
-    derivs[num_vtx][0] = nodeset.mid_edge_node(3) ? 0.0 : -0.25;
-    derivs[num_vtx][1] = nodeset.mid_edge_node(2) ? 0.0 :  0.25;
+    derivs[num_vtx][0] = nodeset.mid_edge_node(3) ? 0.0 : -0.5;
+    derivs[num_vtx][1] = nodeset.mid_edge_node(2) ? 0.0 :  0.5;
     ++num_vtx;
   }
   
@@ -316,14 +316,14 @@ static void derivatives_at_mid_elem( NodeSet nodeset,
   if (nodeset.mid_edge_node(0)) {
     vertices[num_vtx] = 4;
     derivs[num_vtx][0] =  0.0;
-    derivs[num_vtx][1] = -0.5;
+    derivs[num_vtx][1] = -1.0;
     ++num_vtx;
   }
   
     // N_5
   if (nodeset.mid_edge_node(1)) {
     vertices[num_vtx] = 5;
-    derivs[num_vtx][0] =  0.5;
+    derivs[num_vtx][0] =  1.0;
     derivs[num_vtx][1] =  0.0;
     ++num_vtx;
   }
@@ -332,14 +332,14 @@ static void derivatives_at_mid_elem( NodeSet nodeset,
   if (nodeset.mid_edge_node(2)) {
     vertices[num_vtx] = 6;
     derivs[num_vtx][0] =  0.0;
-    derivs[num_vtx][1] =  0.5;
+    derivs[num_vtx][1] =  1.0;
     ++num_vtx;
   }
   
     // N_7
   if (nodeset.mid_edge_node(3)) {
     vertices[num_vtx] = 7;
-    derivs[num_vtx][0] = -0.5;
+    derivs[num_vtx][0] = -1.0;
     derivs[num_vtx][1] =  0.0;
     ++num_vtx;
   }

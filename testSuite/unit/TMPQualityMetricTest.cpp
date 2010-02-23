@@ -591,12 +591,13 @@ void TMPQualityMetricTest::test_gradient_2D()
   ASSERT_NO_ERROR(err);
   
     // calculate Jacobian matrix at element center
-  const double corner_xi[4][2] = { { -1, -1 },
-                                   {  1, -1 },
-                                   {  1,  1 },
-                                   { -1,  1 } } ;
-  MsqMatrix<4,2> coeff_derivs(&corner_xi[0][0]);
-  coeff_derivs *= 0.25;  // derivatives of bilinear map at quad center
+    
+    // derivatives of bilinear map at quad center
+  const double deriv_vals[4][2] = { { -0.5, -0.5 },
+                                    {  0.5, -0.5 },
+                                    {  0.5,  0.5 },
+                                    { -0.5,  0.5 } } ;
+  MsqMatrix<4,2> coeff_derivs(&deriv_vals[0][0]);
   MsqMatrix<4,3> coords( vertices );
   MsqMatrix<3,2> J = transpose(coords) * coeff_derivs;
     // calculate expected metric value
@@ -663,16 +664,17 @@ void TMPQualityMetricTest::test_gradient_3D()
   ASSERT_NO_ERROR(err);
   
     // calculate Jacobian matrix at element center
-  const double corner_xi[8][3] = { { -1, -1, -1 },
-                                   {  1, -1, -1 },
-                                   {  1,  1, -1 },
-                                   { -1,  1, -1 },
-                                   { -1, -1,  1 },
-                                   {  1, -1,  1 },
-                                   {  1,  1,  1 },
-                                   { -1,  1,  1 } };
-  MsqMatrix<8,3> coeff_derivs(&corner_xi[0][0]);
-  coeff_derivs *= 0.125;  // derivatives of trilinear map at hex center
+   
+    // derivatives of trilinear map at hex center
+  const double deriv_vals[8][3] = { { -0.25, -0.25, -0.25 },
+                                    {  0.25, -0.25, -0.25 },
+                                    {  0.25,  0.25, -0.25 },
+                                    { -0.25,  0.25, -0.25 },
+                                    { -0.25, -0.25,  0.25 },
+                                    {  0.25, -0.25,  0.25 },
+                                    {  0.25,  0.25,  0.25 },
+                                    { -0.25,  0.25,  0.25 } };
+  MsqMatrix<8,3> coeff_derivs(&deriv_vals[0][0]);
   MsqMatrix<8,3> coords( vertices );
   MsqMatrix<3,3> J = transpose(coords) * coeff_derivs;
     // calculate expected metric value

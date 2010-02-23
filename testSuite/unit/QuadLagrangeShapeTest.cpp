@@ -129,18 +129,29 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(QuadLagrangeShapeTest, "Unit");
 // Indices
 enum { XI = 0, ETA = 1 };
 // Parameter range
-const double min_xi = -1;
+//const double min_xi = -1;
+//const double max_xi =  1;
+// reparameterize in [0,1]
+const double min_xi =  0;
 const double max_xi =  1;
 const double mid_xi = 0.5*(min_xi + max_xi);
 
 // Some lagrange polynomial terms
-static double l11( double xi ) { return 0.5 * (1 - xi); }
-static double l12( double xi ) { return 0.5 * (1 + xi); }
-static double l22( double xi ) { return 1 - xi*xi; }
+//static double l11( double xi ) { return 0.5 * (1 - xi); }
+//static double l12( double xi ) { return 0.5 * (1 + xi); }
+//static double l22( double xi ) { return 1 - xi*xi; }
+// reparameterize in [0,1]
+static double l11( double xi ) { return 1 - xi; }
+static double l12( double xi ) { return xi; }
+static double l22( double xi ) { return 4 * xi * (1 - xi); }
 // First derivatives of lagrange polynomial terms
-static double dl11( double    ) { return -0.5; }
-static double dl12( double    ) { return  0.5; }
-static double dl22( double xi ) { return -2 * xi; }
+//static double dl11( double    ) { return -0.5; }
+//static double dl12( double    ) { return  0.5; }
+//static double dl22( double xi ) { return -2 * xi; }
+// reparameterize in [0,1]
+static double dl11( double    ) { return -1; }
+static double dl12( double    ) { return  1; }
+static double dl22( double xi ) { return  4 - 8*xi; }
 
 // Mapping function weights.  See pg. 135 of Hughes and 'eval' method below
 // for an explanation of why we begin with linear element weight functions
