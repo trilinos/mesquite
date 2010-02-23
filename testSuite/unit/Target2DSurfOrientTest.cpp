@@ -173,7 +173,7 @@ public:
     smooth_sphere( 2, true, "domain_ref" );
       // result meshes are expected to be roughly the same,
       // but not exactly, so use large tolerance when comparing
-    compare_coordinates( 0.2 );
+    compare_coordinates( 0.35 );
   }
 };
 
