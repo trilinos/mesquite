@@ -50,7 +50,7 @@ using std::endl;
 #include "Target3DOffset.hpp"
 #include "Target2DOffset.hpp"
 
-#include "IdealTargetCalculator.hpp"
+#include "IdealShapeTarget.hpp"
 #include "PMeanPTemplate.hpp"
 #include "FeasibleNewton.hpp"
 #include "ConjugateGradient.hpp"
@@ -285,7 +285,7 @@ int main( int argc, char* argv[] )
   }
   
   IdealWeightInverseMeanRatio non_target_metric;
-  IdealTargetCalculator new_target(false);
+  IdealShapeTarget new_target;
   InverseMeanRatio3D tmp_3d;
   InverseMeanRatio2D tmp_2d;
   Target2DOffset tmp_2d_off( 1.0, &tmp_2d ); // target metrics are zero-based

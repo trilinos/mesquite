@@ -53,7 +53,8 @@ class MsqError;
 struct TargetReaderData {
   std::vector<TagHandle> handles2D, handles3D; //< tag handles, indexed by #tags/elem
   std::vector< MsqMatrix<3,3> > targets3D; //< cached values for last element
-  std::vector< MsqMatrix<3,2> > targets2D; //< cached values for last element
+  std::vector< MsqMatrix<2,2> > targets2D; //< cached values for last element
+  std::vector< MsqMatrix<3,2> > targetsSurface; //< cached values for last element
   size_t elementIndex;                      //< element for which values are cached.
 };
   
@@ -66,7 +67,8 @@ class TargetReader
   public:
   
     MESQUITE_EXPORT 
-    TargetReader( std::string tag_base_name = "MSQ_TARGET_MATRIX" );
+    TargetReader( bool oriented_2D_targets,
+                  std::string tag_base_name = "MSQ_TARGET_MATRIX" );
     
     MESQUITE_EXPORT virtual 
     ~TargetReader();
@@ -82,8 +84,19 @@ class TargetReader
     bool get_2D_target( PatchData &pd,
                         size_t element,
                         Sample sample,
-                        MsqMatrix<3,2>& W_out,
+                        MsqMatrix<2,2>& W_out,
                         MsqError& err );
+    
+    MESQUITE_EXPORT virtual 
+    bool get_surface_target( PatchData &pd,
+                             size_t element,
+                             Sample sample,
+                             MsqMatrix<3,2>& W_out,
+                             MsqError& err );
+    
+    MESQUITE_EXPORT virtual
+    bool have_surface_orient() const
+      { return orient2D; }
 
   private:
   
@@ -93,7 +106,8 @@ class TargetReader
                                    PatchData& subpatch, const size_t* vert_map,
                                    const size_t* elem_map, MsqError& err );
 
-    std::string tagBaseName;
+    std::string tagBaseName; //!< Base name for tags used to store targets
+    bool orient2D;           //!< 2D targets included orientation (3x2 rather than 2x2)
 };
 
 

@@ -299,7 +299,7 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
     
     MsqMatrix<3,2> J, Wp, RZ;
     mf->jacobian( pd, e, bits, s, indices, mDerivs2D, num_indices, J, err );
-    targetCalc->get_2D_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
+    targetCalc->get_surface_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
     
     MsqMatrix<2,2> W, A;
     surface_to_2d( J, Wp, W, RZ );
@@ -377,7 +377,7 @@ bool TMPQualityMetric::evaluate_with_gradient(
     
     MsqMatrix<3,2> J, Wp, RZ;
     mf->jacobian( pd, e, bits, s, mIndices, mDerivs2D, num_idx, J, err );
-    targetCalc->get_2D_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
+    targetCalc->get_surface_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
     
     MsqMatrix<2,2> W, A, dmdA;
     surface_to_2d( J, Wp, W, RZ );
@@ -467,7 +467,7 @@ bool TMPQualityMetric::evaluate_with_Hessian(
     
     MsqMatrix<3,2> J, Wp, RZ;
     mf->jacobian( pd, e, bits, s, mIndices, mDerivs2D, num_idx, J, err );
-    targetCalc->get_2D_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
+    targetCalc->get_surface_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
     
     MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];
     surface_to_2d( J, Wp, W, RZ );
@@ -572,7 +572,7 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
     
     MsqMatrix<3,2> J, Wp, RZ;
     mf->jacobian( pd, e, bits, s, mIndices, mDerivs2D, num_idx, J, err );
-    targetCalc->get_2D_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
+    targetCalc->get_surface_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
     
     MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];
     surface_to_2d( J, Wp, W, RZ );

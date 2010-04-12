@@ -42,7 +42,7 @@
 #include "PMeanPTemplate.hpp"
 #include "TrustRegion.hpp"
 #include "TMPQualityMetric.hpp"
-#include "IdealTargetCalculator.hpp"
+#include "IdealShapeTarget.hpp"
 #include "Target2DShapeSizeBarrier.hpp"
 #include "Target3DShapeSizeBarrier.hpp"
 #include "RefMeshTargetCalculator.hpp"
@@ -69,7 +69,7 @@ void SizeAdaptShapeWrapper::run_wrapper( Mesh* mesh,
   q.add_tag_vertex_mesh( &init_mesh, err );  MSQ_ERRRTN(err);
   
     // create objective function
-  IdealTargetCalculator W_i;
+  IdealShapeTarget W_i;
   LambdaTarget W( &W_0, &W_i );
   Target2DShapeSizeBarrier tm2;
   Target3DShapeSizeBarrier tm3;

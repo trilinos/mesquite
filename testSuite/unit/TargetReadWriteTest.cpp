@@ -50,7 +50,9 @@ class TargetReadWriteTest : public CppUnit::TestFixture
 {
 private:
   CPPUNIT_TEST_SUITE( TargetReadWriteTest );
-  CPPUNIT_TEST( read_write_targets );
+  CPPUNIT_TEST( read_write_3D_targets );
+  CPPUNIT_TEST( read_write_2D_targets );
+  CPPUNIT_TEST( read_write_surface_targets );
   CPPUNIT_TEST( read_write_weights );
   CPPUNIT_TEST_SUITE_END();
   
@@ -61,7 +63,9 @@ public:
   
   void setUp();
   void tearDown();
-  void read_write_targets();
+  void read_write_3D_targets();
+  void read_write_2D_targets();
+  void read_write_surface_targets();
   void read_write_weights();
 };
 
@@ -132,7 +136,11 @@ void TargetReadWriteTest::tearDown()
 
 class FakeTargetCalc : public TargetCalculator, public WeightCalculator
 {
+  bool surfOrient;
+
 public:
+  FakeTargetCalc(bool surface_orient = true) : surfOrient(surface_orient) {}
+
   ~FakeTargetCalc() {}
   
   bool get_3D_target( PatchData& pd, 
@@ -144,6 +152,12 @@ public:
   bool get_2D_target( PatchData& pd, 
                       size_t element,
                       Sample sample,
+                      MsqMatrix<2,2>& W_out,
+                      MsqError& err );
+
+  bool get_surface_target( PatchData& pd, 
+                      size_t element,
+                      Sample sample,
                       MsqMatrix<3,2>& W_out,
                       MsqError& err );
 
@@ -151,6 +165,8 @@ public:
                      size_t element,
                      Sample sample,
                      MsqError& err );
+  
+  bool have_surface_orient() const { return surfOrient; }
                      
   unsigned long make_value( Mesh::ElementHandle elem, Sample sample, unsigned idx );
                                    
@@ -171,7 +187,7 @@ bool FakeTargetCalc::get_3D_target( PatchData& pd, size_t elem,
   return true;
 }
 
-bool FakeTargetCalc::get_2D_target( PatchData& pd, size_t elem, 
+bool FakeTargetCalc::get_surface_target( PatchData& pd, size_t elem, 
                                     Sample sample,
                                     MsqMatrix<3,2>& W_out, MsqError& )
 {
@@ -179,6 +195,17 @@ bool FakeTargetCalc::get_2D_target( PatchData& pd, size_t elem,
   for (unsigned i = 0; i < 3; ++i)
     for (unsigned j = 0; j < 2; ++j)
       W_out(i,j) = make_value( pd.get_element_handles_array()[elem], sample, 2*i+j );
+  return true;
+}
+
+bool FakeTargetCalc::get_2D_target( PatchData& pd, size_t elem, 
+                                    Sample sample,
+                                    MsqMatrix<2,2>& W_out, MsqError& )
+{
+  CPPUNIT_ASSERT_EQUAL( 2u, TopologyInfo::dimension( pd.element_by_index(elem).get_element_type() ) );
+  for (unsigned i = 0; i < 2; ++i)
+    for (unsigned j = 0; j < 2; ++j)
+      W_out(i,j) = make_value( pd.get_element_handles_array()[elem], sample, (2-i)*(2-j) );
   return true;
 }
 
@@ -200,10 +227,12 @@ unsigned long FakeTargetCalc::make_value( Mesh::ElementHandle elem, Sample sampl
   return result;
 }
 
-void TargetReadWriteTest::read_write_targets()
+void TargetReadWriteTest::read_write_3D_targets()
 {
+  const bool oriented = true; // doesn't matter which value for 3D
+
   MsqPrintError err( std::cout );
-  FakeTargetCalc tc;
+  FakeTargetCalc tc(oriented);
   
     // Write the targets
   TargetWriter writer( &tc );
@@ -211,30 +240,99 @@ void TargetReadWriteTest::read_write_targets()
   CPPUNIT_ASSERT(!err);
   
     // Compare all target matrices
-  TargetReader reader;
+  bool checked_something = false; // make sure mesh actually contains volume elements
+  TargetReader reader(oriented);
   for (size_t i = 0; i < myPatch.num_elements(); ++i) {
     const unsigned d = TopologyInfo::dimension( myPatch.element_by_index(i).get_element_type() );
+    if (d != 3)
+      continue;
+    
+    checked_something = true;
     std::vector<Sample> samples;
     myPatch.get_samples( i, samples, err ); ASSERT_NO_ERROR(err);
     for (size_t j = 0; j < samples.size(); ++j) {
-      if (d == 2) {
-        MsqMatrix<3,2> expected, read;
-        tc.get_2D_target( myPatch, i, samples[j], expected, err );
-        CPPUNIT_ASSERT(!err);
-        reader.get_2D_target( myPatch, i, samples[j], read, err );
-        CPPUNIT_ASSERT(!err);
-        ASSERT_MATRICES_EQUAL( expected, read, 1e-6 );
-      }
-      else {
-        MsqMatrix<3,3> expected, read;
-        tc.get_3D_target( myPatch, i, samples[j], expected, err );
-        CPPUNIT_ASSERT(!err);
-        reader.get_3D_target( myPatch, i, samples[j], read, err );
-        CPPUNIT_ASSERT(!err);
-        ASSERT_MATRICES_EQUAL( expected, read, 1e-12 );
-      }
+      MsqMatrix<3,3> expected, read;
+      tc.get_3D_target( myPatch, i, samples[j], expected, err );
+      CPPUNIT_ASSERT(!err);
+      reader.get_3D_target( myPatch, i, samples[j], read, err );
+      CPPUNIT_ASSERT(!err);
+      ASSERT_MATRICES_EQUAL( expected, read, 1e-12 );
     }
   }
+  
+  CPPUNIT_ASSERT(checked_something);
+}
+
+void TargetReadWriteTest::read_write_surface_targets()
+{
+  const bool oriented = true;
+
+  MsqPrintError err( std::cout );
+  FakeTargetCalc tc(oriented);
+  
+    // Write the targets
+  TargetWriter writer( &tc );
+  writer.loop_over_mesh( &myMesh, 0, &linearMaps, err );
+  CPPUNIT_ASSERT(!err);
+  
+    // Compare all target matrices
+  bool checked_something = false; // make sure mesh actually contains surface elements
+  TargetReader reader(oriented);
+  for (size_t i = 0; i < myPatch.num_elements(); ++i) {
+    const unsigned d = TopologyInfo::dimension( myPatch.element_by_index(i).get_element_type() );
+    if (d != 2)
+      continue;
+    
+    checked_something = true;
+    std::vector<Sample> samples;
+    myPatch.get_samples( i, samples, err ); ASSERT_NO_ERROR(err);
+    for (size_t j = 0; j < samples.size(); ++j) {
+      MsqMatrix<3,2> expected, read;
+      tc.get_surface_target( myPatch, i, samples[j], expected, err );
+      CPPUNIT_ASSERT(!err);
+      reader.get_surface_target( myPatch, i, samples[j], read, err );
+      CPPUNIT_ASSERT(!err);
+      ASSERT_MATRICES_EQUAL( expected, read, 1e-6 );
+    }
+  }
+  
+  CPPUNIT_ASSERT(checked_something);
+}
+
+void TargetReadWriteTest::read_write_2D_targets()
+{
+  const bool oriented = false;
+
+  MsqPrintError err( std::cout );
+  FakeTargetCalc tc(oriented);
+  
+    // Write the targets
+  TargetWriter writer( &tc );
+  writer.loop_over_mesh( &myMesh, 0, &linearMaps, err );
+  CPPUNIT_ASSERT(!err);
+  
+    // Compare all target matrices
+  bool checked_something = false; // make sure mesh actually contains surface elements
+  TargetReader reader(oriented);
+  for (size_t i = 0; i < myPatch.num_elements(); ++i) {
+    const unsigned d = TopologyInfo::dimension( myPatch.element_by_index(i).get_element_type() );
+    if (d != 2)
+      continue;
+    
+    checked_something = true;
+    std::vector<Sample> samples;
+    myPatch.get_samples( i, samples, err ); ASSERT_NO_ERROR(err);
+    for (size_t j = 0; j < samples.size(); ++j) {
+      MsqMatrix<2,2> expected, read;
+      tc.get_2D_target( myPatch, i, samples[j], expected, err );
+      CPPUNIT_ASSERT(!err);
+      reader.get_2D_target( myPatch, i, samples[j], read, err );
+      CPPUNIT_ASSERT(!err);
+      ASSERT_MATRICES_EQUAL( expected, read, 1e-6 );
+    }
+  }
+  
+  CPPUNIT_ASSERT(checked_something);
 }
 
 void TargetReadWriteTest::read_write_weights()

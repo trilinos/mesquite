@@ -4,7 +4,6 @@ INCLUDED_MAKEFILES += $(SRC_QUALITYMETRIC_TMP_2D_DIR)/Makefile.am
 
 MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TargetMetric2D.cpp \
-	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/DomainSurfaceOrientation.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/InvTransBarrier2D.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TSquared2D.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DScale.cpp \
@@ -33,11 +32,9 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DTau.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangle.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangleAlt1.cpp \
-	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TargetSurfaceOrientation.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/InverseMeanRatio2D.cpp 
 
 MSQ_HDRS += \
-	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/DomainSurfaceOrientation.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/InvTransBarrier2D.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TSquared2D.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DScale.hpp \
@@ -67,6 +64,5 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangle.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangleAlt1.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TargetMetric2D.hpp \
-	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TargetSurfaceOrientation.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/InverseMeanRatio2D.hpp 
 

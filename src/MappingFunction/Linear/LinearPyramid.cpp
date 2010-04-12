@@ -314,4 +314,82 @@ void LinearPyramid::derivatives( Sample loc,
   }
 }
 
+void LinearPyramid::ideal( Sample location,
+                           MsqMatrix<3,3>& J,
+                           MsqError& err ) const
+{
+  // For an ideal element with unit edge length at the base and unit
+  // height, the Jacobian matrix is:
+  // | 1-zeta    0      1/2 - xi  |
+  // |  0       1-zeta  1/2 - eta |
+  // |  0        0       1        |
+  //
+  // The coefficient to produce a unit determinant
+  // is therefore (1-zeta)^(-2/3).  
+  // 
+  // Thus the unit-determinate ideal element Jacobian
+  // is, given alpha = (1-zeta)^(-1/3):
+  //
+  // | 1/alpha  0      alpha^2 (1/2 - xi) |
+  // | 0       1/alpha alpha^2 (1/2 - eta)|
+  // | 0        0      alpha^2            |
+  //
+  // There are only three zeta values of interest:
+  //  zeta = 1 : the degenerate case
+  //  zeta = 0 : both 1/alpha and alpha^2 are 1.0
+  //  zeta = 1/2 : 1/alpha = 1/cbrt(2.0) and alpha^2 = 2*(1/alpha)
+  
+    // special case for apex
+  if (location.dimension == 0 && location.number == 4) {
+    J = MsqMatrix<3,3>(0.0);
+    return;
+  }
+    
+    // These are always zero
+  J(0,1) = J(1,0) = J(2,0) = J(2,1) = 0.0;
+
+    // Set diagonal terms and magnitude of terms in 3rd column based on zeta
+
+    // All of the zeta=0 locations
+  double f;
+  if ( location.dimension == 0 || 
+      (location.dimension == 1 && location.number < 4) ||
+      (location.dimension == 2 && location.number == 4)) {
+      J(0,0) = J(1,1) = J(2,2) = 1.0;
+      f = 0.5;
+  }
+    // all of the zeta=1/2 locations
+  else {
+    f = J(0,0) = J(1,1) = 0.79370052598409979;
+    J(2,2) = 2.0*f;
+  }
+
+    // Set terms in 3rd column based on xi,eta
+  
+    // The xi = eta = 0.5 locations (mid-element in xi and eta)
+  if ( location.dimension == 3 ||
+      (location.dimension == 2 && location.number == 4)) {
+        J(0,2) = J(1,2) = 0.0;
+  }
+    // The corner locations
+  else if ( location.dimension == 0 ||  
+           (location.dimension == 1 && location.number >= 4)) {
+    switch (location.number % 4) {
+      case 0: J(0,2) =  f; J(1,2) =  f; break;
+      case 1: J(0,2) = -f; J(1,2) =  f; break;
+      case 2: J(0,2) = -f; J(1,2) = -f; break;
+      case 3: J(0,2) =  f; J(1,2) = -f; break;
+    }
+  }
+    // The mid-edge locations
+  else {
+    switch (location.number) {
+      case 0: J(0,2) =  0; J(1,2) =  f; break;
+      case 1: J(0,2) = -f; J(1,2) =  0; break;
+      case 2: J(0,2) =  0; J(1,2) = -f; break;
+      case 3: J(0,2) =  f; J(1,2) =  0; break;
+    }
+  }  
+}
+
 } // namespace Mesquite

@@ -1,7 +1,7 @@
 /* ***************************************************************** 
     MESQUITE -- The Mesh Quality Improvement Toolkit
 
-    Copyright 2006 Sandia National Laboratories.  Developed at the
+    Copyright 2010 Sandia National Laboratories.  Developed at the
     University of Wisconsin--Madison under SNL contract number
     624796.  The U.S. Government and the University of Wisconsin
     retain certain rights to this software.
@@ -19,53 +19,76 @@
     You should have received a copy of the GNU Lesser General Public License 
     (lgpl.txt) along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- 
-    (2006) kraftche@cae.wisc.edu
-   
+
+    (2010) kraftche@cae.wisc.edu    
+
   ***************************************************************** */
 
 
-/** \file IdealTargetCalculator.hpp
+/** \file IdealShapeTarget.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_IDEAL_TARGET_CALCULATOR_HPP
-#define MSQ_IDEAL_TARGET_CALCULATOR_HPP
+#ifndef MSQ_IDEAL_SHAPE_TARGET_HPP
+#define MSQ_IDEAL_SHAPE_TARGET_HPP
 
 #include "Mesquite.hpp"
 #include "TargetCalculator.hpp"
-#include "JacobianCalculator.hpp"
 
 namespace MESQUITE_NS {
 
-class IdealTargetCalculator : public TargetCalculator
+class MESQUITE_EXPORT IdealShapeTarget : public TargetCalculator
 {
 public:
-  MESQUITE_EXPORT IdealTargetCalculator( bool orient_surf_elems = true )
-   : orientSurfElems(orient_surf_elems)
-   {}
-  
-  MESQUITE_EXPORT
+
+  virtual ~IdealShapeTarget() {}
+
+
+  /**\brief Get a target matrix
+   *
+   *\param pd      The current PatchData
+   *\param element The index an element within the patch data.
+   *\param sample  The sample point in the element.
+   *\param W_out   The resulting target matrix.
+   */
   virtual bool get_3D_target( PatchData& pd, 
                               size_t element,
                               Sample sample,
                               MsqMatrix<3,3>& W_out,
                               MsqError& err );
 
-  MESQUITE_EXPORT
+  /**\brief Get a target matrix
+   *
+   *\param pd      The current PatchData
+   *\param element The index an element within the patch data.
+   *\param sample  The sample point in the element.
+   *\param W_out   The resulting target matrix.
+   */
+  virtual bool get_surface_target( PatchData& pd, 
+                                   size_t element,
+                                   Sample sample,
+                                   MsqMatrix<3,2>& W_out,
+                                   MsqError& err );
+
+  /**\brief Get a target matrix
+   *
+   *\param pd      The current PatchData
+   *\param element The index an element within the patch data.
+   *\param sample  The sample point in the element.
+   *\param W_out   The resulting target matrix.
+   */
   virtual bool get_2D_target( PatchData& pd, 
                               size_t element,
                               Sample sample,
-                              MsqMatrix<3,2>& W_out,
+                              MsqMatrix<2,2>& W_out,
                               MsqError& err );
-  
-private:
-  JacobianCalculator jc;
-  const bool orientSurfElems;
+
+  virtual bool have_surface_orient() const;
+
 };
 
 
-} // namespace Mesquite
+} // namespace MESQUITE_NS
 
 #endif

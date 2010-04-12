@@ -36,7 +36,7 @@
 #include "LocalSizeQualityMetric.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "Target2DShape.hpp"
-#include "IdealTargetCalculator.hpp"
+#include "IdealShapeTarget.hpp"
 #include "TMPQualityMetric.hpp"
 #include "PlanarDomain.hpp"
 #include "Settings.hpp"
@@ -364,7 +364,7 @@ void QualityAssessorTest::test_basic_stats_vertex()
 void QualityAssessorTest::test_basic_stats_sample()
 {
   Target2DShape tm;
-  IdealTargetCalculator tc;
+  IdealShapeTarget tc;
   TMPQualityMetric metric( &tc, &tm, 0 );
   MetricLogger logger(&metric);
   QualityAssessor qa(&logger);

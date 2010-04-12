@@ -81,7 +81,8 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
   patch_set.get_patch_handles( patches, err ); MSQ_ERRZERO(err);
   
   std::vector< MsqMatrix<3,3> > targets3d;
-  std::vector< MsqMatrix<3,2> > targets2d;
+  std::vector< MsqMatrix<3,2> > targets2dorient;
+  std::vector< MsqMatrix<2,2> > targets2d;
   std::vector< double > weights;
   std::vector< Sample > samples;
   for (p = patches.begin(); p != patches.end(); ++p)
@@ -100,24 +101,7 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
     
     if (targetCalc) {
       const unsigned dim = TopologyInfo::dimension(type);
-      if (dim == 2) {
-        targets2d.resize( samples.size() );
-        for (unsigned i = 0; i < samples.size(); ++i) {
-          targetCalc->get_2D_target( patch, 0, samples[i], targets2d[i], err ); MSQ_ERRZERO(err);
-
-          MsqMatrix<3,1> cross = targets2d[i].column(0) * targets2d[i].column(1);
-          if (DBL_EPSILON > (cross%cross)) {
-            MSQ_SETERR(err)("Degenerate 2D target", MsqError::INVALID_ARG);
-            return 0.0;
-          }
-        }
-        
-        TagHandle tag = get_target_tag( 2, samples.size(), mesh, err ); MSQ_ERRZERO(err);
-        mesh->tag_set_element_data( tag, 1, 
-                                    patch.get_element_handles_array(), 
-                                    &targets2d[0], err ); MSQ_ERRZERO(err);
-      }
-      else {
+      if (dim == 3) {
         targets3d.resize( samples.size() );
         for (unsigned i = 0; i < samples.size(); ++i) {
           targetCalc->get_3D_target( patch, 0, samples[i], targets3d[i], err ); MSQ_ERRZERO(err);
@@ -132,6 +116,39 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
         mesh->tag_set_element_data( tag, 1, 
                                     patch.get_element_handles_array(), 
                                     &targets3d[0], err ); MSQ_ERRZERO(err);
+      }
+      else if(targetCalc->have_surface_orient()) {
+        targets2dorient.resize( samples.size() );
+        for (unsigned i = 0; i < samples.size(); ++i) {
+          targetCalc->get_surface_target( patch, 0, samples[i], targets2dorient[i], err ); MSQ_ERRZERO(err);
+
+          MsqMatrix<3,1> cross = targets2dorient[i].column(0) * targets2dorient[i].column(1);
+          if (DBL_EPSILON > (cross%cross)) {
+            MSQ_SETERR(err)("Degenerate 2D target", MsqError::INVALID_ARG);
+            return 0.0;
+          }
+        }
+        
+        TagHandle tag = get_target_tag( 2, samples.size(), mesh, err ); MSQ_ERRZERO(err);
+        mesh->tag_set_element_data( tag, 1, 
+                                    patch.get_element_handles_array(), 
+                                    &targets2dorient[0], err ); MSQ_ERRZERO(err);
+      }
+      else {
+        targets2d.resize( samples.size() );
+        for (unsigned i = 0; i < samples.size(); ++i) {
+          targetCalc->get_2D_target( patch, 0, samples[i], targets2d[i], err ); MSQ_ERRZERO(err);
+
+          if (DBL_EPSILON > det(targets2d[i])) {
+            MSQ_SETERR(err)("Degenerate/Inverted 2D target", MsqError::INVALID_ARG);
+            return 0.0;
+          }
+        }
+        
+        TagHandle tag = get_target_tag( 2, samples.size(), mesh, err ); MSQ_ERRZERO(err);
+        mesh->tag_set_element_data( tag, 1, 
+                                    patch.get_element_handles_array(), 
+                                    &targets2d[0], err ); MSQ_ERRZERO(err);
       }
     }
       
@@ -152,7 +169,10 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
 
 TagHandle TargetWriter::get_target_tag( unsigned dim, unsigned count, Mesh* mesh, MsqError& err )
 {
-  count *= 3*dim; // num doubles
+  if (dim == 2 && !targetCalc->have_surface_orient())
+    count *= 4;
+  else
+    count *= 3*dim; // num doubles
   if (targetTags.size() <= count)
     targetTags.resize( count+1, 0 );
   if (!targetTags[count]) {

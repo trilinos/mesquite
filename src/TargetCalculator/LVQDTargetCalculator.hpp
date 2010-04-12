@@ -65,14 +65,32 @@ public:
                       MsqMatrix<3,3>& W_out,
                       MsqError& err );
 
-  bool get_2D_target( PatchData& pd, 
+  bool get_surface_target( PatchData& pd, 
                       size_t element,
                       Sample sample,
                       MsqMatrix<3,2>& W_out,
                       MsqError& err );
+
+  bool get_2D_target( PatchData& pd, 
+                      size_t element,
+                      Sample sample,
+                      MsqMatrix<2,2>& W_out,
+                      MsqError& err );
+  
+  bool have_surface_orient() const;
   
 private:
   int add_source( TargetCalculator* source );
+  
+  bool evaluate_guide_2D( PatchData& pd, 
+                          size_t element,
+                          Sample sample,
+                          int idx,
+                          double& lambda, 
+                          MsqMatrix<3,2>& V,
+                          MsqMatrix<2,2>& Q,
+                          MsqMatrix<2,2>& delta,
+                          MsqError& err );
 
   TargetCalculator* uniqueGuides[4]; //!< Up to 4 unique target sources
   int numUniqueGuides;               //!< Number of unique target sources

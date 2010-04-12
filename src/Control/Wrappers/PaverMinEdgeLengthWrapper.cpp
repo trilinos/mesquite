@@ -42,7 +42,7 @@
 #include "PMeanPTemplate.hpp"
 #include "TrustRegion.hpp"
 #include "TMPQualityMetric.hpp"
-#include "IdealTargetCalculator.hpp"
+#include "IdealShapeTarget.hpp"
 #include "Target2DShapeSizeBarrier.hpp"
 #include "Target3DShapeSizeBarrier.hpp"
 #include "RefMeshTargetCalculator.hpp"
@@ -75,7 +75,7 @@ void PaverMinEdgeLengthWrapper::run_wrapper( Mesh* mesh,
   double lambda = calculate_average_lambda( mesh, &W_0, settings->trap_floating_point_exception(), err ); MSQ_ERRRTN(err);
   
     // create objective function
-  IdealTargetCalculator W_i;
+  IdealShapeTarget W_i;
   LambdaConstant W( lambda, &W_i );
   Target2DShapeSizeBarrier tm2;
   Target3DShapeSizeBarrier tm3;
@@ -128,16 +128,22 @@ double calculate_average_lambda( Mesh* mesh,
   for (size_t i = 0; i < handles.size(); ++i) {
     const Sample s = ElemSampleQM::sample( handles[i] );
     const size_t e = ElemSampleQM::  elem( handles[i] );
-    if (TopologyInfo::dimension( pd.element_by_index(e).get_element_type() ) == 2)
+    if (TopologyInfo::dimension( pd.element_by_index(e).get_element_type() ) == 3)
+    {
+      MsqMatrix<3,3> W;
+      tc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
+      lambda += TargetCalculator::size( W );
+    }
+    else if (tc->have_surface_orient())
     {
       MsqMatrix<3,2> W;
-      tc->get_2D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
+      tc->get_surface_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
       lambda += TargetCalculator::size( W );
     }
     else
     {
-      MsqMatrix<3,3> W;
-      tc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
+      MsqMatrix<2,2> W;
+      tc->get_2D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
       lambda += TargetCalculator::size( W );
     }
   }

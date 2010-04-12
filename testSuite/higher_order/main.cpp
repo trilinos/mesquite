@@ -59,7 +59,7 @@ using std::endl;
 #include "QuadLagrangeShape.hpp"
 
 // algorithms
-#include "IdealTargetCalculator.hpp"
+#include "IdealShapeTarget.hpp"
 #include "TMPQualityMetric.hpp"
 #include "InverseMeanRatio2D.hpp"
 #include "ConditionNumberQualityMetric.hpp"
@@ -213,7 +213,7 @@ InstructionQueue* create_instruction_queue(MsqError& err)
 
   // creates a mean ratio quality metric ...
   //IdealWeightInverseMeanRatio* mean = new IdealWeightInverseMeanRatio(err); MSQ_ERRZERO(err);
-  TargetCalculator* tc = new IdealTargetCalculator;
+  TargetCalculator* tc = new IdealShapeTarget;
   TMPQualityMetric* mean = new TMPQualityMetric( tc, 0, new InverseMeanRatio2D, 0 );
   
   LPtoPTemplate* obj_func = new LPtoPTemplate(mean, 1, err); MSQ_ERRZERO(err);

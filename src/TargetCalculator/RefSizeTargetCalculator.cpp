@@ -61,10 +61,8 @@ RefSizeTargetCalculator::RefSizeTargetCalculator(
  {} //   { init_scale_factors( scaleFactor ); }
    
 RefSizeTargetCalculator::RefSizeTargetCalculator( 
-                           ReferenceMesh* reference_mesh,
-                           bool orient_surface_elems )
+                           ReferenceMesh* reference_mesh  )
    : refMesh( reference_mesh ),
-     defaultTargets( orient_surface_elems ),
      scaledTargets( &defaultTargets )
  {} //   { init_scale_factors( scaleFactor );  }
 
@@ -115,10 +113,26 @@ bool RefSizeTargetCalculator::get_3D_target( PatchData& pd,
   return true;
 }
 
-bool RefSizeTargetCalculator::get_2D_target( PatchData& pd, 
+bool RefSizeTargetCalculator::get_surface_target( PatchData& pd, 
                                             size_t element,
                                             Sample sample,
                                             MsqMatrix<3,2>& W,
+                                            MsqError& err )
+{
+  scaledTargets->get_surface_target( pd, element, sample, W, err );
+  MSQ_ERRZERO(err);
+ 
+  double f = average_edge_length( pd, element, err );
+  MSQ_ERRZERO(err);
+  W *= f;
+  
+  return true;
+}
+
+bool RefSizeTargetCalculator::get_2D_target( PatchData& pd, 
+                                            size_t element,
+                                            Sample sample,
+                                            MsqMatrix<2,2>& W,
                                             MsqError& err )
 {
   scaledTargets->get_2D_target( pd, element, sample, W, err );

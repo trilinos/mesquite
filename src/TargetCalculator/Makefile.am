@@ -4,8 +4,7 @@ INCLUDED_MAKEFILES += $(SRC_TARGETCALCULATOR_DIR)/Makefile.am
 
 MSQ_SRCS += \
 	$(SRC_TARGETCALCULATOR_DIR)/CachingTargetCalculator.cpp \
-	$(SRC_TARGETCALCULATOR_DIR)/IdealTargetCalculator.cpp \
-	$(SRC_TARGETCALCULATOR_DIR)/IdentityTarget.cpp \
+	$(SRC_TARGETCALCULATOR_DIR)/IdealShapeTarget.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/InverseMetricWeight.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/JacobianCalculator.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/LambdaTarget.cpp \
@@ -24,8 +23,7 @@ MSQ_SRCS += \
 
 MSQ_HDRS += \
 	$(SRC_TARGETCALCULATOR_DIR)/CachingTargetCalculator.hpp \
-	$(SRC_TARGETCALCULATOR_DIR)/IdealTargetCalculator.hpp \
-	$(SRC_TARGETCALCULATOR_DIR)/IdentityTarget.hpp \
+	$(SRC_TARGETCALCULATOR_DIR)/IdealShapeTarget.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/InverseMetricWeight.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/JacobianCalculator.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/LambdaTarget.hpp \

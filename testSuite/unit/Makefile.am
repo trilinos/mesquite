@@ -103,7 +103,6 @@ msq_test_SOURCES = msq_test_main.cpp \
 	StdDevTemplateTest.cpp \
 	SymMatrix3DTest.cpp \
 	TagVertexMeshTest.cpp \
-	Target2DSurfOrientTest.cpp \
 	Target2DTest.cpp \
 	Target3DTest.cpp \
 	TargetCalculatorTest.cpp \

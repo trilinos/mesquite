@@ -65,8 +65,18 @@ public:
   bool get_2D_target( PatchData& pd, 
                       size_t element,
                       Sample sample,
+                      MsqMatrix<2,2>& W_out,
+                      MsqError& err );
+
+  bool get_surface_target( PatchData& pd, 
+                      size_t element,
+                      Sample sample,
                       MsqMatrix<3,2>& W_out,
                       MsqError& err );
+  
+  bool have_surface_orient() const
+    { return mTarget->have_surface_orient(); }
+
 private:
   double mLambda;
   TargetCalculator* mTarget;

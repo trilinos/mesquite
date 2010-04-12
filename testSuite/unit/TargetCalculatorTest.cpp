@@ -53,15 +53,23 @@ private:
   CPPUNIT_TEST_SUITE(TargetCalculatorTest);
 
   CPPUNIT_TEST (test_factor_2D);
+  CPPUNIT_TEST (test_factor_surface);
   CPPUNIT_TEST (test_factor_3D);
   CPPUNIT_TEST (test_factor_2D_zero);
+  CPPUNIT_TEST (test_factor_surface_zero);
   CPPUNIT_TEST (test_factor_3D_zero);
   
   CPPUNIT_TEST (test_size_2D);
+  CPPUNIT_TEST (test_size_surface);
   CPPUNIT_TEST (test_size_3D);
   
   CPPUNIT_TEST (test_skew_2D);
+  CPPUNIT_TEST (test_skew_surface);
   CPPUNIT_TEST (test_skew_3D);
+  
+  CPPUNIT_TEST (test_shape_2D);
+  CPPUNIT_TEST (test_shape_surface);
+  CPPUNIT_TEST (test_shape_3D);
   
   CPPUNIT_TEST (test_ideal_skew_tri);
   CPPUNIT_TEST (test_ideal_skew_quad);
@@ -69,6 +77,13 @@ private:
   CPPUNIT_TEST (test_ideal_skew_prism);
   CPPUNIT_TEST (test_ideal_skew_pyramid);
   CPPUNIT_TEST (test_ideal_skew_hex);
+  
+  CPPUNIT_TEST (test_ideal_shape_tri);
+  CPPUNIT_TEST (test_ideal_shape_quad);
+  CPPUNIT_TEST (test_ideal_shape_tet);
+  CPPUNIT_TEST (test_ideal_shape_prism);
+  CPPUNIT_TEST (test_ideal_shape_pyramid);
+  CPPUNIT_TEST (test_ideal_shape_hex);
   
   CPPUNIT_TEST (test_new_orientatin_3D);
   CPPUNIT_TEST (test_new_orientatin_2D);
@@ -95,15 +110,23 @@ public:
   void setUp();
 
   void test_factor_2D();
+  void test_factor_surface();
   void test_factor_3D();
   void test_factor_2D_zero();
+  void test_factor_surface_zero();
   void test_factor_3D_zero();
   
   void test_size_2D();
+  void test_size_surface();
   void test_size_3D();
   
   void test_skew_2D();
+  void test_skew_surface();
   void test_skew_3D();
+  
+  void test_shape_2D();
+  void test_shape_surface();
+  void test_shape_3D();
   
   void test_ideal_skew_tri();
   void test_ideal_skew_quad();
@@ -111,6 +134,13 @@ public:
   void test_ideal_skew_prism();
   void test_ideal_skew_pyramid();
   void test_ideal_skew_hex();
+  
+  void test_ideal_shape_tri();
+  void test_ideal_shape_quad();
+  void test_ideal_shape_tet();
+  void test_ideal_shape_prism();
+  void test_ideal_shape_pyramid();
+  void test_ideal_shape_hex();
   
   void test_new_orientatin_3D();
   void test_new_orientatin_2D();
@@ -125,8 +155,8 @@ public:
   void test_get_refmesh_Jacobian_2D();
 
 
-  template <unsigned D> static inline
-  void check_valid_V( MsqMatrix<3,D> V );
+  template <unsigned R, unsigned C> static inline
+  void check_valid_V( MsqMatrix<R,C> V );
 
   template <unsigned D> static inline
   void check_valid_Q( MsqMatrix<D,D> Q );
@@ -181,11 +211,11 @@ TargetCalculatorTest::TargetCalculatorTest()
   D2D_21  = MsqMatrix<2,2>(aspect_2D_2x);
 }
 
-template <unsigned D> inline
-void TargetCalculatorTest::check_valid_V( MsqMatrix<3,D> V )
+template <unsigned R, unsigned C> inline
+void TargetCalculatorTest::check_valid_V( MsqMatrix<R,C> V )
 {
   // check that it is a rotation
-  MsqMatrix<D,D> I(1.0);
+  MsqMatrix<C,C> I(1.0);
   ASSERT_MATRICES_EQUAL( I, transpose(V) * V, EPS );
 }
 
@@ -253,7 +283,7 @@ void TargetCalculatorTest::setUp()
 void TargetCalculatorTest::test_factor_2D()
 {
   MsqPrintError err(std::cout);
-  MsqMatrix<3,2> I(1.0), W, V;
+  MsqMatrix<2,2> I(1.0), W, V;
   double lambda;
   MsqMatrix<2,2> Q, delta;
   bool valid;
@@ -279,9 +309,87 @@ void TargetCalculatorTest::test_factor_2D()
   ASSERT_MATRICES_EQUAL( 2*I, W, EPS );
   
     // now rotate the matrix about the X axis by 90 degrees
+  MsqMatrix<2,2> I_rot(0.0);
+  I_rot(0,1) = 1.0;
+  I_rot(1,0) = -1.0;
+  valid = TargetCalculator::factor_2D( I_rot, lambda, V, Q, delta, err );
+  CPPUNIT_ASSERT( valid && !err );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, lambda, EPS );
+  check_valid_V( V );
+  check_valid_Q( Q );
+  check_valid_delta( delta );
+  W = lambda * V * Q* delta;
+  ASSERT_MATRICES_EQUAL( I_rot, W, EPS );
+  
+    // change the aspect ratio
+  MsqMatrix<2,2> A(1.0);
+  A(1,1) = 1.5;
+  valid = TargetCalculator::factor_2D( A, lambda, V, Q, delta, err );
+  CPPUNIT_ASSERT( valid && !err );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( pow(det(transpose(A)*A),0.25), lambda, EPS );
+  check_valid_V( V );
+  check_valid_Q( Q );
+  check_valid_delta( delta );
+  W = lambda * V * Q* delta;
+  ASSERT_MATRICES_EQUAL( A, W, EPS );
+  
+  // try an arbitrary matrix
+  double w[4] = { 3, 1, 
+                  4, 2 };
+  MsqMatrix<2,2> W2(w);
+  valid = TargetCalculator::factor_2D( W2, lambda, V, Q, delta, err );
+  CPPUNIT_ASSERT( valid && !err );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( pow(det(transpose(W2)*W2),0.25), lambda, EPS );
+  check_valid_V( V );
+  check_valid_Q( Q );
+  check_valid_delta( delta );
+  W = lambda * V * Q* delta;
+  ASSERT_MATRICES_EQUAL( W2, W, EPS );
+  
+  // try a more elaborate test
+  const double e = exp(1);
+  MsqMatrix<2,2> Z45(V2D_Z45.data()); // copy first two rows
+  W2 = e * Z45 * Q2D_45 * D2D_21;
+  valid = TargetCalculator::factor_2D( W2, lambda, V, Q, delta, err );
+  CPPUNIT_ASSERT( valid && !err );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( e, lambda, EPS );
+  ASSERT_MATRICES_EQUAL( Z45, V, EPS );
+  ASSERT_MATRICES_EQUAL( Q2D_45, Q, EPS );
+  ASSERT_MATRICES_EQUAL( D2D_21, delta, EPS );
+}
+
+void TargetCalculatorTest::test_factor_surface()
+{
+  MsqPrintError err(std::cout);
+  MsqMatrix<3,2> I(1.0), W, V;
+  double lambda;
+  MsqMatrix<2,2> Q, delta;
+  bool valid;
+  
+    // first test with I
+  valid = TargetCalculator::factor_surface( I, lambda, V, Q, delta, err );
+  CPPUNIT_ASSERT( valid && !err );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, lambda, EPS );
+  check_valid_V( V );
+  check_valid_Q( Q );
+  check_valid_delta( delta );
+  W = lambda * V * Q* delta;
+  ASSERT_MATRICES_EQUAL( I, W, EPS );
+  
+    // now test with 2*I
+  valid = TargetCalculator::factor_surface( 2*I, lambda, V, Q, delta, err );
+  CPPUNIT_ASSERT( valid && !err );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 2.0, lambda, EPS );
+  check_valid_V( V );
+  check_valid_Q( Q );
+  check_valid_delta( delta );
+  W = lambda * V * Q* delta;
+  ASSERT_MATRICES_EQUAL( 2*I, W, EPS );
+  
+    // now rotate the matrix about the X axis by 90 degrees
   MsqMatrix<3,2> I_rot(1.0);
   I_rot(1,1) = 0.0; I_rot(2,1) = 1.0;
-  valid = TargetCalculator::factor_2D( I_rot, lambda, V, Q, delta, err );
+  valid = TargetCalculator::factor_surface( I_rot, lambda, V, Q, delta, err );
   CPPUNIT_ASSERT( valid && !err );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, lambda, EPS );
   check_valid_V( V );
@@ -293,7 +401,7 @@ void TargetCalculatorTest::test_factor_2D()
     // change the aspect ratio
   MsqMatrix<3,2> A(1.0);
   A(1,1) = 1.5;
-  valid = TargetCalculator::factor_2D( A, lambda, V, Q, delta, err );
+  valid = TargetCalculator::factor_surface( A, lambda, V, Q, delta, err );
   CPPUNIT_ASSERT( valid && !err );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( pow(det(transpose(A)*A),0.25), lambda, EPS );
   check_valid_V( V );
@@ -307,7 +415,7 @@ void TargetCalculatorTest::test_factor_2D()
                   4, 2,
                  -1, 5 };
   MsqMatrix<3,2> W2(w);
-  valid = TargetCalculator::factor_2D( W2, lambda, V, Q, delta, err );
+  valid = TargetCalculator::factor_surface( W2, lambda, V, Q, delta, err );
   CPPUNIT_ASSERT( valid && !err );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( pow(det(transpose(W2)*W2),0.25), lambda, EPS );
   check_valid_V( V );
@@ -319,7 +427,7 @@ void TargetCalculatorTest::test_factor_2D()
   // try a more elaborate test
   const double e = exp(1);
   W2 = e * V2D_Z45 * Q2D_45 * D2D_21;
-  valid = TargetCalculator::factor_2D( W2, lambda, V, Q, delta, err );
+  valid = TargetCalculator::factor_surface( W2, lambda, V, Q, delta, err );
   CPPUNIT_ASSERT( valid && !err );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( e, lambda, EPS );
   ASSERT_MATRICES_EQUAL( V2D_Z45, V, EPS );
@@ -409,9 +517,21 @@ void TargetCalculatorTest::test_factor_2D_zero()
   MsqPrintError err(std::cout);
   double lambda;
   MsqMatrix<2,2> Q, delta;
-  MsqMatrix<3,2> V, Z(0.0); Z(0,0) = 1.0;
+  MsqMatrix<2,2> V, Z(0.0); Z(0,0) = 1.0;
   
   bool valid = TargetCalculator::factor_2D( Z, lambda, V, Q, delta, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!valid);
+}
+
+void TargetCalculatorTest::test_factor_surface_zero()
+{
+  MsqPrintError err(std::cout);
+  double lambda;
+  MsqMatrix<2,2> Q, delta;
+  MsqMatrix<3,2> V, Z(0.0); Z(0,0) = 1.0;
+  
+  bool valid = TargetCalculator::factor_surface( Z, lambda, V, Q, delta, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!valid);
 }
@@ -432,11 +552,30 @@ void TargetCalculatorTest::test_size_2D()
 {
   MsqPrintError err(std::cout);
   double lambda;
+  MsqMatrix<2,2> V, Q, delta;
+  
+  MsqMatrix<2,2> I(1.0);
+  TargetCalculator::factor_2D( I, lambda, V, Q, delta, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( lambda, TargetCalculator::size(I), EPS );
+
+  double w[] = { 3, 1, 
+                 4, 2 };
+  MsqMatrix<2,2> W(w);
+  TargetCalculator::factor_2D( W, lambda, V, Q, delta, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( lambda, TargetCalculator::size(W), EPS );
+}
+
+void TargetCalculatorTest::test_size_surface()
+{
+  MsqPrintError err(std::cout);
+  double lambda;
   MsqMatrix<3,2> V;
   MsqMatrix<2,2> Q, delta;
   
   MsqMatrix<3,2> I(1.0);
-  TargetCalculator::factor_2D( I, lambda, V, Q, delta, err );
+  TargetCalculator::factor_surface( I, lambda, V, Q, delta, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( lambda, TargetCalculator::size(I), EPS );
 
@@ -444,7 +583,7 @@ void TargetCalculatorTest::test_size_2D()
                  4, 2, 
                 -1, 5 };
   MsqMatrix<3,2> W(w);
-  TargetCalculator::factor_2D( W, lambda, V, Q, delta, err );
+  TargetCalculator::factor_surface( W, lambda, V, Q, delta, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( lambda, TargetCalculator::size(W), EPS );
 }
@@ -473,11 +612,40 @@ void TargetCalculatorTest::test_skew_2D()
 {
   MsqPrintError err(std::cout);
   double lambda;
+  MsqMatrix<2,2> V, Q, delta;
+  
+  MsqMatrix<2,2> I(1.0);
+  TargetCalculator::factor_2D( I, lambda, V, Q, delta, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q, TargetCalculator::skew(I), EPS );
+  
+  double r[] = { 0, -1,  
+                 2, 0 };
+  MsqMatrix<2,2> R(r);
+  TargetCalculator::factor_2D( R, lambda, V, Q, delta, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q, TargetCalculator::skew(R), EPS );
+
+  double w[] = { 3, 1, 
+                 4, 2 };
+  MsqMatrix<2,2> W(w);
+  TargetCalculator::factor_2D( W, lambda, V, Q, delta, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q, TargetCalculator::skew(W), EPS );
+  
+  W = MsqMatrix<2,2>(6) * Q2D_45;
+  ASSERT_MATRICES_EQUAL( Q2D_45, TargetCalculator::skew(W), EPS );
+}
+  
+void TargetCalculatorTest::test_skew_surface()
+{
+  MsqPrintError err(std::cout);
+  double lambda;
   MsqMatrix<3,2> V;
   MsqMatrix<2,2> Q, delta;
   
   MsqMatrix<3,2> I(1.0);
-  TargetCalculator::factor_2D( I, lambda, V, Q, delta, err );
+  TargetCalculator::factor_surface( I, lambda, V, Q, delta, err );
   ASSERT_NO_ERROR(err);
   ASSERT_MATRICES_EQUAL( Q, TargetCalculator::skew(I), EPS );
   
@@ -485,7 +653,7 @@ void TargetCalculatorTest::test_skew_2D()
                  0, 0,  
                  0, 2 };
   MsqMatrix<3,2> R(r);
-  TargetCalculator::factor_2D( R, lambda, V, Q, delta, err );
+  TargetCalculator::factor_surface( R, lambda, V, Q, delta, err );
   ASSERT_NO_ERROR(err);
   ASSERT_MATRICES_EQUAL( Q, TargetCalculator::skew(R), EPS );
 
@@ -493,7 +661,7 @@ void TargetCalculatorTest::test_skew_2D()
                  4, 2, 
                 -1, 5 };
   MsqMatrix<3,2> W(w);
-  TargetCalculator::factor_2D( W, lambda, V, Q, delta, err );
+  TargetCalculator::factor_surface( W, lambda, V, Q, delta, err );
   ASSERT_NO_ERROR(err);
   ASSERT_MATRICES_EQUAL( Q, TargetCalculator::skew(W), EPS );
   
@@ -530,6 +698,98 @@ void TargetCalculatorTest::test_skew_3D()
   
   W = MsqMatrix<3,3>(2.1) * Q3D_45;
   ASSERT_MATRICES_EQUAL( Q3D_45, TargetCalculator::skew(W), EPS );
+}
+  
+void TargetCalculatorTest::test_shape_2D()
+{
+  MsqPrintError err(std::cout);
+  double lambda;
+  MsqMatrix<2,2> V, Q, delta;
+  
+  MsqMatrix<2,2> I(1.0);
+  TargetCalculator::factor_2D( I, lambda, V, Q, delta, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q*delta, TargetCalculator::shape(I), EPS );
+  
+  double r[] = { 0, -1,  
+                 2, 0 };
+  MsqMatrix<2,2> R(r);
+  TargetCalculator::factor_2D( R, lambda, V, Q, delta, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q*delta, TargetCalculator::shape(R), EPS );
+
+  double w[] = { 3, 1, 
+                 4, 2 };
+  MsqMatrix<2,2> W(w);
+  TargetCalculator::factor_2D( W, lambda, V, Q, delta, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q*delta, TargetCalculator::shape(W), EPS );
+  
+  W = MsqMatrix<2,2>(6) * Q2D_45;
+  ASSERT_MATRICES_EQUAL( Q2D_45, TargetCalculator::shape(W), EPS );
+}
+  
+void TargetCalculatorTest::test_shape_surface()
+{
+  MsqPrintError err(std::cout);
+  double lambda;
+  MsqMatrix<3,2> V;
+  MsqMatrix<2,2> Q, delta;
+  
+  MsqMatrix<3,2> I(1.0);
+  TargetCalculator::factor_surface( I, lambda, V, Q, delta, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q*delta, TargetCalculator::shape(I), EPS );
+  
+  double r[] = { 1, 0,  
+                 0, 0,  
+                 0, 2 };
+  MsqMatrix<3,2> R(r);
+  TargetCalculator::factor_surface( R, lambda, V, Q, delta, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q*delta, TargetCalculator::shape(R), EPS );
+
+  double w[] = { 3, 1, 
+                 4, 2, 
+                -1, 5 };
+  MsqMatrix<3,2> W(w);
+  TargetCalculator::factor_surface( W, lambda, V, Q, delta, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q*delta, TargetCalculator::shape(W), EPS );
+  
+  W = MsqMatrix<3,2>(6) * Q2D_45;
+  ASSERT_MATRICES_EQUAL( Q2D_45, TargetCalculator::shape(W), EPS );
+}
+
+void TargetCalculatorTest::test_shape_3D()
+{
+  MsqPrintError err(std::cout);
+  double lambda;
+  MsqMatrix<3,3> V, Q, delta;
+  
+  MsqMatrix<3,3> I(1.0);
+  TargetCalculator::factor_3D( I, lambda, V, Q, delta, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q*delta, TargetCalculator::shape(I), EPS );
+  
+  double r[] = { 0.8, 0.0, 0.0,
+                 0.0, 0.0, 1.13,
+                 0.0,-0.5, 0.0 };
+  MsqMatrix<3,3> R(r);
+  TargetCalculator::factor_3D( R, lambda, V, Q, delta, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q*delta, TargetCalculator::shape(R), EPS );
+
+  double w[] = { 9, 8, 7, 
+                 1, 5, 4, 
+                 3, 2, 6 };
+  MsqMatrix<3,3> W(w);
+  TargetCalculator::factor_3D( W, lambda, V, Q, delta, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q*delta, TargetCalculator::shape(W), 2*EPS );
+  
+  W = MsqMatrix<3,3>(2.1) * Q3D_45;
+  ASSERT_MATRICES_EQUAL( Q3D_45, TargetCalculator::shape(W), EPS );
 }
 
 void TargetCalculatorTest::test_ideal_skew_tri()
@@ -654,6 +914,125 @@ void TargetCalculatorTest::test_ideal_skew_hex()
   ASSERT_IDENTITY_MATRIX( Q );
 }
 
+
+void TargetCalculatorTest::test_ideal_shape_tri()
+{
+    // Ideal triangle should have Aspect (i.e. delta) == identity,
+    // so shape should be equal to skew.
+
+  MsqError err;
+  PatchData pd;
+  MsqMatrix<2,2> Q, Q2;
+  
+  TargetCalculator::ideal_shape_2D( TRIANGLE, Sample(0,0), pd, Q, err );
+  ASSERT_NO_ERROR(err);
+  TargetCalculator::ideal_skew_2D( TRIANGLE, Sample(0,0), pd, Q2, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q2, Q, EPS );
+  
+  TargetCalculator::ideal_shape_2D( TRIANGLE, Sample(2,0), pd, Q, err );
+  ASSERT_NO_ERROR(err);
+  TargetCalculator::ideal_skew_2D( TRIANGLE, Sample(2,0), pd, Q2, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q2, Q, EPS );
+}
+
+void TargetCalculatorTest::test_ideal_shape_quad()
+{
+  MsqError err;
+  PatchData pd;
+  MsqMatrix<2,2> Q;
+  
+  TargetCalculator::ideal_shape_2D( QUADRILATERAL, Sample(0,0), pd, Q, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_IDENTITY_MATRIX( Q );
+  
+  TargetCalculator::ideal_shape_2D( QUADRILATERAL, Sample(2,0), pd, Q, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_IDENTITY_MATRIX( Q );
+}
+
+void TargetCalculatorTest::test_ideal_shape_tet()
+{
+    // Ideal tetrahedron should have Aspect (i.e. delta) == identity,
+    // so shape should be equal to skew.
+
+  MsqError err;
+  PatchData pd;
+  MsqMatrix<3,3> Q, Q2;
+  
+  TargetCalculator::ideal_shape_3D( TETRAHEDRON, Sample(0,0), pd, Q, err );
+  ASSERT_NO_ERROR(err);
+  TargetCalculator::ideal_skew_3D( TETRAHEDRON, Sample(0,0), pd, Q2, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q2, Q, EPS );
+  
+  TargetCalculator::ideal_shape_3D( TETRAHEDRON, Sample(3,0), pd, Q, err );
+  ASSERT_NO_ERROR(err);
+  TargetCalculator::ideal_skew_3D( TETRAHEDRON, Sample(3,0), pd, Q2, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_MATRICES_EQUAL( Q2, Q, EPS );
+}
+
+void TargetCalculatorTest::test_ideal_shape_prism()
+{
+    // Ideal wedge should have Aspect (i.e. delta) == identity,
+    // so shape should be equal to skew.
+
+  Sample points[] = { Sample(0.0), Sample(0,1), Sample(0,2), Sample(0,3),
+                      Sample(2,0), Sample(3,0) };
+  const int num_pts = sizeof(points)/sizeof(points[0]);
+  
+  MsqError err;
+  PatchData pd;
+  MsqMatrix<3,3> Q, W;
+ 
+  for (int i = 0; i < num_pts; ++i) {
+    TargetCalculator::ideal_shape_3D( PRISM, points[i], pd, Q, err );
+    ASSERT_NO_ERROR(err);
+    TargetCalculator::ideal_skew_3D( PRISM, points[i], pd, W, err );
+    ASSERT_NO_ERROR(err);
+    ASSERT_MATRICES_EQUAL( W, Q, EPS );
+  }
+}
+
+void TargetCalculatorTest::test_ideal_shape_pyramid()
+{
+  Sample points[] = { Sample(0.0), Sample(0,1), Sample(0,2), Sample(0,3),
+                      Sample(2,0), Sample(3,0) };
+  const int num_pts = sizeof(points)/sizeof(points[0]);
+  
+  MsqError err;
+  PatchData pd;
+  MsqMatrix<3,3> Q, W;
+  const Vector3D* coords = unit_edge_element( PYRAMID, true );
+  
+  for (int i = 0; i < num_pts; ++i) {
+  
+    TargetCalculator::ideal_shape_3D( PYRAMID, points[i], pd, Q, err );
+    ASSERT_NO_ERROR(err);
+    
+    TargetCalculator::jacobian_3D( pd, PYRAMID, 5, points[i], coords, W, err );
+    ASSERT_NO_ERROR(err);
+    
+    ASSERT_MATRICES_EQUAL( TargetCalculator::shape(W), Q, EPS );
+  }
+}
+
+void TargetCalculatorTest::test_ideal_shape_hex()
+{
+  MsqError err;
+  PatchData pd;
+  MsqMatrix<3,3> Q;
+  
+  TargetCalculator::ideal_shape_3D( HEXAHEDRON, Sample(0,0), pd, Q, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_IDENTITY_MATRIX( Q );
+  
+  TargetCalculator::ideal_shape_3D( HEXAHEDRON, Sample(3,0), pd, Q, err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_IDENTITY_MATRIX( Q );
+}
   
 void TargetCalculatorTest::test_new_orientatin_3D()
 {

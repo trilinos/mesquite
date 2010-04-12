@@ -34,7 +34,7 @@ Unit testing for the TMPQualityMetric class
 #include "TMPQualityMetric.hpp"
 #include "TargetMetric2D.hpp"
 #include "TargetMetric3D.hpp"
-#include "IdealTargetCalculator.hpp"
+#include "IdealShapeTarget.hpp"
 #include "MsqMatrix.hpp"
 #include "QualityMetricTester.hpp"
 #include "Settings.hpp"
@@ -250,7 +250,7 @@ class TMPQualityMetricTest : public CppUnit::TestFixture
   QualityMetricTester tester;
 
   Settings settings;
-  IdealTargetCalculator ideal;
+  IdealShapeTarget ideal;
   ScaleWeight e_weight;
 
   FauxTarget<TargetMetric2D> faux_2d_pi, faux_2d_zero;
@@ -317,7 +317,7 @@ public:
   void compare_indices_and_gradient()
     { tester.compare_eval_with_indices_and_eval_with_gradient( &test_qm ); }
   void test_ideal_element_gradient()
-    { tester.test_ideal_element_zero_gradient( &test_qm, true ); }
+    { tester.test_ideal_element_zero_gradient( &test_qm, false ); }
   void compare_analytical_and_numerical_gradient()
     { compare_analytical_and_numerical_gradients( &test_qm ); }
   void test_weighted_gradients()
@@ -611,7 +611,7 @@ void TMPQualityMetricTest::test_gradient_2D()
     // construct metric
   pd.attach_settings( &settings );
   TestGradTargetMetric2D tm;
-  IdealTargetCalculator tc;
+  IdealShapeTarget tc;
   TMPQualityMetric m( &tc, &tm, 0 );
   PlanarDomain plane( PlanarDomain::XY );
   pd.set_domain( &plane );
@@ -688,7 +688,7 @@ void TMPQualityMetricTest::test_gradient_3D()
     // construct metric
   pd.attach_settings( &settings );
   TestGradTargetMetric3D tm;
-  IdealTargetCalculator tc;
+  IdealShapeTarget tc;
   TMPQualityMetric m( &tc, 0, &tm );
   
     // evaluate metric
@@ -957,7 +957,7 @@ void TMPQualityMetricTest::test_inverse_mean_ratio_grad()
 {
   InverseMeanRatio2D tm_2d;
   InverseMeanRatio3D tm_3d;
-  IdealTargetCalculator target(false);
+  IdealShapeTarget target;
   TMPQualityMetric metric( &target, &tm_2d, &tm_3d );
   ElementPMeanP avg( 1.0, &metric );
   
@@ -971,7 +971,7 @@ void TMPQualityMetricTest::test_inverse_mean_ratio_hess()
 {
   InverseMeanRatio2D tm_2d;
   InverseMeanRatio3D tm_3d;
-  IdealTargetCalculator target(false);
+  IdealShapeTarget target;
   TMPQualityMetric metric( &target, &tm_2d, &tm_3d );
   ElementPMeanP avg( 1.0, &metric );
  
@@ -984,7 +984,7 @@ void TMPQualityMetricTest::test_inverse_mean_ratio_hess_diag()
 {
   InverseMeanRatio2D tm_2d;
   InverseMeanRatio3D tm_3d;
-  IdealTargetCalculator target(false);
+  IdealShapeTarget target;
   TMPQualityMetric metric( &target, &tm_2d, &tm_3d );
   
   compare_analytical_and_numerical_diagonals( &metric );
@@ -995,7 +995,7 @@ void TMPQualityMetricTest::regression_inverse_mean_ratio_grad()
 {
   MsqError err;
   InverseMeanRatio2D tm_2d;
-  IdealTargetCalculator target(false);
+  IdealShapeTarget target;
   TMPQualityMetric metric( &target, &tm_2d, 0 );
   const double coords[] = { -0.80000000000000004, -0.80000000000000004, 0,
                              0.00000000000000000,  2.00000000000000000, 0,
@@ -1060,7 +1060,7 @@ void TMPQualityMetricTest::regression_inverse_mean_ratio_hess()
 {
   MsqError err;
   InverseMeanRatio2D tm_2d;
-  IdealTargetCalculator target(false);
+  IdealShapeTarget target;
   TMPQualityMetric metric( &target, &tm_2d, 0 );
   const double coords[] = { 4.158984727, 4.6570859130000004, 5,
                             4.51742825, 4.51742825, 5,

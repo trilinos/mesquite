@@ -155,7 +155,7 @@ bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, Msq
     MsqMatrix<3,2> App( (MsqMatrix<3,1>*)c );
     
     MsqMatrix<3,2> Wp;
-    targetCalc->get_2D_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
+    targetCalc->get_surface_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
 
     MsqMatrix<2,2> A, W;
     MsqMatrix<3,2> RZ;

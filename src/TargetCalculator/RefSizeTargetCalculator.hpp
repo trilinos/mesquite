@@ -34,7 +34,7 @@
 #define MSQ_REF_SIZE_TARGET_CALCULATOR_HPP
 
 #include "Mesquite.hpp"
-#include "IdealTargetCalculator.hpp"
+#include "IdealShapeTarget.hpp"
 
 namespace MESQUITE_NS {
 
@@ -45,8 +45,7 @@ class RefSizeTargetCalculator : public TargetCalculator
 public:
   RefSizeTargetCalculator( ReferenceMesh* reference_mesh,
                            TargetCalculator* tc );
-  RefSizeTargetCalculator( ReferenceMesh* reference_mesh,
-                           bool orient_surface_elems = true );
+  RefSizeTargetCalculator( ReferenceMesh* reference_mesh );
   
   virtual bool get_3D_target( PatchData& pd, 
                               size_t element,
@@ -57,15 +56,24 @@ public:
   virtual bool get_2D_target( PatchData& pd, 
                               size_t element,
                               Sample sample,
+                              MsqMatrix<2,2>& W_out,
+                              MsqError& err );
+
+  virtual bool get_surface_target( PatchData& pd, 
+                              size_t element,
+                              Sample sample,
                               MsqMatrix<3,2>& W_out,
                               MsqError& err );
   
+  virtual bool have_surface_orient() const 
+    { return scaledTargets->have_surface_orient(); }
+    
 private:
   
   double average_edge_length( PatchData& pd, size_t element, MsqError& err );
 
   ReferenceMesh* refMesh;
-  IdealTargetCalculator defaultTargets;
+  IdealShapeTarget defaultTargets;
   TargetCalculator* scaledTargets;
   
   /** Amount to scale average edge length by to achive correctly sized

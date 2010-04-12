@@ -70,11 +70,36 @@ public:
    *\param sample  The sample point in the element.
    *\param W_out   The resulting target matrix.
    */
+  virtual bool get_surface_target( PatchData& pd, 
+                                   size_t element,
+                                   Sample sample,
+                                   MsqMatrix<3,2>& W_out,
+                                   MsqError& err ) = 0;
+
+  /**\brief Get a target matrix
+   *
+   *\param pd      The current PatchData
+   *\param element The index an element within the patch data.
+   *\param sample  The sample point in the element.
+   *\param W_out   The resulting target matrix.
+   */
   virtual bool get_2D_target( PatchData& pd, 
                               size_t element,
                               Sample sample,
-                              MsqMatrix<3,2>& W_out,
+                              MsqMatrix<2,2>& W_out,
                               MsqError& err ) = 0;
+
+    /**\brief Use 3x2 W for surface elements if true, 2x2 W if false
+     *
+     * If true, then the targets for surface elements attempt some
+     * control of orientation and therefore get_surface_target must
+     * be used to get the targets.  If false, then the target contains
+     * no orientation data and is therefore the same as the corresponding
+     * 2D target for surface elements.  In this case, get_2D_target should
+     * be used.
+     */
+  virtual bool have_surface_orient() const = 0;
+
   /**\brief Factor some existing target or Jacobian matrix
    *
    * Utility method for subclasses to use in their implementation
@@ -104,9 +129,27 @@ public:
    *\param Delta   Output: the aspect ratio factor of W
    *\return bool   True if W can be factored, false otherwise.
    */
-  static bool factor_2D( const MsqMatrix<3,2>& W,
+  static bool factor_surface( const MsqMatrix<3,2>& W,
                          double& Lambda,
                          MsqMatrix<3,2>& V,
+                         MsqMatrix<2,2>& Q,
+                         MsqMatrix<2,2>& Delta,
+                         MsqError& err );
+
+  /**\brief Factor some existing target or Jacobian matrix
+   *
+   * Utility method for subclasses to use in their implementation
+   * of get_2D_target
+   *\param W       The matrix to factor
+   *\param Lambda  Output: the size factor of W
+   *\praam V       Output: the orientation factor of V
+   *\param Q       Output: the skew factor of W
+   *\param Delta   Output: the aspect ratio factor of W
+   *\return bool   True if W can be factored, false otherwise.
+   */
+  static bool factor_2D( const MsqMatrix<2,2>& W,
+                         double& Lambda,
+                         MsqMatrix<2,2>& V,
                          MsqMatrix<2,2>& Q,
                          MsqMatrix<2,2>& Delta,
                          MsqError& err );
@@ -122,6 +165,15 @@ public:
   static MsqMatrix<3,3> skew( const MsqMatrix<3,3>& W );
   /**\brief Get skew component of W */
   static MsqMatrix<2,2> skew( const MsqMatrix<3,2>& W );
+  /**\brief Get skew component of W */
+  static MsqMatrix<2,2> skew( const MsqMatrix<2,2>& W );
+
+  /**\brief Get shape (skew and aspect) component of W */
+  static MsqMatrix<3,3> shape( const MsqMatrix<3,3>& W );
+  /**\brief Get skew component of W */
+  static MsqMatrix<2,2> shape( const MsqMatrix<3,2>& W );
+  /**\brief Get skew component of W */
+  static MsqMatrix<2,2> shape( const MsqMatrix<2,2>& W );
   
 
   /**\brief Create a new orientation matrix
@@ -154,6 +206,20 @@ public:
                              const PatchData& pd,
                              MsqMatrix<2,2>& W,
                              MsqError& err );
+
+  /**\brief Get skew matrix for an ideally shaped element */
+  static void ideal_shape_3D( EntityTopology element_type,
+                              Sample s,
+                              const PatchData& pd,
+                              MsqMatrix<3,3>& W,
+                              MsqError& err );
+
+  /**\brief Get skew matrix for an ideally shaped element */
+  static void ideal_shape_2D( EntityTopology element_type,
+                              Sample s,
+                              const PatchData& pd,
+                              MsqMatrix<2,2>& W,
+                              MsqError& err );
 
   /**\brief Create a new aspect ratio matrix
    *
@@ -211,7 +277,6 @@ public:
                                        MsqMatrix<3,2>& W_out,
                                        MsqError& err );
 };
-
 
 } // namespace Mesquite
 

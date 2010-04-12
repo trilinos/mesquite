@@ -45,13 +45,15 @@ namespace MESQUITE_NS {
 struct CachedTargetData {
   std::vector<size_t> elementOffsets;
   std::vector< MsqMatrix<3,3> > targets3D;
-  std::vector< MsqMatrix<3,2> > targets2D;
+  std::vector< MsqMatrix<3,2> > targetsSurface;
+  std::vector< MsqMatrix<2,2> > targets2D;
   bool has_data() const { return !elementOffsets.empty(); }
   void clear() 
     { 
       elementOffsets.clear();
       targets3D.clear(); 
       targets2D.clear(); 
+      targetsSurface.clear(); 
     }
 };
 
@@ -83,11 +85,20 @@ public:
                               MsqMatrix<3,3>& W_out,
                               MsqError& err );
   
+  virtual bool get_surface_target( PatchData& pd,
+                              size_t element,
+                              Sample sample,
+                              MsqMatrix<3,2>& W_out,
+                              MsqError& err );
+  
   virtual bool get_2D_target( PatchData& pd,
                               size_t element,
                               Sample sample,
-                              MsqMatrix<3,2>& W_inv_out,
+                              MsqMatrix<2,2>& W_out,
                               MsqError& err );
+
+  virtual bool have_surface_orient() const
+    { return cachedCalculator->have_surface_orient(); }
 
 protected:
                             

@@ -45,8 +45,7 @@
 #include "MeshImpl.hpp"
 #include "PlanarDomain.hpp"
 #include "InstructionQueue.hpp"
-#include "IdealTargetCalculator.hpp"
-#include "IdentityTarget.hpp"
+#include "TargetCalculator.hpp"
 #include "MetricWeight.hpp"
 #include "InverseMetricWeight.hpp"
 #include "TargetWriter.hpp"
@@ -65,6 +64,35 @@ const bool write_results = true;
 
 enum Grouping { SAMPLE, ELEMENT, QUADRANT, HALF };
 enum Weight { UNIT, METRIC, INV_METRIC };
+
+
+class IdentityTarget : public TargetCalculator {
+public:
+ bool get_3D_target( PatchData& , 
+                     size_t ,
+                     Sample ,
+                     MsqMatrix<3,3>& W_out,
+                     MsqError&  )
+  { W_out = MsqMatrix<3,3>(1.0); return true; }
+
+ bool get_surface_target( PatchData& , 
+                          size_t ,
+                          Sample ,
+                          MsqMatrix<3,2>& W_out,
+                          MsqError&  )
+  { W_out = MsqMatrix<3,2>(1.0); return true; }
+
+ bool get_2D_target( PatchData& , 
+                     size_t ,
+                     Sample ,
+                     MsqMatrix<2,2>& W_out,
+                     MsqError&  )
+  { W_out = MsqMatrix<2,2>(1.0); return true; }
+
+ bool have_surface_orient() const
+  { return false; }
+ 
+};
 
 void run_test( Grouping grouping, int of_power, Weight w, const string filename )
 {

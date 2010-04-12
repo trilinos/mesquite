@@ -46,7 +46,7 @@ using std::auto_ptr;
 #include "ConjugateGradient.hpp"
 #include "PlanarDomain.hpp"
 #include "TargetMetric2D.hpp"
-#include "IdealTargetCalculator.hpp"
+#include "IdealShapeTarget.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "ReferenceMesh.hpp"
 #include "RefMeshTargetCalculator.hpp"
@@ -131,7 +131,7 @@ static int do_smoother( const char* input_file,
     tc.reset( new RefMeshTargetCalculator( ref_mesh.get() ) );
   }
   else {
-    tc.reset( new IdealTargetCalculator( ) );
+    tc.reset( new IdealShapeTarget( ) );
   }
     
   TMPQualityMetric jacobian_metric( tc.get(), target_metric, 0 );

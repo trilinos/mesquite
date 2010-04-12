@@ -71,18 +71,44 @@ bool LambdaTarget::get_3D_target( PatchData& pd,
 bool LambdaTarget::get_2D_target( PatchData& pd, 
                                   size_t element,
                                   Sample sample,
-                                  MsqMatrix<3,2>& W_out,
+                                  MsqMatrix<2,2>& W_out,
                                   MsqError& err )
 {
   bool valid = lambdaSource->get_2D_target( pd, element, sample, W_out, err );
   if (MSQ_CHKERR(err) && !valid)
     return false;
-  double det1 = det( transpose(W_out) * W_out );
+  double det1 = det( W_out );
 
   valid = compositeSource->get_2D_target( pd, element, sample, W_out, err );
   if (MSQ_CHKERR(err) && !valid)
     return false;
-  double det2 = det( transpose(W_out) * W_out );
+  double det2 = det( W_out );
+  
+  if (det2 < 1e-15) 
+    return false;
+  
+  W_out *= sqrt( det1/det2 );
+  return true;
+}
+
+
+bool LambdaTarget::get_surface_target( PatchData& pd, 
+                                  size_t element,
+                                  Sample sample,
+                                  MsqMatrix<3,2>& W_out,
+                                  MsqError& err )
+{
+  bool valid = lambdaSource->get_surface_target( pd, element, sample, W_out, err );
+  if (MSQ_CHKERR(err) && !valid)
+    return false;
+  MsqVector<3> cross = W_out.column(0) * W_out.column(1);
+  double det1 = cross % cross; // length squared
+
+  valid = compositeSource->get_surface_target( pd, element, sample, W_out, err );
+  if (MSQ_CHKERR(err) && !valid)
+    return false;
+  cross = W_out.column(0) * W_out.column(1);
+  double det2 = cross % cross; // length squared
   
   if (det2 < 1e-15) 
     return false;

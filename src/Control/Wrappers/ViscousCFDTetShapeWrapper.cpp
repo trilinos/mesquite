@@ -52,7 +52,7 @@
 #include "Target3DShapeSizeOrient.hpp"
 #include "Target2DShapeSizeOrient.hpp"
 
-#include "IdealTargetCalculator.hpp"
+#include "IdealShapeTarget.hpp"
 #include "RefMeshTargetCalculator.hpp"
 #include "ReferenceMesh.hpp"
 #include "TetDihedralWeight.hpp"
@@ -72,7 +72,7 @@ void ViscousCFDTetShapeWrapper::run_wrapper( Mesh* mesh,
   // Set up barrier metric to see if mesh contains inverted elements
   Target3DShapeBarrier mu3Db;
   Target2DShapeBarrier mu2Db;
-  IdealTargetCalculator w_ideal;
+  IdealShapeTarget w_ideal;
   TMPQualityMetric barrier( &w_ideal, &mu2Db, &mu3Db );
   
   // Check for inverted elements in the mesh

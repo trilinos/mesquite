@@ -603,7 +603,6 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/TMP/2D)
 
 APPEND_SET(HEADERS
   QualityMetric/TMP/2D/TargetMetric2D.hpp
-  QualityMetric/TMP/2D/DomainSurfaceOrientation.hpp
   QualityMetric/TMP/2D/InvTransBarrier2D.hpp
   QualityMetric/TMP/2D/TSquared2D.hpp
   QualityMetric/TMP/2D/Target2DScale.hpp
@@ -632,13 +631,11 @@ APPEND_SET(HEADERS
   QualityMetric/TMP/2D/Target2DTau.hpp
   QualityMetric/TMP/2D/Target2DUntangle.hpp
   QualityMetric/TMP/2D/Target2DUntangleAlt1.hpp
-  QualityMetric/TMP/2D/TargetSurfaceOrientation.hpp
   QualityMetric/TMP/2D/InverseMeanRatio2D.hpp 
   )
 
 APPEND_SET(SOURCES
   QualityMetric/TMP/2D/TargetMetric2D.cpp
-  QualityMetric/TMP/2D/DomainSurfaceOrientation.cpp
   QualityMetric/TMP/2D/InvTransBarrier2D.cpp
   QualityMetric/TMP/2D/TSquared2D.cpp
   QualityMetric/TMP/2D/Target2DScale.cpp
@@ -667,7 +664,6 @@ APPEND_SET(SOURCES
   QualityMetric/TMP/2D/Target2DTau.cpp
   QualityMetric/TMP/2D/Target2DUntangle.cpp
   QualityMetric/TMP/2D/Target2DUntangleAlt1.cpp
-  QualityMetric/TMP/2D/TargetSurfaceOrientation.cpp
   QualityMetric/TMP/2D/InverseMeanRatio2D.cpp 
   )
 

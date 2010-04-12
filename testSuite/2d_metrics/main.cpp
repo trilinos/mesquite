@@ -41,7 +41,7 @@
 #include "RefMeshTargetCalculator.hpp"
 #include "TMPQualityMetric.hpp"
 #include "InstructionQueue.hpp"
-#include "IdealTargetCalculator.hpp"
+#include "IdealShapeTarget.hpp"
 #include "MeshWriter.hpp"
 
 #include "TSquared2D.hpp"
@@ -425,7 +425,7 @@ bool run_smoother( mesh_reader_t input_mesh,
 
   ReferenceMesh refmesh( &reference );
   RefMeshTargetCalculator ref_target( &refmesh );
-  IdealTargetCalculator ident_target(false);
+  IdealShapeTarget ident_target;
   TargetCalculator* target;
   if (reference_mesh) {
     reference_mesh( &reference );

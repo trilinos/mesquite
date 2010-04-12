@@ -26,12 +26,12 @@
 
 
 /** \file IdealTargetTest.cpp
- *  \brief Test the IdealTargetCalculator
+ *  \brief Test the IdealShapeTarget
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "IdealTargetCalculator.hpp"
+#include "IdealShapeTarget.hpp"
 #include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "PatchData.hpp"
@@ -56,13 +56,10 @@ private:
   CPPUNIT_TEST (test_hex_edge);
   CPPUNIT_TEST (test_hex_face);
   CPPUNIT_TEST (test_hex_center);
-  CPPUNIT_TEST (test_tri_orientation);
-  CPPUNIT_TEST (test_quad_orientation);
-  CPPUNIT_TEST (test_plane_neg_z);
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  IdealTargetTest();
+
   void test_tri_corner();
   void test_tri_edge();
   void test_tri_center();
@@ -70,37 +67,26 @@ public:
   void test_hex_edge();
   void test_hex_face();
   void test_hex_center();
-  void test_tri_orientation();
-  void test_quad_orientation();
-  void test_plane_neg_z();
   
 private:
 
-  void get_calc_target( bool rotate, EntityTopology type, 
+  void get_calc_target( EntityTopology type, 
                         Sample sample,
-                        MsqMatrix<3,3>&, MsqMatrix<3,2>& );
+                        MsqMatrix<3,3>&, 
+                        MsqMatrix<2,2>& );
                         
   void get_ideal_target( EntityTopology type, 
                          Sample sample,
-                         MsqMatrix<3,3>&, MsqMatrix<3,2>& );
+                         MsqMatrix<3,3>&, 
+                         MsqMatrix<2,2>& );
                         
   void do_test( EntityTopology type, Sample location );
   
-  void compare_rotated( const MsqMatrix<3,2>& unrotated, 
-                        const MsqMatrix<3,2>& rotated );
-  
-  const Vector3D planeNorm;
   Settings settings;
-  PlanarDomain planeDomain;
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(IdealTargetTest, "IdealTargetTest");
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(IdealTargetTest, "Unit");
-
-IdealTargetTest::IdealTargetTest()
-  : planeNorm( 1, 0.5, -0.8 ),
-    planeDomain( planeNorm, Vector3D( 0, 0, 0 ) )
-  {}
 
 void IdealTargetTest::test_tri_corner()
 {
@@ -151,37 +137,10 @@ void IdealTargetTest::test_hex_center()
   do_test( HEXAHEDRON, Sample(3, 0) );
 }
 
-void IdealTargetTest::test_tri_orientation()
-{
-  MsqMatrix<3,2> W, Wr;
-  MsqMatrix<3,3> junk;
-
-  get_calc_target( false, TRIANGLE, Sample(0, 0), junk, W );
-  get_calc_target(  true, TRIANGLE, Sample(0, 0), junk, Wr);
-  compare_rotated( W, Wr );
-
-  get_calc_target( false, TRIANGLE, Sample(2, 0), junk, W );
-  get_calc_target(  true, TRIANGLE, Sample(2, 0), junk, Wr);
-  compare_rotated( W, Wr );
-}
-
-void IdealTargetTest::test_quad_orientation()
-{
-  MsqMatrix<3,2> W, Wr;
-  MsqMatrix<3,3> junk;
-
-  get_calc_target( false, QUADRILATERAL, Sample(0, 1), junk, W );
-  get_calc_target(  true, QUADRILATERAL, Sample(0, 1), junk, Wr);
-  compare_rotated( W, Wr );
-
-  get_calc_target( false, QUADRILATERAL, Sample(2, 0), junk, W );
-  get_calc_target(  true, QUADRILATERAL, Sample(2, 0), junk, Wr);
-  compare_rotated( W, Wr );
-}
-
-void IdealTargetTest::get_calc_target( bool rotate, EntityTopology type, 
+void IdealTargetTest::get_calc_target( EntityTopology type, 
                                        Sample location,
-                                       MsqMatrix<3,3>& w3, MsqMatrix<3,2>& w2 )
+                                       MsqMatrix<3,3>& w3, 
+                                       MsqMatrix<2,2>& w2 )
 {
   MsqPrintError err( std::cout );
   const int elem_dim = TopologyInfo::dimension(type);
@@ -193,9 +152,8 @@ void IdealTargetTest::get_calc_target( bool rotate, EntityTopology type,
   pd.fill( 8, &coords[0], 1, type, conn, 0, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   pd.attach_settings( &settings );
-  pd.set_domain( &planeDomain );
   
-  IdealTargetCalculator tc( rotate );
+  IdealShapeTarget tc;
   if (elem_dim == 2)
     tc.get_2D_target( pd, 0, location, w2, err );
   else
@@ -205,7 +163,8 @@ void IdealTargetTest::get_calc_target( bool rotate, EntityTopology type,
 
 void IdealTargetTest::get_ideal_target( EntityTopology type,
                                         Sample location,
-                                        MsqMatrix<3,3>& w3, MsqMatrix<3,2>& w2 )
+                                        MsqMatrix<3,3>& w3, 
+                                        MsqMatrix<2,2>& w2 )
 {
   MsqPrintError err( std::cout );
   const unsigned elem_dim = TopologyInfo::dimension(type);
@@ -221,15 +180,16 @@ void IdealTargetTest::get_ideal_target( EntityTopology type,
     func->derivatives( location, NodeSet(), indices, derivs, num_vtx, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
 
+    MsqMatrix<3,2> J;
     for (size_t i = 0; i < num_vtx; ++i) 
       for (unsigned j = 0; j < 2; ++j)
         c[j] += derivs[i][j] * coords[indices[i]];
 
     for (unsigned i = 0; i < 3; ++i)
       for (unsigned j = 0; j < 2; ++j)
-        w2(i,j) = c[j][i];
-        
-    w2 *= 1.0/sqrt( w2(0,0)*w2(1,1) - w2(1,0)*w2(0,1) );
+        J(i,j) = c[j][i];
+    
+    w2 = TargetCalculator::skew(J);
   }
   else {
     MsqVector<3> derivs[100];
@@ -245,7 +205,7 @@ void IdealTargetTest::get_ideal_target( EntityTopology type,
       for (unsigned j = 0; j < 3; ++j)
         w3(i,j) = c[j][i];
 
-    w3 *= 1.0/Mesquite::cbrt(det(w3));
+    w3 = TargetCalculator::skew(w3);
   }
   
 }
@@ -253,85 +213,20 @@ void IdealTargetTest::get_ideal_target( EntityTopology type,
 void IdealTargetTest::do_test( EntityTopology type, Sample location )
 {
   MsqMatrix<3,3> w3_calc, w3_exp;
-  MsqMatrix<3,2> w2_calc, w2_exp;
-  get_calc_target( false, type, location, w3_calc, w2_calc );
+  MsqMatrix<2,2> w2_calc, w2_exp;
+  get_calc_target( type, location, w3_calc, w2_calc );
   get_ideal_target( type, location, w3_exp, w2_exp );
   if (TopologyInfo::dimension(type) == 2) {
-    // assume XY plane
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, w2_exp(2,0), 1e-12 );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, w2_exp(2,1), 1e-12 );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, w2_calc(2,0), 1e-12 );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, w2_calc(2,1), 1e-12 );
-    MsqMatrix<2,2> W_calc, W_exp;
-    W_calc.set_row( 0, w2_calc.row(0) );
-    W_calc.set_row( 1, w2_calc.row(1) );
-    W_exp.set_row( 0, w2_exp.row(0) );
-    W_exp.set_row( 1, w2_exp.row(1) );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(W_calc), 1e-6 );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(W_exp), 1e-6 );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(w2_calc), 1e-6 );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(w2_exp), 1e-6 );
     // a rotation of the expected matrix is acceptable.
-    MsqMatrix<2,2> R = inverse(W_calc) * W_exp;
+    MsqMatrix<2,2> R = inverse(w2_calc) * w2_exp;
     ASSERT_MATRICES_EQUAL( transpose(R), inverse(R), 1e-6 );
   }
   else {
     MsqMatrix<3,3> R = inverse(w3_calc) *w3_exp;
     ASSERT_MATRICES_EQUAL( transpose(R), inverse(R), 1e-6 );
   }
-}
-
-void IdealTargetTest::compare_rotated( const MsqMatrix<3,2>& unrotated, 
-                                       const MsqMatrix<3,2>& rotated )
-{
-  MsqMatrix<3,1> u0, u1, r0, r1;
-  u0 = unrotated.column(0);
-  u1 = unrotated.column(1);
-  r0 = rotated.column(0);
-  r1 = rotated.column(1);
-  MsqMatrix<3,1> un = u0 * u1, rn = r0 * r1;
-  un /= length(un);
-  rn /= length(rn);
-  
-    // unrotated element should be in XY plane
-  const double z[] = { 0, 0, 1 };
-  ASSERT_MATRICES_EQUAL( (MsqMatrix<3,1>(z)), un, 1e-6 );
-  
-    // rotated element should be in plane of domain
-  MsqMatrix<3,1> pn( planeNorm.to_array() );
-  pn /= length(pn);
-  ASSERT_MATRICES_EQUAL( pn, rn, 1e-6 );
-  
-    // other properties should be unaffected by rotation
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( length(u0), length(r0), 1e-6 );
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( length(u1), length(r1), 1e-6 );
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( u0%u1, r0%r1, 1e-6 );
-}
-
-void IdealTargetTest::test_plane_neg_z()
-{
-  const Vector3D neg_z(0,0,-1);
-  PlanarDomain dom(neg_z,Vector3D(0,0,0));
-  MsqPrintError err( std::cout );
-  
-    // create a patch -- actual coords and such don't really matter
-  std::vector<double> coords( 24, 0.0 );
-  const size_t conn[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-  PatchData pd;
-  pd.fill( 8, &coords[0], 1, QUADRILATERAL, conn, 0, err );
-  ASSERT_NO_ERROR(err);
-  pd.attach_settings( &settings );
-  pd.set_domain( &dom );
-  
-  IdealTargetCalculator tc( true );
-  
-  MsqMatrix<3,2> W;
-  tc.get_2D_target( pd, 0, Sample(0,0), W, err );
-  ASSERT_NO_ERROR(err);
-  
-  Vector3D c1( W(0,0), W(1,0), W(2,0) );
-  Vector3D c2( W(0,1), W(1,1), W(2,1) );
-  Vector3D n = c1 * c2;
-  n.normalize();
-  CPPUNIT_ASSERT_VECTORS_EQUAL( neg_z, n, 1e-9 );
 }
 
  

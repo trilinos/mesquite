@@ -52,7 +52,6 @@ SET( unit_tests
      StdDevTemplateTest
      SymMatrix3DTest
      TagVertexMeshTest
-     Target2DSurfOrientTest
      Target2DTest
      Target3DTest
      TargetCalculatorTest

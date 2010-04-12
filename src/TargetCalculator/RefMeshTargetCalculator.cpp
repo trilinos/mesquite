@@ -48,17 +48,35 @@ bool RefMeshTargetCalculator::get_3D_target( PatchData& pd,
                                              MsqError& err )
 {
   get_refmesh_Jacobian_3D( refMesh, pd, element, sample, W_out, err );
-  return MSQ_CHKERR(err);;
+  return !MSQ_CHKERR(err);
+}
+
+bool RefMeshTargetCalculator::get_surface_target( PatchData& pd, 
+                                                    size_t element,
+                                                    Sample sample,
+                                                    MsqMatrix<3,2>& W_out,
+                                                    MsqError& err )
+{
+  get_refmesh_Jacobian_2D( refMesh, pd, element, sample, W_out, err );
+  return !MSQ_CHKERR(err);
 }
 
 bool RefMeshTargetCalculator::get_2D_target( PatchData& pd, 
                                              size_t element,
                                              Sample sample,
-                                             MsqMatrix<3,2>& W_out,
+                                             MsqMatrix<2,2>& W_out,
                                              MsqError& err )
 {
-  get_refmesh_Jacobian_2D( refMesh, pd, element, sample, W_out, err );
-  return MSQ_CHKERR(err);;
+  MsqMatrix<3,2> W_orient;
+  bool valid = get_surface_target( pd, element, sample, W_orient, err );
+  if (MSQ_CHKERR(err) || !valid) return false;
+  
+  MsqMatrix<3,2> V;
+  MsqMatrix<2,2> Q, delta;
+  double lambda;
+  valid = factor_surface( W_orient, lambda, V, Q, delta, err );
+  W_out = lambda * Q * delta;
+  return !MSQ_CHKERR(err) && valid;
 }
 
 } // namespace Mesquite

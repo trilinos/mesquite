@@ -3,7 +3,7 @@
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "SizeMetric.hpp"
 #include "TMPQualityMetric.hpp"
-#include "IdealTargetCalculator.hpp"
+#include "IdealShapeTarget.hpp"
 #include "Target3DShape.hpp"
 #include "Target2DShape.hpp"
 #include "InstructionQueue.hpp"
@@ -50,7 +50,7 @@ int main( int argc, char* argv[] )
   QualityAssessor qa( true, freeonly.value(), "INVERTED" );
   IdealWeightInverseMeanRatio imr;
   SizeMetric size;
-  IdealTargetCalculator tc;
+  IdealShapeTarget tc;
   Target3DShape tm_3d;
   Target2DShape tm_2d;
   TMPQualityMetric tmp( &tc, &tm_2d, &tm_3d );

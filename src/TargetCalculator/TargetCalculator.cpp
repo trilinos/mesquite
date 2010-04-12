@@ -90,6 +90,71 @@ MsqMatrix<2,2> TargetCalculator::skew( const MsqMatrix<3,2>& W )
   return result;
 }
 
+
+MsqMatrix<2,2> TargetCalculator::skew( const MsqMatrix<2,2>& W )
+{
+  double alpha   = fabs(det(W));
+  double a1_sqr  = W.column(0) % W.column(0);
+  double a2_sqr  = W.column(1) % W.column(1);
+  double dot     = W.column(0) % W.column(1);
+  double a1a2    = sqrt(a1_sqr * a2_sqr);
+  double coeff   = sqrt(a1a2/alpha);
+
+  MsqMatrix<2,2> result;
+  result(0,0) = coeff; result(0,1) = coeff * dot / a1a2;
+  result(1,0) = 0.0  ; result(1,1) = 1/coeff;
+  return result;
+}
+
+MsqMatrix<3,3> TargetCalculator::shape( const MsqMatrix<3,3>& W )
+{
+  MsqVector<3> a1    = W.column(0);
+  MsqVector<3> a2    = W.column(1);
+  MsqVector<3> a3    = W.column(2);
+  MsqVector<3> a1xa2 = a1 * a2;
+  
+  double len1  = length(a1);
+  double lenx  = length(a1xa2);
+  double alpha = fabs(a1xa2 % a3);
+  double coeff = Mesquite::cbrt(1/alpha);
+  double inv1  = 1.0/len1;
+  double invx  = 1.0/lenx;
+  
+  MsqMatrix<3,3> q;
+  q(0,0) = coeff*len1; q(0,1) = coeff*inv1*(a1 % a2); q(0,2) = coeff*inv1*(a1 % a3);
+  q(1,0) = 0.0;        q(1,1) = coeff*inv1*lenx;      q(1,2) = coeff*invx*inv1*(a1xa2 % (a1 * a3));
+  q(2,0) = 0.0;        q(2,1) = 0.0;                  q(2,2) = coeff * alpha * invx;
+  return q;
+}
+
+
+MsqMatrix<2,2> TargetCalculator::shape( const MsqMatrix<3,2>& W )
+{
+  double len1 = length(W.column(0));
+  double inv1 = 1.0/len1;
+  double root_alpha = sqrt(length(W.column(0) * W.column(1)));
+  double coeff   = 1.0/root_alpha;
+
+  MsqMatrix<2,2> result;
+  result(0,0) = coeff*len1; result(0,1) = coeff*inv1*(W.column(0) % W.column(1));
+  result(1,0) = 0.0  ;      result(1,1) = root_alpha * inv1;
+  return result;
+}
+
+
+MsqMatrix<2,2> TargetCalculator::shape( const MsqMatrix<2,2>& W )
+{
+  double len1 = length(W.column(0));
+  double inv1 = 1.0/len1;
+  double root_alpha = sqrt(fabs(det(W)));
+  double coeff   = 1.0/root_alpha;
+
+  MsqMatrix<2,2> result;
+  result(0,0) = coeff*len1; result(0,1) = coeff*inv1*(W.column(0) % W.column(1));
+  result(1,0) = 0.0       ; result(1,1) = root_alpha * inv1;
+  return result;
+}
+
 bool TargetCalculator::factor_3D( const MsqMatrix<3,3>& A,
                                   double& Lambda,
                                   MsqMatrix<3,3>& V,
@@ -143,7 +208,7 @@ bool TargetCalculator::factor_3D( const MsqMatrix<3,3>& A,
   return true;
 }
 
-bool TargetCalculator::factor_2D( const MsqMatrix<3,2>& A,
+bool TargetCalculator::factor_surface( const MsqMatrix<3,2>& A,
                                   double& Lambda,
                                   MsqMatrix<3,2>& V,
                                   MsqMatrix<2,2>& Q,
@@ -153,6 +218,38 @@ bool TargetCalculator::factor_2D( const MsqMatrix<3,2>& A,
   MsqVector<3> cross = A.column(0) * A.column(1);
   double alpha = length(cross);
   Lambda = sqrt(alpha);
+  if (Lambda < DBL_EPSILON)
+    return false;
+  
+  double la1_sqr = A.column(0) % A.column(0);
+  double la1 = sqrt(la1_sqr);
+  double la2 = length(A.column(1));
+  double inv_la1 = 1.0/la1;
+  double dot = A.column(0) % A.column(1);
+  
+  V.set_column( 0, A.column(0) * inv_la1 );
+  V.set_column( 1, (la1_sqr * A.column(1) - dot * A.column(0)) / (la1*alpha) );
+  
+  double prod_rt2 = sqrt( la1 * la2 );
+  Q(0,0) = prod_rt2 / Lambda; Q(0,1) = dot / (prod_rt2 * Lambda);
+  Q(1,0) = 0.0; Q(1,1) = 1.0/Q(0,0);
+  
+  double inv_prod_rt2 = 1.0/prod_rt2;
+  Delta(0,0) = la1*inv_prod_rt2; Delta(0,1) = 0.0;
+  Delta(1,0) = 0.0;              Delta(1,1) = la2*inv_prod_rt2;
+  
+  return true;
+}
+
+bool TargetCalculator::factor_2D( const MsqMatrix<2,2>& A,
+                                  double& Lambda,
+                                  MsqMatrix<2,2>& V,
+                                  MsqMatrix<2,2>& Q,
+                                  MsqMatrix<2,2>& Delta,
+                                  MsqError& err )
+{
+  double alpha = det(A);
+  Lambda = sqrt(fabs(alpha));
   if (Lambda < DBL_EPSILON)
     return false;
   
@@ -202,17 +299,18 @@ MsqMatrix<3,2> TargetCalculator::new_orientation_2D( const MsqVector<3>& b1,
   return V;
 }
 
-void TargetCalculator::ideal_skew_3D( EntityTopology element_type,
-                                      Sample s,
-                                      const PatchData& pd,
-                                      MsqMatrix<3,3>& q,
-                                      MsqError& err ) 
+/** If, for the specified element type, the skew is constant for
+ *  an ideal element and the aspect is identity everywhere within
+ *  the element, pass back the constant skew/shape term and return 
+ *  true.  Otherwise return false.
+ */
+static inline bool ideal_constant_skew_I_3D( EntityTopology element_type,
+                                      MsqMatrix<3,3>& q )
 {
-  const MappingFunction3D* map;
   switch (element_type) {
     case HEXAHEDRON:
       q = MsqMatrix<3,3>(1.0); // Identity
-      break;
+      return false;
     case TETRAHEDRON:
       // [ x,   x/2, x/2 ] x^6 = 2
       // [ 0,   y,   y/3 ] y^2 = 3/4 x^2
@@ -223,17 +321,63 @@ void TargetCalculator::ideal_skew_3D( EntityTopology element_type,
       q(1,1) = 0.97208064861983279;
       q(1,2) = 0.32402688287327758;
       q(2,2) = 0.91648642466573493;
-      break;
+      return true;
+    case PRISM:
+      //            [ 1   0   0 ]
+      //  a^(-1/3)  [ 0   1  1/2]
+      //            [ 0   0   a ]
+      //
+      // a = sqrt(3)/2
+      //
+      q(0,0) = q(1,1) = 1.0491150634216482;
+      q(0,1) = q(0,2) = q(1,0) = 0.0;
+      q(1,2) = 0.52455753171082409;
+      q(2,0) = q(2,1) = 0.0;
+      q(2,2) = 0.90856029641606972;
+      return true;
     default:
-      map = pd.get_mapping_function_3D( element_type );
-      if (!map) {
-        MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT);
-        return;
-      }
-      map->ideal( s, q, err );
-      MSQ_ERRRTN(err);
-      q = TargetCalculator::skew(q);
-      break;
+      return false;
+  }
+}
+
+/** If, for the specified element type, the skew is constant for
+ *  an ideal element and the aspect is identity everywhere within
+ *  the element, pass back the constant skew/shape term and return 
+ *  true.  Otherwise return false.
+ */
+static inline bool ideal_constant_skew_I_2D( EntityTopology element_type,
+                                      MsqMatrix<2,2>& q )
+{
+  switch (element_type) {
+    case QUADRILATERAL:
+      q = MsqMatrix<2,2>(1.0); // Identity
+      return true;
+    case TRIANGLE:
+      // [ x, x/2 ]  x = pow(4/3, 0.25)
+      // [ 0, y   ]  y = 1/x
+      q(0,0) = 1.074569931823542; q(0,1) = 0.537284965911771;
+      q(1,0) = 0.0;               q(1,1) = 0.93060485910209956;
+      return true;
+    default:
+      return false;
+  }
+}
+
+void TargetCalculator::ideal_skew_3D( EntityTopology element_type,
+                                      Sample s,
+                                      const PatchData& pd,
+                                      MsqMatrix<3,3>& q,
+                                      MsqError& err ) 
+{
+  if (!ideal_constant_skew_I_3D(element_type,q)) {
+    const MappingFunction3D* map = pd.get_mapping_function_3D( element_type );
+    if (!map) {
+      MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT);
+      return;
+    }
+    map->ideal( s, q, err );
+    MSQ_ERRRTN(err);
+    q = TargetCalculator::skew(q);
   }
 }
 
@@ -243,16 +387,7 @@ void TargetCalculator::ideal_skew_2D( EntityTopology element_type,
                                       MsqMatrix<2,2>& q,
                                       MsqError& err ) 
 {
-  if (element_type == QUADRILATERAL) {
-    q = MsqMatrix<2,2>(1.0); // Identity
-  }
-  else if (element_type == TRIANGLE) {
-    // [ x, x/2 ]  x = pow(4/3, 0.25)
-    // [ 0, y   ]  y = 1/x
-    q(0,0) = 1.074569931823542; q(0,1) = 0.537284965911771;
-    q(1,0) = 0.0;               q(1,1) = 0.93060485910209956;
-  }
-  else {
+   if (!ideal_constant_skew_I_2D(element_type,q)) {
     const MappingFunction2D* map = pd.get_mapping_function_2D( element_type );
     if (!map) {
       MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT);
@@ -262,6 +397,43 @@ void TargetCalculator::ideal_skew_2D( EntityTopology element_type,
     map->ideal( s, J, err );
     MSQ_ERRRTN(err);
     q = TargetCalculator::skew(J);
+  }
+}
+
+void TargetCalculator::ideal_shape_3D( EntityTopology element_type,
+                                      Sample s,
+                                      const PatchData& pd,
+                                      MsqMatrix<3,3>& q,
+                                      MsqError& err ) 
+{
+  if (!ideal_constant_skew_I_3D(element_type,q)) {
+    const MappingFunction3D* map = pd.get_mapping_function_3D( element_type );
+    if (!map) {
+      MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT);
+      return;
+    }
+    map->ideal( s, q, err );
+    MSQ_ERRRTN(err);
+    q = TargetCalculator::shape(q);
+  }
+}
+
+void TargetCalculator::ideal_shape_2D( EntityTopology element_type,
+                                      Sample s,
+                                      const PatchData& pd,
+                                      MsqMatrix<2,2>& q,
+                                      MsqError& err ) 
+{
+   if (!ideal_constant_skew_I_2D(element_type,q)) {
+    const MappingFunction2D* map = pd.get_mapping_function_2D( element_type );
+    if (!map) {
+      MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT);
+      return;
+    }
+    MsqMatrix<3,2> J;
+    map->ideal( s, J, err );
+    MSQ_ERRRTN(err);
+    q = TargetCalculator::shape(J);
   }
 }
 
@@ -433,6 +605,5 @@ void TargetCalculator::get_refmesh_Jacobian_2D(
   jacobian_2D( pd, type, n, sample, vert_coords, W_out, err );
   MSQ_ERRRTN(err);
 }
-
 
 } // namespace MESQUITE_NS

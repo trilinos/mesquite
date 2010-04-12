@@ -42,7 +42,7 @@
 #include "PlanarDomain.hpp"
 #include "MeshDomain1D.hpp"
 
-#include "IdealTargetCalculator.hpp"
+#include "IdealShapeTarget.hpp"
 #include "InverseMeanRatio2D.hpp"
 #include "Target2DShape.hpp"
 #include "InverseMeanRatio3D.hpp"
@@ -119,7 +119,7 @@ private:
   InstructionQueue q;
   Target2DShapeSize tm2;
   Target3DShapeSize tm3;
-  IdealTargetCalculator tc;
+  IdealShapeTarget tc;
   TMPQualityMetric metric;
   LPtoPTemplate func;
   FeasibleNewton solver;
