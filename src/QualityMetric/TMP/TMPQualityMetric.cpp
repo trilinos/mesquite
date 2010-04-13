@@ -253,24 +253,27 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
  * product of the columns of M, such that S_a is I.  Use the
  * first column of M as u_perp.  
  *
- * Also pass back the cross product of the columns of M as u.
+ * Also pass back the cross product of the columns of M as u,
+ * and the first column of M as u_perp, both normalized.
  */
 static inline void
 project_to_matrix_plane( const MsqMatrix<3,2>& M_in,
                          MsqMatrix<2,2>& M_out,
                          MsqVector<3>& u,
-                         M )
+                         MsqVector<3>& u_perp )
 {
   u = M_in.column(0) * M_in.column(1);
-  u *= 1.0/length(u);
-  double len0sqr = M_in.column(0) % M_in.column(0);
-  double len1sqr = M_in.column(1) % M_in.column(1);
-  double dot =     M_in.column(0) % M_in.column(1);
-    // M_out = transpose(theta)*M_in
-  M_out(0,0) = len0sqr;
-  M_out(0,1) = dot;
+  double u_len = length(u);
+  u *= 1.0/u_len;
+  u_perp = M_in.column(0);
+  double len0 = length(u_perp);
+  u_perp *= 1.0/len0;
+
+   // M_out = transpose(theta)*M_in
+  M_out(0,0) = len0;
+  M_out(0,1) = u_perp % M_in.column(1);
   M_out(1,0) = 0.0;
-  M_out(1,1) = dot*dot - len0sqr*len1sqr;
+  M_out(1,1) = u_len / len0;
 }
 
 /* Do transform M_hat = S_a M_{3x2}, M_{2x2} Theta^-1 M_hat
@@ -278,35 +281,114 @@ project_to_matrix_plane( const MsqMatrix<3,2>& M_in,
  * to the passed u vector.
  */
 static inline void
-project_to_perp_plane( const MsqMatrix<3,2>& J,
+project_to_perp_plane(  MsqMatrix<3,2> J,
                         const MsqVector<3>& u,
                         const MsqVector<3>& u_perp,
-                        MsqMatrix<2,2>& A )
+                        MsqMatrix<2,2>& A,
+                        MsqMatrix<3,2>& S_a_transpose_Theta )
 {
   MsqVector<3> n_a = J.column(0) * J.column(1);
+  n_a *= 1.0/length(n_a);
   double ndot = n_a % u;
   double sigma = (ndot < 0.0) ? -1 : 1;
   double cosphi = sigma * ndot;
-  double sinphi = length(n_a * u);
+  MsqVector<3> cross = n_a * u;
+  double sinphi = length(cross);
+
+  MsqMatrix<3,2> Theta;
+  Theta.set_column(0,   u_perp);
+  Theta.set_column(1, u*u_perp);
+
     // If columns of J are not in plane orthogonal to u, then
     // rotate J such that they are.
   if (sinphi > 1e-12) {
     MsqVector<3> m = sigma * cross;
     MsqVector<3> n = (1/sinphi) * m;
     MsqVector<3> p = (1-cosphi) * n;
-    double S_a[] = 
+    double s_a[] = 
       { p[0]*n[0] + cosphi, p[0]*n[1] - m[2],   p[0]*n[2] + m[1],
         p[0]*n[1] + m[2],   p[1]*n[1] + cosphi, p[1]*n[2] - m[0],
         p[0]*n[2] - m[1],   p[1]*n[2] + m[0],   p[2]*n[2] + cosphi };
-    J = MsqMatrix<3,3>(S_a) * J;
+    MsqMatrix<3,3> S_a(s_a);
+    J = S_a * J;
+    S_a_transpose_Theta = transpose(S_a) * Theta;
+  } 
+  else {
+    S_a_transpose_Theta = Theta;
+//    J *= sigma;
   }
 
     // Project to get 2x2 A from A_hat (which might be equal to J)
-  MsqMatrix<3,2> theta;
-  theta.set_column(0,u_perp);
-  theta.set_column(0,u*u_perp);
-  A = transpose(theta) * J;
+  A = transpose(Theta) * J;
 }
+
+inline void
+TMPQualityMetric::evaluate_surface_common( PatchData& pd,
+                                           Sample s,
+                                           size_t e,
+                                           const NodeSet& bits,
+                                           size_t* indices,
+                                           size_t& num_indices,
+                                           MsqVector<2>* derivs,
+                                           MsqMatrix<2,2>& W,
+                                           MsqMatrix<2,2>& A,
+                                           MsqMatrix<3,2>& S_a_transpose_Theta,
+                                           MsqError& err )
+{
+  EntityTopology type = pd.element_by_index( e ).get_element_type();
+
+  if (!metric2D) {
+    MSQ_SETERR(err)("No 2D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
+    return;
+  }
+  const MappingFunction2D* mf = pd.get_mapping_function_2D( type );
+  if (!mf) {
+    MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+    return;
+  }
+
+  MsqMatrix<3,2> J;
+  mf->jacobian( pd, e, bits, s, indices, derivs, num_indices, J, err );
+
+    // If we have a 3x2 target matrix (i.e. the target contains
+    // orientation information)...
+  if (targetCalc->have_surface_orient()) {
+    MsqVector<3> u, u_perp;
+    MsqMatrix<3,2> W_hat;
+    targetCalc->get_surface_target( pd, e, s, W_hat, err ); MSQ_ERRRTN(err);
+      // Use the cross product of the columns of W as the normal of the 
+      // plane to work in (i.e. u.).  W should have been constructed such
+      // that said cross product is in the direction of (n_a)_init.  And if
+      // for some reason it as not, then using something other than said
+      // cross product is likely to produce very wrong results.
+    project_to_matrix_plane( W_hat, W, u, u_perp );
+      // Do the transforms on A to align it with W and projet into the plane.
+    project_to_perp_plane( J, u, u_perp, A, S_a_transpose_Theta );
+  }
+    // Otherwise if we have a 2x2 target matrix (i.e. the target does
+    // not contain orientation information) and we have a geometric
+    // domain from which we can get a normal, project into the plane
+    // tangent to geometric domain.
+  else if (pd.domain_set()) {
+    targetCalc->get_2D_target( pd, e, s, W, err ); MSQ_ERRRTN(err);
+    Vector3D n;
+    pd.get_domain_normal_at_sample( e, s, n, err );
+    MSQ_ERRRTN(err);
+    MsqVector<3> u(&n[0]), u_perp(J.column(0));
+    u_perp *= 1.0/length(u_perp);
+    project_to_perp_plane( J, u, u_perp, A, S_a_transpose_Theta );
+  }
+    // Otherwise if we neither care about orientation nor have
+    // a geometric domain, use the plane of J.
+  else {
+    MsqVector<3> u, u_perp;
+    targetCalc->get_2D_target( pd, e, s, W, err ); MSQ_ERRRTN(err);
+    project_to_matrix_plane( J, A, u, u_perp );
+    S_a_transpose_Theta.set_column(0, u_perp);
+    S_a_transpose_Theta.set_column(1, u*u_perp);
+  }
+}                    
+                         
 
 bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
                                               size_t handle,
@@ -347,55 +429,11 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
 #endif
   }
   else if (edim == 2) {
-    if (!metric2D) {
-      MSQ_SETERR(err)("No 2D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
-    const MappingFunction2D* mf = pd.get_mapping_function_2D( type );
-    if (!mf) {
-      MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
-    
-    MsqMatrix<3,2> J;
-    mf->jacobian( pd, e, bits, s, indices, mDerivs2D, num_indices, J, err );
-    
     MsqMatrix<2,2> W, A;
-    
-      // If we have a 3x2 target matrix (i.e. the target contains
-      // orientation information)...
-    if (targetCalc->have_surface_orient()) {
-      MsqVector<3> u;
-      MsqMatrix<3,2> W_hat;
-      targetCalc->get_surface_target( pd, e, s, W_hat, err ); MSQ_ERRZERO(err);
-        // Use the cross product of the columns of W as the normal of the 
-        // plane to work in (i.e. u.).  W should have been constructed such
-        // that said cross product is in the direction of (n_a)_init.  And if
-        // for some reason it as not, then using something other than said
-        // cross product is likely to produce very wrong results.
-      project_to_matrix_plane( W_hat, W, u );
-        // Do the transforms on A to align it with W and projet into the plane.
-      project_to_perp_plane( J, u, W.column(0), A );
-    }
-      // Otherwise if we have a 2x2 target matrix (i.e. the target does
-      // not contain orientation information) and we have a geometric
-      // domain from which we can get a normal, project into the plane
-      // tangent to geometric domain.
-    else if (pd.domain_set()) {
-      targetCalc->get_2D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
-      Vector3D n;
-      pd.get_domain_normal_at_sample( e, s, n, err );
-      MSQ_ERRZERO(err);
-      project_to_perp_plane( J, MsqMatrix<3>(&n[0]), J.column(0), A );
-    }
-      // Otherwise if we neither care about orientation nor have
-      // a geometric domain, use the plane of J.
-    else {
-      MsqVector<3> u;
-      targetCalc->get_2D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
-      project_to_matrix_plane( J, A, u );
-    }
-
+    MsqMatrix<3,2> S_a_transpose_Theta;
+    evaluate_surface_common( pd, s, e, bits, indices, num_indices,
+                             mDerivs2D, W, A, S_a_transpose_Theta, err ); 
+                             MSQ_ERRZERO(err);
     rval = metric2D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
 #ifdef PRINT_INFO
     print_info<2>( e, s, J, Wp, A * inverse(W) );
@@ -457,25 +495,13 @@ bool TMPQualityMetric::evaluate_with_gradient(
 #endif
   }
   else if (edim == 2) {
-    if (!metric2D) {
-      MSQ_SETERR(err)("No 2D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
-    const MappingFunction2D* mf = pd.get_mapping_function_2D( type );
-    if (!mf) {
-      MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
-    
-    MsqMatrix<3,2> J, Wp, RZ;
-    mf->jacobian( pd, e, bits, s, mIndices, mDerivs2D, num_idx, J, err );
-    targetCalc->get_surface_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
-    
     MsqMatrix<2,2> W, A, dmdA;
-    surface_to_2d( J, Wp, W, RZ );
-    A = transpose(RZ) * J;
+    MsqMatrix<3,2> S_a_transpose_Theta;
+    evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
+                             mDerivs2D, W, A, S_a_transpose_Theta, err ); 
+                             MSQ_ERRZERO(err);
     rval = metric2D->evaluate_with_grad( A, W, value, dmdA, err ); MSQ_ERRZERO(err);
-    gradient<2>( num_idx, mDerivs2D, RZ*dmdA, grad );
+    gradient<2>( num_idx, mDerivs2D, S_a_transpose_Theta*dmdA, grad );
 #ifdef PRINT_INFO
     print_info<2>( e, s, J, Wp, A * inverse(W) );
 #endif
@@ -547,25 +573,13 @@ bool TMPQualityMetric::evaluate_with_Hessian(
 #endif
   }
   else if (edim == 2) {
-    if (!metric2D) {
-      MSQ_SETERR(err)("No 2D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
-    const MappingFunction2D* mf = pd.get_mapping_function_2D( type );
-    if (!mf) {
-      MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
-    
-    MsqMatrix<3,2> J, Wp, RZ;
-    mf->jacobian( pd, e, bits, s, mIndices, mDerivs2D, num_idx, J, err );
-    targetCalc->get_surface_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
-    
     MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];
-    surface_to_2d( J, Wp, W, RZ );
-    A = transpose(RZ) * J;
+    MsqMatrix<3,2> SaT_Th;
+    evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
+                             mDerivs2D, W, A, SaT_Th, err ); 
+                             MSQ_ERRZERO(err);
     rval = metric2D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
-    gradient<2>( num_idx, mDerivs2D, RZ * dmdA, grad );
+    gradient<2>( num_idx, mDerivs2D, SaT_Th * dmdA, grad );
     const size_t n = num_idx*(num_idx+1)/2;
       // calculate 2D hessian
     hess2d.resize(n);
@@ -574,7 +588,7 @@ bool TMPQualityMetric::evaluate_with_Hessian(
       // calculate surface hessian as transform of 2D hessian
     Hessian.resize(n);
     for (size_t i = 0; i < n; ++i)
-      Hessian[i] = Matrix3D( (RZ * hess2d[i] * transpose(RZ)).data() );
+      Hessian[i] = Matrix3D( (SaT_Th * hess2d[i] * transpose(SaT_Th)).data() );
 #ifdef PRINT_INFO
     print_info<2>( e, s, J, Wp, A * inverse(W) );
 #endif
@@ -652,25 +666,13 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
 #endif
   }
   else if (edim == 2) {
-    if (!metric2D) {
-      MSQ_SETERR(err)("No 2D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
-    const MappingFunction2D* mf = pd.get_mapping_function_2D( type );
-    if (!mf) {
-      MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
-    
-    MsqMatrix<3,2> J, Wp, RZ;
-    mf->jacobian( pd, e, bits, s, mIndices, mDerivs2D, num_idx, J, err );
-    targetCalc->get_surface_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
-    
     MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];
-    surface_to_2d( J, Wp, W, RZ );
-    A = transpose(RZ) * J;
+    MsqMatrix<3,2> SaT_Th;
+    evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
+                             mDerivs2D, W, A, SaT_Th, err ); 
+                             MSQ_ERRZERO(err);
     rval = metric2D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
-    gradient<2>( num_idx, mDerivs2D, RZ * dmdA, grad );
+    gradient<2>( num_idx, mDerivs2D, SaT_Th * dmdA, grad );
 
     diagonal.resize( num_idx );
     for (size_t i = 0; i < num_idx; ++i) {
@@ -679,15 +681,15 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
       block2d(0,1) = transpose(mDerivs2D[i]) * d2mdA2[1] * mDerivs2D[i];
       block2d(1,0) = block2d(0,1);
       block2d(1,1) = transpose(mDerivs2D[i]) * d2mdA2[2] * mDerivs2D[i];
-      MsqMatrix<3,2> p = RZ * block2d;
+      MsqMatrix<3,2> p = SaT_Th * block2d;
       
       SymMatrix3D& H = diagonal[i];
-      H[0] = p.row(0) * transpose(RZ.row(0));
-      H[1] = p.row(0) * transpose(RZ.row(1));
-      H[2] = p.row(0) * transpose(RZ.row(2));
-      H[3] = p.row(1) * transpose(RZ.row(1));
-      H[4] = p.row(1) * transpose(RZ.row(2));
-      H[5] = p.row(2) * transpose(RZ.row(2));
+      H[0] = p.row(0) * transpose(SaT_Th.row(0));
+      H[1] = p.row(0) * transpose(SaT_Th.row(1));
+      H[2] = p.row(0) * transpose(SaT_Th.row(2));
+      H[3] = p.row(1) * transpose(SaT_Th.row(1));
+      H[4] = p.row(1) * transpose(SaT_Th.row(2));
+      H[5] = p.row(2) * transpose(SaT_Th.row(2));
     }
 #ifdef PRINT_INFO
     print_info<2>( e, s, J, Wp, A * inverse(W) );

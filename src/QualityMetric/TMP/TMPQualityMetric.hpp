@@ -43,6 +43,7 @@ class TargetCalculator;
 class WeightCalculator;
 class TargetMetric2D;
 class TargetMetric3D;
+class NodeSet;
 
 /**\brief Compare targets to mapping function Jacobian matrices
  *
@@ -171,6 +172,21 @@ private:
                  size_t* indices,
                  size_t& num_indices,
                  MsqError& err );
+
+  void evaluate_surface_common( // input:
+                                PatchData& pd,
+                                Sample sample,
+                                size_t element_index,
+                                const NodeSet& bits,
+                                // output:
+                                size_t* indices, 
+                                size_t& num_indices,
+                                MsqVector<2>* derivs,
+                                MsqMatrix<2,2>& W,
+                                MsqMatrix<2,2>& A,
+                                MsqMatrix<3,2>& S_a_transpose_Theta,
+                                MsqError& err );
+                                
 
   TargetCalculator* targetCalc;
   WeightCalculator* weightCalc;
