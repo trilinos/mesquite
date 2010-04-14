@@ -776,8 +776,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/TargetCalculator)
 
 APPEND_SET(HEADERS
   TargetCalculator/CachingTargetCalculator.hpp
-  TargetCalculator/IdealTargetCalculator.hpp
-  TargetCalculator/IdentityTarget.hpp
+  TargetCalculator/IdealShapeTarget.hpp
   TargetCalculator/InverseMetricWeight.hpp
   TargetCalculator/JacobianCalculator.hpp
   TargetCalculator/LambdaTarget.hpp
@@ -798,8 +797,7 @@ APPEND_SET(HEADERS
 
 APPEND_SET(SOURCES
   TargetCalculator/CachingTargetCalculator.cpp
-  TargetCalculator/IdealTargetCalculator.cpp
-  TargetCalculator/IdentityTarget.cpp
+  TargetCalculator/IdealShapeTarget.cpp
   TargetCalculator/InverseMetricWeight.cpp
   TargetCalculator/JacobianCalculator.cpp
   TargetCalculator/LambdaTarget.cpp
