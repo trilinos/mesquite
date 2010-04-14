@@ -197,6 +197,26 @@ class CenterMF3D : public MappingFunction3D
     const MappingFunction3D* myFunc;
 };
 
+// Define a target calculator that returns targets for
+// ideally shaped elements, but also includes orientation
+// information (aligning surface elements to the xy plane
+// with the first column of the jacobian in the x direction).
+class IdealShapeXY : public IdealShapeTarget
+{
+  public: bool have_surface_orient() const { return true; }
+          bool get_surface_target( PatchData& pd, 
+                                   size_t element,
+                                   Sample sample,
+                                   MsqMatrix<3,2>& W_out,
+                                   MsqError& err )
+          { MsqMatrix<2,2> W;
+            bool rval = get_2D_target( pd, element, sample, W, err );
+            W_out.set_row( 0, W.row(0) );
+            W_out.set_row( 1, W.row(1) );
+            W_out.set_row( 2, MsqMatrix<1,2>(0.0) );
+            return rval;
+          }
+};
 
 class TMPQualityMetricTest : public CppUnit::TestFixture
 {
@@ -208,10 +228,13 @@ class TMPQualityMetricTest : public CppUnit::TestFixture
   CPPUNIT_TEST (test_get_element_evaluations);
   
   CPPUNIT_TEST (test_evaluate_2D);
+  CPPUNIT_TEST (test_evaluate_surface);
   CPPUNIT_TEST (test_evaluate_3D);
   CPPUNIT_TEST (test_evaluate_2D_weight);
+  CPPUNIT_TEST (test_evaluate_surface_weight);
   CPPUNIT_TEST (test_evaluate_3D_weight);
   CPPUNIT_TEST (test_2d_eval_ortho_quad);
+  CPPUNIT_TEST (test_surf_eval_ortho_quad);
   CPPUNIT_TEST (test_3d_eval_ortho_hex);
   
   CPPUNIT_TEST (test_sample_indices);
@@ -219,6 +242,7 @@ class TMPQualityMetricTest : public CppUnit::TestFixture
   CPPUNIT_TEST (test_evaluate_fixed_indices);
   
   CPPUNIT_TEST (test_gradient_2D);
+  CPPUNIT_TEST (test_gradient_surface);
   CPPUNIT_TEST (test_gradient_3D);
   CPPUNIT_TEST (compare_indices_and_gradient);
   CPPUNIT_TEST (test_ideal_element_gradient);
@@ -251,6 +275,7 @@ class TMPQualityMetricTest : public CppUnit::TestFixture
 
   Settings settings;
   IdealShapeTarget ideal;
+  IdealShapeXY surf_target;
   ScaleWeight e_weight;
 
   FauxTarget<TargetMetric2D> faux_2d_pi, faux_2d_zero;
@@ -259,7 +284,7 @@ class TMPQualityMetricTest : public CppUnit::TestFixture
   Target2DShape test_metric_2D;
   NumericalTarget<TargetMetric3D> num_metric_3D;
   NumericalTarget<TargetMetric2D> num_metric_2D;
-  TMPQualityMetric test_qm, zero_qm, weight_qm, center_qm;
+  TMPQualityMetric test_qm, test_qm_surf, zero_qm, weight_qm, center_qm;
   Settings centerOnly;
   CenterMF2D triCenter, quadCenter;
   CenterMF3D tetCenter, pyrCenter, priCenter, hexCenter;
@@ -273,6 +298,7 @@ public:
     num_metric_3D( &test_metric_3D ),
     num_metric_2D( &test_metric_2D ),
     test_qm( &ideal, &num_metric_2D, &num_metric_3D ),
+    test_qm_surf( &surf_target, &num_metric_2D, &num_metric_3D ),
     zero_qm( &ideal, &faux_2d_zero, &faux_3d_zero ),
     weight_qm( &ideal, &e_weight, &test_metric_2D, &test_metric_3D ),
     center_qm( &ideal, &test_metric_2D, &test_metric_3D ),
@@ -299,12 +325,17 @@ public:
   void test_get_evaluations();
   void test_get_element_evaluations();
   void test_evaluate_2D();
+  void test_evaluate_surface();
   void test_evaluate_3D();
   void test_evaluate_2D_weight();
+  void test_evaluate_surface_weight();
   void test_evaluate_3D_weight();
   void test_2d_eval_ortho_quad(); 
+  void test_surf_eval_ortho_quad(); 
   void test_3d_eval_ortho_hex(); 
-  void test_gradient_2D();
+  void test_gradient_common(TargetCalculator* tc);
+  void test_gradient_2D() { test_gradient_common( &ideal ); }
+  void test_gradient_surface() { test_gradient_common( &surf_target ); }
   void test_gradient_3D();
 
   void test_sample_indices()
@@ -315,35 +346,45 @@ public:
     { tester.test_get_indices_fixed( &zero_qm ); }
     
   void compare_indices_and_gradient()
-    { tester.compare_eval_with_indices_and_eval_with_gradient( &test_qm ); }
+    { tester.compare_eval_with_indices_and_eval_with_gradient( &test_qm );
+      tester.compare_eval_with_indices_and_eval_with_gradient( &test_qm_surf ); }
   void test_ideal_element_gradient()
-    { tester.test_ideal_element_zero_gradient( &test_qm, false ); }
+    { tester.test_ideal_element_zero_gradient( &test_qm, false );
+      tester.test_ideal_element_zero_gradient( &test_qm_surf, false ); }
   void compare_analytical_and_numerical_gradient()
-    { compare_analytical_and_numerical_gradients( &test_qm ); }
+    { compare_analytical_and_numerical_gradients( &test_qm );
+      compare_analytical_and_numerical_gradients( &test_qm_surf ); }
   void test_weighted_gradients()
     { compare_analytical_and_numerical_gradients( &weight_qm ); }
   void test_gradient_with_fixed_vertices()
     { tester.test_gradient_with_fixed_vertex( &center_qm, &centerOnly ); }
 
   void compare_indices_and_hessian()
-    { tester.compare_eval_with_indices_and_eval_with_hessian( &test_qm ); }
+    { tester.compare_eval_with_indices_and_eval_with_hessian( &test_qm );
+      tester.compare_eval_with_indices_and_eval_with_hessian( &test_qm_surf ); }
   void compare_gradient_and_hessian()
-    { tester.compare_eval_with_grad_and_eval_with_hessian( &test_qm );  }
+    { tester.compare_eval_with_grad_and_eval_with_hessian( &test_qm );
+      tester.compare_eval_with_grad_and_eval_with_hessian( &test_qm_surf ); }
   void compare_analytical_and_numerical_hessians()
-    { compare_analytical_and_numerical_hessians( &test_qm ); }
+    { compare_analytical_and_numerical_hessians( &test_qm ); 
+      compare_analytical_and_numerical_hessians( &test_qm_surf ); }
   void test_symmetric_hessian_diagonal()
-    { tester.test_symmetric_Hessian_diagonal_blocks( &test_qm ); }
+    { tester.test_symmetric_Hessian_diagonal_blocks( &test_qm );
+      tester.test_symmetric_Hessian_diagonal_blocks( &test_qm_surf ); }
   void test_weighted_hessians()
     { compare_analytical_and_numerical_hessians( &weight_qm ); }
   void test_hessian_with_fixed_vertices()
     { tester.test_hessian_with_fixed_vertex( &center_qm, &centerOnly ); }
 
   void compare_indices_and_diagonal()
-    { tester.compare_eval_with_indices_and_eval_with_diagonal( &test_qm ); }
+    { tester.compare_eval_with_indices_and_eval_with_diagonal( &test_qm );
+      tester.compare_eval_with_indices_and_eval_with_diagonal( &test_qm_surf ); }
   void compare_gradient_and_diagonal()
-    { tester.compare_eval_with_grad_and_eval_with_diagonal( &test_qm ); }
+    { tester.compare_eval_with_grad_and_eval_with_diagonal( &test_qm ); 
+      tester.compare_eval_with_grad_and_eval_with_diagonal( &test_qm_surf ); }
   void compare_analytical_and_numerical_diagonals()
-    { compare_analytical_and_numerical_diagonals( &test_qm ); }
+    { compare_analytical_and_numerical_diagonals( &test_qm );  
+      compare_analytical_and_numerical_diagonals( &test_qm_surf ); }
   void test_weighted_diagonals()
     { compare_analytical_and_numerical_diagonals( &weight_qm ); }
   void test_diagonal_with_fixed_vertices()
@@ -450,6 +491,64 @@ void TMPQualityMetricTest::test_evaluate_2D()
   //ASSERT_MATRICES_EQUAL( faux_2d_pi.last_W, faux_2d_pi.last_A, 1e-6 );
 }  
  
+void TMPQualityMetricTest::test_evaluate_surface()
+{
+  MsqPrintError err(cout);
+  PatchData pd;
+  bool rval;
+  double value;
+  
+  TMPQualityMetric m( &surf_target, &faux_2d_pi, &faux_3d_zero );
+  
+    // test with aligned elements
+  faux_2d_pi.count = faux_3d_zero.count = 0;
+  tester.get_ideal_element( QUADRILATERAL, true, pd );
+  rval = m.evaluate( pd, 0, value, err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  CPPUNIT_ASSERT(rval);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_2d_pi.count );
+  CPPUNIT_ASSERT_EQUAL( 0, faux_3d_zero.count );
+  //ASSERT_MATRICES_EQUAL( faux_2d_pi.last_W, faux_2d_pi.last_A, 1e-6 );
+  
+    // test that columns are orthogonal for ideal quad element
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_2d_pi.last_A), 1e-6 );
+  
+    // test with an element rotated about X-axis
+  faux_2d_pi.count = faux_3d_zero.count = 0;
+  tester.get_ideal_element( QUADRILATERAL, true, pd );
+  // rotate by 90 degrees about X axis
+  for (size_t i = 0; i < pd.num_nodes(); ++i) {
+    Vector3D orig = pd.vertex_by_index(i);
+    Vector3D newp( orig[0], -orig[2], orig[1] );
+    pd.set_vertex_coordinates( newp, i, err );
+  }
+  rval = m.evaluate( pd, 0, value, err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  CPPUNIT_ASSERT(rval);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_2d_pi.count );
+  CPPUNIT_ASSERT_EQUAL( 0, faux_3d_zero.count );
+  //ASSERT_MATRICES_EQUAL( faux_2d_pi.last_W, faux_2d_pi.last_A, 1e-6 );
+  
+    // test with an element rotated about Y-axis
+  faux_2d_pi.count = faux_3d_zero.count = 0;
+  tester.get_ideal_element( TRIANGLE, true, pd );
+  // rotate by -90 degrees about Y axis
+  for (size_t i = 0; i < pd.num_nodes(); ++i) {
+    Vector3D orig = pd.vertex_by_index(i);
+    Vector3D newp( orig[2], orig[1], -orig[0] );
+    pd.set_vertex_coordinates( newp, i, err );
+  }
+  rval = m.evaluate( pd, 0, value, err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  CPPUNIT_ASSERT(rval);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_2d_pi.count );
+  CPPUNIT_ASSERT_EQUAL( 0, faux_3d_zero.count );
+  //ASSERT_MATRICES_EQUAL( faux_2d_pi.last_W, faux_2d_pi.last_A, 1e-6 );
+}  
+
   
 void TMPQualityMetricTest::test_evaluate_3D()
 {
@@ -514,6 +613,22 @@ void TMPQualityMetricTest::test_evaluate_2D_weight()
   CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value*e_weight.value, value, DBL_EPSILON );
 }
 
+void TMPQualityMetricTest::test_evaluate_surface_weight()
+{
+  MsqPrintError err(cout);
+  PatchData pd;
+  bool rval;
+  double value;
+  
+  TMPQualityMetric m( &surf_target, &e_weight, &faux_2d_pi, &faux_3d_zero );
+  
+  tester.get_ideal_element( TRIANGLE, true, pd );
+  rval = m.evaluate( pd, 0, value, err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  CPPUNIT_ASSERT(rval);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value*e_weight.value, value, DBL_EPSILON );
+}
+
 
 void TMPQualityMetricTest::test_evaluate_3D_weight()
 {
@@ -549,6 +664,24 @@ void TMPQualityMetricTest::test_2d_eval_ortho_quad()
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_2d_zero.last_A), DBL_EPSILON );
 }  
 
+void TMPQualityMetricTest::test_surf_eval_ortho_quad()
+{
+  MsqPrintError err(cout);
+  PatchData pd;
+  bool rval;
+  double value;
+  
+  TMPQualityMetric m( &surf_target, &faux_2d_zero, &faux_3d_zero );
+  faux_2d_zero.count = faux_3d_zero.count = 0;
+  
+  tester.get_ideal_element( QUADRILATERAL, true, pd );
+  rval = m.evaluate( pd, 0, value, err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  CPPUNIT_ASSERT(rval);
+  CPPUNIT_ASSERT_EQUAL( 1, faux_2d_zero.count );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_2d_zero.last_A), DBL_EPSILON );
+}  
+
 void TMPQualityMetricTest::test_3d_eval_ortho_hex()
 {
   MsqPrintError err(cout);
@@ -572,8 +705,7 @@ void TMPQualityMetricTest::test_3d_eval_ortho_hex()
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(1) % A.column(2), 1e-6 );
 }  
 
-
-void TMPQualityMetricTest::test_gradient_2D()
+void TMPQualityMetricTest::test_gradient_common(TargetCalculator* tc)
 {
   MsqPrintError err(std::cout);
   
@@ -611,8 +743,8 @@ void TMPQualityMetricTest::test_gradient_2D()
     // construct metric
   pd.attach_settings( &settings );
   TestGradTargetMetric2D tm;
-  IdealShapeTarget tc;
-  TMPQualityMetric m( &tc, &tm, 0 );
+  //IdealShapeTarget tc;
+  TMPQualityMetric m( tc, &tm, 0 );
   PlanarDomain plane( PlanarDomain::XY );
   pd.set_domain( &plane );
   
