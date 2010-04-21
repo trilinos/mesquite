@@ -118,8 +118,9 @@ public:
   inline MsqMatrix<R,C>& operator*=( double scalar );
   inline MsqMatrix<R,C>& operator/=( double scalar );
   
-        MsqMatrix<1,C>& row( unsigned r )       { return *(MsqMatrix<1,C>*)(m+C*r); }
-  const MsqMatrix<1,C>& row( unsigned r ) const { return *(MsqMatrix<1,C>*)(m+C*r); }
+  //      MsqMatrix<1,C>& row( unsigned r )       { return *(MsqMatrix<1,C>*)(m+C*r); }
+  //const MsqMatrix<1,C>& row( unsigned r ) const { return *(MsqMatrix<1,C>*)(m+C*r); }
+  MsqMatrix<1,C> row( unsigned r ) const { return MsqMatrix<1,C>(m+C*r); }
   MsqMatrix<R,1> column( unsigned c ) const;
   MsqMatrix<1,R> column_transpose( unsigned c ) const;
   
