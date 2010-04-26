@@ -111,7 +111,7 @@ public:
      
         // create an objective function for use in termination criteria
       IdealWeightInverseMeanRatio metric;
-      LPtoPTemplate of(2.0, &metric);
+      LPtoPTemplate of(2, &metric);
      
         // creates an intruction queue
       InstructionQueue queue1;

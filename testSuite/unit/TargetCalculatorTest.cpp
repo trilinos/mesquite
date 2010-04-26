@@ -853,7 +853,7 @@ void TargetCalculatorTest::test_ideal_skew_tet()
 
 void TargetCalculatorTest::test_ideal_skew_prism()
 {
-  Sample points[] = { Sample(0.0), Sample(0,1), Sample(0,2), Sample(0,3),
+  Sample points[] = { Sample(0,0), Sample(0,1), Sample(0,2), Sample(0,3),
                       Sample(2,0), Sample(3,0) };
   const int num_pts = sizeof(points)/sizeof(points[0]);
   
@@ -877,7 +877,7 @@ void TargetCalculatorTest::test_ideal_skew_prism()
 
 void TargetCalculatorTest::test_ideal_skew_pyramid()
 {
-  Sample points[] = { Sample(0.0), Sample(0,1), Sample(0,2), Sample(0,3),
+  Sample points[] = { Sample(0,0), Sample(0,1), Sample(0,2), Sample(0,3),
                       Sample(2,0), Sample(3,0) };
   const int num_pts = sizeof(points)/sizeof(points[0]);
   
@@ -979,7 +979,7 @@ void TargetCalculatorTest::test_ideal_shape_prism()
     // Ideal wedge should have Aspect (i.e. delta) == identity,
     // so shape should be equal to skew.
 
-  Sample points[] = { Sample(0.0), Sample(0,1), Sample(0,2), Sample(0,3),
+  Sample points[] = { Sample(0,0), Sample(0,1), Sample(0,2), Sample(0,3),
                       Sample(2,0), Sample(3,0) };
   const int num_pts = sizeof(points)/sizeof(points[0]);
   
@@ -998,7 +998,7 @@ void TargetCalculatorTest::test_ideal_shape_prism()
 
 void TargetCalculatorTest::test_ideal_shape_pyramid()
 {
-  Sample points[] = { Sample(0.0), Sample(0,1), Sample(0,2), Sample(0,3),
+  Sample points[] = { Sample(0,0), Sample(0,1), Sample(0,2), Sample(0,3),
                       Sample(2,0), Sample(3,0) };
   const int num_pts = sizeof(points)/sizeof(points[0]);
   
