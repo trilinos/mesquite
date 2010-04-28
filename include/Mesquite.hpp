@@ -208,9 +208,9 @@ inline double cbrt_sqr( double d )
 #endif
 }
 
-/**\brief Perform save division (no overflow or div by zero).
+/**\brief Perform safe division (no overflow or div by zero).
  *
- * Do result = num/den iff it would result in an overflow or div by zero
+ * Do result = num/den iff it would not result in an overflow or div by zero
  *\param num  Numerator of division.
  *\param den  Denominator of division
  *\param result The result of the division if valid, zero otherwise.
