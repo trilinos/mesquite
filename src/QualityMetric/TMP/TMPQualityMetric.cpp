@@ -247,6 +247,21 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
   return result;
 }
 
+static void get_u_perp( const MsqVector<3>& u,
+                        MsqVector<3>& u_perp )
+{
+  double a = sqrt(u[0]*u[0] + u[1]*u[1]);
+  if (a < 1e-10) {
+    u_perp[0] = 1.0;
+    u_perp[1] = u_perp[2] = 0.0;
+  }
+  else {
+    double b = -u[2]/a;
+    u_perp[0] = u[0]*b;
+    u_perp[1] = u[1]*b;
+    u_perp[2] = a;
+  }
+}
 
 /* Do transform M_hat = S_a M_{3x2}, M_{2x2} Theta^-1 M_hat
  * where the plane into which we are projecting is the cross
@@ -265,15 +280,11 @@ project_to_matrix_plane( const MsqMatrix<3,2>& M_in,
   u = M_in.column(0) * M_in.column(1);
   double u_len = length(u);
   u *= 1.0/u_len;
-  u_perp = M_in.column(0);
-  double len0 = length(u_perp);
-  u_perp *= 1.0/len0;
-
-   // M_out = transpose(theta)*M_in
-  M_out(0,0) = len0;
-  M_out(0,1) = u_perp % M_in.column(1);
-  M_out(1,0) = 0.0;
-  M_out(1,1) = u_len / len0;
+  get_u_perp( u, u_perp );
+  MsqMatrix<3,2> theta;
+  theta.set_column(0, u_perp);
+  theta.set_column(1, u * u_perp);
+  M_out = transpose(theta) * M_in;
 }
 
 /* Do transform M_hat = S_a M_{3x2}, M_{2x2} Theta^-1 M_hat
@@ -307,8 +318,8 @@ project_to_perp_plane(  MsqMatrix<3,2> J,
     MsqVector<3> p = (1-cosphi) * n;
     double s_a[] = 
       { p[0]*n[0] + cosphi, p[0]*n[1] - m[2],   p[0]*n[2] + m[1],
-        p[0]*n[1] + m[2],   p[1]*n[1] + cosphi, p[1]*n[2] - m[0],
-        p[0]*n[2] - m[1],   p[1]*n[2] + m[0],   p[2]*n[2] + cosphi };
+        p[1]*n[0] + m[2],   p[1]*n[1] + cosphi, p[1]*n[2] - m[0],
+        p[2]*n[0] - m[1],   p[2]*n[1] + m[0],   p[2]*n[2] + cosphi };
     MsqMatrix<3,3> S_a(s_a);
     J = S_a * J;
     S_a_transpose_Theta = transpose(S_a) * Theta;
@@ -350,42 +361,48 @@ TMPQualityMetric::evaluate_surface_common( PatchData& pd,
   MsqMatrix<3,2> J;
   mf->jacobian( pd, e, bits, s, indices, derivs, num_indices, J, err );
 
-    // If we have a 3x2 target matrix (i.e. the target contains
-    // orientation information)...
+    // If we have a 3x2 target matrix 
   if (targetCalc->have_surface_orient()) {
     MsqVector<3> u, u_perp;
     MsqMatrix<3,2> W_hat;
     targetCalc->get_surface_target( pd, e, s, W_hat, err ); MSQ_ERRRTN(err);
       // Use the cross product of the columns of W as the normal of the 
       // plane to work in (i.e. u.).  W should have been constructed such
-      // that said cross product is in the direction of (n_a)_init.  And if
+      // that said cross product is in the direction of (n_s)_init.  And if
       // for some reason it as not, then using something other than said
       // cross product is likely to produce very wrong results.
     project_to_matrix_plane( W_hat, W, u, u_perp );
-      // Do the transforms on A to align it with W and projet into the plane.
+      // Do the transforms on A to align it with W and project into the plane.
     project_to_perp_plane( J, u, u_perp, A, S_a_transpose_Theta );
   }
     // Otherwise if we have a 2x2 target matrix (i.e. the target does
-    // not contain orientation information) and we have a geometric
-    // domain from which we can get a normal, project into the plane
-    // tangent to geometric domain.
-  else if (pd.domain_set()) {
-    targetCalc->get_2D_target( pd, e, s, W, err ); MSQ_ERRRTN(err);
-    Vector3D n;
-    pd.get_domain_normal_at_sample( e, s, n, err );
-    MSQ_ERRRTN(err);
-    MsqVector<3> u(&n[0]), u_perp(J.column(0));
-    u_perp *= 1.0/length(u_perp);
-    project_to_perp_plane( J, u, u_perp, A, S_a_transpose_Theta );
-  }
-    // Otherwise if we neither care about orientation nor have
-    // a geometric domain, use the plane of J.
+    // not contain orientation information), project into the plane
+    // tangent to J.
   else {
     MsqVector<3> u, u_perp;
     targetCalc->get_2D_target( pd, e, s, W, err ); MSQ_ERRRTN(err);
     project_to_matrix_plane( J, A, u, u_perp );
     S_a_transpose_Theta.set_column(0, u_perp);
     S_a_transpose_Theta.set_column(1, u*u_perp);
+      // If the domain is set, adjust the sign of things correctly
+      // for the case where the element is inverted with respect
+      // to the domain.
+    if (pd.domain_set()) {
+      Vector3D n;
+      pd.get_domain_normal_at_sample( e, s, n, err );
+      MSQ_ERRRTN(err);
+        // if sigma == -1
+      if (Vector3D(u.data()) % n < 0.0) {
+          // flip u
+        u = -u;
+          // S_a_transpose_Theta == Theta, because S_a == I here.
+          // u_perp is unaffected by flipping u, so only the second
+          // column of S_a_transpose_Theta and the second row of A
+          // are flipped because u x u_perp will be flipped.
+        S_a_transpose_Theta.set_column(1, -S_a_transpose_Theta.column(1) );
+        A.set_row( 1, -A.row(1) );
+      }
+    }
   }
 }                    
                          
