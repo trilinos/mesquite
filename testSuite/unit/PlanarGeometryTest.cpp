@@ -388,7 +388,7 @@ void PlanarGeometryTest::test_fit_plane()
   MeshImpl mesh1;
   mesh1.read_vtk(MESH_FILES_DIR "2D/VTK/bad_circle_tri.vtk", err);
   ASSERT_NO_ERROR(err);
-  plane = PlanarDomain::fit_vertices( &mesh1, epsilon, err );
+  plane.fit_vertices( &mesh1, err, epsilon );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0,0,1), plane.get_normal(), epsilon );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 5, plane.get_coeff(), epsilon );
@@ -396,7 +396,7 @@ void PlanarGeometryTest::test_fit_plane()
   MeshImpl mesh2;
   mesh2.read_vtk(MESH_FILES_DIR "2D/VTK/equil_tri.vtk", err);
   ASSERT_NO_ERROR(err);
-  plane = PlanarDomain::fit_vertices( &mesh2, epsilon, err );
+  plane.fit_vertices( &mesh2, err, epsilon );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0,0,1), plane.get_normal(), epsilon );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, plane.get_coeff(), epsilon );
@@ -404,7 +404,7 @@ void PlanarGeometryTest::test_fit_plane()
   MeshImpl mesh3;
   mesh3.read_vtk(MESH_FILES_DIR "2D/VTK/quads_4by2.vtk", err);
   ASSERT_NO_ERROR(err);
-  plane = PlanarDomain::fit_vertices( &mesh3, epsilon, err );
+  plane.fit_vertices( &mesh3, err, epsilon );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0,0,1), plane.get_normal(), epsilon );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( -2, plane.get_coeff(), epsilon );
@@ -412,7 +412,7 @@ void PlanarGeometryTest::test_fit_plane()
   MeshImpl mesh4;
   mesh4.read_vtk(MESH_FILES_DIR "2D/VTK/tri_5_xz.vtk", err);
   ASSERT_NO_ERROR(err);
-  plane = PlanarDomain::fit_vertices( &mesh4, epsilon, err );
+  plane.fit_vertices( &mesh4, err, epsilon );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0,-1,0), plane.get_normal(), epsilon );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( -5, plane.get_coeff(), epsilon );

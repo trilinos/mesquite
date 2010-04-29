@@ -216,7 +216,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/Misc
+# src/Misc
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/Misc)
@@ -224,6 +224,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/Misc)
 APPEND_SET(HEADERS
   Misc/BoundedCylinderDomain.hpp
   Misc/Bits.hpp
+  Misc/ConicDomain.hpp
   Misc/CylinderDomain.hpp
   Misc/DomainClassifier.hpp
   Misc/Exponent.hpp
@@ -249,8 +250,11 @@ APPEND_SET(HEADERS
 
 APPEND_SET(SOURCES
   Misc/BoundedCylinderDomain.cpp
+  Misc/ConicDomain.cpp
   Misc/CylinderDomain.cpp
   Misc/DomainClassifier.cpp
+  Misc/DomainUtil.cpp
+  Misc/DomainUtil.hpp
   Misc/Exponent.cpp
   Misc/FileTokenizer.cpp
   Misc/MeshDomain1D.cpp

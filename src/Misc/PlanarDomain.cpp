@@ -28,6 +28,7 @@
 #include "PlanarDomain.hpp"
 #include "MsqError.hpp"
 #include "MsqVertex.hpp"
+#include "DomainUtil.hpp"
 
 #include <algorithm>
 
@@ -90,49 +91,14 @@ void Mesquite::PlanarDomain::domain_DoF( const Mesh::VertexHandle* ,
   std::fill( dof_array, dof_array + num_vertices, 2 );
 }
 
-Mesquite::PlanarDomain Mesquite::PlanarDomain::fit_vertices( Mesquite::Mesh* mesh, 
-                                                             double epsilon, 
-                                                             Mesquite::MsqError& err )
+void Mesquite::PlanarDomain::flip()
 {
-  // get all vertex coordiantes
-  std::vector<Mesh::VertexHandle> verts;
-  mesh->get_all_vertices( verts, err ); 
-  if (MSQ_CHKERR(err))
-    return PlanarDomain(XY);
-  if (verts.size() < 3) {
-    MSQ_SETERR(err)("No mesh", MsqError::INVALID_MESH);
-    return PlanarDomain(XY);
-  }
-  std::vector<MsqVertex> coords(verts.size());
-  mesh->vertices_get_coordinates( &verts[0], &coords[0], verts.size(), err ); 
-  if (MSQ_CHKERR(err))
-    return PlanarDomain(XY);
-  
-    // Assume all vertices are co-planer.  Find a triple of
-    // vertices that will result in a small rounding error.
-  Vector3D box_min(HUGE_VAL,HUGE_VAL,HUGE_VAL),
-           box_max(-HUGE_VAL,-HUGE_VAL,-HUGE_VAL);
-  for (size_t i = 0; i < coords.size(); ++i) {
-    for (int j = 0; j < 3; ++j) {
-      if (box_min[j] > coords[i][j])
-        box_min[j] = coords[i][j];
-      if (box_max[j] < coords[i][j])
-        box_max[j] = coords[i][j];
-    }
-  }
-  Vector3D corners[8] = { Vector3D(box_min[0],box_min[1],box_min[2]),
-                          Vector3D(box_max[0],box_min[1],box_min[2]),
-                          Vector3D(box_min[0],box_max[1],box_min[2]),
-                          Vector3D(box_max[0],box_max[1],box_min[2]),
-                          Vector3D(box_min[0],box_min[1],box_max[2]),
-                          Vector3D(box_max[0],box_min[1],box_max[2]),
-                          Vector3D(box_min[0],box_max[1],box_max[2]),
-                          Vector3D(box_max[0],box_max[1],box_max[2]) };
-                          
-  assert(sizeof(char) == sizeof(bool));
-  std::vector<unsigned char> fixed( verts.size() );
-  mesh->vertices_get_fixed_flag( &verts[0], (bool*)&fixed[0], verts.size(), err );
-  size_t first = std::find(fixed.begin(), fixed.end(), 1) - fixed.begin();
+  mNormal = -mNormal;
+  mCoeff = -mCoeff;
+}
+      
+void Mesquite::PlanarDomain::fit_vertices( Mesh* mesh, MsqError& err, double epsilon )
+{
     // Our goal here is to consider only the boundary (fixed) vertices
     // when calculating the plane.  If for some reason the user wants
     // to snap a not-quite-planar mesh to a plane during optimization, 
@@ -140,91 +106,80 @@ Mesquite::PlanarDomain Mesquite::PlanarDomain::fit_vertices( Mesquite::Mesh* mes
     // vertices, as those won't get snapped.  If no vertices are fixed,
     // then treat them all as fixed for the purpose calculating the plane
     // (consider them all.)
-  if (first == fixed.size()) {
-    first = 0;
-    std::fill( fixed.begin(), fixed.end(), 1 );
-  }
+
+  std::vector<Mesh::VertexHandle> verts, fixed;
+  mesh->get_all_vertices( verts, err ); MSQ_ERRRTN(err);
+  DomainUtil::get_fixed_vertices( mesh, &verts[0], verts.size(), fixed, err ); MSQ_ERRRTN(err);
   
-  Vector3D pts[8] = { coords[first], coords[first], coords[first], coords[first],
-                      coords[first], coords[first], coords[first], coords[first] };
-  for (size_t i = first+1; i < coords.size(); ++i) {
-    for (int j = 0; j < 8; ++j) {
-      if (fixed[i] && 
-          ((pts[j] - corners[j]).length_squared() > 
-           (coords[i] - corners[j]).length_squared()))
-        pts[j] = coords[i];
+  bool do_all_verts = true;
+  if (fixed.size() > 2) {
+    do_all_verts = false;
+    fit_vertices( mesh, &fixed[0], fixed.size(), err, epsilon );
+    
+      // if we failed with only the fixed vertices, try again with all of the 
+      // vertices
+    if (err) {
+      err.clear();
+      do_all_verts = true;
     }
   }
   
-  Vector3D normal(0,0,0);
-  for (int i = 0; i < 6; ++i) 
-    for (int j = i+1; j < 7; ++j)
-      for (int k = j+1; k < 8; ++k) {
-        Vector3D n = (pts[j]-pts[i]) * (pts[k]-pts[i]);
-        if (n.length_squared() > normal.length_squared())
-          normal = n;
-      }
-  
-  if (normal.length_squared() < epsilon*epsilon) {
-    MSQ_SETERR(err)("All vertices colinear", MsqError::INVALID_MESH);
-    return PlanarDomain(XY);
+  if (do_all_verts) {
+    fit_vertices( mesh, &verts[0], verts.size(), err, epsilon );
+    MSQ_ERRRTN(err);
   }
-  
-    // check that all vertices line in plane
-  Vector3D point = coords[0];
-  normal /= normal.length();
-  const double d = -(normal % point);
-  for (size_t i = 0; i < coords.size(); ++i) {
-    double dist = fabs( normal % coords[i] + d );
-    if (dist > epsilon) {
-      MSQ_SETERR(err)("Vertices are not coplanar", MsqError::INVALID_MESH );
-      return PlanarDomain(XY);
-    }
-  }
-  
-    // free memory used to hold vertex data
-  std::vector<MsqVertex>* tmp_vvect = new std::vector<MsqVertex>;
-  tmp_vvect->swap( coords );
-  delete tmp_vvect;
-  std::vector<Mesh::VertexHandle>* tmp_hvect = new std::vector<Mesh::VertexHandle>;
-  tmp_hvect->swap( verts );
-  delete tmp_hvect;
   
     // now count inverted elements
-  coords.resize(3);
-  size_t inverted_count = 0;
+  size_t inverted_count = 0, total_count = 0;
   std::vector<Mesh::ElementHandle> elems;
   std::vector<size_t> junk;
-  mesh->get_all_elements( elems, err ); 
-  if (MSQ_CHKERR(err))
-    return PlanarDomain(XY);
+  std::vector<MsqVertex> coords;
+  mesh->get_all_elements( elems, err ); MSQ_ERRRTN(err);
   for (size_t i = 0; i < elems.size(); ++i) {
-    
-    verts.clear();
-    mesh->elements_get_attached_vertices( &elems[0], 1, verts, junk, err );
-    if (MSQ_CHKERR(err))
-      return PlanarDomain(XY);
 
     EntityTopology type;
     mesh->elements_get_topologies( &elems[i], &type, 1, err );
-    if (TopologyInfo::dimension(type) != 2 || verts.size() < 3) {
-      MSQ_SETERR(err)("Mesh contains non-surface elements", MsqError::INVALID_MESH);
-      return PlanarDomain(XY);
-    }
+    if (TopologyInfo::dimension(type) != 2)
+      continue;
     
-    mesh->vertices_get_coordinates( &verts[0], &coords[0], 3, err ); 
-    if (MSQ_CHKERR(err))
-      return PlanarDomain(XY);
+    verts.clear();
+    mesh->elements_get_attached_vertices( &elems[0], 1, verts, junk, err ); MSQ_ERRRTN(err);
+    if (verts.size() < 3)
+      continue;
+    
+    coords.resize( verts.size() );
+    mesh->vertices_get_coordinates( &verts[0], &coords[0], 3, err ); MSQ_ERRRTN(err);
     Vector3D n = (coords[1] - coords[0]) * (coords[2] - coords[0]);
-    if (n % normal < 0.0)
+    ++total_count;
+    if (n % mNormal < 0.0)
       ++inverted_count;
   }
   
     // if most elements are inverted, flip normal
-  if (2*inverted_count > elems.size())
-    normal = -normal;
+  if (2*inverted_count > total_count)
+    this->flip();
+}
+
+void Mesquite::PlanarDomain::fit_vertices( Mesquite::Mesh* mesh, 
+                                           const Mesquite::Mesh::VertexHandle* verts,
+                                           size_t num_verts, 
+                                           Mesquite::MsqError& err,
+                                           double epsilon )
+{
+  std::vector<MsqVertex> coords( num_verts );
+  mesh->vertices_get_coordinates( verts, &coords[0], num_verts, err ); 
+  MSQ_ERRRTN(err);
   
-  return PlanarDomain( normal, point );
+  if (epsilon <= 0.0)
+    epsilon = DomainUtil::default_tolerance( &coords[0], num_verts );
+  
+  Vector3D pts[3];
+  if (!DomainUtil::non_colinear_vertices( &coords[0], num_verts, pts, epsilon )) {
+    MSQ_SETERR(err)("All vertices are colinear", MsqError::INVALID_MESH);
+    return;
+  }
+  
+  this->set_plane( (pts[1] - pts[0]) * (pts[2] - pts[0]), pts[0] );
 }
     
 

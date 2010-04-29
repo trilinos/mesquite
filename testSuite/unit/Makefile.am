@@ -61,6 +61,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	CompositeMetricTest.cpp \
 	CompositeOFTest.cpp \
 	ConditionNumberTest.cpp \
+	ConicDomainTest.cpp \
 	CylinderDomainTest.cpp \
         DomainClassifierTest.cpp \
 	EdgeLengthMetricTest.cpp \
@@ -99,6 +100,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	QualityAssessorTest.cpp \
 	QualityMetricTest.cpp \
 	SlaveBoundaryVerticesTest.cpp \
+	SphericalDomainTest.cpp \
 	SphericalGeometryTest.cpp \
 	StdDevTemplateTest.cpp \
 	SymMatrix3DTest.cpp \

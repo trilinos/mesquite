@@ -11,8 +11,11 @@ endif
 
 MSQ_SRCS += \
 	$(SRC_MISC_DIR)/BoundedCylinderDomain.cpp \
+	$(SRC_MISC_DIR)/ConicDomain.cpp \
 	$(SRC_MISC_DIR)/CylinderDomain.cpp \
 	$(SRC_MISC_DIR)/DomainClassifier.cpp \
+	$(SRC_MISC_DIR)/DomainUtil.cpp \
+	$(SRC_MISC_DIR)/DomainUtil.hpp \
 	$(SRC_MISC_DIR)/Exponent.cpp \
 	$(SRC_MISC_DIR)/FileTokenizer.cpp \
 	$(SRC_MISC_DIR)/MeshDomain1D.cpp \
@@ -36,6 +39,7 @@ MSQ_SRCS += \
 MSQ_HDRS += \
 	$(SRC_MISC_DIR)/BoundedCylinderDomain.hpp \
 	$(SRC_MISC_DIR)/Bits.hpp \
+	$(SRC_MISC_DIR)/ConicDomain.hpp \
 	$(SRC_MISC_DIR)/CylinderDomain.hpp \
 	$(SRC_MISC_DIR)/DomainClassifier.hpp \
 	$(SRC_MISC_DIR)/Exponent.hpp \

@@ -51,6 +51,9 @@ namespace MESQUITE_NS
     SphericalDomain(const Vector3D& center, double radius )
         : mCenter(center), mRadius(radius)
       {}
+      
+    SphericalDomain()
+      {}
 
     virtual ~SphericalDomain() { }
 
@@ -59,6 +62,16 @@ namespace MESQUITE_NS
         mCenter = center;
         mRadius = radius;
       }
+      
+    void fit_vertices( Mesh* mesh, 
+                       MsqError& err,
+                       double epsilon = 0.0 );
+      
+    void fit_vertices( Mesh* mesh, 
+                       const Mesh::VertexHandle* vertex_array,
+                       size_t vertex_array_length,
+                       MsqError& err,
+                       double epsilon = 0.0 );
     
     virtual void snap_to(Mesh::VertexHandle entity_handle,
                          Vector3D &coordinate) const;
@@ -84,6 +97,9 @@ namespace MESQUITE_NS
                              unsigned short* dof_array,
                              size_t num_vertices,
                              MsqError& err ) const;
+                             
+    Vector3D center() const { return mCenter; }
+    double radius() const { return mRadius; }
   private:
     Vector3D mCenter;
     double mRadius;

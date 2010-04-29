@@ -10,6 +10,7 @@ SET( unit_tests
      CompositeMetricTest
      CompositeOFTest
      ConditionNumberTest
+     ConicDomainTest
      CylinderDomainTest
      DomainClassifierTest
      EdgeLengthMetricTest
@@ -48,6 +49,7 @@ SET( unit_tests
      QualityAssessorTest
      QualityMetricTest
      SlaveBoundaryVerticesTest
+     SphericalDomainTest
      SphericalGeometryTest
      StdDevTemplateTest
      SymMatrix3DTest

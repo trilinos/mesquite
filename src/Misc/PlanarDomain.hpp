@@ -52,8 +52,6 @@ namespace MESQUITE_NS
   public:
     enum Plane{ XY = 2, XZ = 1, YZ = 0 };
   
-    static PlanarDomain fit_vertices( Mesh* mesh, double epsilon, MsqError& err );
-  
     inline PlanarDomain( Plane orient, double offset = 0.0 )
     {
       Vector3D normal(0,0,0), point(0,0,0);
@@ -61,13 +59,27 @@ namespace MESQUITE_NS
       point[orient] = offset;
       set_plane( normal, point );
     }
+    
+    PlanarDomain() {}
   
     inline PlanarDomain(const Vector3D& normal, const Vector3D& point)
       { set_plane( normal, point ); }
     
     virtual ~PlanarDomain() { }
+      
+    void fit_vertices( Mesh* mesh, 
+                       MsqError& err,
+                       double epsilon = 0.0 );
+      
+    void fit_vertices( Mesh* mesh, 
+                       const Mesh::VertexHandle* vertex_array,
+                       size_t vertex_array_length,
+                       MsqError& err,
+                       double epsilon = 0.0 );
 
     void set_plane( const Vector3D& normal, const Vector3D& point );
+
+    void flip();
 
     const Vector3D& get_normal() const { return mNormal; }
     
