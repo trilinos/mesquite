@@ -280,11 +280,15 @@ project_to_matrix_plane( const MsqMatrix<3,2>& M_in,
   u = M_in.column(0) * M_in.column(1);
   double u_len = length(u);
   u *= 1.0/u_len;
-  get_u_perp( u, u_perp );
-  MsqMatrix<3,2> theta;
-  theta.set_column(0, u_perp);
-  theta.set_column(1, u * u_perp);
-  M_out = transpose(theta) * M_in;
+  u_perp = M_in.column(0);
+  double len0 = length(u_perp);
+  u_perp *= 1.0/len0;
+
+   // M_out = transpose(theta)*M_in
+  M_out(0,0) = len0;
+  M_out(0,1) = u_perp % M_in.column(1);
+  M_out(1,0) = 0.0;
+  M_out(1,1) = u_len / len0;
 }
 
 /* Do transform M_hat = S_a M_{3x2}, M_{2x2} Theta^-1 M_hat
