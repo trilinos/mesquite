@@ -40,6 +40,7 @@ static bool create_exodus_file( const char* filename );
 #include "cppunit/extensions/HelperMacros.h"
 
 #include <iostream>
+#include <algorithm>
 
 #ifndef _MSC_VER
 #  include <unistd.h>
