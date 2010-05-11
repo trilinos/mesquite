@@ -2285,7 +2285,7 @@ static double value( const Matrix3D* blocks, unsigned n, unsigned i, unsigned j 
   unsigned idx = n*mi - mi*(mi+1)/2 + mj;
   return blocks[idx][i%3][j%3];
 }
-
+/*
 static bool positive_definite( const Matrix3D* blocks, unsigned n )
 {
     // Do Cholesky-Banachiewicz decompositon of the matrix.
@@ -2316,7 +2316,7 @@ static bool positive_definite( const Matrix3D* blocks, unsigned n )
   }
   return true;
 }
-  
+*/
 
     /** Test that Hessian is positive-definite for ideal elements */
 void QualityMetricTester::test_ideal_element_positive_definite_Hessian( 

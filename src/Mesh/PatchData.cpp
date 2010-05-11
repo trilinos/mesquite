@@ -1838,6 +1838,8 @@ void PatchData::fill_global_patch( MsqError& err )
   gp.set_mesh( get_mesh() );
   PatchIterator iter( &gp );
   bool b = iter.get_next_patch( *this, err ); MSQ_ERRRTN(err);
+  if (!b) 
+    MSQ_SETERR(err)("Empty patch in PatchData::fill_global_patch",MsqError::INVALID_MESH);
   assert(b);
 }
 

@@ -46,7 +46,7 @@ using namespace std;
 
 const double EPSILON = 1e-4;
 
-class PMeanPTemplateTest : public CppUnit::TestFixture
+class PMeanPTemplateTest : public CppUnit::TestFixture, public ObjectiveFunctionTests
 {
 private:
   void test_eval_type( OFTestMode eval_func, ObjectiveFunction::EvalType type );
@@ -147,7 +147,8 @@ public:
   void test_Hess_update() { test_eval_type( HESS, ObjectiveFunction::UPDATE ); }
   void test_Hess_temp()   { test_eval_type( HESS, ObjectiveFunction::TEMPORARY ); }
 
-  void test_clone() { PMeanPTemplate of( 1, NULL ); ::test_clone(&of); }
+  void test_clone() { PMeanPTemplate of( 1, NULL ); 
+                      ObjectiveFunctionTests::test_clone(&of); }
   
   void test_failed_metric_in_eval() 
     { PMeanPTemplate of( 1, NULL ); test_handles_qm_error( EVAL, &of); }
@@ -294,7 +295,7 @@ bool DistTestMetric::evaluate_with_indices( PatchData& pd, size_t vtx_idx,
 void PMeanPTemplateTest::test_eval_type( OFTestMode eval_func, ObjectiveFunction::EvalType type )
 {
   PMeanPTemplate func( 1, NULL );
-  ::test_eval_type( type, eval_func, &func );
+  ObjectiveFunctionTests::test_eval_type( type, eval_func, &func );
 }
 
 

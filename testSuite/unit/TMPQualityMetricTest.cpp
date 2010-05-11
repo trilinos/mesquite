@@ -725,11 +725,11 @@ void TMPQualityMetricTest::test_gradient_common(TargetCalculator* tc)
     // calculate Jacobian matrix at element center
     
     // derivatives of bilinear map at quad center
-  const double deriv_vals[4][2] = { { -0.5, -0.5 },
-                                    {  0.5, -0.5 },
-                                    {  0.5,  0.5 },
-                                    { -0.5,  0.5 } } ;
-  MsqMatrix<4,2> coeff_derivs(&deriv_vals[0][0]);
+  const double deriv_vals[] = { -0.5, -0.5,
+                                 0.5, -0.5,
+                                 0.5,  0.5,
+                                -0.5,  0.5 } ;
+  MsqMatrix<4,2> coeff_derivs(deriv_vals);
   MsqMatrix<4,3> coords( vertices );
   MsqMatrix<3,2> J = transpose(coords) * coeff_derivs;
     // calculate expected metric value

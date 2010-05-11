@@ -360,11 +360,11 @@ static void derivatives_at_mid_face( unsigned face,
     d_coeff_d_xi_out[5][1] =  0;
     d_coeff_d_xi_out[5][2] =  0;
       // set deta and dzeta values for vertices in same triangle as edge
-    tri_offset = 3 * (face - 3);  // either 0 or 9
+    tri_offset = 3 * (face - 3);  // either 0 or 3
     d_coeff_d_xi_out[tri_offset][1] = -1.0;
     d_coeff_d_xi_out[tri_offset][2] = -1.0;
-    d_coeff_d_xi_out[tri_offset][4] =  1.0;
-    d_coeff_d_xi_out[tri_offset][8] =  1.0;
+    d_coeff_d_xi_out[tri_offset+1][1] =  1.0;
+    d_coeff_d_xi_out[tri_offset+2][2] =  1.0;
   }
 }
 static void derivatives_at_mid_elem( size_t* vertex_indices_out,

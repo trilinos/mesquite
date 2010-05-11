@@ -133,6 +133,8 @@ MeshImpl::MeshImpl(int num_nodes, int num_elem, EntityTopology entity_topology,
     elem_type = HEXAHEDRON;
   } else {
     std::cout << "error... only supporting triangles, quadrangles, tets, and hexes at this time "<< std::endl;
+    elem_type = MIXED;
+    assert(false);
   }
 
   std::vector<long> connect(verts_per_elem);

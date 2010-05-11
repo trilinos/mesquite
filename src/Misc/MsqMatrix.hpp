@@ -64,6 +64,8 @@ public:
   MsqMatrix( double v )                               { diag(v); }
     /** Initialize to an array of values */
   MsqMatrix( const double* v )                        { set(v); }
+    /** Initialize from 2D array */
+  MsqMatrix( const double v[R][C] )                   { set(v); }
     /** Initialize with column vectors */
   MsqMatrix( const MsqMatrix<R,1>* c )                { set_columns(c); }
     /** Initialize with row vectors */
@@ -93,6 +95,7 @@ public:
   void identity()                                     { diag(1.0); }
   void set( double v )        { for (unsigned i = 0; i < R*C; ++i) m[i] = v; }
   void set( const double* v ) { for (unsigned i = 0; i < R*C; ++i) m[i] = v[i]; }
+  void set( const double v[R][C] );
   void set( const char* s )   { std::istringstream i(s); i >> *this; }
   void set( const std::string& s ) { set( s.c_str() ); }
     /** Set diagonal value to passed values, others to zero. */
@@ -254,6 +257,14 @@ public:
   MsqMatrixA<R,C>& operator=( const MsqMatrixA<R,C>& m )
     { MsqMatrixA<R,C>::operator=(m); return *this; }
 };
+
+template <unsigned R, unsigned C> inline
+void MsqMatrix<R,C>::set( const double v[R][C] )
+{
+  for (unsigned r = 0; r < R; ++r)
+    for (unsigned c = 0; c < C; ++c)
+      operator()(r,c) = v[r][c];
+}
 
 template <unsigned R, unsigned C> inline
 void MsqMatrix<R,C>::diag( double v ) {

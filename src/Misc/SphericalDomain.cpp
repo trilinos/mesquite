@@ -115,7 +115,7 @@ void Mesquite::SphericalDomain::fit_vertices( Mesh* mesh, MsqError& err, double 
   if (!MSQ_CHKERR(err))
     fit_vertices( mesh, &verts[0], verts.size(), err, epsilon );
 }
-      
+
 void Mesquite::SphericalDomain::fit_vertices( Mesh* mesh, 
                                               const Mesh::VertexHandle* verts,
                                               size_t num_verts,
@@ -140,13 +140,13 @@ void Mesquite::SphericalDomain::fit_vertices( Mesh* mesh,
     // Define the bottom 4 rows of a 5x5 matrix.  The top
     // row contains the variables we are solving for, so just
     // fill it with ones.
-  const double M_vals[5][5] = { 
-    { 1,               1,         1,         1,         1 },
-    { pts[0] % pts[0], pts[0][0], pts[0][1], pts[0][2], 1 },
-    { pts[1] % pts[1], pts[1][0], pts[1][1], pts[1][2], 1 },
-    { pts[2] % pts[2], pts[2][0], pts[2][1], pts[2][2], 1 },
-    { pts[3] % pts[3], pts[3][0], pts[3][1], pts[3][2], 1 } };
-  MsqMatrix<5,5> M(&M_vals[0][0]);
+  const double M_vals[25] = { 
+    1,               1,         1,         1,         1,
+    pts[0] % pts[0], pts[0][0], pts[0][1], pts[0][2], 1,
+    pts[1] % pts[1], pts[1][0], pts[1][1], pts[1][2], 1,
+    pts[2] % pts[2], pts[2][0], pts[2][1], pts[2][2], 1,
+    pts[3] % pts[3], pts[3][0], pts[3][1], pts[3][2], 1 };
+  MsqMatrix<5,5> M(M_vals);
   double M11 = det( MsqMatrix<4,4>(M,0,0) );
   double M12 = det( MsqMatrix<4,4>(M,0,1) );
   double M13 = det( MsqMatrix<4,4>(M,0,2) );

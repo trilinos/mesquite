@@ -66,7 +66,7 @@ using std::cout;
 using std::endl;
 using std::cerr;
 
-class ObjectiveFunctionTest : public CppUnit::TestFixture
+class ObjectiveFunctionTest : public CppUnit::TestFixture, public ObjectiveFunctionTests
 {
 private:
   CPPUNIT_TEST_SUITE(ObjectiveFunctionTest);

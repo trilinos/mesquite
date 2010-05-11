@@ -56,8 +56,8 @@ void JacobianCalculator::get_Jacobian_2D( const MappingFunction2D* mf,
     c[0] += (*d)[0] * verts[*i];
     c[1] += (*d)[1] * verts[*i];
   }
-  J_out.set_column( 0, *(MsqMatrix<3,1>*)&c[0] );
-  J_out.set_column( 1, *(MsqMatrix<3,1>*)&c[1] );
+  J_out.set_column( 0, MsqMatrix<3,1>(c[0].to_array()) );
+  J_out.set_column( 1, MsqMatrix<3,1>(c[1].to_array()) );
 }
 
 void JacobianCalculator::get_Jacobian_3D( const MappingFunction3D* mf,
@@ -79,9 +79,9 @@ void JacobianCalculator::get_Jacobian_3D( const MappingFunction3D* mf,
     c[1] += (*d)[1] * verts[*i];;
     c[2] += (*d)[2] * verts[*i];;
   }
-  J_out.set_column( 0, *(MsqMatrix<3,1>*)&c[0] );
-  J_out.set_column( 1, *(MsqMatrix<3,1>*)&c[1] );
-  J_out.set_column( 2, *(MsqMatrix<3,1>*)&c[2] );
+  J_out.set_column( 0, MsqMatrix<3,1>(c[0].to_array()) );
+  J_out.set_column( 1, MsqMatrix<3,1>(c[1].to_array()) );
+  J_out.set_column( 2, MsqMatrix<3,1>(c[2].to_array()) );
 }
 
 

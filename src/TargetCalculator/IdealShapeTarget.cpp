@@ -64,6 +64,7 @@ bool IdealShapeTarget::get_surface_target( PatchData& pd,
   W_out(0,0) = W_2d(0,0); W_out(0,1) = W_2d(0,1);
   W_out(1,0) = W_2d(1,0); W_out(1,1) = W_2d(1,1);
   W_out(2,0) = 0.0;       W_out(2,1) = 0.0;
+  return true;
 }
 
 bool IdealShapeTarget::get_2D_target( PatchData& pd, 

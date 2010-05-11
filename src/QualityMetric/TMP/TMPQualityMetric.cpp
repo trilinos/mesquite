@@ -246,7 +246,7 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
   indices.resize( num_idx );
   return result;
 }
-
+/*
 static void get_u_perp( const MsqVector<3>& u,
                         MsqVector<3>& u_perp )
 {
@@ -262,7 +262,7 @@ static void get_u_perp( const MsqVector<3>& u,
     u_perp[2] = a;
   }
 }
-
+*/
 /* Do transform M_hat = S_a M_{3x2}, M_{2x2} Theta^-1 M_hat
  * where the plane into which we are projecting is the cross
  * product of the columns of M, such that S_a is I.  Use the

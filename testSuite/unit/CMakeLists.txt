@@ -88,6 +88,7 @@ SET( unit_srcs
      QualityMetricTester.cpp 
      MesquiteTestRunner.hpp 
      ObjectiveFunctionTests.hpp 
+     ObjectiveFunctionTests.cpp 
      PatchDataInstances.hpp 
      QualityMetricTester.hpp 
      UnitUtil.hpp )

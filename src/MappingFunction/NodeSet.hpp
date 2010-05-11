@@ -239,9 +239,7 @@ class MESQUITE_EXPORT NodeSet {
         case 1: return mid_edge_node(sample.number); break;
         case 2: return mid_face_node(sample.number); break;
         case 3: return mid_region_node(sample.number); break;
-#ifndef NDEBUG
         default: assert(0); return false;
-#endif
       }
     }
       

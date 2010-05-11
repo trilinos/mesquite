@@ -272,7 +272,7 @@ bool run_exp_5( int n )
   
   write_mesh( exp_5_init, "Exp5-initial" );
   
-  bool r = true, tmpr;
+  bool r = true, tmpr = false;
   int beg = 0, end = 11;
   if (n) beg = end = n-1;
   

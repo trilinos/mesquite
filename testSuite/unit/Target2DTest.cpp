@@ -49,44 +49,46 @@ class TargetMetric2DTest : public CppUnit::TestFixture
   void test_numerical_hessian();
 };
 
-template <class Metric>
-class Target2DTest : public CppUnit::TestFixture
+class Target2DTestBase  : public CppUnit::TestFixture
 {
-private:
-  Metric test_metric;
+  TargetMetric2D& test_metric;
   bool shapeInvariant, sizeInvariant, orientInvariant, Barrier;
   double idealVal;
 public:
-  Target2DTest( bool shape_invariant, 
+  Target2DTestBase( TargetMetric2D& metric,
+                bool shape_invariant, 
                 bool size_invariant, 
                 bool orient_invariant, 
                 bool barrier, 
                 double ideal_element_val )
-    : shapeInvariant(shape_invariant),
+    : test_metric(metric),
+      shapeInvariant(shape_invariant),
       sizeInvariant(size_invariant), 
       orientInvariant(orient_invariant), 
       Barrier(barrier),
       idealVal(ideal_element_val)
     {}
-  
+   
+public:
   void test_ideal_eval();
   void test_ideal_gradient();
   void test_inverted();
   void test_shape();
   void test_scale();
   void test_orient();
-  
+
   void compare_anaytic_and_numeric_grads();
   void compare_anaytic_and_numeric_hess();
   void compare_eval_and_eval_with_grad();
   void compare_eval_with_grad_and_eval_with_hess();
-  
+
+private:
   void test_non_ideal( bool sensitive,
                        MsqMatrix<2,2> A,
-                       MsqMatrix<2,2> B );
+                       MsqMatrix<2,2> W );
 };
   
-template <class Metric> void Target2DTest<Metric>::test_ideal_eval()
+void Target2DTestBase::test_ideal_eval()
 {
   MsqPrintError err(std::cerr);
   const double Avals[] = { 2, 1, 1, 2 };
@@ -110,7 +112,8 @@ template <class Metric> void Target2DTest<Metric>::test_ideal_eval()
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( idealVal, val, eps );
 }
-template <class Metric> void Target2DTest<Metric>::test_ideal_gradient()
+
+void Target2DTestBase::test_ideal_gradient()
 {
   MsqPrintError err(std::cerr);
   const double Avals[] = { 2, 1, 1, 2 };
@@ -136,7 +139,7 @@ template <class Metric> void Target2DTest<Metric>::test_ideal_gradient()
   ASSERT_MATRICES_EQUAL( (MsqMatrix<2,2>(0.0)), grad, eps );
 }
 
-template <class Metric> void Target2DTest<Metric>::test_inverted() 
+void Target2DTestBase::test_inverted() 
 {
   MsqPrintError err(std::cerr);
   const double A_vals[] = { 1,  0, 
@@ -171,10 +174,9 @@ template <class Metric> void Target2DTest<Metric>::test_inverted()
   }
 }
   
-template <class Metric> void Target2DTest<Metric>::test_non_ideal( 
-                                                     bool sensitive,
-                                                     MsqMatrix<2,2> A,
-                                                     MsqMatrix<2,2> W )
+void Target2DTestBase::test_non_ideal( bool sensitive,
+                                       MsqMatrix<2,2> A,
+                                       MsqMatrix<2,2> W )
 {
   MsqPrintError err(std::cerr);
   MsqMatrix<2,2> grad;
@@ -200,7 +202,7 @@ template <class Metric> void Target2DTest<Metric>::test_non_ideal(
   }
 }
 
-template <class Metric> void Target2DTest<Metric>::test_shape()
+void Target2DTestBase::test_shape()
 {
   const double r3 = sqrt(3.0);
   const double A_vals[] = { 2/r3, 1/r3, 
@@ -209,13 +211,13 @@ template <class Metric> void Target2DTest<Metric>::test_shape()
   test_non_ideal( !shapeInvariant, A, W );
 }
   
-template <class Metric> void Target2DTest<Metric>::test_scale() 
+void Target2DTestBase::test_scale() 
 {
   MsqMatrix<2,2> A( 2.0 ), W( 1.0 );
   test_non_ideal( !sizeInvariant, A, W );
 }
   
-template <class Metric> void Target2DTest<Metric>::test_orient() 
+void Target2DTestBase::test_orient() 
 {
   const double A_vals[] = { 0, -1, 
                             1,  0 };
@@ -224,11 +226,8 @@ template <class Metric> void Target2DTest<Metric>::test_orient()
 }
 
 
-template <class Metric> 
-void Target2DTest<Metric>::compare_eval_and_eval_with_grad()
+void Target2DTestBase::compare_eval_and_eval_with_grad()
 {
-  Metric metric;
-  
   const double Avals[] = { 1, 2, 2, 5 };
   const double Bvals[] = { -0.1, -0.15, -0.25, -0.8 };
   const MsqMatrix<2,2> I( 1.0 );
@@ -240,18 +239,18 @@ void Target2DTest<Metric>::compare_eval_and_eval_with_grad()
   bool valid;
   double gv, v;
   
-  valid = metric.evaluate_with_grad( I, A, gv, g, err );
+  valid = test_metric.evaluate_with_grad( I, A, gv, g, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate( I, A, v, err );
+  valid = test_metric.evaluate( I, A, v, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( v, gv, 1e-6 );
   
-  valid = metric.evaluate_with_grad( A, B, gv, g, err );
+  valid = test_metric.evaluate_with_grad( A, B, gv, g, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate( A, B, v, err );
+  valid = test_metric.evaluate( A, B, v, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( v, gv, 1e-6 );
@@ -262,20 +261,17 @@ void Target2DTest<Metric>::compare_eval_and_eval_with_grad()
   
   const double Cvals[] = { -1.0, 0.5, 0.0, 1.0 };
   const MsqMatrix<2,2> C( Cvals );
-  valid = metric.evaluate_with_grad( C, I, gv, g, err );
+  valid = test_metric.evaluate_with_grad( C, I, gv, g, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate( C, I, v, err );
+  valid = test_metric.evaluate( C, I, v, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( v, gv, 1e-6 );
 }
 
-template <class Metric> 
-void Target2DTest<Metric>::compare_eval_with_grad_and_eval_with_hess()
+void Target2DTestBase::compare_eval_with_grad_and_eval_with_hess()
 {
-  Metric metric;
-  
   const double Avals[] = { 1, 2, 2, 5 };
   const double Bvals[] = { -0.1, -0.15, -0.25, -0.8 };
   const MsqMatrix<2,2> I( 1.0 );
@@ -287,19 +283,19 @@ void Target2DTest<Metric>::compare_eval_with_grad_and_eval_with_hess()
   bool valid;
   double gv, hv;
   
-  valid = metric.evaluate_with_grad( I, A, gv, g, err );
+  valid = test_metric.evaluate_with_grad( I, A, gv, g, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_hess( I, A, hv, h, hess, err );
+  valid = test_metric.evaluate_with_hess( I, A, hv, h, hess, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( gv, hv, 1e-6 );
   ASSERT_MATRICES_EQUAL( g, h, 1e-5 );
   
-  valid = metric.evaluate_with_grad( A, B, gv, g, err );
+  valid = test_metric.evaluate_with_grad( A, B, gv, g, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_hess( A, B, hv, h, hess, err );
+  valid = test_metric.evaluate_with_hess( A, B, hv, h, hess, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( gv, hv, 1e-6 );
@@ -311,10 +307,10 @@ void Target2DTest<Metric>::compare_eval_with_grad_and_eval_with_hess()
   
   const double Cvals[] = { -1.0, 0.5, 0.0, 1.0 };
   const MsqMatrix<2,2> C( Cvals );
-  valid = metric.evaluate_with_grad( C, I, gv, g, err );
+  valid = test_metric.evaluate_with_grad( C, I, gv, g, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_hess( C, I, hv, h, hess, err );
+  valid = test_metric.evaluate_with_hess( C, I, hv, h, hess, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( gv, hv, 1e-6 );
@@ -323,11 +319,9 @@ void Target2DTest<Metric>::compare_eval_with_grad_and_eval_with_hess()
 
 double eps( double mu ) { return std::max( mu*1e-2, 5e-2 ); }
 
-template <class Metric> 
-void Target2DTest<Metric>::compare_anaytic_and_numeric_grads()
+void Target2DTestBase::compare_anaytic_and_numeric_grads()
 {
   const double EPS_VAL = 1e-6;
-  Metric metric;
   
   const double Avals[] = { 1, 2, 2, 5 };
   const double Bvals[] = { -0.1, -0.15, -0.25, -0.8 };
@@ -340,55 +334,55 @@ void Target2DTest<Metric>::compare_anaytic_and_numeric_grads()
   bool valid;
   double nval, aval;
   
-  valid = metric.TargetMetric2D::evaluate_with_grad( I, A, nval, num, err );
+  valid = test_metric.TargetMetric2D::evaluate_with_grad( I, A, nval, num, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_grad( I, A, aval, ana, err );
-  ASSERT_NO_ERROR(err);
-  CPPUNIT_ASSERT(valid);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, eps(aval) );
-  
-  valid = metric.TargetMetric2D::evaluate_with_grad( A, I, nval, num, err );
-  ASSERT_NO_ERROR(err);
-  CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_grad( A, I, aval, ana, err );
+  valid = test_metric.evaluate_with_grad( I, A, aval, ana, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
   ASSERT_MATRICES_EQUAL( num, ana, eps(aval) );
   
-  valid = metric.TargetMetric2D::evaluate_with_grad( I, B, nval, num, err );
+  valid = test_metric.TargetMetric2D::evaluate_with_grad( A, I, nval, num, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_grad( I, B, aval, ana, err );
+  valid = test_metric.evaluate_with_grad( A, I, aval, ana, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
   ASSERT_MATRICES_EQUAL( num, ana, eps(aval) );
   
-  valid = metric.TargetMetric2D::evaluate_with_grad( B, I, nval, num, err );
+  valid = test_metric.TargetMetric2D::evaluate_with_grad( I, B, nval, num, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_grad( B, I, aval, ana, err );
+  valid = test_metric.evaluate_with_grad( I, B, aval, ana, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
+  ASSERT_MATRICES_EQUAL( num, ana, eps(aval) );
+  
+  valid = test_metric.TargetMetric2D::evaluate_with_grad( B, I, nval, num, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = test_metric.evaluate_with_grad( B, I, aval, ana, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
   ASSERT_MATRICES_EQUAL( num, ana, eps(aval) );
    
-  valid = metric.TargetMetric2D::evaluate_with_grad( A, B, nval, num, err );
+  valid = test_metric.TargetMetric2D::evaluate_with_grad( A, B, nval, num, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_grad( A, B, aval, ana, err );
+  valid = test_metric.evaluate_with_grad( A, B, aval, ana, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
   ASSERT_MATRICES_EQUAL( num, ana, eps(aval) );
   
-  valid = metric.TargetMetric2D::evaluate_with_grad( B, A, nval, num, err );
+  valid = test_metric.TargetMetric2D::evaluate_with_grad( B, A, nval, num, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_grad( B, A, aval, ana, err );
+  valid = test_metric.evaluate_with_grad( B, A, aval, ana, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
@@ -400,10 +394,10 @@ void Target2DTest<Metric>::compare_anaytic_and_numeric_grads()
   
   const double Cvals[] = { -1.0, 0.5, 0.0, 1.0 };
   const MsqMatrix<2,2> C( Cvals );
-  valid = metric.TargetMetric2D::evaluate_with_grad( C, I, nval, num, err );
+  valid = test_metric.TargetMetric2D::evaluate_with_grad( C, I, nval, num, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_grad( C, I, aval, ana, err );
+  valid = test_metric.evaluate_with_grad( C, I, aval, ana, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
@@ -412,11 +406,9 @@ void Target2DTest<Metric>::compare_anaytic_and_numeric_grads()
 
 double epsh( double mu ) { return std::max( mu*1e-1, 1e-1 ); }
 
-template <class Metric> 
-void Target2DTest<Metric>::compare_anaytic_and_numeric_hess()
+void Target2DTestBase::compare_anaytic_and_numeric_hess()
 {
   const double EPS_VAL = 1e-6;
-  Metric metric;
   
   const double Avals[] = { 1, 2, 2, 5 };
   const double Bvals[] = { -0.1, -0.15, -0.25, -0.8 };
@@ -429,22 +421,10 @@ void Target2DTest<Metric>::compare_anaytic_and_numeric_hess()
   bool valid;
   double val_num, val_ana;
   
-  valid = metric.TargetMetric2D::evaluate_with_hess( I, A, val_num, dmdA_num, d2mdA2_num, err );
+  valid = test_metric.TargetMetric2D::evaluate_with_hess( I, A, val_num, dmdA_num, d2mdA2_num, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_hess( I, A, val_ana, dmdA_ana, d2mdA2_ana, err );
-  ASSERT_NO_ERROR(err);
-  CPPUNIT_ASSERT(valid);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, eps(val_ana) );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], epsh(val_ana) );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], epsh(val_ana) );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], epsh(val_ana) );
-  
-  valid = metric.TargetMetric2D::evaluate_with_hess( A, I, val_num, dmdA_num, d2mdA2_num, err );
-  ASSERT_NO_ERROR(err);
-  CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_hess( A, I, val_ana, dmdA_ana, d2mdA2_ana, err );
+  valid = test_metric.evaluate_with_hess( I, A, val_ana, dmdA_ana, d2mdA2_ana, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
@@ -453,22 +433,10 @@ void Target2DTest<Metric>::compare_anaytic_and_numeric_hess()
   ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], epsh(val_ana) );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], epsh(val_ana) );
   
-  valid = metric.TargetMetric2D::evaluate_with_hess( I, B, val_num, dmdA_num, d2mdA2_num, err );
+  valid = test_metric.TargetMetric2D::evaluate_with_hess( A, I, val_num, dmdA_num, d2mdA2_num, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_hess( I, B, val_ana, dmdA_ana, d2mdA2_ana, err );
-  ASSERT_NO_ERROR(err);
-  CPPUNIT_ASSERT(valid);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, eps(val_ana) );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], epsh(val_ana) );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], epsh(val_ana) );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], epsh(val_ana) );
-  
-  valid = metric.TargetMetric2D::evaluate_with_hess( B, I, val_num, dmdA_num, d2mdA2_num, err );
-  ASSERT_NO_ERROR(err);
-  CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_hess( B, I, val_ana, dmdA_ana, d2mdA2_ana, err );
+  valid = test_metric.evaluate_with_hess( A, I, val_ana, dmdA_ana, d2mdA2_ana, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
@@ -477,10 +445,10 @@ void Target2DTest<Metric>::compare_anaytic_and_numeric_hess()
   ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], epsh(val_ana) );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], epsh(val_ana) );
   
-  valid = metric.TargetMetric2D::evaluate_with_hess( A, B, val_num, dmdA_num, d2mdA2_num, err );
+  valid = test_metric.TargetMetric2D::evaluate_with_hess( I, B, val_num, dmdA_num, d2mdA2_num, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_hess( A, B, val_ana, dmdA_ana, d2mdA2_ana, err );
+  valid = test_metric.evaluate_with_hess( I, B, val_ana, dmdA_ana, d2mdA2_ana, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
@@ -489,10 +457,34 @@ void Target2DTest<Metric>::compare_anaytic_and_numeric_hess()
   ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], epsh(val_ana) );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], epsh(val_ana) );
   
-  valid = metric.TargetMetric2D::evaluate_with_hess( B, A, val_num, dmdA_num, d2mdA2_num, err );
+  valid = test_metric.TargetMetric2D::evaluate_with_hess( B, I, val_num, dmdA_num, d2mdA2_num, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_hess( B, A, val_ana, dmdA_ana, d2mdA2_ana, err );
+  valid = test_metric.evaluate_with_hess( B, I, val_ana, dmdA_ana, d2mdA2_ana, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, eps(val_ana) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], epsh(val_ana) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], epsh(val_ana) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], epsh(val_ana) );
+  
+  valid = test_metric.TargetMetric2D::evaluate_with_hess( A, B, val_num, dmdA_num, d2mdA2_num, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = test_metric.evaluate_with_hess( A, B, val_ana, dmdA_ana, d2mdA2_ana, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, eps(val_ana) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], epsh(val_ana) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], epsh(val_ana) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], epsh(val_ana) );
+  
+  valid = test_metric.TargetMetric2D::evaluate_with_hess( B, A, val_num, dmdA_num, d2mdA2_num, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = test_metric.evaluate_with_hess( B, A, val_ana, dmdA_ana, d2mdA2_ana, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
@@ -507,10 +499,10 @@ void Target2DTest<Metric>::compare_anaytic_and_numeric_hess()
   
   const double Cvals[] = { -1.0, 0.5, 0.0, 1.0 };
   const MsqMatrix<2,2> C( Cvals );
-  valid = metric.TargetMetric2D::evaluate_with_hess( C, I, val_num, dmdA_num, d2mdA2_num, err );
+  valid = test_metric.TargetMetric2D::evaluate_with_hess( C, I, val_num, dmdA_num, d2mdA2_num, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_hess( C, I, val_ana, dmdA_ana, d2mdA2_ana, err );
+  valid = test_metric.evaluate_with_hess( C, I, val_ana, dmdA_ana, d2mdA2_ana, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
@@ -782,8 +774,9 @@ void TargetMetric2DTest::test_numerical_hessian()
 #include "Target2DShapeSizeAlt1.hpp"
 
 #define REGISTER_TARGET2D_TEST( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
-class METRIC ## Test : public Target2DTest<METRIC> { public: \
-  METRIC ## Test () : Target2DTest<METRIC>( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+METRIC test_ ## METRIC; \
+class METRIC ## Test : public Target2DTestBase { public: \
+  METRIC ## Test () : Target2DTestBase( (test_ ## METRIC), (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
   CPPUNIT_TEST_SUITE( METRIC ## Test ); \
   CPPUNIT_TEST (test_ideal_eval); \
   CPPUNIT_TEST (test_ideal_gradient); \
@@ -805,8 +798,9 @@ CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _BaseRegister ( #METRI
 //  barrier
 //  expected value for ideal element
 #define REGISTER_TARGET2D_TEST_WITH_GRAD( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
-class METRIC ## Test : public Target2DTest<METRIC> { public: \
-  METRIC ## Test () : Target2DTest<METRIC>( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+METRIC test_ ## METRIC; \
+class METRIC ## Test : public Target2DTestBase { public: \
+  METRIC ## Test () : Target2DTestBase( (test_ ## METRIC), (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
   CPPUNIT_TEST_SUITE( METRIC ## Test ); \
   CPPUNIT_TEST (test_ideal_eval); \
   CPPUNIT_TEST (test_ideal_gradient); \
@@ -823,8 +817,9 @@ CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _FileRegister ("Target
 CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _BaseRegister ( #METRIC "Test" )
 
 #define REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
-class METRIC ## Test : public Target2DTest<METRIC> { public: \
-  METRIC ## Test () : Target2DTest<METRIC>( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+METRIC test_ ## METRIC; \
+class METRIC ## Test : public Target2DTestBase { public: \
+  METRIC ## Test () : Target2DTestBase( (test_ ## METRIC), (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
   CPPUNIT_TEST_SUITE( METRIC ## Test ); \
   CPPUNIT_TEST (test_ideal_eval); \
   CPPUNIT_TEST (test_ideal_gradient); \
@@ -869,9 +864,10 @@ REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSizeBarrier,                true,
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DUntangle,                   true,  true,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DUntangleAlt1,               true,  true,  true, false, 0.0 );
 
-class TSquared2DTest : public Target2DTest<TSquared2D> {
+TSquared2D test_TSquared2D;
+class TSquared2DTest : public Target2DTestBase {
   public: 
-    TSquared2DTest() : Target2DTest<TSquared2D>(false,false,false,false,0.0) {}
+    TSquared2DTest() : Target2DTestBase(test_TSquared2D, false,false,false,false,0.0) {}
     CPPUNIT_TEST_SUITE( TSquared2DTest );
     CPPUNIT_TEST( compare_anaytic_and_numeric_grads );
     CPPUNIT_TEST( compare_eval_with_grad_and_eval_with_hess );

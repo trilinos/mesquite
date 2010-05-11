@@ -43,7 +43,7 @@ using namespace std;
 
 const double EPSILON = 1e-4;
 
-class StdDevTemplateTest : public CppUnit::TestFixture
+class StdDevTemplateTest : public CppUnit::TestFixture, public ObjectiveFunctionTests
 {
 private:
   CPPUNIT_TEST_SUITE( StdDevTemplateTest );
@@ -217,9 +217,9 @@ public:
     { VarianceTemplate of(NULL); test_handles_invalid_qm(GRAD, &of); }
     
   void test_clone()
-    { StdDevTemplate of(NULL); ::test_clone(&of); }
+    { StdDevTemplate of(NULL); ObjectiveFunctionTests::test_clone(&of); }
   void test_clone_sqr()
-    { VarianceTemplate of(NULL); ::test_clone(&of); }
+    { VarianceTemplate of(NULL); ObjectiveFunctionTests::test_clone(&of); }
   
   void test_eval_negate()
     { StdDevTemplate of(NULL); test_negate_flag( EVAL, &of ); }

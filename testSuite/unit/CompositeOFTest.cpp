@@ -87,7 +87,7 @@ class FauxObjectiveFunction : public ObjectiveFunction
 };
 int FauxObjectiveFunction::instanceCount = 0;
 
-class CompositeOFTest : public CppUnit::TestFixture
+class CompositeOFTest : public CppUnit::TestFixture, public ObjectiveFunctionTests
 {
 private:
   CPPUNIT_TEST_SUITE(CompositeOFTest);

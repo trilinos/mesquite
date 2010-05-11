@@ -48,6 +48,7 @@ endif
 msq_test_SOURCES = msq_test_main.cpp \
 	MesquiteTestRunner.hpp \
 	ObjectiveFunctionTests.hpp \
+	ObjectiveFunctionTests.cpp \
 	PatchDataInstances.hpp \
 	QualityMetricTester.hpp \
 	QualityMetricTester.cpp \
