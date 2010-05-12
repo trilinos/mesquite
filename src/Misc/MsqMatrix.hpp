@@ -694,7 +694,7 @@ MsqMatrix<R,C> transpose( const MsqMatrix<C,R>& m )
       result(r,c) = m(c,r);
   return result;
 }
-
+/*
 template <unsigned R> inline
 const MsqMatrix<R,1>& transpose( const MsqMatrix<1,R>& m )
   { return *reinterpret_cast<const MsqMatrix<R,1>*>(&m); }
@@ -702,7 +702,7 @@ const MsqMatrix<R,1>& transpose( const MsqMatrix<1,R>& m )
 template <unsigned C> inline
 const MsqMatrix<1,C>& transpose( const MsqMatrix<C,1>& m )
   { return *reinterpret_cast<const MsqMatrix<1,C>*>(&m); }
-
+*/
 template <unsigned RC> inline
 double trace( const MsqMatrix<RC,RC>& m )
 {

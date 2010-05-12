@@ -133,7 +133,10 @@ bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, Msq
     c[0] = pd.vertex_by_index( conn[adj[0]] ) - pd.vertex_by_index( conn[s.number] );
     c[1] = pd.vertex_by_index( conn[adj[1]] ) - pd.vertex_by_index( conn[s.number] );
     c[2] = pd.vertex_by_index( conn[adj[2]] ) - pd.vertex_by_index( conn[s.number] );
-    MsqMatrix<3,3> A( (MsqMatrix<3,1>*)c );
+    MsqMatrix<3,3> A;
+    A.set_column( 0, MsqMatrix<3,1>(c[0].to_array()) );
+    A.set_column( 1, MsqMatrix<3,1>(c[1].to_array()) );
+    A.set_column( 2, MsqMatrix<3,1>(c[2].to_array()) );
     if (type == TETRAHEDRON)
       A = A * TET_XFORM;
 
@@ -152,7 +155,9 @@ bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, Msq
     const unsigned* adj = TopologyInfo::adjacent_vertices( type, s.number, n );
     c[0] = pd.vertex_by_index( conn[adj[0]] ) - pd.vertex_by_index( conn[s.number] );
     c[1] = pd.vertex_by_index( conn[adj[1]] ) - pd.vertex_by_index( conn[s.number] );
-    MsqMatrix<3,2> App( (MsqMatrix<3,1>*)c );
+    MsqMatrix<3,2> App;
+    App.set_column( 0, MsqMatrix<3,1>(c[0].to_array()) );
+    App.set_column( 1, MsqMatrix<3,1>(c[1].to_array()) );
     
     MsqMatrix<3,2> Wp;
     targetCalc->get_surface_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);

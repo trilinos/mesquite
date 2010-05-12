@@ -418,9 +418,6 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
                                               size_t& num_indices,
                                               MsqError& err )
 {
-    // make sure reinterpret_casts below are valid
-  assert( sizeof(MsqMatrix<3,1>) == sizeof(Vector3D) );
-
   const Sample s = ElemSampleQM::sample( handle );
   const size_t e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
@@ -482,9 +479,6 @@ bool TMPQualityMetric::evaluate_with_gradient(
                                            std::vector<Vector3D>& grad,
                                            MsqError& err )
 {
-    // make sure reinterpret_casts below are valid
-  assert( sizeof(MsqMatrix<3,1>) == sizeof(Vector3D) );
-
   const Sample s = ElemSampleQM::sample( handle );
   const size_t e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
@@ -557,9 +551,6 @@ bool TMPQualityMetric::evaluate_with_Hessian(
                                            std::vector<Matrix3D>& Hessian,
                                            MsqError& err )
 {
-    // make sure reinterpret_casts below are valid
-  assert( sizeof(MsqMatrix<3,1>) == sizeof(Vector3D) );
-
   const Sample s = ElemSampleQM::sample( handle );
   const size_t e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
@@ -646,9 +637,6 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
                                            std::vector<SymMatrix3D>& diagonal,
                                            MsqError& err )
 {
-    // make sure reinterpret_casts below are valid
-  assert( sizeof(MsqMatrix<3,1>) == sizeof(Vector3D) );
-
   const Sample s = ElemSampleQM::sample( handle );
   const size_t e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );

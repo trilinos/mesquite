@@ -806,7 +806,7 @@ void TMPQualityMetricTest::test_gradient_3D()
                                     {  0.25, -0.25,  0.25 },
                                     {  0.25,  0.25,  0.25 },
                                     { -0.25,  0.25,  0.25 } };
-  MsqMatrix<8,3> coeff_derivs(&deriv_vals[0][0]);
+  MsqMatrix<8,3> coeff_derivs(deriv_vals);
   MsqMatrix<8,3> coords( vertices );
   MsqMatrix<3,3> J = transpose(coords) * coeff_derivs;
     // calculate expected metric value

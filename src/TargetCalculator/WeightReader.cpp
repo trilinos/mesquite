@@ -34,7 +34,6 @@
 #include "WeightReader.hpp"
 #include "PatchData.hpp"
 #include "MsqError.hpp"
-#include "MsqMatrix.hpp"
 #include "ElemSampleQM.hpp"
 #include <sstream>
 
