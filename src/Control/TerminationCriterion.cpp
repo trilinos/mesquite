@@ -55,56 +55,58 @@ enum TCType {
    //! checks the gradient \f$\nabla f \f$ of objective function 
    //! \f$f : I\!\!R^{3N} \rightarrow I\!\!R \f$ against a double \f$d\f$  
    //! and stops when \f$\sqrt{\sum_{i=1}^{3N}\nabla f_i^2}<d\f$  
-   GRADIENT_L2_NORM_ABSOLUTE = 1,  
+   GRADIENT_L2_NORM_ABSOLUTE = 1<<0,  
    //! checks the gradient \f$\nabla f \f$ of objective function 
    //! \f$f : I\!\!R^{3N} \rightarrow I\!\!R \f$ against a double \f$d\f$  
    //! and stops when \f$ \max_{i=1}^{3N} \nabla f_i < d \f$  
-   GRADIENT_INF_NORM_ABSOLUTE = 2,
+   GRADIENT_INF_NORM_ABSOLUTE = 1<<1,
      //!terminates on the j_th iteration when
      //! \f$\sqrt{\sum_{i=1}^{3N}\nabla f_{i,j}^2}<d\sqrt{\sum_{i=1}^{3N}\nabla f_{i,0}^2}\f$
      //!  That is, terminates when the norm of the gradient is small
      //! than some scaling factor times the norm of the original gradient. 
-   GRADIENT_L2_NORM_RELATIVE = 4,
+   GRADIENT_L2_NORM_RELATIVE = 1<<2,
    //!terminates on the j_th iteration when
      //! \f$\max_{i=1 \cdots 3N}\nabla f_{i,j}<d \max_{i=1 \cdots 3N}\nabla f_{i,0}\f$
      //!  That is, terminates when the norm of the gradient is small
      //! than some scaling factor times the norm of the original gradient.
      //! (Using the infinity norm.)
-   GRADIENT_INF_NORM_RELATIVE = 8,
+   GRADIENT_INF_NORM_RELATIVE = 1<<3,
      //! Not yet implemented.
-   KKT  = 16,
+   KKT  = 1<<4,
      //!Terminates when the objective function value is smaller than
      //! the given scalar value.
-   QUALITY_IMPROVEMENT_ABSOLUTE = 32,
+   QUALITY_IMPROVEMENT_ABSOLUTE = 1<<5,
      //!Terminates when the objective function value is smaller than
      //! the given scalar value times the original objective function
      //! value.
-   QUALITY_IMPROVEMENT_RELATIVE = 64,
+   QUALITY_IMPROVEMENT_RELATIVE = 1<<6,
      //!Terminates when the number of iterations exceeds a given integer.
-   NUMBER_OF_ITERATES = 128,
+   NUMBER_OF_ITERATES = 1<<7,
      //!Terminates when the algorithm exceeds an allotted time limit
      //! (given in seconds).
-   CPU_TIME  = 256,
+   CPU_TIME  = 1<<8,
      //!Terminates when a the maximum distance moved by any vertex
      //! during the previous iteration is below the given value.
-   VERTEX_MOVEMENT_ABSOLUTE  = 512,
+   VERTEX_MOVEMENT_ABSOLUTE  = 1<<9,
      //!Terminates when a the maximum distance moved by any vertex
      //! during the previous iteration is below the given value
      //! times the maximum distance moved by any vertex over the
      //! entire course of the optimization.
-   VERTEX_MOVEMENT_RELATIVE  = 1024,
+   VERTEX_MOVEMENT_RELATIVE  = 1<<10,
      //!Terminates when the decrease in the objective function value since
      //! the previous iteration is below the given value.
-   SUCCESSIVE_IMPROVEMENTS_ABSOLUTE = 2048,
+   SUCCESSIVE_IMPROVEMENTS_ABSOLUTE = 1<<11,
      //!Terminates when the decrease in the objective function value since
      //! the previous iteration is below the given value times the
      //! decrease in the objective function value since the beginning
      //! of this optimization process.
-   SUCCESSIVE_IMPROVEMENTS_RELATIVE = 4096,
+   SUCCESSIVE_IMPROVEMENTS_RELATIVE = 1<<12,
      //!Terminates when any vertex leaves the bounding box, defined
      //! by the given value, d.  That is, when the absolute value of
      //! a single coordinate of vertex's position exceeds d.
-   BOUNDED_VERTEX_MOVEMENT = 8192
+   BOUNDED_VERTEX_MOVEMENT = 1<<13,
+    //! Terminate when no elements are inverted
+   UNTANGLED_MESH = 1<<14
 };
 
 
@@ -150,6 +152,8 @@ TerminationCriterion::TerminationCriterion()
   successiveImprovementsAbsoluteEps=0.0;
   successiveImprovementsRelativeEps=0.0;
   boundedVertexMovementEps=0.0;
+  globalInvertedCount = 0;
+  patchInvertedCount = 0;
   
 }
 
@@ -232,6 +236,11 @@ void TerminationCriterion::add_bounded_vertex_movement( double eps )
        terminationCriterionFlag|=BOUNDED_VERTEX_MOVEMENT;
        boundedVertexMovementEps=eps;
 }
+
+void TerminationCriterion::add_untangled_mesh()
+{
+  terminationCriterionFlag |= UNTANGLED_MESH;
+}
     
 void TerminationCriterion::remove_all_criteria()
 {
@@ -268,6 +277,10 @@ void TerminationCriterion::cull_on_relative_successive_improvement( double limit
        cullingMethodFlag=SUCCESSIVE_IMPROVEMENTS_RELATIVE;
        cullingEps=limit;
 }
+void TerminationCriterion::cull_untangled_mesh( )
+{
+  cullingMethodFlag = UNTANGLED_MESH;
+}
     
     
 void TerminationCriterion::remove_culling()
@@ -293,7 +306,7 @@ void TerminationCriterion::reset_outer(Mesh* mesh,
     global_patch.attach_settings( settings );
   
     //if we need to fill out the global patch data object.
-  if ((totalFlag & (GRAD_FLAGS | OF_FLAGS | VERTEX_MOVEMENT_RELATIVE))
+  if ((totalFlag & (GRAD_FLAGS | OF_FLAGS | VERTEX_MOVEMENT_RELATIVE | UNTANGLED_MESH))
      || timeStepFileType)
   {
     global_patch.set_mesh( mesh );
@@ -433,6 +446,12 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
   else {
     maxSquaredInitialMovement = 0;
   }
+  
+  if (terminationCriterionFlag & UNTANGLED_MESH) {
+    globalInvertedCount = count_inverted( pd, err );
+    patchInvertedCount = 0;
+    MSQ_ERRRTN(err);
+  }
 
   if (timeStepFileType) {
       // If didn't already calculate gradient abive, calculate it now.
@@ -448,7 +467,7 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
       // two newlines so GNU plot knows that we are starting a new data set
     plotFile << std::endl << std::endl;
       // write column headings as comment in data file
-    plotFile << "#Iter\tCPU\tObjFunc\tGradL2\tGradInf\tMovement" << std::endl;
+    plotFile << "#Iter\tCPU\tObjFunc\tGradL2\tGradInf\tMovement\tInverted" << std::endl;
       // write initial values
     plotFile << 0 
      << '\t' << mTimer.since_birth() 
@@ -456,6 +475,7 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
      << '\t' << std::sqrt( currentGradL2NormSquared ) 
      << '\t' << currentGradInfNorm 
      << '\t' << 0.0
+     << '\t' << globalInvertedCount
      << std::endl;
   }
 }
@@ -469,6 +489,11 @@ void TerminationCriterion::reset_patch(PatchData &pd, MsqError &err)
       pd.recreate_vertices_memento(previousVerticesMemento,err); 
     else
       previousVerticesMemento = pd.create_vertices_memento(err);
+    MSQ_ERRRTN(err);
+  }
+
+  if (totalFlag & UNTANGLED_MESH) {
+    patchInvertedCount = count_inverted( pd, err );
     MSQ_ERRRTN(err);
   }
 }
@@ -551,6 +576,7 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
      << '\t' << std::sqrt( currentGradL2NormSquared ) 
      << '\t' << currentGradInfNorm 
      << '\t' << (maxSquaredMovement > 0.0 ? std::sqrt( maxSquaredMovement ) : 0.0)
+     << '\t' << globalInvertedCount
      << std::endl;
 }
 
@@ -605,6 +631,17 @@ void TerminationCriterion::accumulate_patch( PatchData& pd, MsqError& err )
         ++vertexMovementExceedsBound;
       }
     }
+  }
+
+
+  if ((terminationCriterionFlag|cullingMethodFlag) & UNTANGLED_MESH) {
+    size_t new_count = count_inverted( pd, err );
+      // be careful here because size_t is unsigned
+    globalInvertedCount += new_count;
+    globalInvertedCount -= patchInvertedCount;
+    patchInvertedCount = new_count;
+      
+    MSQ_ERRRTN(err);
   }
 }
 
@@ -718,6 +755,11 @@ bool TerminationCriterion::terminate( )
                            << " vertices out of bounds." << std::endl;
   }
   
+  if (UNTANGLED_MESH & terminationCriterionFlag && !globalInvertedCount)
+  {
+    return_flag = true;
+  }
+  
     // clear this value at the end of each iteration
   vertexMovementExceedsBound = 0;
   maxSquaredMovement = -1.0;
@@ -808,6 +850,10 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
          cull_bool=true;  
        }
        break;
+    case UNTANGLED_MESH:
+      if (!patchInvertedCount)
+        cull_bool = true;
+      break;
     default:
        MSQ_SETERR(err)("Requested culling method not yet implemented.",
                        MsqError::NOT_IMPLEMENTED);
@@ -823,6 +869,19 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
     pd.set_all_vertices_soft_free(err); MSQ_ERRZERO(err);
   }
   return cull_bool;
+}
+
+size_t TerminationCriterion::count_inverted( PatchData& pd, MsqError& err )
+{
+  size_t num_elem = pd.num_elements();
+  size_t count=0;
+  int inverted, samples;
+  for (size_t i = 0; i < num_elem; i++) {
+    pd.element_by_index(i).check_element_orientation(pd, inverted, samples, err);
+    if (inverted)
+      ++count;
+  }
+  return count;
 }
 
 /*!

@@ -131,8 +131,8 @@ namespace MESQUITE_NS
     
          //!terminates on the j_th iteration when
          //! \f$\sqrt{\sum_{i=1}^{3N}\nabla f_{i,j}^2}<d\sqrt{\sum_{i=1}^{3N}\nabla f_{i,0}^2}\f$
-         //!  That is, terminates when the norm of the gradient is small
-         //! than some scaling factor times the norm of the original gradient. 
+         //!  That is, terminates when the norm of the gradient is smaller
+         //!  than the specified fraction of the initial norm of the gradient. 
     MESQUITE_EXPORT void add_relative_gradient_L2_norm( double value );
 
        //!terminates on the j_th iteration when
@@ -183,6 +183,11 @@ namespace MESQUITE_NS
          //! a single coordinate of vertex's position exceeds d.
     MESQUITE_EXPORT void add_bounded_vertex_movement( double value);
     
+     //!Terminates when the mesh is detected to be untangled.
+     //! Uses the same approach as QualityAssessor,
+     //! checks the tau values at all the sample points.
+    MESQUITE_EXPORT void add_untangled_mesh();
+    
     MESQUITE_EXPORT void remove_all_criteria();
     
          //!Cull when the objective function value is smaller than
@@ -209,6 +214,10 @@ namespace MESQUITE_NS
          //! of this optimization process.
     MESQUITE_EXPORT void cull_on_relative_successive_improvement( double limit );
     
+     //!Cull when the mesh is detected to be untangled.
+     //! Uses the same approach as QualityAssessor,
+     //! checks the tau values at all the sample points.
+    MESQUITE_EXPORT void cull_untangled_mesh();
     
     MESQUITE_EXPORT void remove_culling();
     
@@ -297,6 +306,8 @@ namespace MESQUITE_NS
     
     void write_timestep( PatchData& pd, const Vector3D* gradient, MsqError& err );
     
+    static size_t count_inverted( PatchData& pd, MsqError& err );
+    
  private:
     //PRIVATE DATA MEMBERS
     long unsigned int terminationCriterionFlag;//!<Bit flag of termination crit
@@ -345,6 +356,10 @@ namespace MESQUITE_NS
       //crit 8
     double boundedVertexMovementEps;
     int vertexMovementExceedsBound;
+      
+      // Data for untangled criterion
+    size_t globalInvertedCount; //!< number of inverted elements in entire mesh
+    size_t patchInvertedCount;  //!< number of inverted elements in previously tested patch
     
     int debugLevel;
     
