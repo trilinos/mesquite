@@ -24,272 +24,555 @@
     pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
    
   ***************************************************************** */
-// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
-//
-//   SUMMARY: 
-//     USAGE:
-//
-//    AUTHOR: Michael Brewer
-//       ORG: Sanida National Laboratories
-//    E-MAIL: mbrewer@sandia.gov
-//
-// ORIG-DATE: March 5, 2003
-//  LAST-MOD: 25-Feb-04 at 10:50:02 by Thomas Leurent
-//
-// DESCRIPTION:
-// ============
+
 /*! \file TerminationCriterionTest.cpp
+    \author kraftche@cae.wisc.edu
 
 Tests for the TerminationCriterion class.. 
 
 */
 
-#include "meshfiles.h"
-
-//
-#include <iostream>
-using std::cout;
-using std::endl;
-#include <cstdlib>
 
 #include "Mesquite.hpp"
 #include "MsqError.hpp"
 #include "Vector3D.hpp"
-#include "InstructionQueue.hpp"
+#include "OFEvaluator.hpp"
+#include "ObjectiveFunction.hpp"
 #include "PatchData.hpp"
 #include "TerminationCriterion.hpp"
-#include "QualityAssessor.hpp"
-#include "MeshImpl.hpp"
 
-// algorythms
-#include "ConditionNumberQualityMetric.hpp"
-#include "LPtoPTemplate.hpp"
-#include "ConjugateGradient.hpp"
-#include "PlanarDomain.hpp"
+#include "UnitUtil.hpp"
+#include "PatchDataInstances.hpp"
 
-#include "cppunit/extensions/HelperMacros.h"
-#include "MsqFreeVertexIndexIterator.hpp"
-#include <list>
-#include <iterator>
+#include <iostream>
 
 using namespace Mesquite;
+
+
+class DummyOF : public ObjectiveFunction
+{
+public:
+  double mValue; //!< Objectve fuction value returned
+  Vector3D mGrad; //!< Gradient values for all vertices
+  bool mValid;
+
+  DummyOF( double of_value = 0.0,
+           Vector3D grad_values = Vector3D(0,0,0) )
+    : mValue(0.0), mGrad(grad_values), mValid(true) {}
+
+  bool initialize_block_coordinate_descent( Mesh* mesh,
+                                            MeshDomain* domain,
+                                            const Settings* settings,
+                                            PatchSet* user_set,
+                                            MsqError& err );
+
+  bool evaluate( EvalType type,
+                 PatchData& pd,
+                 double& value_out,
+                 bool free,
+                 MsqError& err );
+
+  bool evaluate_with_gradient( EvalType type,
+                               PatchData& pd,
+                               double& value_out,
+                               std::vector<Vector3D>& grad_out,
+                               MsqError& err );
+                               
+  ObjectiveFunction* clone() const { return new DummyOF(*this); }
+  void clear() {}
+  int min_patch_layers() const { return 1; }
+};
+
 class TerminationCriterionTest : public CppUnit::TestFixture
 {
 private:
   CPPUNIT_TEST_SUITE(TerminationCriterionTest);
-    //simple test with number of iterates = 2 termination criterion
-  CPPUNIT_TEST (test_number_of_iterates);
-    //terminate when the norm of the gradient is below .02
-  CPPUNIT_TEST (test_gradient_norm_absolute);
-    //terminate when the norm of the gradient is below .3*initialNorm
-  CPPUNIT_TEST (test_gradient_norm_relative);
-    //terminate when the time exceeds 5 seconds
-  CPPUNIT_TEST (test_cpu_time);
-    //terminate when the time exceeds 5 seconds or iterates exceed 5000
-  CPPUNIT_TEST (test_cpu_time_or_iterates);
-    //terminate when the iterates exceed 2 or the time exceeds 5000 seconds
-  CPPUNIT_TEST (test_iterates_or_cpu_time);
-    //terminate when the function value is below 11.95
+
+  CPPUNIT_TEST (test_number_of_iterates_inner);
+  CPPUNIT_TEST (test_number_of_iterates_outer);
+  CPPUNIT_TEST (test_cpu_time_inner);
+  CPPUNIT_TEST (test_cpu_time_outer);
+
+  CPPUNIT_TEST (test_absolute_vertex_movement);
+  CPPUNIT_TEST (test_relative_vertex_movement);
+
+  CPPUNIT_TEST (test_gradient_L2_norm_absolute);
+  CPPUNIT_TEST (test_gradient_Linf_norm_absolute);
+  CPPUNIT_TEST (test_gradient_L2_norm_relative);
+  CPPUNIT_TEST (test_gradient_Linf_norm_relative);
+
   CPPUNIT_TEST (test_quality_improvement_absolute);
-    //terminate when the function value is below (.995*intialOFValue)
   CPPUNIT_TEST (test_quality_improvement_relative);
-    //terminate when the successive improvements is below .005
   CPPUNIT_TEST (test_successive_improvements_absolute);
-    //terminat when the successive imporovements is below .996 of the original
   CPPUNIT_TEST (test_successive_improvements_relative);
-    //tests vertex bound should NOT stop due to vertices outside the bound
-  CPPUNIT_TEST (test_cpu_time_or_vertex_bound);
-    //tests vertex bound SHOULD stop due to vertices outside the bound
-  CPPUNIT_TEST (test_vertex_bound_or_cpu_time);
+
+  CPPUNIT_TEST (test_vertex_bound);
+  CPPUNIT_TEST (test_untangled_mesh);
+
   CPPUNIT_TEST_SUITE_END();
-  int pF;
+  
+  DummyOF objFunc;
+  OFEvaluator ofEval;
+  
+  void test_gradient_common( bool absolute, bool L2 );
+  void test_quality_common( bool absolute, bool successive );
+  void test_vertex_movement_common( bool absolute );
+  void test_cpu_time_common( bool inner );
   
 public:
-  void setUp()
-  {
-    pF=1;//PRINT_FLAG IS ON
-      //pF=0;//PRINT_FLAG IS OFF
-  }
 
-  void tearDown()
-  {
-  }
-    //Function that gets passed a pointer to the outer termination criterion.
-    //This function is called by several of the tests in this suite.
-  void test_outer_criterion(TerminationCriterion* tc_outer, MsqError &err)
-    {
-      Mesquite::MeshImpl mesh;
-      mesh.read_vtk(MESH_FILES_DIR "2D/VTK/tri_5_xz.vtk", err);
-      
-      Vector3D pnt(0,-5,0);
-      Vector3D s_norm(0, -1,0);
-      Mesquite::PlanarDomain msq_geom(s_norm, pnt);
-      
-        // create an intruction queue        
-      InstructionQueue queue1;
-      
-        // create a mean ratio quality metric ...
-      ConditionNumberQualityMetric cond_num;
-      LPtoPTemplate obj_func(&cond_num, 2, err);
-      CPPUNIT_ASSERT(!err);
-      ConjugateGradient pass1( &obj_func, err );
-      CPPUNIT_ASSERT(!err);
-      pass1.set_outer_termination_criterion(tc_outer);
-      
-      pass1.set_debugging_level(0);
-      QualityAssessor all_qa=QualityAssessor( &cond_num );
-      queue1.add_quality_assessor(&all_qa,err); CPPUNIT_ASSERT(!err);
-      queue1.set_master_quality_improver(&pass1, err); CPPUNIT_ASSERT(!err);
-        //queue1.add_quality_assessor(&all_qa,err); CPPUNIT_ASSERT(!err);
-      queue1.run_instructions(&mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
-    }
+  TerminationCriterionTest()
+    : ofEval( &objFunc, true ) {}
   
     //NUMBER OF ITERATES
-  void test_number_of_iterates()
-    {
-      MsqPrintError err(cout);
-      TerminationCriterion t1;
-      t1.add_iteration_limit( 2 );
-      if(pF)
-        std::cout<<"\nTEST_NUMBER_OF_ITERATES\n";
-      test_outer_criterion(&t1,err);CPPUNIT_ASSERT(!err);
-    }
-  
-    //GRADIENT NORM ABSOLUTE
-  void test_gradient_norm_absolute()
-    {
-      MsqPrintError err(cout);
-      TerminationCriterion t1;
-      t1.add_absolute_gradient_inf_norm( 0.02 );
-      if(pF)
-        std::cout<<"\nTEST_GRADIENT_INF_NORM_ABSOLUTE\n";
-      test_outer_criterion(&t1,err);
-      CPPUNIT_ASSERT(!err);
-    }
-  
-    //GRADIENT NORM RELATIVE
-  void test_gradient_norm_relative()
-    {
-      MsqPrintError err(cout);
-      TerminationCriterion t1;
-      t1.add_relative_gradient_inf_norm( 0.3 );
-      if(pF)
-        std::cout<<"\nTEST_GRADIENT_INF_NORM_RELATIVE\n";
-      test_outer_criterion(&t1,err);
-      CPPUNIT_ASSERT(!err);
-    }
+  void test_number_of_iterates_inner();
+  void test_number_of_iterates_outer();
   
     //CPU TIME
-  void test_cpu_time()
-    {
-      MsqPrintError err(cout);
-      TerminationCriterion t1;
-      t1.add_cpu_time( 5 );
-      if(pF)
-        std::cout<<"\nTEST_CPU_TIME\n";
-      test_outer_criterion(&t1,err);
-      CPPUNIT_ASSERT(!err);
-    }
+  void test_cpu_time_inner()
+    { test_cpu_time_common( true ); }
+  void test_cpu_time_outer()
+    { test_cpu_time_common( false ); }
   
-    //CPU TIME OR NUMBER OF ITERATES
-   void test_cpu_time_or_iterates()
-    {
-      MsqPrintError err(cout);
-      TerminationCriterion t1;
-      t1.add_cpu_time( 5 );
-      t1.add_iteration_limit( 5000 );
-      if(pF)
-        std::cout<<"\nTEST_CPU_TIME_OR_ITERATES\n";
-      test_outer_criterion(&t1,err);
-      CPPUNIT_ASSERT(!err);
-    }
+    // VERTEX MOVEMENT
+  void test_absolute_vertex_movement()
+    { test_vertex_movement_common( true ); }
+  void test_relative_vertex_movement()
+    { test_vertex_movement_common( false ); }
   
-    //NUMBER OF ITERATES OR CPU TIME
-  void test_iterates_or_cpu_time()
-    {
-      MsqPrintError err(cout);
-      TerminationCriterion t1;
-      t1.add_cpu_time( 5000 );
-      t1.add_iteration_limit( 2 );
-      if(pF)
-        std::cout<<"\nTEST_ITERATES_OR_CPU_TIME\n";
-      test_outer_criterion(&t1,err);
-      CPPUNIT_ASSERT(!err);
-    }
+    //GRADIENT NORM ABSOLUTE
+  void test_gradient_L2_norm_absolute()
+    {  test_gradient_common( true, true ); }
+  void test_gradient_Linf_norm_absolute()
+    {  test_gradient_common( true, false ); }
+  
+    //GRADIENT NORM RELATIVE
+  void test_gradient_L2_norm_relative()
+    {  test_gradient_common( false, true ); }
+  void test_gradient_Linf_norm_relative()
+    {  test_gradient_common( false, false ); }
   
     //QUALITY IMPROVEMENT ABSOLUTE
   void test_quality_improvement_absolute()
-    {
-      MsqPrintError err(cout);
-      TerminationCriterion t1;
-      t1.add_absolute_quality_improvement( 143.0 );
-      if(pF)
-        std::cout<<"\nTEST_QUALITY_IMPROVEMENT_ABSOLUTE\n";
-      test_outer_criterion(&t1,err);
-      CPPUNIT_ASSERT(!err);
-    }
+    { test_quality_common( true, false ); }
 
     //QUALITY IMPROVEMENT RELATIVE
   void test_quality_improvement_relative()
-    {
-      MsqPrintError err(cout);
-      TerminationCriterion t1;
-      t1.add_relative_quality_improvement( 0.996 );
-      if(pF)
-        std::cout<<"\nTEST_QUALITY_IMPROVEMENT_RELATIVE\n";
-      test_outer_criterion(&t1,err);
-      CPPUNIT_ASSERT(!err);
-    }
+    { test_quality_common( false, false ); }
 
     //SUCCESSIVE IMPROVEMENTS ABSOLUTE
   void test_successive_improvements_absolute()
-    {
-      MsqPrintError err(cout);
-      TerminationCriterion t1;
-      t1.add_absolute_successive_improvement( 0.005 );
-      if(pF)
-        std::cout<<"\nTEST_SUCCESSIVE_IMPROVEMENTS_ABSOLUTE\n";
-      test_outer_criterion(&t1,err);
-      CPPUNIT_ASSERT(!err);
-   }
+    { test_quality_common( true, true ); }
   
     //SUCCESSIVE IMPROVEMENTS RELATIVE
   void test_successive_improvements_relative()
-     {
-       MsqPrintError err(cout);
-       TerminationCriterion t1;
-       t1.add_relative_successive_improvement( 0.25 );
-       if(pF)
-         std::cout<<"\nTEST_SUCCESSIVE_IMPROVEMENTS_RELATIVE\n";
-       test_outer_criterion(&t1,err);
-       CPPUNIT_ASSERT(!err);
-     }
+    { test_quality_common( false, true ); }
   
-    //VERTEX BOUND OR CPU TIME
-  void test_vertex_bound_or_cpu_time()
-     {
-       MsqPrintError err(cout);
-       TerminationCriterion t1;
-       t1.add_cpu_time( 5000 );
-       t1.add_bounded_vertex_movement( 0.01 );
-       if(pF)
-        std::cout<<"\nTEST_VERTEX_BOUND_OR_CPU_TIME\n";
-       test_outer_criterion(&t1,err);
-       CPPUNIT_ASSERT(!err);
-     }
-    //CPU TIME OR VERTEX BOUND
-  void test_cpu_time_or_vertex_bound()
-     {
-       MsqPrintError err(cout);
-       TerminationCriterion t1;
-       t1.add_cpu_time( 5 );
-       t1.add_bounded_vertex_movement( 50000 );
-       if(pF)
-         std::cout<<"\nTEST_CPU_TIME_OR_VERTEX_BOUND\n";
-       test_outer_criterion(&t1,err);
-       CPPUNIT_ASSERT(!err);
-     }
+    //VERTEX BOUND
+  void test_vertex_bound();
+  
+  void test_untangled_mesh();
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TerminationCriterionTest, "TerminationCriterionTest");
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TerminationCriterionTest, "Regression");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TerminationCriterionTest, "Unit");
+
+  
+    //NUMBER OF ITERATES
+void TerminationCriterionTest::test_number_of_iterates_inner()
+{
+  MsqPrintError err(std::cout);
+  PatchData pd;
+  const int LIMIT = 2;
+
+  TerminationCriterion tc;
+  tc.add_iteration_limit(LIMIT);
+  tc.reset_inner( pd, ofEval, err );
+  ASSERT_NO_ERROR(err);
+  tc.reset_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  for (int i = 0; i < LIMIT; ++i) {
+    CPPUNIT_ASSERT(!tc.terminate());
+    CPPUNIT_ASSERT_EQUAL( i, tc.get_iteration_count() );
+    tc.accumulate_patch( pd, err );
+    ASSERT_NO_ERROR(err);
+    tc.accumulate_inner( pd, 0, 0, err );
+    ASSERT_NO_ERROR(err);
+  }
+  CPPUNIT_ASSERT_EQUAL( 2, tc.get_iteration_count() );
+  CPPUNIT_ASSERT(tc.terminate());
+}
+
+void TerminationCriterionTest::test_number_of_iterates_outer()
+{
+  MsqPrintError err(std::cout);
+  PatchData pd;
+  const int LIMIT = 2;
+
+  TerminationCriterion tc;
+  tc.add_iteration_limit(LIMIT);
+  tc.reset_outer( 0, 0, ofEval, 0, err );
+  ASSERT_NO_ERROR(err);
+  tc.reset_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  for (int i = 0; i < LIMIT; ++i) {
+    CPPUNIT_ASSERT(!tc.terminate());
+    CPPUNIT_ASSERT_EQUAL( i, tc.get_iteration_count() );
+    tc.accumulate_patch( pd, err );
+    ASSERT_NO_ERROR(err);
+    tc.accumulate_outer( 0, 0, ofEval, 0, err );
+    ASSERT_NO_ERROR(err);
+  }
+  CPPUNIT_ASSERT_EQUAL( 2, tc.get_iteration_count() );
+  CPPUNIT_ASSERT(tc.terminate());
+}
+
+  
+    //CPU TIME
+void TerminationCriterionTest::test_cpu_time_common( bool inner )
+{
+  MsqPrintError err(std::cout);
+  PatchData pd;
+  double LIMIT = 1.5;
+
+  TerminationCriterion tc;
+  tc.add_cpu_time(LIMIT);
+  if (inner)
+    tc.reset_inner( pd, ofEval, err );
+  else
+    tc.reset_outer( 0, 0, ofEval, 0, err );
+  ASSERT_NO_ERROR(err);
+  tc.reset_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  
+  Timer timer;
+  while (timer.since_birth() < 0.5*LIMIT) {
+    CPPUNIT_ASSERT(!tc.terminate());
+    tc.accumulate_patch( pd, err );
+    ASSERT_NO_ERROR(err);
+    if (inner)
+      tc.accumulate_inner( pd, 0, 0, err );
+    else
+      tc.accumulate_outer( 0, 0, ofEval, 0, err );
+    ASSERT_NO_ERROR(err);
+  }
+  
+  while (timer.since_birth() < 1.1*LIMIT);
+
+  tc.accumulate_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  if (inner)
+    tc.accumulate_inner( pd, 0, 0, err );
+  else
+    tc.accumulate_outer( 0, 0, ofEval, 0, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(tc.terminate());
+}
+
+
+void TerminationCriterionTest::test_vertex_movement_common( bool absolute )
+{
+  MsqPrintError err(std::cout);
+  PatchData pd;
+  create_twelve_hex_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+ 
+  const double LIMIT = 1e-4;
+  TerminationCriterion tc;
+  if (absolute)
+    tc.add_absolute_vertex_movement( LIMIT );
+  else
+    tc.add_relative_vertex_movement( LIMIT );
+
+  tc.reset_inner( pd, ofEval, err );
+  ASSERT_NO_ERROR(err);
+  tc.reset_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!tc.terminate());
+
+  const double FIRST_STEP=10.0;
+    // move a vertex by 10 units and check that it did not meet criterion
+  pd.move_vertex( Vector3D(FIRST_STEP,0,0), 0, err );
+  ASSERT_NO_ERROR(err);
+  tc.accumulate_inner( pd, 0.0, 0, err );
+  ASSERT_NO_ERROR(err);
+  tc.accumulate_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!tc.terminate());
+  
+  double test_limit = LIMIT;
+  if (!absolute)
+    test_limit *= FIRST_STEP;
+    
+  int idx = 0;
+  for (double step = FIRST_STEP; step > test_limit; step *= 0.09) {
+    idx = (idx + 1) % pd.num_free_vertices();
+    pd.move_vertex( Vector3D(step,0,0), idx, err );
+    ASSERT_NO_ERROR(err);
+    
+    tc.accumulate_inner( pd, 0.0, 0, err );
+    ASSERT_NO_ERROR(err);
+    tc.accumulate_patch( pd, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(!tc.terminate());
+  }
+  
+  idx = (idx + 1) % pd.num_free_vertices();
+  pd.move_vertex( Vector3D(0.5*test_limit,0,0), idx, err );
+  ASSERT_NO_ERROR(err);
+
+  tc.accumulate_inner( pd, 0.0, 0, err );
+  ASSERT_NO_ERROR(err);
+  tc.accumulate_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(tc.terminate());
+}
+
+static double lenfunc( const Vector3D* vect, int len )
+  { return Mesquite::length( vect, len ); }
+static double maxfunc( const Vector3D* vect, int len )
+  { return Mesquite::Linf( vect, len ); }
+
+void TerminationCriterionTest::test_gradient_common( bool absolute, bool L2 )
+{
+  MsqPrintError err(std::cout);
+  PatchData pd;
+  create_twelve_hex_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  
+  const double LIMIT = 1e-4;
+  TerminationCriterion tc;
+  if (absolute) {
+    if (L2)
+      tc.add_absolute_gradient_L2_norm( LIMIT );
+    else
+      tc.add_absolute_gradient_inf_norm( LIMIT );
+  }
+  else {
+    if (L2)
+      tc.add_relative_gradient_L2_norm( LIMIT );
+    else
+      tc.add_relative_gradient_inf_norm( LIMIT );
+  }
+  
+  double (*func_ptr)(const Vector3D*, int) = L2 ? &lenfunc : &maxfunc;
+
+  double junk, value = 1; 
+  objFunc.mGrad = Vector3D(value,value,value);
+  tc.reset_inner( pd, ofEval, err );
+  ASSERT_NO_ERROR(err);
+  tc.reset_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  
+  std::vector<Vector3D> grad;
+  ofEval.evaluate( pd, junk, grad, err );
+  ASSERT_NO_ERROR(err);
+  
+  double limit = LIMIT;
+  if (!absolute) 
+    limit *= func_ptr(&grad[0],pd.num_free_vertices());
+
+  while (func_ptr(&grad[0],pd.num_free_vertices()) > limit) {
+    CPPUNIT_ASSERT(!tc.terminate());
+
+    value *= 0.1;
+    objFunc.mGrad = Vector3D(value,value,value);
+    ofEval.evaluate( pd, junk, grad, err );
+    ASSERT_NO_ERROR(err);
+ 
+    tc.accumulate_inner( pd, 0.0, &grad[0], err );
+    ASSERT_NO_ERROR(err);
+    tc.accumulate_patch( pd, err );
+    ASSERT_NO_ERROR(err);
+  }
+  
+  CPPUNIT_ASSERT(tc.terminate());
+}
+
+static bool limit_absolute_quality( double ,
+                                    double ,
+                                    double curr_value,
+                                    double epsilon )
+{ return curr_value <= epsilon; }
+static bool limit_relative_quality( double init_value,
+                                    double ,
+                                    double curr_value,
+                                    double epsilon )
+{ return curr_value <= epsilon*init_value; }
+static bool limit_absolute_sucessive( double ,
+                                      double prev_value,
+                                      double curr_value,
+                                      double epsilon )
+{ return (prev_value - curr_value) <= epsilon; }
+static bool limit_relative_sucessive( double init_value,
+                                      double prev_value,
+                                      double curr_value,
+                                      double epsilon )
+{ return (prev_value - curr_value) <= epsilon*(init_value-curr_value); }
+
+void TerminationCriterionTest::test_quality_common( bool absolute, bool successive )
+{
+  MsqPrintError err(std::cout);
+  PatchData pd;
+  ASSERT_NO_ERROR(err);
+  
+  const double LIMIT = 1e-4;
+  TerminationCriterion tc;
+  bool (*func_ptr)(double, double, double, double);
+  if (absolute) {
+    if (successive) {
+      tc.add_absolute_successive_improvement( LIMIT );
+      func_ptr = &limit_absolute_sucessive;
+    }
+    else {
+      tc.add_absolute_quality_improvement( LIMIT );
+      func_ptr = &limit_absolute_quality;
+    }
+  }
+  else {
+    if (successive) {
+      tc.add_relative_successive_improvement( LIMIT );
+      func_ptr = &limit_relative_sucessive;
+    }
+    else {
+      tc.add_relative_quality_improvement( LIMIT );
+      func_ptr = &limit_relative_quality;
+    }
+  }
+
+  const double INIT_VALUE = 10.0;
+  objFunc.mValue = INIT_VALUE;
+  tc.reset_inner( pd, ofEval, err );
+  ASSERT_NO_ERROR(err);
+  tc.reset_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  double prev = HUGE_VAL;
+
+  while (!func_ptr(INIT_VALUE,prev,objFunc.mValue,LIMIT)) {
+    CPPUNIT_ASSERT(!tc.terminate());
+
+    prev = objFunc.mValue;
+    objFunc.mValue *= 0.1;
+    tc.accumulate_inner( pd, objFunc.mValue, 0, err );
+    ASSERT_NO_ERROR(err);
+    tc.accumulate_patch( pd, err );
+    ASSERT_NO_ERROR(err);
+  }
+  
+  CPPUNIT_ASSERT(tc.terminate());
+}
+
+//VERTEX BOUND
+void TerminationCriterionTest::test_vertex_bound()
+{
+  MsqPrintError err(std::cout);
+  PatchData pd;
+  create_twelve_hex_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  
+    // get bounding dimension for patch
+  double maxcoord = 0.0;
+  for (size_t i = 0; i < pd.num_nodes(); ++i) 
+    for (int d = 0; d < 3; ++d)
+      if (fabs(pd.vertex_by_index(i)[d]) > maxcoord)
+        maxcoord = fabs(pd.vertex_by_index(i)[d]);
+    // add a little bit for rounding error
+  maxcoord += 1e-5;
+  
+  TerminationCriterion tc;
+  tc.add_bounded_vertex_movement( maxcoord );
+  tc.reset_inner( pd, ofEval, err );
+  ASSERT_NO_ERROR(err);
+  tc.reset_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!tc.terminate());
+  
+  int idx = pd.num_free_vertices() - 1;
+  Vector3D pos = pd.vertex_by_index(idx);
+  pos[0] = 2*maxcoord;
+  pd.set_vertex_coordinates( pos, idx, err );
+  ASSERT_NO_ERROR(err);
+  tc.accumulate_inner( pd, 0.0, 0, err );
+  ASSERT_NO_ERROR(err);
+  tc.accumulate_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(tc.terminate());
+}
+
+
+
+//UNTANGLED
+void TerminationCriterionTest::test_untangled_mesh()
+{
+  MsqPrintError err(std::cout);
+  PatchData pd;
+  create_twelve_hex_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  
+    // get two opposite vertices in first hexahedral element
+  int vtx1 = pd.element_by_index(0).get_vertex_index_array()[0];
+  int vtx2 = pd.element_by_index(0).get_vertex_index_array()[7];
+  Vector3D saved_coords = pd.vertex_by_index(vtx2);
+  Vector3D opposite_coords = pd.vertex_by_index(vtx1);
+
+    // invert the element
+  pd.move_vertex( 2*(opposite_coords-saved_coords), vtx2, err );
+  ASSERT_NO_ERROR(err);
+  int inverted, samples;
+  pd.element_by_index(0).check_element_orientation( pd, inverted, samples, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(inverted > 0);
+  
+    // check initial termination criterion
+  TerminationCriterion tc;
+  tc.add_untangled_mesh();
+  tc.reset_inner( pd, ofEval, err );
+  ASSERT_NO_ERROR(err);
+  tc.reset_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!tc.terminate());
+  
+    // fix the element
+  pd.set_vertex_coordinates( saved_coords, vtx2, err );
+  ASSERT_NO_ERROR(err);
+  pd.element_by_index(0).check_element_orientation( pd, inverted, samples, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL(0,inverted);
+  
+    // check that TC recognized untangled mesh
+  tc.accumulate_inner( pd, 0.0, 0, err );
+  ASSERT_NO_ERROR(err);
+  tc.accumulate_patch( pd, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(tc.terminate());
+}
+
+
+
+bool DummyOF::initialize_block_coordinate_descent( Mesh*,
+                                                   MeshDomain*,
+                                                   const Settings*,
+                                                   PatchSet*,
+                                                   MsqError& err )
+{
+  MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED);
+  return false;
+}
+
+bool DummyOF::evaluate( EvalType, PatchData&, double& value, bool, MsqError& )
+{
+  value = mValue;
+  return mValid;
+}
+
+bool DummyOF::evaluate_with_gradient( EvalType,
+                                      PatchData& pd,
+                                      double& value_out,
+                                      std::vector<Vector3D>& grad_out,
+                                      MsqError& )
+{
+  value_out = mValue;
+  grad_out.clear();
+  grad_out.resize( pd.num_free_vertices(), mGrad );
+  return mValid;
+}
