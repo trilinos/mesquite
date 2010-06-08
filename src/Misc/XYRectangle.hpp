@@ -52,18 +52,23 @@ class XYRectangle : public Mesquite::MeshDomain
 {
   public:
     
+    enum Plane { XY = 2, YZ = 0, ZX = 1 };
+    
+    
       /**\brief Define rectangular domain
        *
        *\param w Width of rectangle (X-range)
        *\param h Height of rectangle (Y-range)
        *\param x Minimum X coordinate of rectangle
        *\param y Minimum Y coordinate of rectangle
+       *\param z Minimum Z coordinate of rectangle
+       *\param plane Which plane (default is XY).
        *
-       * Create w x h rectangle with X range of [x, x+w] and
+       * Create w x h rectangle with, if plane is XY: X range of [x, x+w] and
        * Y range of [y, y+h].
        */
     MESQUITE_EXPORT
-    XYRectangle( double w, double h, double x = 0, double y = 0 );
+    XYRectangle( double w, double h, double x = 0, double y = 0, double z = 0, Plane plane = XY );
   
       /**\brief Classify mesh vertices against domain
        *
@@ -106,11 +111,12 @@ class XYRectangle : public Mesquite::MeshDomain
                      Mesquite::MsqError& err ) const;
  
   private:
-    double minCoords[2], maxCoords[2]; //!< corner coords
+    double minCoords[3], maxCoords[3]; //!< corner coords
+    const int normalDir, widthDir, heightDir;
   
     //! Single constraint on a vertex (reduces degrees of freedom by 1)
     struct VertexConstraint {
-      enum Constraint { XC = 0, YC = 1 };
+      enum Constraint { XC = 0, YC = 1, ZC = 2 };
       VertexConstraint(int a, double c)  : axis((Constraint)a), coord(c) {}
       Constraint axis;
       double coord;

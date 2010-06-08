@@ -38,19 +38,24 @@
 namespace MESQUITE_NS {
 
 
-XYRectangle::XYRectangle( double w, double h, double x, double y )
+XYRectangle::XYRectangle( double w, double h, double x, double y, double z, Plane p )
+  : normalDir(p),
+    widthDir((p+1)%3),
+    heightDir((p+2)%3)
 {
-  minCoords[0] = x;
-  minCoords[1] = y;
-  maxCoords[0] = x+w;
-  maxCoords[1] = y+h;
+  minCoords[0] = maxCoords[0] = x;
+  minCoords[1] = maxCoords[1] = y;
+  minCoords[2] = maxCoords[2] = z;
+  maxCoords[widthDir] += w;
+  maxCoords[heightDir] += h;
 }
 
 void XYRectangle::setup( Mesh* mesh, MsqError& err )
 {
   const double epsilon = 1e-4;
-  if (maxCoords[0] - minCoords[0] <= epsilon || 
-      maxCoords[1] - minCoords[1] <= epsilon) {
+  if (maxCoords[widthDir] - minCoords[widthDir] <= epsilon || 
+      maxCoords[heightDir] - minCoords[heightDir] <= epsilon ||
+      maxCoords[normalDir] - minCoords[normalDir] > epsilon) {
     MSQ_SETERR(err)("Invalid rectangle dimensions", MsqError::INVALID_STATE);
     return;
   }
@@ -68,7 +73,9 @@ void XYRectangle::setup( Mesh* mesh, MsqError& err )
   mesh->vertices_get_coordinates( &vertices[0], &coords[0], coords.size(), err ); MSQ_ERRRTN(err);
   
   for (size_t i = 0; i < vertices.size(); ++i) {
-    for (int d = 0; d < 2; ++d) {
+    for (int d = 0; d < 3; ++d) {
+      if (d == normalDir)
+        continue;
       if (minCoords[d] - coords[i][d] > epsilon || 
           coords[i][d] - maxCoords[d] > epsilon) {
         MSQ_SETERR(err)(MsqError::INVALID_MESH,
@@ -92,7 +99,7 @@ void XYRectangle::snap_to( Mesh::VertexHandle vertex,
                            Vector3D &coordinate ) const
 {
     // everything gets moved into the plane
-  coordinate[2] = 0;
+  coordinate[normalDir] = minCoords[normalDir];
     // apply other constraints
   constraint_t::const_iterator i = mConstraints.lower_bound( vertex );
   for (; i != mConstraints.end() && i->first == vertex; ++i)
@@ -101,12 +108,14 @@ void XYRectangle::snap_to( Mesh::VertexHandle vertex,
   
 void XYRectangle::vertex_normal_at( Mesh::VertexHandle handle, Vector3D &norm ) const
 {
-  norm.set(0,0,1);
+  norm.set(0,0,0);
+  norm[normalDir] = 1.0;
 }
   
 void XYRectangle::element_normal_at( Mesh::ElementHandle handle, Vector3D &norm ) const
 {
-  norm.set(0,0,1);
+  norm.set(0,0,0);
+  norm[normalDir] = 1.0;
 }
 
 void XYRectangle::vertex_normal_at( const Mesh::VertexHandle* vertices,
@@ -114,7 +123,9 @@ void XYRectangle::vertex_normal_at( const Mesh::VertexHandle* vertices,
                                     unsigned count,
                                     MsqError&  ) const
 {
-  std::fill( normals, normals+count, Vector3D(0,0,1) );
+  Vector3D norm(0,0,0);
+  norm[normalDir] = 1.0;
+  std::fill( normals, normals+count, norm );
 }
     
 void XYRectangle::closest_point( Mesh::VertexHandle vertex,
