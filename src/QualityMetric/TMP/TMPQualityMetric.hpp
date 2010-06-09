@@ -173,7 +173,7 @@ private:
                  size_t& num_indices,
                  MsqError& err );
 
-  void evaluate_surface_common( // input:
+  bool evaluate_surface_common( // input:
                                 PatchData& pd,
                                 Sample sample,
                                 size_t element_index,

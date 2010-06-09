@@ -295,7 +295,7 @@ project_to_matrix_plane( const MsqMatrix<3,2>& M_in,
  * where the plane into which we are projecting is orthogonal
  * to the passed u vector.
  */
-static inline void
+static inline bool
 project_to_perp_plane(  MsqMatrix<3,2> J,
                         const MsqVector<3>& u,
                         const MsqVector<3>& u_perp,
@@ -303,7 +303,10 @@ project_to_perp_plane(  MsqMatrix<3,2> J,
                         MsqMatrix<3,2>& S_a_transpose_Theta )
 {
   MsqVector<3> n_a = J.column(0) * J.column(1);
-  n_a *= 1.0/length(n_a);
+  double sc, len = length(n_a);
+  if (!divide(1.0, len, sc))
+    return false;
+  n_a *= sc;
   double ndot = n_a % u;
   double sigma = (ndot < 0.0) ? -1 : 1;
   double cosphi = sigma * ndot;
@@ -335,9 +338,10 @@ project_to_perp_plane(  MsqMatrix<3,2> J,
 
     // Project to get 2x2 A from A_hat (which might be equal to J)
   A = transpose(Theta) * J;
+  return true;
 }
 
-inline void
+inline bool
 TMPQualityMetric::evaluate_surface_common( PatchData& pd,
                                            Sample s,
                                            size_t e,
@@ -354,12 +358,12 @@ TMPQualityMetric::evaluate_surface_common( PatchData& pd,
 
   if (!metric2D) {
     MSQ_SETERR(err)("No 2D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
-    return;
+    return false;
   }
   const MappingFunction2D* mf = pd.get_mapping_function_2D( type );
   if (!mf) {
     MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
-    return;
+    return false;
   }
 
   MsqMatrix<3,2> J;
@@ -369,7 +373,7 @@ TMPQualityMetric::evaluate_surface_common( PatchData& pd,
   if (targetCalc->have_surface_orient()) {
     MsqVector<3> u, u_perp;
     MsqMatrix<3,2> W_hat;
-    targetCalc->get_surface_target( pd, e, s, W_hat, err ); MSQ_ERRRTN(err);
+    targetCalc->get_surface_target( pd, e, s, W_hat, err ); MSQ_ERRZERO(err);
       // Use the cross product of the columns of W as the normal of the 
       // plane to work in (i.e. u.).  W should have been constructed such
       // that said cross product is in the direction of (n_s)_init.  And if
@@ -377,14 +381,15 @@ TMPQualityMetric::evaluate_surface_common( PatchData& pd,
       // cross product is likely to produce very wrong results.
     project_to_matrix_plane( W_hat, W, u, u_perp );
       // Do the transforms on A to align it with W and project into the plane.
-    project_to_perp_plane( J, u, u_perp, A, S_a_transpose_Theta );
+    if (!project_to_perp_plane( J, u, u_perp, A, S_a_transpose_Theta ))
+      return false;
   }
     // Otherwise if we have a 2x2 target matrix (i.e. the target does
     // not contain orientation information), project into the plane
     // tangent to J.
   else {
     MsqVector<3> u, u_perp;
-    targetCalc->get_2D_target( pd, e, s, W, err ); MSQ_ERRRTN(err);
+    targetCalc->get_2D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
     project_to_matrix_plane( J, A, u, u_perp );
     S_a_transpose_Theta.set_column(0, u_perp);
     S_a_transpose_Theta.set_column(1, u*u_perp);
@@ -394,7 +399,7 @@ TMPQualityMetric::evaluate_surface_common( PatchData& pd,
     if (pd.domain_set()) {
       Vector3D n;
       pd.get_domain_normal_at_sample( e, s, n, err );
-      MSQ_ERRRTN(err);
+      MSQ_ERRZERO(err);
         // if sigma == -1
       if (Vector3D(u.data()) % n < 0.0) {
           // flip u
@@ -408,8 +413,10 @@ TMPQualityMetric::evaluate_surface_common( PatchData& pd,
       }
     }
   }
+  
+  return true;
 }                    
-                         
+
 
 bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
                                               size_t handle,
@@ -449,9 +456,10 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
   else if (edim == 2) {
     MsqMatrix<2,2> W, A;
     MsqMatrix<3,2> S_a_transpose_Theta;
-    evaluate_surface_common( pd, s, e, bits, indices, num_indices,
-                             mDerivs2D, W, A, S_a_transpose_Theta, err ); 
-                             MSQ_ERRZERO(err);
+    rval = evaluate_surface_common( pd, s, e, bits, indices, num_indices,
+                                 mDerivs2D, W, A, S_a_transpose_Theta, err ); 
+    if (MSQ_CHKERR(err) || !rval)
+      return false;
     rval = metric2D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
 #ifdef PRINT_INFO
     print_info<2>( e, s, J, Wp, A * inverse(W) );
@@ -512,9 +520,10 @@ bool TMPQualityMetric::evaluate_with_gradient(
   else if (edim == 2) {
     MsqMatrix<2,2> W, A, dmdA;
     MsqMatrix<3,2> S_a_transpose_Theta;
-    evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
+    rval = evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
                              mDerivs2D, W, A, S_a_transpose_Theta, err ); 
-                             MSQ_ERRZERO(err);
+    if (MSQ_CHKERR(err) || !rval)
+      return false;
     rval = metric2D->evaluate_with_grad( A, W, value, dmdA, err ); MSQ_ERRZERO(err);
     gradient<2>( num_idx, mDerivs2D, S_a_transpose_Theta*dmdA, grad );
 #ifdef PRINT_INFO
@@ -587,9 +596,10 @@ bool TMPQualityMetric::evaluate_with_Hessian(
   else if (edim == 2) {
     MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];
     MsqMatrix<3,2> SaT_Th;
-    evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
+    rval = evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
                              mDerivs2D, W, A, SaT_Th, err ); 
-                             MSQ_ERRZERO(err);
+    if (MSQ_CHKERR(err) || !rval)
+      return false;
     rval = metric2D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
     gradient<2>( num_idx, mDerivs2D, SaT_Th * dmdA, grad );
     const size_t n = num_idx*(num_idx+1)/2;
@@ -677,9 +687,10 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
   else if (edim == 2) {
     MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];
     MsqMatrix<3,2> SaT_Th;
-    evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
+    rval = evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
                              mDerivs2D, W, A, SaT_Th, err ); 
-                             MSQ_ERRZERO(err);
+    if (MSQ_CHKERR(err) || !rval)
+      return false;
     rval = metric2D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
     gradient<2>( num_idx, mDerivs2D, SaT_Th * dmdA, grad );
 
