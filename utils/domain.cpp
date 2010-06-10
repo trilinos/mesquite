@@ -7,9 +7,11 @@
 #include "MeshImpl.hpp"
 #include "CLArgs.hpp"
 #include "MsqError.hpp"
+#include "TopologyInfo.hpp"
 
 #include "domain.hpp"
 #include <iostream>
+#include <algorithm>
 #include <stdlib.h>
 
 using namespace Mesquite;
@@ -226,21 +228,45 @@ void add_domain_args( CLArgs& args )
 
 MeshDomain* process_domain_args( MeshImpl* mesh )
 {
-  MsqError err;
+  MsqPrintError err(std::cerr);
   MeshDomain* rval = 0;
   
   if (!domains.empty()) {
-    DomainClassifier* result = new DomainClassifier();
-    DomainClassifier::classify_geometrically( *result,
-                                              mesh,
-                                              1e-4,
-                                              &domains[0],
-                                              &domain_dims[0],
-                                              domains.size(),
-                                              err );
-    rval = result;
+    int max_domain_dim = *std::max_element( domain_dims.begin(), domain_dims.end() );
+    std::vector<Mesh::ElementHandle> elems;
+    mesh->get_all_elements( elems, err );
+    std::vector<EntityTopology> types( elems.size() );
+    mesh->elements_get_topologies( &elems[0], &types[0], elems.size(), err );
+    EntityTopology max_type = *std::max_element( types.begin(), types.end() );
+    int max_elem_dim = TopologyInfo::dimension( max_type );
+  
+    if (max_domain_dim == max_elem_dim && domains.size() == 1) {
+      rval = domains.front();
+    }
+    else {
+      DomainClassifier* result = new DomainClassifier();
+      if (max_domain_dim < max_elem_dim) {
+        DomainClassifier::classify_skin_geometrically( *result,
+                                                mesh,
+                                                1e-4,
+                                                &domains[0],
+                                                &domain_dims[0],
+                                                domains.size(),
+                                                err );
+      }
+      else {
+        DomainClassifier::classify_geometrically( *result,
+                                                mesh,
+                                                1e-4,
+                                                &domains[0],
+                                                &domain_dims[0],
+                                                domains.size(),
+                                                err );
+      }
+      rval = result;
+    }
   }
-  else if (skin_mesh.value()) {
+  if (skin_mesh.value()) {
     mesh->mark_skin_fixed( err, false );
   }
   if (err) {
