@@ -63,10 +63,10 @@ static bool compare_sides( unsigned num_vtx,
    * Find vertices and lower-dimension elements on the boundary
    * of a mesh.  
    */
-static void find_skin( Mesh* mesh,
-                       std::vector<Mesh::VertexHandle>& skin_verts,
-                       std::vector<Mesh::ElementHandle>& skin_elems,
-                       MsqError& err );
+ static void find_skin( Mesh* mesh,
+                        std::vector<Mesh::VertexHandle>& skin_verts,
+                        std::vector<Mesh::ElementHandle>& skin_elems,
+                        MsqError& err );
 
   /**\brief Group MeshDomain objectects by topological dimension.
    *
@@ -194,6 +194,7 @@ static void find_skin( Mesh* mesh,
     return;
   const unsigned elem_idx[] = { 0, 1, 2, 3 };
   
+  std::vector<unsigned> extra_side_vtx;
   for (size_t e = 0; e < elements.size(); ++e) {
     Mesh::ElementHandle elem = elements[e];
     vertices.clear();
@@ -238,6 +239,39 @@ static void find_skin( Mesh* mesh,
       }
       
       if (!found_adj) {
+        int ho = TopologyInfo::higher_order( type, vertices.size(), err );  MSQ_ERRRTN(err);
+        // mask mid-element node (because that cannot be on the skin)
+        ho &= ~(1<<dim);
+        // if element has other higher-order nodes, we need to find the subset on the skin side
+        if (ho) {
+          extra_side_vtx.clear();
+          extra_side_vtx.insert( extra_side_vtx.end(), side_vtx, side_vtx+num_side_vtx );
+            // get mid-side node
+          if (ho & (1<<(dim-1))) {
+            int idx = TopologyInfo::higher_order_from_side( type, vertices.size(), dim-1, s, err ); MSQ_ERRRTN(err);
+            extra_side_vtx.push_back( idx );
+          }
+          if (dim == 3 && (ho & 2)) { // if volume element, need mid-edge nodes too
+            const unsigned nedges = TopologyInfo::edges( type );
+            for (unsigned e = 0; e < nedges; ++e) {
+              unsigned junk;
+              const unsigned* edge_vtx = TopologyInfo::side_vertices( type, 1, e, junk );
+              assert(edge_vtx && 2 == junk);
+              unsigned idx = std::find( side_vtx, side_vtx+num_side_vtx, edge_vtx[0] ) - side_vtx;
+              if (idx < num_side_vtx) {
+                if ((edge_vtx[1] == side_vtx[(idx+1)%num_side_vtx]) ||
+                    (edge_vtx[1] == side_vtx[(idx+num_side_vtx-1)%num_side_vtx])) {
+                  idx = TopologyInfo::higher_order_from_side( type, vertices.size(), 1, e, err ); MSQ_ERRRTN(err);
+                  extra_side_vtx.push_back( idx );
+                }
+              }
+            }
+          }
+          
+          num_side_vtx = extra_side_vtx.size();
+          side_vtx = &extra_side_vtx[0];
+        }
+      
         for (unsigned v = 0; v < num_side_vtx; ++v)
           skin_verts.push_back( vertices[side_vtx[v]] );
         for (unsigned j = 0; j < side_elem.size(); ++j)
@@ -703,17 +737,68 @@ static bool next_vertex( Mesh* mesh,
     mesh->elements_get_attached_vertices( &vtx_elems[j], 1, corners, junk, err );
     MSQ_ERRZERO(err);
 
+    unsigned nedges = TopologyInfo::edges( elem_types[j] );
     unsigned vidx = std::find( corners.begin(), corners.end(), vtx ) - corners.begin();
-    assert(vidx < corners.size());
+    
 
-    unsigned num_adj;
-    const unsigned* adj_idx = TopologyInfo::adjacent_vertices( elem_types[j], vidx, num_adj );
-    for (unsigned k = 0; k< num_adj; ++k) {
-      std::set<Mesh::VertexHandle>::iterator f = unseen.find( corners[adj_idx[k]] );
-      if (f != unseen.end()) {
-        vtx = *f;
-        unseen.erase(f);
-        return true;
+    // Check mid-edge nodes first, if present
+    int ho = TopologyInfo::higher_order( elem_types[j], corners.size(), err );
+    MSQ_ERRZERO(err);
+      // If element has mid-edge nodes *and* current vertex is a corner vertex
+    if ((ho & 2) && (vidx < TopologyInfo::corners(elem_types[j]))) {
+      for (unsigned e = 0; e < nedges; ++e) {
+        const unsigned* edge_verts = TopologyInfo::edge_vertices( elem_types[j], e, err );
+        MSQ_ERRZERO(err);
+        if (edge_verts[0] == vidx || edge_verts[1] == vidx) {
+          int idx = TopologyInfo::higher_order_from_side( elem_types[j], corners.size(), 1, e, err );
+          MSQ_ERRZERO(err);
+          std::set<Mesh::VertexHandle>::iterator f = unseen.find( corners[idx] );
+          if (f != unseen.end()) {
+            vtx = *f;
+            unseen.erase(f);
+            return true;
+          }
+        }
+      }
+    }
+
+      // if current vertx is a mid-edge node
+    else if (ho & 2) {
+      unsigned d, e;
+      TopologyInfo::side_from_higher_order( elem_types[j], corners.size(), vidx, d, e, err );
+      MSQ_ERRZERO(err);
+      if (d != 1)
+        continue;
+      const unsigned* edge_verts =  TopologyInfo::edge_vertices( elem_types[j], e, err );
+      MSQ_ERRZERO(err);
+      for (int v = 0; v < 2; ++v) {
+        std::set<Mesh::VertexHandle>::iterator f = unseen.find( corners[edge_verts[v]] );
+        if (f != unseen.end()) {
+          vtx = *f;
+          unseen.erase(f);
+          return true;
+        }
+      }
+    }
+    
+    else {
+      for (unsigned e = 0; e < nedges; ++e) {
+        const unsigned* edge_verts = TopologyInfo::edge_vertices( elem_types[j], e, err );
+        MSQ_ERRZERO(err);
+        int idx;
+        if (edge_verts[0] == vidx)
+          idx = edge_verts[1];
+        else if (edge_verts[1] == vidx) 
+          idx = edge_verts[0];
+        else
+          continue;
+          
+        std::set<Mesh::VertexHandle>::iterator f = unseen.find( corners[idx] );
+        if (f != unseen.end()) {
+          vtx = *f;
+          unseen.erase(f);
+          return true;
+        }
       }
     }
   }
@@ -1086,7 +1171,7 @@ void DomainClassifier::vertex_normal_at( const Mesh::VertexHandle* handles,
                                          MsqError& err ) const
 {
   for (unsigned i = 0; i < count; ++i) {
-    const MeshDomain* dom = find_element_domain( handles[i] );
+    const MeshDomain* dom = find_vertex_domain( handles[i] );
     if (!dom) {
       MSQ_SETERR(err)(MsqError::INVALID_ARG);
       return;
