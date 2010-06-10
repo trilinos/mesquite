@@ -356,11 +356,22 @@ void TopologyInfo::higher_order( EntityTopology topo,
                                      bool& midvol,
                                      MsqError& err )
 {
-  midedge = midface = midvol = false;
+  int ho = higher_order( topo, num_nodes, err );
+  midedge = (bool)( (ho & (1<<1)) >> 1);
+  midface = (bool)( (ho & (1<<2)) >> 2);
+  midvol  = (bool)( (ho & (1<<3)) >> 3);
+}
+
+
+int TopologyInfo::higher_order( EntityTopology topo, 
+                                unsigned num_nodes, 
+                                MsqError& err )
+{
+  int result = 0;
   if (topo >= MIXED || num_nodes < instance.adjMap[topo][0])
   {
     MSQ_SETERR(err)("Invalid element topology", MsqError::INVALID_ARG);
-    return;
+    return 0;
   }
   
   unsigned dim = instance.dimMap[topo];
@@ -371,24 +382,24 @@ void TopologyInfo::higher_order( EntityTopology topo,
   if (edges && nodes >= edges)
   {
     nodes -= edges;
-    midedge = true;
+    result |= 1<<1;
   }
   if (faces && nodes >= faces)
   {
     nodes -= faces;
-    midface = true;
+    result |= 1<<2;
   }
   if (1 == nodes)
   {
     if (2 == dim)
     {
       nodes -= 1;
-      midface = true;
+      result |= 1<<2;
     }
     else if(3 == dim)
     {
       nodes -= 1;
-      midvol = true;
+      result |= 1<<3;
     }
   }
   
@@ -396,6 +407,8 @@ void TopologyInfo::higher_order( EntityTopology topo,
   {
     MSQ_SETERR(err)("Invalid element topology", MsqError::INVALID_STATE);
   }
+  
+  return result;
 }
       
 int TopologyInfo::higher_order_from_side( EntityTopology topo,

@@ -96,6 +96,41 @@ class MESQUITE_EXPORT TopologyInfo
     static void higher_order( EntityTopology topo, unsigned num_nodes,
                               bool& midedge, bool& midface, bool& midvol,
                               MsqError &err );
+      
+      /** \brief Check which mid-nodes a higher-order element has.
+       *
+       * Assuming at most one mid-node per sub-entity per dimension
+       * (i.e. at most one mid-node per edge, at most one mid-node per face, etc.)
+       * determine which mid-nodes are present given the topology
+       * and total number of nodes.  This function is similar to the
+       * previous one, except that that it returns a set of bits, one per
+       * side dimension, rather than separate bool values.  If the bit at position
+       * one (the second least significant bit) has a value of one, then the
+       * element has mid-edge nodes.  If the bit at position two (the third to
+       * least signficiant bit) has a value of one then the element has mid-face
+       * nodes.
+       *\code
+       *  int ho = TopologyInfo::higher_order( topo, num_nodes, err );
+       *  bool have_midedge = !!(ho & 1<<1);
+       *  bool have_midface = !!(ho & 1<<2);
+       *  bool have_midvol  = !!(ho & 1<<3);
+       *\endocde
+       *
+       * The advantange of this form of the function over the previous is 
+       * that a) it is possible to check for mid-nodes on sub-entities of
+       * a varialbe dimension 'd':
+       *\code
+       *  if (ho & (1<<d)) { ... }
+       *\code
+       * and b) it is convienent to test if an element has any higher-order
+       * nodes:
+       *\code
+       *  int ho = TopologyInfo::higher_order( topo, num_nodes, err );
+       *  if (!ho) // if linear element
+       *    { ... }
+       *\endocde        
+       */
+    static int higher_order( EntityTopology topo, unsigned num_nodes, MsqError &err );
     
       /**\brief Given a side, return index of mid-vertex for that side.
        *
