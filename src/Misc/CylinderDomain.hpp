@@ -47,10 +47,12 @@ namespace MESQUITE_NS
        */
     inline CylinderDomain( double radius,
                            Vector3D axis_direction = Vector3D(0,0,1), 
-                           Vector3D axis_point = Vector3D(0,0,0) )
+                           Vector3D axis_point = Vector3D(0,0,0),
+                           bool outward_normal = true )
       : mAxis( axis_direction / axis_direction.length() ),
         mCenter( axis_point ),
-        mRadius( radius ) 
+        mRadius( radius ),
+        outwardSign( outward_normal ? 1.0 : -1.0 )
       { }
     
     virtual ~CylinderDomain() { }
@@ -99,6 +101,7 @@ namespace MESQUITE_NS
     Vector3D mAxis;
     Vector3D mCenter;
     double mRadius;
+    double outwardSign;
   };
 
 

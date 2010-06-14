@@ -57,11 +57,13 @@ public:
   inline ConicDomain( double radius_at_point,
                       double height_to_apex,
                       Vector3D axis_direction = Vector3D(0,0,1), 
-                      Vector3D axis_point = Vector3D(0,0,0))
+                      Vector3D axis_point = Vector3D(0,0,0),
+                      bool outward_normal = true)
     : mAxis( axis_direction / axis_direction.length() ),
       mPoint( axis_point ),
       mRadius( radius_at_point ),
-      mHeight( height_to_apex )
+      mHeight( height_to_apex ),
+      outwardSign( outward_normal ? 1.0 : -1.0 )
     { }
     
   inline ConicDomain() {}
@@ -114,6 +116,7 @@ private:
   Vector3D mPoint;  //!< A point on the axis of the cone.
   double mRadius;   //!< Radius at mPoint
   double mHeight;   //!< Distance from mPoint to apex, in direction of mAxis
+  double outwardSign; //!< 1.0 if normal points away from axis, -1.0 otherwise
 };
 
 

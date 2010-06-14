@@ -58,6 +58,7 @@ void CylinderDomain::evaluate( Mesh::VertexHandle,
   }
   
   closest = axis_point + mRadius * normal;
+  normal *= outwardSign;
 }
 
 void CylinderDomain::snap_to( Mesh::VertexHandle h, Vector3D& v ) const

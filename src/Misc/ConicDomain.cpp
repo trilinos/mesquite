@@ -92,7 +92,7 @@ void ConicDomain::evaluate( Mesh::VertexHandle,
   if (t * (normal % mAxis) < 0.0)
     normal = -normal;
   // normalize and translate
-  normal /= normal.length();
+  normal *= outwardSign / normal.length();
   closest += mPoint;
 }
 
