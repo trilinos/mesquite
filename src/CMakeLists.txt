@@ -180,12 +180,14 @@ APPEND_SET(SOURCES
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/MappingFunction/Lagrange)
 
 APPEND_SET(HEADERS
+  MappingFunction/Lagrange/HexLagrangeShape.hpp
   MappingFunction/Lagrange/QuadLagrangeShape.hpp
   MappingFunction/Lagrange/TetLagrangeShape.hpp
   MappingFunction/Lagrange/TriLagrangeShape.hpp 
   )
 
 APPEND_SET(SOURCES
+  MappingFunction/Lagrange/HexLagrangeShape.cpp
   MappingFunction/Lagrange/QuadLagrangeShape.cpp
   MappingFunction/Lagrange/TetLagrangeShape.cpp
   MappingFunction/Lagrange/TriLagrangeShape.cpp 

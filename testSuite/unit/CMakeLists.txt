@@ -19,6 +19,7 @@ SET( unit_tests
      ExtraDataTest
      FileTokenizerTest
      GeomPrimTest
+     HexLagrangeShapeTest
      HigherOrderTest
      IdealElementTest
      IdealTargetTest
