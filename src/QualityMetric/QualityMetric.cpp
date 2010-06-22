@@ -191,6 +191,8 @@ bool QualityMetric::evaluate_with_Hessian_diagonal( PatchData& pd,
                                 MsqError& err )
 {
   bool rval = evaluate_with_Hessian( pd, handle, value, indices, gradient, tmpHess, err );
+  if (MSQ_CHKERR(err) || !rval)
+    return rval;
   size_t s = indices.size();
   Hessian_diagonal.resize( s );
   std::vector<Matrix3D>::const_iterator h = tmpHess.begin();
