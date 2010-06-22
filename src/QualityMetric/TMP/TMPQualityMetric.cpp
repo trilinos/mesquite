@@ -594,6 +594,12 @@ bool TMPQualityMetric::evaluate_with_Hessian(
 #endif
   }
   else if (edim == 2) {
+    // return finite difference approximation for now
+
+    return QualityMetric::evaluate_with_Hessian( pd, handle,
+                                           value, indices, grad, Hessian,
+                                           err );
+    /*
     MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];
     MsqMatrix<3,2> SaT_Th;
     rval = evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
@@ -614,6 +620,7 @@ bool TMPQualityMetric::evaluate_with_Hessian(
 #ifdef PRINT_INFO
     print_info<2>( e, s, J, Wp, A * inverse(W) );
 #endif
+    */
   }
   else {
     assert(0);
@@ -685,6 +692,11 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
 #endif
   }
   else if (edim == 2) {
+    // use finite diference approximation for now
+    return QualityMetric::evaluate_with_Hessian_diagonal( pd, handle,
+                                           value, indices, grad, diagonal,
+                                           err );
+/*
     MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];
     MsqMatrix<3,2> SaT_Th;
     rval = evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
@@ -714,6 +726,7 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
 #ifdef PRINT_INFO
     print_info<2>( e, s, J, Wp, A * inverse(W) );
 #endif
+*/
   }
   else {
     assert(0);
