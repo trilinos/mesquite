@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
   std::printf( "  Average:  %10f  %10f  %10f  %10f%%\n", eq_mean, eq2_mean, fabs(eq_mean - eq2_mean), eq_mean_pct );
   std::printf( "  Maximum:  %10f  %10f  %10f  %10f%%\n", eq_max, eq2_max, fabs(eq_max - eq2_max), eq_max_pct );
   
-  bool success = pol_min_pct < 6.0 && pol_max_pct < 6.0 && eq_min_pct < 25.0 && eq_max_pct < 6.0;
+  bool success = pol_min_pct < 6.0 && pol_max_pct < 6.5 && eq_min_pct < 25.0 && eq_max_pct < 6.5;
   return !success;
 }
 

@@ -1245,8 +1245,8 @@ void QualityMetricTester::compare_eval_with_diag_and_eval_with_hessian(
         std::find( indices1.begin(), indices1.end(), indices2[k] );
       CPPUNIT_ASSERT( it != indices1.end() );
       size_t m = it - indices1.begin();
-      CPPUNIT_ASSERT_VECTORS_EQUAL( grad1[m], grad2[k], 1e-6 );
-      CPPUNIT_ASSERT_MATRICES_EQUAL( Matrix3D(hess1[m]), *h2i, 1e-6 ); 
+      CPPUNIT_ASSERT_VECTORS_EQUAL( grad1[m], grad2[k], 5e-5 );
+      CPPUNIT_ASSERT_MATRICES_EQUAL( Matrix3D(hess1[m]), *h2i, 5e-5 ); 
       h2i += h2step--;
     }
   }
@@ -2389,9 +2389,9 @@ void QualityMetricTester::test_symmetric_Hessian_diagonal_blocks( QualityMetric*
         // check that diagonal Hessian blocks are symmetric
       size_t h_idx = 0;
       for (size_t k = 0; k < n; h_idx+=(n-k), ++k) {
-        CPPUNIT_ASSERT_DOUBLES_EQUAL( Hess[h_idx][0][1], Hess[h_idx][1][0], 1e-4 );
-        CPPUNIT_ASSERT_DOUBLES_EQUAL( Hess[h_idx][0][2], Hess[h_idx][2][0], 1e-4 );
-        CPPUNIT_ASSERT_DOUBLES_EQUAL( Hess[h_idx][1][2], Hess[h_idx][2][1], 1e-4 );
+        CPPUNIT_ASSERT_DOUBLES_EQUAL( Hess[h_idx][0][1], Hess[h_idx][1][0], 5e-3 );
+        CPPUNIT_ASSERT_DOUBLES_EQUAL( Hess[h_idx][0][2], Hess[h_idx][2][0], 5e-3 );
+        CPPUNIT_ASSERT_DOUBLES_EQUAL( Hess[h_idx][1][2], Hess[h_idx][2][1], 5e-3 );
       } // for(k < Hess.size())
     } // for(j < handles.size())
   } // for(i < types.size())

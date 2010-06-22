@@ -976,10 +976,12 @@ void TMPQualityMetricTest::compare_analytical_and_numerical_hessians( QualityMet
        
         // For analytical gradient of a 2D element in the XY plane, 
         // we expect all Z terms to be zero.
+#ifdef PLANAR_HESSIAN
       if (TopologyInfo::dimension(types[i]) == 2)
         for (size_t k = 0; k < Hess1.size(); ++k) 
           Hess1[k](0,2) = Hess1[k](1,2) = Hess1[k](2,0) 
             = Hess1[k](2,1) = Hess1[k](2,2) = 0.0;
+#endif
 
       rval = qm->evaluate_with_Hessian( pd, handles[j], qm_val2, indices2, grad2, Hess2, err );
       CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
@@ -1054,10 +1056,12 @@ void TMPQualityMetricTest::compare_analytical_and_numerical_diagonals( QualityMe
        
         // For analytical gradient of a 2D element in the XY plane, 
         // we expect all Z terms to be zero.
+#ifdef PLANAR_HESSIAN
       if (TopologyInfo::dimension(types[i]) == 2)
         for (size_t k = 0; k < Hess1.size(); ++k) 
           Hess1[k](0,2) = Hess1[k](1,2) = Hess1[k](2,0) 
             = Hess1[k](2,1) = Hess1[k](2,2) = 0.0;
+#endif
 
       rval = qm->evaluate_with_Hessian_diagonal( pd, handles[j], qm_val2, indices2, grad2, Hess2, err );
       CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
@@ -1221,18 +1225,43 @@ void TMPQualityMetricTest::regression_inverse_mean_ratio_hess()
   CPPUNIT_ASSERT_EQUAL( (size_t)1, handles.size() );
   const size_t hand2 = handles.front();
   
+    // first make sure that non-TMP IMR metric works correctly
   bool exp_rval, act_rval;
   exp_rval = ref_metric.evaluate_with_Hessian( pd, hand1, exp_val, exp_idx, exp_grad, exp_hess, err );
   ASSERT_NO_ERROR(err);
-  act_rval = metric.evaluate_with_Hessian( pd, hand2, act_val, act_idx, act_grad, act_hess, err );
-  ASSERT_NO_ERROR(err);
-  
+  act_rval = ref_metric.QualityMetric::evaluate_with_Hessian( pd, hand2, act_val, act_idx, act_grad, act_hess, err );
   CPPUNIT_ASSERT( exp_rval );
   CPPUNIT_ASSERT( act_rval );
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( exp_val - 1.0, act_val, 1e-5 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( exp_val, act_val, 1e-5 );
   CPPUNIT_ASSERT_EQUAL( (size_t)2, exp_idx.size() );
   CPPUNIT_ASSERT_EQUAL( (size_t)2, act_idx.size() );
 
+  if (act_idx[0] == exp_idx[0]) {
+    CPPUNIT_ASSERT_EQUAL( exp_idx[1], act_idx[1] );
+    CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[0], act_grad[0], 1e-5 );
+    CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[1], act_grad[1], 1e-5 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[0], act_hess[0], 5e-3 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[1], act_hess[1], 5e-3 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[2], act_hess[2], 5e-3 );
+  }
+  else {
+    CPPUNIT_ASSERT_EQUAL( exp_idx[0], act_idx[1] );
+    CPPUNIT_ASSERT_EQUAL( exp_idx[1], act_idx[0] );
+    CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[0], act_grad[1], 1e-5 );
+    CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[1], act_grad[0], 1e-5 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[0], act_hess[2], 5e-3 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[1], transpose(act_hess[1]), 5e-3 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[2], act_hess[0], 5e-3 );
+  }
+  
+    // now compare TMP metric with non-TMP metric
+  act_rval = metric.evaluate_with_Hessian( pd, hand2, act_val, act_idx, act_grad, act_hess, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT( act_rval );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( exp_val - 1.0, act_val, 1e-5 );
+  CPPUNIT_ASSERT_EQUAL( (size_t)2, act_idx.size() );
+
+#ifdef PLANAR_HESSIAN
   // zero derivatives with respect to Z
   for (int i = 0; i < 2; ++i) 
     exp_grad[i][2] = 0.0;
@@ -1240,22 +1269,28 @@ void TMPQualityMetricTest::regression_inverse_mean_ratio_hess()
     for (int j = 0; j < 3; ++j) 
       exp_hess[i][j][2] = exp_hess[i][2][j] = 0.0;
   }
+#else
+  // don't compare double out-of-plane term because metrics
+  // make varying assumptions about behavior of Hessian
+  for (int i = 0; i < 3; ++i)
+    exp_hess[i][2][2] = act_hess[i][2][2] = 0.0;
+#endif
   
   if (act_idx[0] == exp_idx[0]) {
     CPPUNIT_ASSERT_EQUAL( exp_idx[1], act_idx[1] );
     CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[0], act_grad[0], 1e-5 );
     CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[1], act_grad[1], 1e-5 );
-    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[0], act_hess[0], 1e-4 );
-    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[1], act_hess[1], 1e-4 );
-    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[2], act_hess[2], 1e-4 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[0], act_hess[0], 5e-3 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[1], act_hess[1], 5e-3 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[2], act_hess[2], 5e-3 );
   }
   else {
     CPPUNIT_ASSERT_EQUAL( exp_idx[0], act_idx[1] );
     CPPUNIT_ASSERT_EQUAL( exp_idx[1], act_idx[0] );
     CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[0], act_grad[1], 1e-5 );
     CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[1], act_grad[0], 1e-5 );
-    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[0], act_hess[2], 1e-4 );
-    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[1], transpose(act_hess[1]), 1e-4 );
-    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[2], act_hess[0], 1e-4 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[0], act_hess[2], 5e-3 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[1], transpose(act_hess[1]), 5e-3 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[2], act_hess[0], 5e-3 );
   }
 }

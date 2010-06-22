@@ -209,7 +209,7 @@ public:
   bool equal( SymMatrix3D hess1, const SymMatrix3D& hess2 ) const;
   bool equal(    Matrix3D hess1, const    Matrix3D& hess2 ) const;
 };
-const double CompareMetric::epsilon = 1e-4;
+const double CompareMetric::epsilon = 5e-2;
   
 /* Parse command line options and call 'run' */
 int main( int argc, char* argv[] )
@@ -796,7 +796,7 @@ void CompareMetric::get_mask_axis( PatchData& pd )
 bool CompareMetric::equal( Vector3D grad1, const Vector3D& grad2 ) const
 {
   if (maskAxis >= 0)
-    grad1[maskAxis] = 0.0;
+    grad1[maskAxis] = grad2[maskAxis];
   return (grad1 - grad2).length_squared() <= epsilon*epsilon;
 }
 
@@ -804,8 +804,8 @@ bool CompareMetric::equal( SymMatrix3D hess1, const SymMatrix3D& hess2 ) const
 {
   if (maskAxis >= 0) {
     for (unsigned i = 0; i < 3; ++i) {
-      hess1(maskAxis,i) = 0.0;
-      hess1(i,maskAxis) = 0.0;
+      hess1(maskAxis,i) = hess2(maskAxis,i);
+      hess1(i,maskAxis) = hess2(i,maskAxis);
     }
   }
   return Frobenius_2(hess1-hess2) <= epsilon*epsilon;
@@ -815,8 +815,8 @@ bool CompareMetric::equal( Matrix3D hess1, const Matrix3D& hess2 ) const
 {
   if (maskAxis >= 0) {
     for (unsigned i = 0; i < 3; ++i) {
-      hess1[maskAxis][i] = 0.0;
-      hess1[i][maskAxis] = 0.0;
+      hess1[maskAxis][i] = hess2[maskAxis][i];
+      hess1[i][maskAxis] = hess2[i][maskAxis];
     }
   }
   return Frobenius_2(hess1-hess2) <= epsilon*epsilon;
