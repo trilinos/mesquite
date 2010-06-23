@@ -639,7 +639,7 @@ MsqMeshEntity::all_nodes( MsqError& err ) const
   if (mid_face)
     result.set_all_mid_face_nodes( mType );
   if (mid_vol)
-    result.set_mid_region_node( mType );
+    result.set_all_mid_region_nodes( mType );
   return result;
 }
 
