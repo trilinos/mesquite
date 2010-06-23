@@ -153,10 +153,10 @@ namespace MESQUITE_NS
     //                            MsqError &err);
     void compute_corner_normals( Vector3D normals[], PatchData& pd, MsqError& err );
 
-  private:
-
       //! Get NodeSet indicating all nodes present for this element type.
     NodeSet all_nodes( MsqError& err ) const;
+
+  private:
 
       //! Check for a negative Jacobian at the specified sample point
       //! of a volume element.

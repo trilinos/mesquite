@@ -77,7 +77,10 @@ private:
   CPPUNIT_TEST (test_unsigned_area_pyr);
   CPPUNIT_TEST (test_unsigned_area_pri);
   CPPUNIT_TEST (test_unsigned_area_hex);
+  CPPUNIT_TEST (test_all_nodes);
   CPPUNIT_TEST_SUITE_END();
+
+  void test_all_nodes( EntityTopology type, unsigned num_nodes );
 
 private:
   PatchData oneHexPatch;
@@ -189,6 +192,7 @@ public:
   void test_unsigned_area_pyr();
   void test_unsigned_area_pri();
   void test_unsigned_area_hex();
+  void test_all_nodes();
   
   void test_unsigned_area_common( EntityTopology type,
                                   const double* coords,
@@ -317,4 +321,65 @@ void MsqMeshEntityTest::test_unsigned_area_hex()
   test_unsigned_area_common( HEXAHEDRON, pyr_coords, 4.0/3.0 );
 }
 
+void MsqMeshEntityTest::test_all_nodes( EntityTopology type, unsigned num_nodes )
+{
+  const unsigned num_vtx = 27;
+  double coords[3*num_vtx] = {0.0};
+  size_t conn[num_vtx];
+  for (size_t i = 0; i < num_vtx; ++i)
+    conn[i] = i;
+  bool fixed[num_vtx] = {false};
+  CPPUNIT_ASSERT(num_nodes <= num_vtx);
+  
+  MsqError err;
+  PatchData pd;
+  size_t n = num_nodes;
+  pd.fill( num_nodes, coords, 1, &type, &n, conn, fixed, err );
+  ASSERT_NO_ERROR(err);
+  
+  MsqMeshEntity& elem = pd.element_by_index(0);
+  NodeSet all = elem.all_nodes(err);
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( num_nodes, all.num_nodes() );
+  CPPUNIT_ASSERT( all.have_any_corner_node() );
+  bool mid_edge, mid_face, mid_reg;
+  TopologyInfo::higher_order( type, num_nodes, mid_edge, mid_face, mid_reg, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( mid_edge, !!all.have_any_mid_edge_node() );
+  CPPUNIT_ASSERT_EQUAL( mid_face, !!all.have_any_mid_face_node() );
+  CPPUNIT_ASSERT_EQUAL( mid_reg,  !!all.have_any_mid_region_node() );
+  
+}
 
+void MsqMeshEntityTest::test_all_nodes() 
+{
+  test_all_nodes( TRIANGLE, 3 );
+  test_all_nodes( TRIANGLE, 4 );
+  test_all_nodes( TRIANGLE, 6 );
+  test_all_nodes( TRIANGLE, 7 );
+
+  test_all_nodes( QUADRILATERAL, 4 );
+  test_all_nodes( QUADRILATERAL, 5 );
+  test_all_nodes( QUADRILATERAL, 8 );
+  test_all_nodes( QUADRILATERAL, 9 );
+  
+  test_all_nodes( TETRAHEDRON, 4 );
+  test_all_nodes( TETRAHEDRON, 5 );
+  test_all_nodes( TETRAHEDRON, 10 );
+  test_all_nodes( TETRAHEDRON, 11 );
+  test_all_nodes( TETRAHEDRON, 8 );
+  test_all_nodes( TETRAHEDRON, 9 );
+  test_all_nodes( TETRAHEDRON, 14 );
+  test_all_nodes( TETRAHEDRON, 15 );
+
+  test_all_nodes( HEXAHEDRON, 8 );
+  test_all_nodes( HEXAHEDRON, 9 );
+  test_all_nodes( HEXAHEDRON, 20 );
+  test_all_nodes( HEXAHEDRON, 21 );
+  test_all_nodes( HEXAHEDRON, 14 );
+  test_all_nodes( HEXAHEDRON, 15 );
+  test_all_nodes( HEXAHEDRON, 26 );
+  test_all_nodes( HEXAHEDRON, 27 );
+}
+  
+  
