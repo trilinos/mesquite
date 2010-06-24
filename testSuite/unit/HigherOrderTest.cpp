@@ -30,7 +30,7 @@
  *  \author Jason Kraftcheck 
  */
 
-#undef HAVE_HO_HEX
+#define HAVE_HO_HEX
 #define TEST_HO_QUAD
 
 
@@ -121,8 +121,8 @@ private:
   Target3DShapeSize tm3;
   IdealShapeTarget tc;
   TMPQualityMetric metric;
-  LPtoPTemplate func;
-  FeasibleNewton solver;
+  PMeanPTemplate func;
+  SteepestDescent solver;
   TerminationCriterion crit, outer;
 
 public:
@@ -853,7 +853,90 @@ void HigherOrderTest::test_tet_basic_apex_over()
 
 void HigherOrderTest::test_hex_basic()
 {
-  CPPUNIT_ASSERT_MESSAGE( "Implement Me!", false );
+  MsqError err;
+  const double P = 0.25; // fraction to perturb higher-order nodes: 0.5->optimal
+  const double Q = 1-P;
+  const double EPSILON = 1e-4;
+  const unsigned long num_vtx = 27;
+
+  // Define a 27-node hex with corner nodes fixed and higher-order
+  // nodes perturbed a bit.  Smooth to see if HO nodes are moved
+  // to center of edge/face/volume.
+  double coords[3*num_vtx] = {
+    // bottom corners
+    0, 0, 0,
+    1, 0, 0,
+    1, 1, 0,
+    0, 1, 0,
+    // top corners
+    0, 0, 1,
+    1, 0, 1,
+    1, 1, 1,
+    0, 1, 1,
+    // bottom mid-edge
+    P, 0, 0,
+    1, Q, 0,
+    Q, 1, 0,
+    0, P, 0,
+    // vertical mid-edge
+    0, 0, P,
+    1, 0, P,
+    1, 1, Q,
+    0, 1, Q,
+    // top mid-edge
+    Q, 0, 1,
+    1, P, 1,
+    P, 1, 1,
+    0, Q, 1,
+    // vertical faces
+    P, 0, Q,
+    1, Q, P,
+    Q, 1, P,
+    0, P, Q,
+    // bottom and top mid-face
+    P, Q, 0,
+    Q, P, 1,
+    // mid-element
+    P, Q, P };
+  unsigned long conn[num_vtx];
+  for (unsigned i = 0; i < num_vtx; i++)
+    conn[i] = i;
+  int fixed[num_vtx];
+  std::fill( fixed, fixed+8, 1 );
+  std::fill( fixed+8, fixed+num_vtx, 0 );
+  const EntityTopology type = HEXAHEDRON;
+  size_t offsets[] = { 0, num_vtx };
+  ArrayMesh one_hex( 3, num_vtx, coords, fixed, 1, &type, conn, offsets );
+  
+    // smooth
+  q.run_instructions( &one_hex, err ); ASSERT_NO_ERROR(err);
+ 
+    // test that higher-order nodes were moved to the expected locations
+    // bottom mid-edge
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0.5, 0.0, 0), Vector3D(coords+3* 8), EPSILON );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(1.0, 0.5, 0), Vector3D(coords+3* 9), EPSILON );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0.5, 1.0, 0), Vector3D(coords+3*10), EPSILON );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0.0, 0.5, 0), Vector3D(coords+3*11), EPSILON );
+    // vertical mid-edge
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0, 0, 0.5), Vector3D(coords+3*12), EPSILON );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(1, 0, 0.5), Vector3D(coords+3*13), EPSILON );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(1, 1, 0.5), Vector3D(coords+3*14), EPSILON );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0, 1, 0.5), Vector3D(coords+3*15), EPSILON );
+    // top mid-edge
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0.5, 0.0, 1), Vector3D(coords+3*16), EPSILON );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(1.0, 0.5, 1), Vector3D(coords+3*17), EPSILON );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0.5, 1.0, 1), Vector3D(coords+3*18), EPSILON );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0.0, 0.5, 1), Vector3D(coords+3*19), EPSILON );
+    // vertical faces
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0.5, 0.0, 0.5), Vector3D(coords+3*20), EPSILON );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(1.0, 0.5, 0.5), Vector3D(coords+3*21), EPSILON );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0.5, 1.0, 0.5), Vector3D(coords+3*22), EPSILON );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0.0, 0.5, 0.5), Vector3D(coords+3*23), EPSILON );
+    // bottom and top mid-face
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0.5, 0.5, 0), Vector3D(coords+3*24), EPSILON );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0.5, 0.5, 1), Vector3D(coords+3*25), EPSILON );
+    // mid-element
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0.5, 0.5, 0.5), Vector3D(coords+3*26), EPSILON );
 }
 
 /*
