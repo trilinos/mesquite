@@ -39,8 +39,11 @@ Mesh entities (vertices and elements) are referenced in the \texttt{Mesquite::Me
 space for all vertices, and a separate unique handle space for all elements. 
 That is, there must be a one-to-one mapping between handle values and vertices,
 and a one-to-one mapping between handle values and elements.  The storage type of
-the handles is specified by \texttt{Mesquite::Mesh::VertexHandle} and
-\texttt{Mesquite::Mesh::ElementHandle}.  The handle types are of sufficient size
+the handles is specified by 
+\begin{center}
+\texttt{Mesquite::Mesh::VertexHandle} and \texttt{Mesquite::Mesh::ElementHandle}.
+\end{center}
+The handle types are of sufficient size
 to hold either a pointer or an index, allowing the underlying implementation of
 the \texttt{Mesquite::Mesh} interface to be either pointer-based or index-based. 
 All mesh entities are referenced using handles.  For example, the
@@ -154,7 +157,7 @@ VTK\cite{VTKbook, VTKuml} and optionally ExodusII files. See Sections
 \ref{sec:depends} and \ref{sec:compiling} for more 
 information regarding the optional support for ExodusII files.
 
-The `fixed' flag for vertices is can be specified in VTK files by defining a
+The `fixed' flag for vertices can be specified in VTK files by defining a
 SCALAR POINT\_DATA attribute with values of 0 or 1, where 1 indicates that the
 corresponding vertex is fixed.  The \texttt{Mesquite::MeshImpl} class is capable
 of reading and storing tag data 

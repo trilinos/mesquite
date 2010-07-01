@@ -38,7 +38,8 @@ which contains the following template:
 3.    MsqError err;
 
       if (argc != 2) {
-        std::cerr << "Expected mesh file names as single argument." << std::endl;
+        std::cerr << "Expected mesh file names as single argument."
+                  << std::endl;
         exit (EXIT_FAILURE);
       }
 
@@ -51,7 +52,9 @@ which contains the following template:
 The lines labeled 1-3 highlight three basic aspects of using Mesquite;
 \begin{enumerate}
 \item For convenience, Mesquite provides the header file
-\texttt{include/Mesquite\_all\_headers.hpp} which includes all Mesquite
+\begin{center}
+\texttt{include/Mesquite\_all\_headers.hpp}
+\end{center} which includes all Mesquite
 headers. Although this is the easiest way to handle the include directives,
 it may slow down compilation of the application.  
 \item All Mesquite classes are part of the \texttt{Mesquite} namespace. 
@@ -71,9 +74,11 @@ in which they are discussed.
 The code above takes a mesh file name as a command line argument and
 performs no action. We can compile it in the 
 (\texttt{examples/}) directory with the command:
+
 \begin{verbatim}
-make -f tutorial.make
+                        make -f tutorial.make
 \end{verbatim}
+
 
 \subsection{Loading a Test Mesh}
 \label{sec:tutMesh}
@@ -138,17 +143,17 @@ allow users to set the most important parameters of the underlying
 algorithms and metrics (see Chapter 
 \ref{sec:wrappers} for details).
 \begin{verbatim}
-  Mesquite::ShapeImprovementWrapper mesh_quality_algorithm(err);
-  mesh_quality_algorithm.run_instructions( &my_mesh, &my_mesh_plane, err);
-    //Should check the error object after the instruction is ran
-    // to see whether the instructions were all successful.
-  if (err) 
-  {
+Mesquite::ShapeImprovementWrapper mesh_quality_algorithm(err);
+mesh_quality_algorithm.run_instructions(&my_mesh,&my_mesh_plane, err);
+//Should check the error object after the instruction is ran
+// to see whether the instructions were all successful.
+if (err) 
+{
     std::cout << err << std::endl;
     return 1;
-  }
-
+}
 \end{verbatim}
+
 Once the algorithm has been executed using the {\tt run\_instructions} member
 function of the wrapper class, the improved mesh can be written to a new
 file:

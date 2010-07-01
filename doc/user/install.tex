@@ -4,7 +4,9 @@
 
 \subsection{Downloading Mesquite}
 The Mesquite distribution (in source form) may be obtained at the following URL:
+\begin{center}
 \url{http://www.cs.sandia.gov/~web1400/1400_download.html}
+\end{center}
 
 \subsection{Supported Platforms and Build Requirements}
 The Mesquite source code will compile in any environment comforming to the ISO/IEC 9899-1999 (C99), ISO/IEC 14882-1998 (C++98) and ISO/IEC 9945:2003 (POSIX) standards. It may also compile under many other environments.
@@ -29,7 +31,9 @@ available as of Mesquite version 2.0.
 to verify the correct behavior of a build of the Mesquite library.  These tests
 are implemented using CppUnit framework.  The CppUnit framework must be installed
 to compile and run these test.  It is available at this URL:
+\begin{center}
 \url{http://cppunit.sourceforge.net}
+\end{center}
 \item ExodusII support:  To enable support for reading or writing ExodusII files in Mesquite, the header files for the ExodusII library must be available.  To link an application with a Mesquite library supporting ExodusII, the ExodusII library and possibly the NetCDF library must be available.  To obtain the ExodusII library, contact:
 \begin{verbatim}
 Marilyn K. Smith
@@ -43,7 +47,9 @@ FAX:   (505) 844-8251
 Email: mksmith@sandia.gov
 \end{verbatim}
 The NetCDF library can be obained at the following URL:
-\url{http://my.unidata.ucar.edu/content/software/netcdf/index.html}
+\begin{center}
+\begin{small}\url{http://my.unidata.ucar.edu/content/software/netcdf/index.html}\end{small}
+\end{center}
 \end{itemize}
 
 
@@ -63,7 +69,10 @@ fine-grained control of installation locations.
 \begin{enumerate}
 \item Change your working directory to the top-level Mesquite source
       directory (typically \texttt{mesquite-<version>/}).
-\item Run the configure script with the command: \texttt{./configure --prefix=<installdir>},
+\item Run the configure script with the command: 
+\begin{center}
+\texttt{./configure --prefix=<installdir>},
+\end{center}
       replacing \texttt{<installedir>} with the location in which the finished
       Mesquite library is to be placed.
 \item Compile Mesquite with the command: \texttt{make} 
@@ -93,9 +102,12 @@ debug symbols or the optimization level.
 \item[DOXYGEN]   The doxygen API documentation generation tool.
 \end{description}
 
-Most options to the configure script are either of the form \texttt{--with-FEATURE[=ARG]} or
-\texttt{--enable-FEATURE[=ARG]}.  Some options may accept an additional argument following 
-an '=' character.  For each --with-FEATURE option, there is also a corresponding
+Most options to the configure script are either of the form 
+\begin{center}
+\texttt{--with-FEATURE[=ARG]} or \texttt{--enable-FEATURE[=ARG]}.
+\end{center}
+Some options may accept an additional argument following 
+an `=' character.  For each --with-FEATURE option, there is also a corresponding
 --without-FEATURE option.  Similarly, there is a --disable-FEATURE option 
 corresponding to each --enable-FEATURE option.  The negative forms fo the options 
 (--without-FEATURE and --disable-FEATURE) do not accept an additional argument.  
@@ -113,7 +125,7 @@ typically work best for using Mesquite in a production application.
 optimizations that improve performance without any significant drawbacks 
 (the -O2 compiler flag.)
 \item[--enable-debug-symbols] Include debugging information in
-the compiled Mesquite objects (the -g compiler flag).
+the compiled \\ Mesquite objects (the -g compiler flag).
 \item[--enable-debug-assertions]  Include internal consistancy 
 checks that abort when an error is detected.
 \item[--enable-debug-output=n,m,...]  Enable the output of
@@ -150,7 +162,10 @@ directory.
 
 The Mesquite source includes the necessary input files to generate Microsoft
 Visual Studio project files using the CMake utility.  You will need to 
-download and install the CMake utility for Windows if you have not already done so.  It is available at: \url{http://www.cmake.org/cmake/resources/software.html}
+download and install the CMake utility for Windows if you have not already done so.  It is available at:
+\begin{center}
+ \url{http://www.cmake.org/cmake/resources/software.html}
+\end{center}
 
 Using the graphical verison of the CMake utility, select the folder containing the Mesquite source and enter a folder in which you would like the CMake output and compiled code to be stored.  Select the \texttt{Configure} button.  You will be presented with a group of configuration options.  Modify any desired options and click the \texttt{Configure} button again.  Each time you change one or more configuration options, you must click the \texttt{Configure} button to update the list of available options.  When you have finished changing build options, click the \texttt{Generate} button to generate Visual Studio input files and exit the CMake utility.
 
