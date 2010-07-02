@@ -144,7 +144,8 @@ algorithms and metrics (see Chapter
 \ref{sec:wrappers} for details).
 \begin{verbatim}
 Mesquite::ShapeImprovementWrapper mesh_quality_algorithm(err);
-mesh_quality_algorithm.run_instructions(&my_mesh,&my_mesh_plane, err);
+mesh_quality_algorithm.run_instructions(&my_mesh,
+                                        &my_mesh_plane,  err);
 //Should check the error object after the instruction is ran
 // to see whether the instructions were all successful.
 if (err) 
@@ -183,28 +184,28 @@ of square quadrilaterals which have an inverse mean ratio value of 1.0.
   There were no inverted elements detected. 
   No entities had undefined values for any computed metric.
 
-             metric     minimum     average         rms     maximum
- Inverse Mean Ratio     1.01013     1.16655      1.1738     1.79134
+             metric    minimum    average        rms    maximum
+ Inverse Mean Ratio    1.01013    1.16655     1.1738    1.79134
 
 ************** QualityAssessor Summary **************
 
   There were no inverted elements detected. 
   No entities had undefined values for any computed metric.
 
-             metric     minimum     average         rms     maximum
- Inverse Mean Ratio     1.01013     1.16655      1.1738     1.79134
+             metric    minimum    average        rms    maximum
+ Inverse Mean Ratio    1.01013    1.16655     1.1738    1.79134
 
 ************** QualityAssessor Summary **************
 
   There were no inverted elements detected. 
   No entities had undefined values for any computed metric.
 
-             metric     minimum     average         rms     maximum
- Inverse Mean Ratio           1           1           1           1
+             metric    minimum    average        rms    maximum
+ Inverse Mean Ratio          1          1          1          1
 \end{verbatim}
 \begin{figure*}[htbp]
 \begin{center}
-    \includegraphics{square_rand.eps}
+    \includegraphics[height=50mm]{square_rand.eps}
     \caption{square\_quad\_10\_rand.vtk mesh. The original mesh is on the left, the mesh smoothed with the \texttt{ShapeImprovementWrapper} is shown on the right.}
     \label{fig:square_rand}
 \end{center}

@@ -28,21 +28,21 @@ component of the domain separately, with the boundary vertices flagged as fixed.
 The following pseudo-code illustrates such an approach for a B-Rep type geometric
 domain:
 \begin{verbatim}
-  for each geometric vertex
-    make associated vertex as fixed
-  end-for
-  for each curve
-    do any application-specific optimization of curve node placement
-    mark associated mesh vertices as fixed
-  end-for
-  for each surface
-    define Mesquite::MeshDomain for surface geometry
-    invoke Mesquite to optimize surface mesh
-    mark all associated mesh vertices as fixed
-  end-for
-  for each volume
-    invoke Mesquite to optimize volume mesh w/ no Mesquite::MeshDomain
-  end-for
+for each geometric vertex
+ make associated vertex as fixed
+end-for
+for each curve
+ do any application-specific optimization of curve node placement
+ mark associated mesh vertices as fixed
+end-for
+for each surface
+ define Mesquite::MeshDomain for surface geometry
+ invoke Mesquite to optimize surface mesh
+ mark all associated mesh vertices as fixed
+end-for
+for each volume
+ invoke Mesquite to optimize volume mesh w/o Mesquite::MeshDomain
+end-for
 \end{verbatim}
 
 

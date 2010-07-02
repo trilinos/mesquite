@@ -90,7 +90,7 @@ defined as follows:
 The following is a simple example of using the ArrayMesh object to pass
 Mesquite a mesh containing four quadrilateral elements.
 \begin{verbatim}
-  /*** define some mesh ***/
+/** define some mesh **/
     /* vertex coordinates */
   double coords[] = { 0, 0, 0,
                       1, 0, 0,
@@ -111,20 +111,21 @@ Mesquite a mesh containing four quadrilateral elements.
                   1, 0, 1,
                   1, 1, 1 };
   
-  /*** create an ArrayMesh to pass the above mesh into Mesquite ***/
+/** create an ArrayMesh to pass the above mesh into Mesquite **/
   
-  ArrayMesh mesh( 3,            /* 3D mesh (three coord values per vertex) */
-                  9,            /* nine vertices */
-                  coords,       /* the vertex coordinates */ 
-                  fixed,        /* the vertex fixed flags */
-                  4,            /* four elements */
-                  QUADRILATERAL,/* elements are quadrilaterals */
-                  quads );      /* element connectivity */
+  ArrayMesh mesh( 
+      3,            /* 3D mesh (three coord values per vertex) */
+      9,            /* nine vertices */
+      coords,       /* the vertex coordinates */ 
+      fixed,        /* the vertex fixed flags */
+      4,            /* four elements */
+      QUADRILATERAL,/* elements are quadrilaterals */
+      quads );      /* element connectivity */
   
-  /*** smooth the mesh ***/
+/** smooth the mesh **/
   
     /* Need surface to constrain 2D elements to */
-  PlanarDomain domain( PlanarDomain::XY );
+    PlanarDomain domain( PlanarDomain::XY );
 
   MsqError err;
   ShapeImprovementWrapper shape_wrapper( err );
@@ -139,10 +140,11 @@ Mesquite a mesh containing four quadrilateral elements.
               << err << std::endl;
   }
   
-  /*** Output the new location of the center vertex ***/
+/** Output the new location of the center vertex **/
   std::cout << "New vertex location: ( "
-            << coords[12] << ", " << coords[13] << ", " << coords[14]
-            << " )" << std::endl;
+            << coords[12] << ", " 
+            << coords[13] << ", " 
+            << coords[14] << " )" << std::endl;
 \end{verbatim}
 
 NOTE:  When using the \texttt{ArrayMesh} interface, the application is responsible for managing the storage of the mesh data.  The \texttt{ArrayMesh}

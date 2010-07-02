@@ -49,7 +49,9 @@ The \texttt{Mesquite::ParallelMesh} class (\texttt{ParallelMeshInterface.hpp}) i
 
 To allow Mesquite direct access to the way you store the parallel mesh data you must inherit \texttt{Mesquite::ParallelMesh} and also implement your own get processor ID and get global ID functionality. The \texttt{Mesquite::ParallelHelper} class takes care of all the underlying communication using MPI. You will always use the \texttt{Mesquite::ParallelHelperImpl} implementation that we provide.
 
-Alternatively you can turn any existing mesh of type \texttt{Mesquite::Mesh} into a parallel mesh of type \texttt{Mesquite::ParallelMesh} by using the \texttt{Mesquite::ParallelMeshImpl} implementation we provide. On creation it needs a pointer to an object of type \texttt{Mesquite::Mesh} and the names of two tags. It is expected that every vertex is properly tagged with the processor ID tag being of type INT and the global ID tag being of type HANDLE.
+Alternatively you can turn any existing mesh of type \texttt{Mesquite::Mesh} into a parallel mesh of type\vspace{-5pt} \begin{center}
+\texttt{Mesquite::ParallelMesh} by using the \texttt{Mesquite::ParallelMeshImpl} 
+\end{center} \vspace{-5 pt}implementation we provide. On creation it needs a pointer to an object of type \texttt{Mesquite::Mesh} and the names of two tags. It is expected that every vertex is properly tagged with the processor ID tag being of type INT and the global ID tag being of type HANDLE.
 
 \section{ITAPS iMeshP Interface}
 
@@ -168,9 +170,11 @@ int main( int argc, char* argv[] )
   iMesh_getRootSet(mesh, &root_set, &ierr);
   if (iBase_SUCCESS != ierr) return ierr;
 
-  /* create a partition instance in which to read the partitioned mesh */
+  /* create a partition instance in which to read 
+     the partitioned mesh */
   iMeshP_PartitionHandle partition;
-  iMeshP_createPartitionAll(mesh, MPI_COMM_WORLD, &partition, &err);
+  iMeshP_createPartitionAll(mesh, MPI_COMM_WORLD, 
+                            &partition, &err);
   if (iBase_SUCCESS != ierr) return ierr;
 
   /* load mesh */
