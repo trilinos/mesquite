@@ -39,22 +39,36 @@ class MeshDomain;
 class MsqError;
 class Settings;
 
+//!\brief Base class for all objects inserted into InstructionQueue
 class MESQUITE_EXPORT Instruction
 {
   public:
   
-    virtual ~Instruction() {}
+    virtual ~Instruction();
+    
+      //! Called for all instructions in queue before loop_over_mesh
+      //! is called for any insetruction in queue.  Default behavior
+      //! is to do nothing.
+    virtual void initialize_queue( Mesh* mesh,
+                                   MeshDomain* domain,
+                                   const Settings* settings,
+                                   MsqError& err );
   
+      //! Virtual fuction implementing primary functionaliy of 
+      //! instruction instance.
     virtual double loop_over_mesh( Mesh* mesh, 
                                    MeshDomain* domain, 
                                    const Settings* settings,
                                    MsqError& err ) = 0;
 
+      //! Virtual fuction implementing primary functionaliy of 
+      //! instruction instance for parallel mesh.
     virtual double loop_over_mesh( ParallelMesh* mesh, 
                                    MeshDomain* domain, 
                                    const Settings* settings,
                                    MsqError& err );
 
+      //! Get string name for use in diagnostic and status output
     virtual std::string get_name() const = 0;
 };
 

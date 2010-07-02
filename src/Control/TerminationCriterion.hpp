@@ -301,6 +301,11 @@ namespace MESQUITE_NS
     bool cull_vertices(PatchData &pd, OFEvaluator& obj_ptr, MsqError &err);
       //!Cleans up after the TerminationCriterion is finished.
     void cleanup(Mesh* ms, MeshDomain* domain, MsqError &err);
+    
+    void initialize_queue( Mesh* mesh,
+                           MeshDomain* domain,
+                           Settings* settings,
+                           MsqError& err );
 
  protected:
     

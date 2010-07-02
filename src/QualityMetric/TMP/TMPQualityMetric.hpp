@@ -44,6 +44,9 @@ class WeightCalculator;
 class TargetMetric2D;
 class TargetMetric3D;
 class NodeSet;
+class Mesh;
+class MeshDomain;
+class Settings;
 
 /**\brief Compare targets to mapping function Jacobian matrices
  *
@@ -163,6 +166,11 @@ public:
   TargetMetric3D* get_3d_metric() const { return metric3D; }
   void set_2d_metric( TargetMetric2D* m ) { metric2D = m; }
   void set_3d_metric( TargetMetric3D* m ) { metric3D = m; }
+    
+  virtual void initialize_queue( Mesh* mesh,
+                                 MeshDomain* domain,
+                                 Settings* settings,
+                                 MsqError& err );
   
 private:
 

@@ -58,6 +58,15 @@ namespace MESQUITE_NS
      CompositeOFAdd(ObjectiveFunction*, ObjectiveFunction*, bool delete_OFs = false);
  
      virtual ~CompositeOFAdd();
+     
+      //!\brief Called at start of instruction queue processing
+      //!
+      //! Do any preliminary global initialization, consistency checking,
+      //! etc.
+     virtual void initialize_queue( Mesh* mesh,
+                                    MeshDomain* domain,
+                                    const Settings* settings,
+                                    MsqError& err );
 
      virtual bool initialize_block_coordinate_descent( Mesh* mesh, 
                                                        MeshDomain* domain,

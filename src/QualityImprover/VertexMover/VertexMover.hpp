@@ -61,13 +61,19 @@ namespace MESQUITE_NS
     MESQUITE_EXPORT virtual ~VertexMover() { };
     
     MESQUITE_EXPORT 
-	virtual double loop_over_mesh( Mesh* mesh, 
+    virtual void initialize_queue( Mesh* mesh,
+                                   MeshDomain* domain,
+                                   Settings* settings,
+                                   MsqError& err );
+    
+    MESQUITE_EXPORT 
+    virtual double loop_over_mesh( Mesh* mesh, 
                                    MeshDomain* domain,
                                    const Settings* settings,
                                    MsqError &err);
 
     MESQUITE_EXPORT 
-	virtual double loop_over_mesh( ParallelMesh* mesh, 
+    virtual double loop_over_mesh( ParallelMesh* mesh, 
                                    MeshDomain* domain,
                                    const Settings* settings,
                                    MsqError &err);
@@ -75,7 +81,7 @@ namespace MESQUITE_NS
   protected:
 
     MESQUITE_EXPORT 
-	virtual void initialize(PatchData &pd, MsqError &err) = 0;
+    virtual void initialize(PatchData &pd, MsqError &err) = 0;
     MESQUITE_EXPORT 
     virtual void cleanup() = 0;
     MESQUITE_EXPORT 

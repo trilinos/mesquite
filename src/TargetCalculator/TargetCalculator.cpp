@@ -607,4 +607,14 @@ void TargetCalculator::get_refmesh_Jacobian_2D(
   MSQ_ERRRTN(err);
 }
 
+TargetCalculator::~TargetCalculator()
+{}
+
+void TargetCalculator::initialize_queue( Mesh* ,
+                                         MeshDomain* ,
+                                         const Settings* ,
+                                         MsqError&  )
+{}
+
+
 } // namespace MESQUITE_NS

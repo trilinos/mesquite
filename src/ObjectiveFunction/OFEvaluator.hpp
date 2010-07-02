@@ -65,6 +65,12 @@ public:
    */
   MESQUITE_EXPORT
   OFEvaluator( ObjectiveFunction* of, bool Nash );
+    
+  MESQUITE_EXPORT 
+  void initialize_queue( Mesh* mesh,
+                         MeshDomain* domain,
+                         Settings* settings,
+                         MsqError& err );
   
   /**\brief Initialize OFEvaluator 
    *

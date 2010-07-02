@@ -42,6 +42,12 @@
 
 namespace MESQUITE_NS {
 
+void QualityMetric::initialize_queue( Mesh* ,
+                                      MeshDomain* ,
+                                      const Settings* ,
+                                      MsqError&  )
+{}
+  
 void QualityMetric::get_single_pass( PatchData& pd, 
                         std::vector<size_t>& handles,
                         bool free_vertices_only, 

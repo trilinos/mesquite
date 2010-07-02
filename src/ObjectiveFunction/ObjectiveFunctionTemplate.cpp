@@ -45,6 +45,14 @@ namespace MESQUITE_NS {
 
 ObjectiveFunctionTemplate::~ObjectiveFunctionTemplate() {}
 
+void ObjectiveFunctionTemplate::initialize_queue( Mesh* mesh,
+                                               MeshDomain* domain,
+                                               const Settings* settings,
+                                               MsqError& err )
+{
+  qualityMetric->initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);
+}
+
 bool ObjectiveFunctionTemplate::initialize_block_coordinate_descent( Mesh* mesh, 
                                                       MeshDomain* domain, 
                                                       const Settings* settings,

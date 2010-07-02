@@ -62,6 +62,15 @@ class MESQUITE_EXPORT ObjectiveFunctionTemplate : public ObjectiveFunction
                                                       MsqError& err );
 
     virtual int min_patch_layers() const;
+     
+      //!\brief Called at start of instruction queue processing
+      //!
+      //! Do any preliminary global initialization, consistency checking,
+      //! etc.  Default implementation does nothing.
+     virtual void initialize_queue( Mesh* mesh,
+                                    MeshDomain* domain,
+                                    const Settings* settings,
+                                    MsqError& err );
 
   private:
   

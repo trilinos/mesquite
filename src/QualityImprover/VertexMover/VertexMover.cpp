@@ -531,4 +531,14 @@ ERROR:
   return 0.;
 }
 
+    
+void VertexMover::initialize_queue( Mesh* mesh,
+                                    MeshDomain* domain,
+                                    Settings* settings,
+                                    MsqError& err )
+{
+  QualityImprover::initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);
+  objFuncEval.initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);
+}
+
 } // namespace Mesquite

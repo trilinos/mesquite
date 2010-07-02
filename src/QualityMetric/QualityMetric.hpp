@@ -63,6 +63,9 @@ namespace MESQUITE_NS
      */
    class PatchData;
    class MsqMeshEntity;
+   class Mesh;
+   class MeshDomain;
+   class Settings;
    
    class QualityMetric
    {
@@ -326,6 +329,15 @@ namespace MESQUITE_NS
         MAX_MINUS_MIN,          //!< the maximum value divided by the minimum value
         SUM_OF_RATIOS_SQUARED   //!< (1/(N^2))*(SUM (SUM (v_i/v_j)^2))
      };
+     
+      //!\brief Called at start of instruction queue processing
+      //!
+      //! Do any preliminary global initialization, consistency checking,
+      //! etc.  Default implementation does nothing.
+     virtual void initialize_queue( Mesh* mesh,
+                                    MeshDomain* domain,
+                                    const Settings* settings,
+                                    MsqError& err );
 
   private:
      int feasible;

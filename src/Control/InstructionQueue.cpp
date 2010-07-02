@@ -320,6 +320,19 @@ void InstructionQueue::run_common( Mesh* mesh,
   
   std::list<Instruction*>::const_iterator instr;
   
+    // Initialize each instruction
+  for (instr = instructions.begin(); instr != instructions.end(); ++instr) 
+  {
+    if (MsqInterrupt::interrupt())
+    {
+      MSQ_SETERR(err)(MsqError::INTERRUPTED);
+      return;
+    }
+    
+    (*instr)->initialize_queue( mesh, domain, this, err ); 
+    MSQ_ERRRTN(err);
+  }
+  
     // Run each instruction
   for (instr = instructions.begin(); instr != instructions.end(); ++instr) 
   {

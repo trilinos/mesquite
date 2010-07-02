@@ -320,6 +320,12 @@ namespace MESQUITE_NS
                                    double power_mean = 0.0,
                                    const char* metric_value_tag_name = 0 );
     
+    virtual MESQUITE_EXPORT
+    void initialize_queue( Mesh* mesh,
+                           MeshDomain* domain,
+                           const Settings* settings,
+                           MsqError& err );
+    
       //! Does one sweep over the mesh and assess the quality with the metrics previously added.
     virtual MESQUITE_EXPORT
     double loop_over_mesh( Mesh* mesh,

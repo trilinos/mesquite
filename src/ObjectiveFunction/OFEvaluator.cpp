@@ -71,6 +71,14 @@ bool OFEvaluator::initialize( Mesh* mesh,
   return !MSQ_CHKERR(err) && result;
 }
 
+void OFEvaluator::initialize_queue( Mesh* mesh,
+                                    MeshDomain* domain,
+                                    Settings* settings,
+                                    MsqError& err )
+{
+  get_objective_function()->initialize_queue( mesh, domain, settings, err );
+  MSQ_ERRRTN(err);
+}
 
 bool OFEvaluator::reset() 
 {

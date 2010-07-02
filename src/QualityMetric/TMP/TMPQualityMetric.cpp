@@ -750,7 +750,18 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
   return rval;
 }
 
-
+    
+void TMPQualityMetric::initialize_queue( Mesh* mesh,
+                                         MeshDomain* domain,
+                                         Settings* settings,
+                                         MsqError& err )
+{
+  targetCalc->initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);
+  if (weightCalc) {
+    weightCalc->initialize_queue( mesh, domain, settings, err ); 
+    MSQ_ERRRTN(err);
+  }
+}
 
 
 } // namespace Mesquite

@@ -397,6 +397,16 @@ TagHandle QualityAssessor::get_tag( Mesh* mesh,
   return tag;
 }
 
+void QualityAssessor::initialize_queue( Mesh* mesh,
+                                        MeshDomain* domain,
+                                        const Settings* settings,
+                                        MsqError& err )
+{
+  for (list_type::iterator i = assessList.begin(); i != assessList.end(); ++i) {
+    (*i)->get_metric()->initialize_queue( mesh, domain, settings, err );
+    MSQ_ERRRTN(err);
+  }
+}
 
 /*! 
   Computes the quality data for a given

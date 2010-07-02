@@ -941,6 +941,12 @@ void TerminationCriterion::write_iterations( const char* filename, MsqError& err
   }
 }
     
-
+    
+void TerminationCriterion::initialize_queue( Mesh* ,
+                                             MeshDomain* ,
+                                             Settings* ,
+                                             MsqError&  )
+{
+}
 
 } //namespace Mesquite

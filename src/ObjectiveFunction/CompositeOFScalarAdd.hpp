@@ -52,9 +52,18 @@ namespace MESQUITE_NS
    
    class CompositeOFScalarAdd : public ObjectiveFunction
    {
-	public:
-      CompositeOFScalarAdd(double, ObjectiveFunction*, bool delete_OF = false);
+   public:
+     CompositeOFScalarAdd(double, ObjectiveFunction*, bool delete_OF = false);
      virtual ~CompositeOFScalarAdd();
+     
+      //!\brief Called at start of instruction queue processing
+      //!
+      //! Do any preliminary global initialization, consistency checking,
+      //! etc. 
+     virtual void initialize_queue( Mesh* mesh,
+                                    MeshDomain* domain,
+                                    const Settings* settings,
+                                    MsqError& err );
 
      virtual bool initialize_block_coordinate_descent( Mesh* mesh, 
                                                        MeshDomain* domain,

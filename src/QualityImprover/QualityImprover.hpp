@@ -40,13 +40,16 @@
 #include <string>
 
 #include "Mesquite.hpp"
-#include "MsqError.hpp"
-#include "TerminationCriterion.hpp"
 #include "Instruction.hpp"
+#include "TerminationCriterion.hpp"
 
 namespace MESQUITE_NS
 {
   class PatchSet;
+  class MsqError;
+  class Mesh;
+  class MeshDomain;
+  class Settings;
 
   
   /*! \class QualityImprover
@@ -61,7 +64,7 @@ namespace MESQUITE_NS
     // Constructor is protected ... see below.
     
      // virtual destructor ensures use of polymorphism during destruction
-    MESQUITE_EXPORT virtual ~QualityImprover() { };
+    MESQUITE_EXPORT virtual ~QualityImprover();
 
       //!Sets in the termination criterion for the concrete solver's
       //! optimization.
@@ -78,6 +81,10 @@ namespace MESQUITE_NS
       
     MESQUITE_EXPORT virtual PatchSet* get_patch_set() = 0;
     
+    MESQUITE_EXPORT virtual void initialize_queue( Mesh* mesh,
+                                              MeshDomain* domain,
+                                              Settings* settings,
+                                              MsqError& err );
 
   protected:
 

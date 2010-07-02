@@ -41,12 +41,25 @@ namespace MESQUITE_NS {
 
 class PatchData;
 class MsqError;
+class Mesh;
+class MeshDomain;
+class Settings;
 
 class MESQUITE_EXPORT WeightCalculator
 {
 public:
 
-  virtual ~WeightCalculator() {}
+  virtual ~WeightCalculator();
+  
+   //!\brief Called at start of instruction queue processing
+   //!
+   //! Do any preliminary global initialization, consistency checking,
+   //! etc.  Default implementation does nothing.
+  virtual void initialize_queue( Mesh* mesh,
+                                 MeshDomain* domain,
+                                 const Settings* settings,
+                                 MsqError& err );
+
 
   /**\brief Get target metric weight
    *

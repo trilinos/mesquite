@@ -119,6 +119,18 @@ namespace MESQUITE_NS
     
       // virtual destructor ensures use of polymorphism during destruction
     virtual ~ObjectiveFunction() {}
+     
+      //!\brief Called at start of instruction queue processing
+      //!
+      //! Do any preliminary global initialization, consistency checking,
+      //! etc.  This function is pure-virtual (abstract) in this class
+      //! because every practical OF implementation at this time should
+      //! have an implementation that at least recursively calls the same
+      //! function on the underlying QualityMetric or ObjectiveFunction(s).
+     virtual void initialize_queue( Mesh* mesh,
+                                    MeshDomain* domain,
+                                    const Settings* settings,
+                                    MsqError& err ) = 0;
     
       /**\brief Initial accumulated value for block coordinate descent algorithms
        *

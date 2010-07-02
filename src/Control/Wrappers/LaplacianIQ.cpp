@@ -37,6 +37,7 @@
 #include "QualityAssessor.hpp"
 #include "InstructionQueue.hpp"
 #include "TerminationCriterion.hpp"
+#include "MsqError.hpp"
 
 void MESQUITE_NS::LaplacianIQ::run_wrapper( Mesh* mesh,
                                             ParallelMesh* pmesh,

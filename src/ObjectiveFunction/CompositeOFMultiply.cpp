@@ -80,6 +80,15 @@ void CompositeOFMultiply::clear()
   objFunc2->clear();
 }
 
+void CompositeOFMultiply::initialize_queue( Mesh* mesh,
+                                            MeshDomain* domain,
+                                            const Settings* settings,
+                                            MsqError& err )
+{
+  objFunc1->initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);
+  objFunc2->initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);
+}
+
 bool CompositeOFMultiply::initialize_block_coordinate_descent( 
                                                        Mesh* mesh, 
                                                        MeshDomain* domain,

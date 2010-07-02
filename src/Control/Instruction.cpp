@@ -39,6 +39,15 @@ parallel function.
 
 using namespace Mesquite;
 
+Instruction::~Instruction()
+{}
+
+void Instruction::initialize_queue( Mesh* ,
+                                    MeshDomain* ,
+                                    const Settings* ,
+                                    MsqError&  )
+{}
+
 double Instruction::loop_over_mesh( ParallelMesh* mesh, 
 				    MeshDomain* domain, 
 				    const Settings* settings,

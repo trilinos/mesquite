@@ -48,7 +48,21 @@ Implements a couple of default virtual functions of the virtual class
 //
 
 #include "QualityImprover.hpp"
+#include "MsqError.hpp"
 
-using namespace Mesquite;
+namespace MESQUITE_NS {
 
+QualityImprover::~QualityImprover()
+{}
+    
+void QualityImprover::initialize_queue( Mesh* mesh,
+                                        MeshDomain* domain,
+                                        Settings* settings,
+                                        MsqError& err )
+{
+  innerTerminationCriterion->initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);
+  outerTerminationCriterion->initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);
+}
+
+} // namespace MESQUITE_NS
 
