@@ -818,6 +818,7 @@ APPEND_SET(SOURCES
   TargetCalculator/TargetReader.cpp
   TargetCalculator/TargetWriter.cpp
   TargetCalculator/TetDihedralWeight.cpp
+  TargetCalculator/WeightCalculator.cpp
   TargetCalculator/WeightReader.cpp 
   )
 

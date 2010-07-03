@@ -19,6 +19,7 @@ MSQ_SRCS += \
 	$(SRC_TARGETCALCULATOR_DIR)/TargetReader.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/TargetWriter.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/TetDihedralWeight.cpp \
+	$(SRC_TARGETCALCULATOR_DIR)/WeightCalculator.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/WeightReader.cpp 
 
 MSQ_HDRS += \
