@@ -65,6 +65,10 @@ public:
                                             const Settings* settings,
                                             PatchSet* user_set,
                                             MsqError& err );
+    
+  void initialize_queue( Mesh* , MeshDomain* , 
+                         const Settings* ,
+                         MsqError&  ) {}
 
   bool evaluate( EvalType type,
                  PatchData& pd,

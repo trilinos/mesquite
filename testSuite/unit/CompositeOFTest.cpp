@@ -77,6 +77,10 @@ class FauxObjectiveFunction : public ObjectiveFunction
       }
     void clear() {}
     int min_patch_layers() const { return 0; }
+    
+    void initialize_queue( Mesh* , MeshDomain* , 
+                           const Settings* ,
+                           MsqError&  ) {}
   
     double get_value() const { return mValue; }
     static int get_instance_count() { return instanceCount; }
