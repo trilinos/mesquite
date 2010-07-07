@@ -466,8 +466,7 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
       file <<( myMesh->vertex_is_fixed( i, err ) ? "1" : "0") << "\n";
 
   if (myMesh->have_slaved_flags()) {
-    file << "POINT_DATA " << myMesh->num_vertices()
-         << "\nSCALARS fixed int\nLOOKUP_TABLE default\n";
+    file << "SCALARS slaved int\nLOOKUP_TABLE default\n";
     for (i = 0; i < myMesh->max_vertex_index(); ++i)
       if (myMesh->is_vertex_valid( i ))
         file <<( myMesh->vertex_is_slaved( i, err ) ? "1" : "0") << "\n";
