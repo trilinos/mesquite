@@ -46,6 +46,7 @@ SUBDIRS = test_1 \
 	  higher_order \
 	  viscous_cfd \
 	  size_adapt_shape \
+          slaved \
 	  $(IMESH_TEST) $(IGEOM_TEST) \
           $(EXO_TEST) $(UNIT_TEST)
 

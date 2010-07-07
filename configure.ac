@@ -725,6 +725,7 @@ AC_CONFIG_FILES([Makefile
                  testSuite/higher_order/Makefile
                  testSuite/viscous_cfd/Makefile
                  testSuite/size_adapt_shape/Makefile
+                 testSuite/slaved/Makefile
                  utils/Makefile
                  doc/Makefile
                  doc/user/Makefile
