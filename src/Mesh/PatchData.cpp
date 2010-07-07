@@ -1880,37 +1880,31 @@ void PatchData::set_mesh_entities(
                                        elementHandlesArray.size(),
                                        err ); MSQ_ERRRTN(err);
   
+    // get vertex bits from mesh
   byteArray.resize( vertexHandlesArray.size() );
+  get_mesh()->vertices_get_byte( &vertexHandlesArray[0],
+                                 &byteArray[0],
+                                 vertexHandlesArray.size(),
+                                 err ); MSQ_ERRRTN(err);
+  unsigned char byte_mask = MsqVertex::MSQ_CULLED;
+  if (mSettings && mSettings->get_slaved_ho_node_mode() == Settings::SLAVE_CALCULATED)
+    byte_mask |= MsqVertex::MSQ_DEPENDENT;
+    
+    // Mask out all bits that we don't want from the byte array
+  for (size_t i = 0; i < byteArray.size(); ++i)
+    byteArray[i] &= byte_mask;
+
   if (!mSettings || mSettings->get_fixed_vertex_mode() == Settings::FIXED_FLAG) {
-    bool* fixed_flags;
-    if (sizeof(bool) == sizeof(unsigned char)) {
-        // sizeof(bool) == sizeof(unsigned char) on every platform I'm
-        // aware of.  However, the standard doesn't guarantee it so this
-        // code is here for portability.
-      fixed_flags = reinterpret_cast<bool*>(&byteArray[0]);
-    }
-    else {
-      fixed_flags = get_bool_array( vertexHandlesArray.size() );
-    }
-  
       // Get vertex-fixed flags
+    bool* fixed_flags = get_bool_array( vertexHandlesArray.size() );
     get_mesh()->vertices_get_fixed_flag( &vertexHandlesArray[0], 
                                        fixed_flags,
                                        vertexHandlesArray.size(),
-                                       err);
+                                       err);  MSQ_ERRRTN(err);
   
-    if (sizeof(bool) != sizeof(unsigned char)) {
-      for (size_t i = 0; i < vertexHandlesArray.size(); ++i) 
-        if (fixed_flags[i])
-          byteArray[i] = MsqVertex::MSQ_HARD_FIXED;
-        else
-          byteArray[i] = 0;
-    }
-    else {
-      // we're assuming this, so verify it
-      assert ((unsigned char)true == (unsigned char)MsqVertex::MSQ_HARD_FIXED);
-    }
-    MSQ_ERRRTN(err);
+    for (size_t i = 0; i < vertexHandlesArray.size(); ++i) 
+      if (fixed_flags[i])
+        byteArray[i] |= MsqVertex::MSQ_HARD_FIXED;
   } 
   else if (get_domain()) {
     int dim = mSettings->get_fixed_vertex_mode();
@@ -1935,7 +1929,6 @@ void PatchData::set_mesh_entities(
     // fixed any vertices *not* in that list.
   if (free_vertices.empty()) {
     for (size_t i = 0; i < vertexHandlesArray.size(); ++i) {
-      assert( byteArray[i] <= 1 ); // make sure cast from bool works as expected (true == 1)
       byteArray[i] |= MsqVertex::MSQ_PATCH_VTX;
     }
   }
@@ -1970,7 +1963,6 @@ void PatchData::set_mesh_entities(
     elementArray[i].set_element_type( elem_topologies[i] );
     
     // Mark higher-order nodes as slave unless settings dictate otherwise
-  unsigned char byte_mask = MsqVertex::MSQ_CULLED;
   bool* flags;
   const Settings::HigherOrderSlaveMode ho_mode = mSettings ? mSettings->get_slaved_ho_node_mode() : Settings::SLAVE_ALL;
   switch (ho_mode) {
@@ -1990,10 +1982,6 @@ void PatchData::set_mesh_entities(
       MSQ_ERRRTN(err);
     break;
   case Settings::SLAVE_CALCULATED:
-      // When we later query the Mesh instance for vertex flags,
-      // don't clear the MSQ_DEPENDENT bit.
-    byte_mask |= MsqVertex::MSQ_DEPENDENT;
-    break;
   case Settings::SLAVE_NONE:
       // We begin with the byte array zeroed, so do nothing.
     break;
@@ -2012,15 +2000,6 @@ void PatchData::set_mesh_entities(
     // set vertex flags
   for (size_t i = 0; i < vertexArray.size(); ++i)
     vertexArray[i].flags() = byteArray[i];
-
-    // get culled bit from mesh
-  get_mesh()->vertices_get_byte( &vertexHandlesArray[0],
-                                 &byteArray[0],
-                                 vertexHandlesArray.size(),
-                                 err ); MSQ_ERRRTN(err);
-
-  for (size_t i = 0; i < vertexArray.size(); ++i)
-    vertexArray[i].flags() |= (byteArray[i] & byte_mask);
 }
 
 
