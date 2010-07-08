@@ -3,7 +3,7 @@ AM_LDFLAGS = @AM_LDFLAGS@
 AM_CPPFLAGS = @AM_CPPFLAGS@
 AM_CPPFLAGS += '-DSRCDIR="$(srcdir)/"'
 LDADD = $(top_builddir)/libmesquite.la
-check_PROGRAMS = main fix_mesh
+check_PROGRAMS = main setup
 main_SOURCES = main.cpp
 main_DEPENDENCIES = $(LDADD)
 setup_SOURCES = setup.cpp
