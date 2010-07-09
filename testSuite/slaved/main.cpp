@@ -54,7 +54,7 @@
 
 using namespace Mesquite;
 
-const char DEFAULT_INPUT_FILE[] = "input.vtk";
+const char DEFAULT_INPUT_FILE[] = SRCDIR "input.vtk";
 
 void usage( const char* argv0 )
 {
