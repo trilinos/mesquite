@@ -399,7 +399,7 @@ int compare_node_coords( Mesh& mesh1, Mesh& mesh2, MsqError& err )
   mesh2.vertices_get_coordinates( &verts2[0], &coords2[0], verts2.size(), err );
   MSQ_ERRZERO(err);
   
-  int error_count;
+  int error_count = 0;
   assert(verts1.size() == verts2.size());
   for (size_t i = 0; i < verts1.size(); ++i) {
     assert( verts1[i] == verts2[i] );
