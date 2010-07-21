@@ -377,7 +377,7 @@ void Target2DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, eps(aval) );
+  ASSERT_MATRICES_EQUAL( num, ana, eps(Frobenius(num)) );
   
   valid = test_metric.TargetMetric2D::evaluate_with_grad( B, A, nval, num, err );
   ASSERT_NO_ERROR(err);
@@ -386,7 +386,7 @@ void Target2DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, eps(aval) );
+  ASSERT_MATRICES_EQUAL( num, ana, eps(Frobenius(num)) );
   
     // check inverted also for non-barier metrics
   if (Barrier) 
@@ -766,9 +766,11 @@ void TargetMetric2DTest::test_numerical_hessian()
 #include "Target2DShapeSizeOrientAlt1.hpp"
 #include "Target2DShapeSizeOrientBarrier.hpp"
 #include "Target2DShapeSizeOrientBarrierAlt1.hpp"
+#include "Target2DShapeSizeUntangle.hpp"
 #include "InverseMeanRatio2D.hpp"
 #include "Target2DSize.hpp"
 #include "Target2DSizeBarrier.hpp"
+#include "Target2DSizeUntangle.hpp"
 #include "Target2DUntangle.hpp"
 #include "Target2DUntangleAlt1.hpp"
 #include "Target2DShapeSizeAlt1.hpp"
@@ -840,7 +842,7 @@ CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _BaseRegister ( #METRI
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "Unit" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "Target2DTest" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "TargetMetric2DTest" );
-
+//                                     NAME                               !SHAPE !SIZE !ORIENT BARRIER IDEAL
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShape,                     false,  true,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeAlt1,                 false,  true,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeBarrier,              false,  true,  true,  true, 0.0 );
@@ -858,9 +860,11 @@ REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrient,           false,
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientAlt1,       false, false, false, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientBarrier,    false, false, false,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientBarrierAlt1,false, false, false,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_GRAD     ( Target2DShapeSizeUntangle,          true, false,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( InverseMeanRatio2D,                false,  true,  true,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSize,                       true, false,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSizeBarrier,                true, false,  true,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_GRAD     ( Target2DSizeUntangle,               true, false,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DUntangle,                   true,  true,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DUntangleAlt1,               true,  true,  true, false, 0.0 );
 

@@ -629,8 +629,10 @@ APPEND_SET(HEADERS
   QualityMetric/TMP/2D/Target2DShapeSizeOrientAlt1.hpp
   QualityMetric/TMP/2D/Target2DShapeSizeOrientBarrier.hpp
   QualityMetric/TMP/2D/Target2DShapeSizeOrientBarrierAlt1.hpp
+  QualityMetric/TMP/2D/Target2DShapeSizeUntangle.hpp
   QualityMetric/TMP/2D/Target2DSize.hpp
   QualityMetric/TMP/2D/Target2DSizeBarrier.hpp
+  QualityMetric/TMP/2D/Target2DSizeUntangle.hpp
   QualityMetric/TMP/2D/Target2DSquared.hpp
   QualityMetric/TMP/2D/Target2DSum.hpp
   QualityMetric/TMP/2D/Target2DOffset.hpp
@@ -662,8 +664,10 @@ APPEND_SET(SOURCES
   QualityMetric/TMP/2D/Target2DShapeSizeOrientAlt1.cpp
   QualityMetric/TMP/2D/Target2DShapeSizeOrientBarrier.cpp
   QualityMetric/TMP/2D/Target2DShapeSizeOrientBarrierAlt1.cpp
+  QualityMetric/TMP/2D/Target2DShapeSizeUntangle.cpp
   QualityMetric/TMP/2D/Target2DSize.cpp
   QualityMetric/TMP/2D/Target2DSizeBarrier.cpp
+  QualityMetric/TMP/2D/Target2DSizeUntangle.cpp
   QualityMetric/TMP/2D/Target2DSquared.cpp
   QualityMetric/TMP/2D/Target2DSum.cpp
   QualityMetric/TMP/2D/Target2DOffset.cpp
