@@ -43,7 +43,7 @@ Target2DShapeSizeUntangle::~Target2DShapeSizeUntangle()
 {}
 
 std::string Target2DShapeSizeUntangle::get_name() const
-  { return "untangle"; }
+  { return "shape size untangle"; }
 
 bool Target2DShapeSizeUntangle::evaluate( const MsqMatrix<2,2>& A, 
                                  const MsqMatrix<2,2>& W, 

@@ -43,7 +43,7 @@ Target3DSizeUntangle::~Target3DSizeUntangle()
 {}
 
 std::string Target3DSizeUntangle::get_name() const
-  { return "untangle"; }
+  { return "size untangle"; }
 
 bool Target3DSizeUntangle::evaluate( const MsqMatrix<3,3>& A, 
                                      const MsqMatrix<3,3>& W, 

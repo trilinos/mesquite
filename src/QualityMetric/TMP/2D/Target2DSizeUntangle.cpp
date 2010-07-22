@@ -43,12 +43,12 @@ Target2DSizeUntangle::~Target2DSizeUntangle()
 {}
 
 std::string Target2DSizeUntangle::get_name() const
-  { return "untangle"; }
+  { return "size untangle"; }
 
 bool Target2DSizeUntangle::evaluate( const MsqMatrix<2,2>& A, 
-                                 const MsqMatrix<2,2>& W, 
-                                 double& result, 
-                                 MsqError& err )
+                                     const MsqMatrix<2,2>& W, 
+                                     double& result, 
+                                     MsqError& err )
 {
   const MsqMatrix<2,2> Winv = inverse(W);
   const MsqMatrix<2,2> T = A * Winv;
@@ -61,11 +61,11 @@ bool Target2DSizeUntangle::evaluate( const MsqMatrix<2,2>& A,
 }
 
 
-bool  Target2DSizeUntangle::evaluate_with_grad( const MsqMatrix<2,2>& A,
-                                           const MsqMatrix<2,2>& W,
-                                           double& result,
-                                           MsqMatrix<2,2>& deriv_wrt_A,
-                                           MsqError& err )
+bool Target2DSizeUntangle::evaluate_with_grad( const MsqMatrix<2,2>& A,
+                                               const MsqMatrix<2,2>& W,
+                                               double& result,
+                                               MsqMatrix<2,2>& deriv_wrt_A,
+                                               MsqError& err )
 {
   const MsqMatrix<2,2> Winv = inverse(W);
   const MsqMatrix<2,2> T = A * Winv;
