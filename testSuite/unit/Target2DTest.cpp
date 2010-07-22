@@ -818,7 +818,7 @@ CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _UnitRegister ("Unit")
 CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _FileRegister ("Target2DTest"); \
 CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _BaseRegister ( #METRIC "Test" )
 
-#define REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
+#define REGISTER_TARGET2D_TEST_WITH_HESS( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
 METRIC test_ ## METRIC; \
 class METRIC ## Test : public Target2DTestBase { public: \
   METRIC ## Test () : Target2DTestBase( (test_ ## METRIC), (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
@@ -843,30 +843,30 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "Unit" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "Target2DTest" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "TargetMetric2DTest" );
 //                                     NAME                               !SHAPE !SIZE !ORIENT BARRIER IDEAL
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShape,                     false,  true,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeAlt1,                 false,  true,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeBarrier,              false,  true,  true,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeOrient,               false,  true, false, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeOrientAlt1,           false,  true, false, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeOrientBarrier,        false,  true, false,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeOrientBarrierAlt1,    false,  true, false,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSize,                 false, false,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeAlt1,             false, false,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeAlt2,             false, false,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrier,          false, false,  true,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrierAlt1,      false, false,  true,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrierAlt2,      false, false,  true,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrient,           false, false, false, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientAlt1,       false, false, false, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientBarrier,    false, false, false,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientBarrierAlt1,false, false, false,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_GRAD     ( Target2DShapeSizeUntangle,          true, false,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( InverseMeanRatio2D,                false,  true,  true,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSize,                       true, false,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSizeBarrier,                true, false,  true,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_GRAD     ( Target2DSizeUntangle,               true, false,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DUntangle,                   true,  true,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DUntangleAlt1,               true,  true,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShape,                     false,  true,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeAlt1,                 false,  true,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeBarrier,              false,  true,  true,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeOrient,               false,  true, false, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeOrientAlt1,           false,  true, false, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeOrientBarrier,        false,  true, false,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeOrientBarrierAlt1,    false,  true, false,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeSize,                 false, false,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeSizeAlt1,             false, false,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeSizeAlt2,             false, false,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeSizeBarrier,          false, false,  true,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeSizeBarrierAlt1,      false, false,  true,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeSizeBarrierAlt2,      false, false,  true,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeSizeOrient,           false, false, false, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeSizeOrientAlt1,       false, false, false, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeSizeOrientBarrier,    false, false, false,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeSizeOrientBarrierAlt1,false, false, false,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_GRAD( Target2DShapeSizeUntangle,          true, false,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( InverseMeanRatio2D,                false,  true,  true,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DSize,                       true, false,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DSizeBarrier,                true, false,  true,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_GRAD( Target2DSizeUntangle,               true, false,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DUntangle,                   true,  true,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DUntangleAlt1,               true,  true,  true, false, 0.0 );
 
 TSquared2D test_TSquared2D;
 class TSquared2DTest : public Target2DTestBase {
