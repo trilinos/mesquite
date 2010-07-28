@@ -324,10 +324,11 @@ void Target3DTestBase::compare_eval_with_grad_and_eval_with_hess()
   ASSERT_MATRICES_EQUAL( g, h, 1e-5 );
 }
 
+#define EPS_GRAD(A,B) std::max(1e-3,1e-3 * std::max(Frobenius(A),Frobenius(B)))
+
 void Target3DTestBase::compare_anaytic_and_numeric_grads()
 {
   const double EPS_VAL = 1e-6;
-  const double EPS_GRAD = 5e-3;
   
   const double Avals[] = { 2, 1, 1, 1, 2, 1, 1, 1, 2 };
   const double Bvals[] = { 1.5, -0.7, -0.8, 0.8, -1.3, -0.7, 0.6, -0.9, -2.0 };
@@ -349,7 +350,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
   
   valid = test_metric.TargetMetric3D::evaluate_with_grad( I, A, nval, num, err );
   ASSERT_NO_ERROR(err);
@@ -358,7 +359,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
   
   valid = test_metric.TargetMetric3D::evaluate_with_grad( A, I, nval, num, err );
   ASSERT_NO_ERROR(err);
@@ -367,7 +368,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
   
   valid = test_metric.TargetMetric3D::evaluate_with_grad( I, B, nval, num, err );
   ASSERT_NO_ERROR(err);
@@ -376,7 +377,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
   
   valid = test_metric.TargetMetric3D::evaluate_with_grad( B, I, nval, num, err );
   ASSERT_NO_ERROR(err);
@@ -385,7 +386,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
    
   valid = test_metric.TargetMetric3D::evaluate_with_grad( A, B, nval, num, err );
   ASSERT_NO_ERROR(err);
@@ -394,7 +395,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
   
   valid = test_metric.TargetMetric3D::evaluate_with_grad( A, I, nval, num, err );
   ASSERT_NO_ERROR(err);
@@ -403,7 +404,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
   
     // also test inverted for non-barrier metrics
   if (Barrier)
@@ -420,15 +421,14 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
 }
 
 
 void Target3DTestBase::compare_anaytic_and_numeric_hess()
 {
   const double EPS_VAL = 1e-6;
-  const double EPS_GRAD = 5e-3;
-  const double EPS_HESS = EPS_GRAD;
+  const double EPS_HESS = 5e-2;
   
   const double Avals[] = { 2, 1, 1, 1, 2, 1, 1, 1, 2 };
   const double Bvals[] = { 1.5, -0.7, -0.8, 0.8, -1.3, -0.7, 0.6, -0.9, -2.0 };
@@ -448,7 +448,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana) );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
@@ -463,7 +463,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana)  );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
@@ -478,7 +478,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana)  );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
@@ -493,7 +493,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana)  );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
@@ -508,7 +508,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana)  );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
@@ -523,7 +523,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana)  );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
@@ -538,7 +538,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana)  );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
@@ -561,7 +561,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana)  );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
@@ -982,6 +982,7 @@ void TargetMetric3DTest::test_numerical_hessian()
 #include "Target3DShapeSizeBarrierAlt1.hpp"
 #include "Target3DShapeSizeBarrierAlt2.hpp"
 #include "Target3DShapeSizeBarrierAlt3.hpp"
+#include "Target3DShapeSizeUntangle.hpp"
 #include "InverseMeanRatio3D.hpp"
 #include "Target3DSize.hpp"
 #include "Target3DSizeBarrier.hpp"
@@ -1070,6 +1071,7 @@ REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeBarrier,          false, fals
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeBarrierAlt1,      false, false,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeBarrierAlt2,      false, false,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeBarrierAlt3,      false, false,  true,  true, 0.0 );
+REGISTER_TARGET3D_TEST_WITH_GRAD( Target3DShapeSizeUntangle,         false, false,  true, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( InverseMeanRatio3D,                false,  true,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSize,                       true, false,  true, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSizeBarrier,                true, false,  true,  true, 0.0 );

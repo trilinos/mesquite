@@ -23,6 +23,7 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrientAlt1.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrientBarrier.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrientBarrierAlt1.cpp \
+	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeUntangle.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSize.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSizeBarrier.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSizeUntangle.cpp \
@@ -54,6 +55,7 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrientAlt1.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrientBarrier.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrientBarrierAlt1.hpp \
+	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeUntangle.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSize.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSizeBarrier.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSizeUntangle.hpp \
