@@ -41,8 +41,9 @@ namespace MESQUITE_NS {
 
 /**\brief Untangle metric
  *
+ * \f$ d = (1 - \epsilon) - (\tau - 1)^2 \f$
  *
- * Section 3.2.7 of derivs.tex
+ * \f$ \mu = (|d| - d)^2 \f$
  */
 class Target3DSizeUntangle : public TargetMetric3D
 {
