@@ -44,10 +44,11 @@ namespace MESQUITE_NS {
  * \f$ \mu_n(T) = {|\tau - \gamma| - (\tau - \gamma)}^4 \f$
  *
  * \f$ \psi_n(T) = \sqrt{|A|^2 + 2\alpha} \f$
+ *
  * \f$ \mu_n(T) = |T|^2 -2\psi_n(T) + 2 \f$
+ *
  * \f$ \rho_n(T) = \{|[1 - \epsilon] - \mu_n(T)| - ([1 - \epsilon] - \mu_n(T))\}^2
  *
- * Section 3.2.7 of derivs.tex
  */
 class Target2DShapeSizeUntangle : public TargetMetric2D
 {
