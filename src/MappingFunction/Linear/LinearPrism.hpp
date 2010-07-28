@@ -50,7 +50,7 @@ namespace MESQUITE_NS {
  * \f$ \eta + \zeta \leq 1 \f$
  *
  * The logical center of the element is at: 
- * \f$ (\xi,\eta,\zeta) = (0,\third,\third) \f$
+ * \f$ (\xi,\eta,\zeta) = (0,\frac{1}{3},\frac{1}{3}) \f$
  */ 
 class MESQUITE_EXPORT LinearPrism : public MappingFunction3D
 {
