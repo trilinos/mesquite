@@ -41,13 +41,12 @@ namespace MESQUITE_NS {
 
 /**\brief Untangle metric
  *
- * \f$ \mu_n(T) = {|\tau - \gamma| - (\tau - \gamma)}^4 \f$
  *
- * \f$ \psi_n(T) = \sqrt{|A|^2 + 2\alpha} \f$
+ * \f$ \psi(T) = \sqrt{|A|^2 + 2\alpha} \f$
  *
- * \f$ \mu_n(T) = |T|^2 -2\psi_n(T) + 2 \f$
+ * \f$ \mu(T) = |T|^2 -2\psi_n(T) + 2 \f$
  *
- * \f$ \rho_n(T) = \{|[1 - \epsilon] - \mu_n(T)| - ([1 - \epsilon] - \mu_n(T))\}^2
+ * \f$ \f(mu(T)) = \{|[1 - \epsilon] - \mu(T)| - ([1 - \epsilon] - \mu(T))\}^2
  *
  */
 class Target2DShapeSizeUntangle : public TargetMetric2D

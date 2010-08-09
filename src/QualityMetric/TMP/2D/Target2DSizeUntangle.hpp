@@ -41,9 +41,10 @@ namespace MESQUITE_NS {
 
 /**\brief Untangle metric
  *
- * \f$ d = (1 - \epsilon) - (\tau - 1)^2 \f$
  *
- * \f$ \mu = (|d| - d)^2 \f$
+ * \f$ \mu(T) = (det(T) - 1)^2
+ *
+ * \f$ \f(mu(T)) = \{|[1 - \epsilon] - \mu(T)| - ([1 - \epsilon] - \mu(T))\}^2
  */
 class Target2DSizeUntangle : public TargetMetric2D
 {

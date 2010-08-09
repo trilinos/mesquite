@@ -41,7 +41,9 @@ namespace MESQUITE_NS {
 
 /**\brief Untangle metric
  *
- * \f$ \mu_n(T) = \left\{|\tau - \gamma| - (\tau - \gamma)\right\}^4 \f$
+ * \f$ \mu(T) = |T|^3 - 3 \sqrt{3} \tau + \gamma (\tau - 1)^2 \f$
+ *
+ * \f$ \f(mu(T)) = \{|[1 - \epsilon] - \mu(T)| - ([1 - \epsilon] - \mu(T))\}^2
  *
  */
 class Target3DShapeSizeUntangle : public TargetMetric3D
