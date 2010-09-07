@@ -41,4 +41,9 @@
 2.1.2:
   - Fix broken support for iGeom/iRel APIs
   - Fix broken slave flag support in iMesh adaptor
+  - Prefer 'c++' over 'CC' for choice of C++ compiler because 'CC' is
+    not a C++ compiler on MacOS
+  - Fix configure bug preventing enabling of tests for configured
+    iMesh implementation
+  - Fix minor build issues for tests of configured iMesh implementation
 
