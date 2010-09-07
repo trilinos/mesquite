@@ -93,7 +93,7 @@ AC_SUBST(WITH_$2_IMPL)
 AC_SUBST($2_DEFS)
 AC_SUBST($2_LIBS)
 AM_CONDITIONAL([ENABLE_$2],[test "xyes" = "x$ENABLE_$2"])
-AM_CONDITIONAL([WITH_$2_IMPL],[test "xyes" = "xWITH_$2_IMPL"])
+AM_CONDITIONAL([WITH_$2_IMPL],[test "xyes" = "x$WITH_$2_IMPL"])
 
 ])
 
