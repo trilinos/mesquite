@@ -35,15 +35,15 @@
 #include "Vector3D.hpp"
 #include "Matrix3D.hpp"
 #include "MsqError.hpp"
-#include <stdio.h>
+#include <sstream>
 
 namespace MESQUITE_NS {
 
 std::string ScalarAddQualityMetric::get_name() const
 {
-  char buffer[64];
-  sprintf( buffer, "+%f", mOffset );
-  return mMetric->get_name() + buffer;
+  std::ostringstream str;
+  str << mMetric->get_name() << "+" << mOffset;
+  return str.str();
 }
 
 void ScalarAddQualityMetric::get_evaluations( PatchData& pd, 
