@@ -129,6 +129,11 @@ int main(int argc, char* argv[])
   Mesh* mesh = use_native ? 
                get_native_mesh(file_name) : 
                get_imesh_mesh(file_name);
+  if (!mesh) {
+    std::cerr << "Failed to load input file.  Aborting." << std::endl;
+    return 1;
+  }
+  
   MeshWriter::write_vtk(mesh, "original.vtk", err); 
   if (err) return 1;
   cout << "Wrote \"original.vtk\"" << endl;
@@ -139,6 +144,11 @@ int main(int argc, char* argv[])
   mesh = use_native ? 
          get_native_mesh(file_name) : 
          get_imesh_mesh(file_name);
+  if (!mesh) {
+    std::cerr << "Failed to load input file.  Aborting." << std::endl;
+    return 1;
+  }
+  
   run_local_smoother( mesh, err );
   if (err) return 1;
   
@@ -273,6 +283,7 @@ Mesh* get_imesh_mesh( const char* file_name )
   
   iMesh_load( imesh_mesh, root_set, file_name, 0, &ierr, strlen(file_name), 0 );
   if (iBase_SUCCESS != ierr) {
+    std::cerr << file_name << ": failed to load file." << std::endl;
     iMesh_dtor( imesh_mesh, &ierr );
     return 0;
   }
