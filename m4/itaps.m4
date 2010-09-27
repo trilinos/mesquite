@@ -68,14 +68,16 @@ fi
 AC_ARG_WITH( [$1], 
 [AC_HELP_STRING([--with-$1=<path>],
   [Path to $3-Defs.inc (enable $3)])],
-  [$2_DEFS=$withval])
+  [test "x${$2_DEFS}" = "xno" && $2_DEFS=$withval])
 
 # If option is disabled
-if test "x${$2_DEFS}" == "xno"; then
+if test "x${$2_DEFS}" = "xno"; then
   $2_DEFS=
   ENABLE_$2=no
   $2_LIBS=
   $2_INCL=
+elif test "x${$2_DEFS}" = "xyes"; then
+  AC_MSG_ERROR([Path to $3-Defs.inc not specified.  Use with-val or $2_DEFS])
 else
   # Verify that we have any required interfaces
   if test "x" != "x$4"; then
