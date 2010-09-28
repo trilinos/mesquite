@@ -47,3 +47,7 @@
     iMesh implementation
   - Fix minor build issues for tests of configured iMesh implementation
 
+2.1.3:
+  - Handle file read error cleanly in imesh test.
+  - Fix iMesh test compatability
+  
