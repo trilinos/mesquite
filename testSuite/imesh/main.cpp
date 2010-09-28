@@ -296,7 +296,7 @@ Mesh* get_imesh_mesh( const char* file_name )
   }
 
   MsqError err;
-  Mesh* result = new Mesquite::MsqIMesh( imesh_mesh, root_set, iBase_ALL_TYPES, err, &fixed_tag );
+  Mesh* result = new Mesquite::MsqIMesh( imesh_mesh, root_set, iBase_REGION, err, &fixed_tag );
   if (MSQ_CHKERR(err)) {
     delete result;
     cerr << err << endl;
