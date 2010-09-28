@@ -89,7 +89,8 @@ public:
    *                  element shape function is a function of the vertex 
    *                  position.
    */
-  MsqIMesh( iMesh_Instance imesh, iBase_EntitySetHandle meshset,
+  MsqIMesh( iMesh_Instance imesh, 
+            iBase_EntitySetHandle meshset,
 	    iBase_EntityType element_dimension,
             MsqError& err,
 	    const iBase_TagHandle* fixed_tag = 0,
@@ -104,6 +105,12 @@ public:
    * this constructor may be used in an optimization.
    *
    *\param imesh      The iMesh instance to interact with
+   *
+   *\param element_dimension Optimize the subset of the elements in
+   *                  root set with this dimension.  Pass iBase_ALL_TYPES
+   *                  for both iBase_FACE and iBase_REGION elements.
+   *                  If 'meshset' is the root set, then this argument is
+   *                  typically either iBase_FACE or iBase_REGION.
    *
    *\param fixed_tag  A pointer to the tag handle designating a tag 
    *                  containing fixed flags for vertices.  The tag must
@@ -128,6 +135,7 @@ public:
    *                  position.
    */
   MsqIMesh( iMesh_Instance imesh, 
+	    iBase_EntityType element_dimension,
             MsqError& err,
 	    const iBase_TagHandle* fixed_tag = 0,
 	    const iBase_TagHandle* slaved_tag= 0 );

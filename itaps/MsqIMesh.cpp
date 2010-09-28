@@ -55,7 +55,8 @@ namespace MESQUITE_NS {
   : meshInstance(mesh), 
     inputSetType( iBase_ALL_TYPES ),
     inputSet(0),
-    byteTag(0), createdByteTag(false),
+    byteTag(0), 
+    createdByteTag(false),
     geometricDimension(0)
   {
     init_active_mesh( mesh, err, fixed_tag, slaved_tag ); 
@@ -65,13 +66,15 @@ namespace MESQUITE_NS {
   }
 
   MsqIMesh::MsqIMesh( iMesh_Instance mesh, 
+		      iBase_EntityType type,
                       MsqError& err,
 		      const iBase_TagHandle* fixed_tag,
 		      const iBase_TagHandle* slaved_tag)
   : meshInstance(mesh), 
     inputSetType( iBase_ALL_TYPES ),
     inputSet(0),
-    byteTag(0), createdByteTag(false),
+    byteTag(0), 
+    createdByteTag(false),
     geometricDimension(0)
   {
     init_active_mesh( mesh, err, fixed_tag, slaved_tag ); 
@@ -84,7 +87,7 @@ namespace MESQUITE_NS {
       MSQ_SETERR(err)("Invalid iMesh instance.", MsqError::INVALID_STATE );
       return;
     }
-    set_active_set( root_set, iBase_ALL_TYPES, err );
+    set_active_set( root_set, type, err );
     MSQ_ERRRTN(err);  
     
     
