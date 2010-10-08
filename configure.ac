@@ -581,7 +581,7 @@ if test "x$EXODUS_ARG" != "xno"; then
   fi
   
     # Check for ExodusII
-  AC_CHECK_LIB( [exoIIv2c], [ex_open], [], [AC_MSG_ERROR([ExodusII library not found])] )
+  AC_CHECK_LIB( [exoIIv2c], [ex_close], [], [AC_MSG_ERROR([ExodusII library not found])] )
   AC_CHECK_HEADER( [exodusII.h], [], [AC_MSG_ERROR([exodusII.h not found])] )
   CPPFLAGS="$old_CPPFLAGS"
   LDFLAGS="$old_LDFLAGS"
