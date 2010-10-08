@@ -230,7 +230,8 @@ public:
     for (j = 0; j < num_to_check; ++j)
     {
       sprintf(buffer, "bad node: %d\n", j);
-      mMesh->vertices_get_coordinates( (const Mesquite::Mesh::VertexHandle*)&j, &vert, 1, err );
+      Mesquite::Mesh::VertexHandle handle = (Mesquite::Mesh::VertexHandle)j;
+      mMesh->vertices_get_coordinates( &handle, &vert, 1, err );
       CPPUNIT_ASSERT( !err );
       for (i = 0; i < 3; ++i)
       {
