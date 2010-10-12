@@ -30,7 +30,11 @@
  *  \author Jason Kraftcheck 
  */
 
-#include "ShapeImprovementWrapper.hpp"
+#ifdef TEST_OLD_WRAPPER
+#  include "ShapeImprovementWrapper.hpp"
+#else
+#  include "ShapeImprover.hpp"
+#endif
 #include "QualityAssessor.hpp"
 #include "MeshImpl.hpp"
 #include "MsqError.hpp"
@@ -88,7 +92,11 @@ int main( int argc, char* argv[] )
   }
   
   PlanarDomain plane(PlanarDomain::XY);
+#ifdef TEST_OLD_WRAPPER
   ShapeImprovementWrapper smoother;
+#else
+  ShapeImprover smoother;
+#endif
   IdealWeightInverseMeanRatio extra_metric;
   smoother.quality_assessor().add_quality_assessment(&extra_metric);
   smoother.run_instructions( &mesh, &plane, err );

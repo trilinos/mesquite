@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
   Vector3D point(0,0,5);
   PlanarDomain my_mesh_plane(normal, point);
 
-  Mesquite::ShapeImprovementWrapper mesh_quality_algorithm(err);
+  Mesquite::ShapeImprover mesh_quality_algorithm;
   mesh_quality_algorithm.run_instructions( &my_mesh, &my_mesh_plane, err);
     //Should check the error object after the instruction is ran
     // to see whether the instructions were all successful.

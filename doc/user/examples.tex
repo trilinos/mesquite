@@ -143,7 +143,7 @@ allow users to set the most important parameters of the underlying
 algorithms and metrics (see Chapter 
 \ref{sec:wrappers} for details).
 \begin{verbatim}
-Mesquite::ShapeImprovementWrapper mesh_quality_algorithm(err);
+Mesquite::ShapeImprover mesh_quality_algorithm;
 mesh_quality_algorithm.run_instructions(&my_mesh,
                                         &my_mesh_plane,  err);
 //Should check the error object after the instruction is ran
@@ -206,7 +206,7 @@ of square quadrilaterals which have an inverse mean ratio value of 1.0.
 \begin{figure*}[htbp]
 \begin{center}
     \includegraphics[height=50mm]{square_rand.eps}
-    \caption{square\_quad\_10\_rand.vtk mesh. The original mesh is on the left, the mesh smoothed with the \texttt{ShapeImprovementWrapper} is shown on the right.}
+    \caption{square\_quad\_10\_rand.vtk mesh. The original mesh is on the left, the mesh smoothed with \texttt{ShapeImprover} is shown on the right.}
     \label{fig:square_rand}
 \end{center}
 \end{figure*}

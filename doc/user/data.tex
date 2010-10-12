@@ -128,7 +128,7 @@ Mesquite a mesh containing four quadrilateral elements.
     PlanarDomain domain( PlanarDomain::XY );
 
   MsqError err;
-  ShapeImprovementWrapper shape_wrapper( err );
+  ShapeImprover shape_wrapper;
   if (err) {
     std::cout << err << std::endl;
     exit (2);

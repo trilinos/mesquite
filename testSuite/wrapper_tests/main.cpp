@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
   mesh.read_vtk(file_name, err);
   
   // creates a wrapper
-  ShapeImprovementWrapper wrapper(err); if (err) return 1;
+  ShapeImprovementWrapper wrapper;
 
 //  mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
   

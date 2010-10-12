@@ -1,4 +1,4 @@
-#include "ShapeImprovementWrapper.hpp"
+#include "ShapeImprover.hpp"
 #include "MeshImpl.hpp"
 #include "CLArgs.hpp"
 #include "MsqError.hpp"
@@ -11,14 +11,14 @@ using namespace Mesquite;
 
 int main( int argc, char* argv[] )
 {
-  const double zero = 0.0;
+  const double zero = 0.0, one = 1.0;
   double default_cpu_time = 0.0;
-  CLArgs::DoubleRangeArg l2_norm( &zero, 0 ), cpu_time( default_cpu_time, &zero, 0 );
+  CLArgs::DoubleRangeArg movement_beta( &zero, &one ), cpu_time( default_cpu_time, &zero, 0 );
   
   CLArgs args( "msqshape",
                "Run Shape Improvement smoother for input mesh.",
                "Read VTK file, smooth, and re-write file." );
-  args.double_flag( 'n', "GradL2Norm", "termination graident L2 norm", &l2_norm );
+  args.double_flag( 'b', "Vtx Movement Beta", "fraction of mean edge length to use as termination criterion on vertex movement", &movement_beta );
   args.double_flag( 't', "Cpu Seconds", "time-out", &cpu_time );
                     
   add_domain_args( args );
@@ -43,24 +43,12 @@ int main( int argc, char* argv[] )
   }
   MeshDomain* domain = process_domain_args( &mesh );
 
-  if (l2_norm.seen()) {
-    ShapeImprovementWrapper smoother( err, cpu_time.value(), l2_norm.value() );
-    if (err) {
-      std::cerr << "Error constructing smoother" << std::endl
-                      << err << std::endl;
-      return 2;
-    }
-    smoother.run_instructions( &mesh, domain, err );
-  }
-  else {
-    ShapeImprovementWrapper smoother( err, cpu_time.value() );
-    if (err) {
-      std::cerr << "Error constructing smoother" << std::endl
-                      << err << std::endl;
-      return 2;
-    }
-    smoother.run_instructions( &mesh, domain, err );
-  }
+  ShapeImprover smoother;
+  if (movement_beta.seen())
+    smoother.set_vertex_movement_limit_factor( movement_beta.value() );
+  if (cpu_time.seen())
+    smoother.set_cpu_time_limit( cpu_time.value() );
+  smoother.run_instructions( &mesh, domain, err );
   if (err) {
     std::cerr << err << std::endl;
     return 3;

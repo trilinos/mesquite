@@ -30,9 +30,9 @@ wrapper.  \newline
 
 
 
-\section{Shape-Improvement} \label{sec:ShapeImprovementWrapper}
+\section{Shape-Improvement} \label{sec:ShapeImprover}
 
-\noindent {\it Name}: ShapeImprovementWrapper \newline
+\noindent {\it Name}: ShapeImprover \newline
 \noindent {\it Purpose}: Make the shape of an element as close as possible to 
 that of the ideal/regular element shape. For example, make triangular and 
 tetrahedral elements equilateral. \newline
@@ -41,25 +41,14 @@ untangle the mesh is made. If the untangling effort fails, then the wrapper
 aborts.  \newline
 \noindent {\it Limitations/assumptions}:  \newline 
 \noindent {\it Input Termination Criterion}: CPU time limit (not used if input 
-value is non-positive) or L2 norm of the 
-gradient of the objective function (default = 1.e-06). Relative successive 
-improvement (1e-04). \newline \newline
+value is non-positive) or fraction of mean edge length (default is 0.1). \newline \newline
 
 \noindent Under the Cover: \newline
-\noindent {\it Hardwired Parameters}: Untangle Beta = 1.e-8 \newline
-\noindent {\it Metric}: IdealWeightInverseMeanRatio \newline
-\noindent {\it Objective Function}: L2 norm of element metrics \newline
+\noindent {\it Metric}: TMPQualityMetric(Shape/ShapeBarrier) \newline
+\noindent {\it Objective Function}: Algebraic mean of quality metric values \newline
 \noindent {\it Mesh/Element Type}: Any supported type. \newline
-\noindent {\it Solver}: Feasible Newton \newline
+\noindent {\it Solver}: Conjugate Gradient \newline
 \noindent {\it Global/Local}: Global \newline
-
-
-%\section{The Parallel Shape-Improvement Wrapper} \label{sec:ParallelShapeImprovementWrapper}
-
-%\noindent {\it Name}: ParallelShapeImprovementWrapper \newline
-%\noindent {\it Purpose}: Same as the ShapeImprovementWrapper, but via synchronous 
-%mesh optimization, so that the mesh is 'smooth' across processor boundaries. \newline
-
 
 
 \section{Minimum Edge-Length Improvement} \label{sec:PaverMinEdgeLengthWrapper}
