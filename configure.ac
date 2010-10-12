@@ -134,7 +134,7 @@ if test "$MSQ_DO_DEBUG" = "yes"; then
 fi
 
 CC_LIST="cc gcc cl egcs pgcc"
-CXX_LIST="CC aCC cxx xlC_r xlC c++ g++ pgCC gpp cc++ cl FCC KCC RCC"
+CXX_LIST="aCC cxx xlC_r xlC c++ g++ CC pgCC gpp cc++ cl FCC KCC RCC"
 
 #------------------------------------------------------------------------------
 # MPI part 1 (before compiler checks)
