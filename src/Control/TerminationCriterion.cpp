@@ -45,6 +45,7 @@
 #include "MsqDebug.hpp"
 #include "PatchData.hpp"
 #include "MeshWriter.hpp"
+#include "MeshUtil.hpp"
 
 #include <sstream>
 
@@ -89,24 +90,28 @@ enum TCType {
      //! during the previous iteration is below the given value.
    VERTEX_MOVEMENT_ABSOLUTE  = 1<<9,
      //!Terminates when a the maximum distance moved by any vertex
+     //! during the previous iteration is below a value calculated
+     //! from the edge lengths of the initial mesh.
+   VERTEX_MOVEMENT_ABS_EDGE_LENGTH  = 1<<10,
+     //!Terminates when a the maximum distance moved by any vertex
      //! during the previous iteration is below the given value
      //! times the maximum distance moved by any vertex over the
      //! entire course of the optimization.
-   VERTEX_MOVEMENT_RELATIVE  = 1<<10,
+   VERTEX_MOVEMENT_RELATIVE  = 1<<11,
      //!Terminates when the decrease in the objective function value since
      //! the previous iteration is below the given value.
-   SUCCESSIVE_IMPROVEMENTS_ABSOLUTE = 1<<11,
+   SUCCESSIVE_IMPROVEMENTS_ABSOLUTE = 1<<12,
      //!Terminates when the decrease in the objective function value since
      //! the previous iteration is below the given value times the
      //! decrease in the objective function value since the beginning
      //! of this optimization process.
-   SUCCESSIVE_IMPROVEMENTS_RELATIVE = 1<<12,
+   SUCCESSIVE_IMPROVEMENTS_RELATIVE = 1<<13,
      //!Terminates when any vertex leaves the bounding box, defined
      //! by the given value, d.  That is, when the absolute value of
      //! a single coordinate of vertex's position exceeds d.
-   BOUNDED_VERTEX_MOVEMENT = 1<<13,
+   BOUNDED_VERTEX_MOVEMENT = 1<<14,
     //! Terminate when no elements are inverted
-   UNTANGLED_MESH = 1<<14
+   UNTANGLED_MESH = 1<<15
 };
 
 
@@ -118,6 +123,10 @@ const unsigned long OF_FLAGS   = QUALITY_IMPROVEMENT_ABSOLUTE |
                                  QUALITY_IMPROVEMENT_RELATIVE |
                                  SUCCESSIVE_IMPROVEMENTS_ABSOLUTE |
                                  SUCCESSIVE_IMPROVEMENTS_RELATIVE;
+
+const unsigned long MOVEMENT_FLAGS = VERTEX_MOVEMENT_ABSOLUTE |
+                                     VERTEX_MOVEMENT_ABS_EDGE_LENGTH |
+                                     VERTEX_MOVEMENT_RELATIVE;
 
 /*!Constructor initializes all of the data members which are not
   necessarily automatically initialized in their constructors.*/
@@ -149,6 +158,8 @@ TerminationCriterion::TerminationCriterion()
   timeBound=0.0;
   vertexMovementAbsoluteEps=0.0;
   vertexMovementRelativeEps=0.0;
+  vertexMovementAvgBeta = -1;
+  vertexMovementAbsoluteAvgEdge = -1; 
   successiveImprovementsAbsoluteEps=0.0;
   successiveImprovementsRelativeEps=0.0;
   boundedVertexMovementEps=0.0;
@@ -198,6 +209,12 @@ void TerminationCriterion::add_absolute_vertex_movement( double eps )
        terminationCriterionFlag|=VERTEX_MOVEMENT_ABSOLUTE;
          //we actually compare squared movement to squared epsilon
        vertexMovementAbsoluteEps=(eps*eps);
+}
+
+void TerminationCriterion::add_absolute_vertex_movement_edge_length( double beta )
+{
+       terminationCriterionFlag|=VERTEX_MOVEMENT_ABS_EDGE_LENGTH;
+       vertexMovementAvgBeta=beta;
 }
 
 void TerminationCriterion::add_relative_vertex_movement( double eps )
@@ -266,6 +283,11 @@ void TerminationCriterion::cull_on_relative_vertex_movement( double limit )
 {
        cullingMethodFlag=VERTEX_MOVEMENT_RELATIVE;
        cullingEps=limit;
+}
+void TerminationCriterion::cull_on_absolute_vertex_movement_edge_length( double limit )
+{
+       cullingMethodFlag=VERTEX_MOVEMENT_ABS_EDGE_LENGTH;
+       vertexMovementAvgBeta=limit;
 }
 void TerminationCriterion::cull_on_absolute_successive_improvement( double limit )
 {
@@ -483,7 +505,7 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
 void TerminationCriterion::reset_patch(PatchData &pd, MsqError &err)
 {
   const unsigned long totalFlag = terminationCriterionFlag | cullingMethodFlag;
-  if (totalFlag & (VERTEX_MOVEMENT_ABSOLUTE | VERTEX_MOVEMENT_RELATIVE))
+  if (totalFlag & MOVEMENT_FLAGS)
   {
     if (previousVerticesMemento)
       pd.recreate_vertices_memento(previousVerticesMemento,err); 
@@ -606,7 +628,7 @@ void TerminationCriterion::accumulate_outer(Mesh* mesh,
 
 void TerminationCriterion::accumulate_patch( PatchData& pd, MsqError& err )
 {
-  if (terminationCriterionFlag & (VERTEX_MOVEMENT_ABSOLUTE|VERTEX_MOVEMENT_RELATIVE))
+  if (terminationCriterionFlag & MOVEMENT_FLAGS)
   {
     double patch_max_dist = pd.get_max_vertex_movement_squared( previousVerticesMemento, err );
     if (patch_max_dist > maxSquaredMovement)
@@ -677,7 +699,7 @@ bool TerminationCriterion::terminate( )
   }
   
   
-  if ((VERTEX_MOVEMENT_ABSOLUTE|VERTEX_MOVEMENT_RELATIVE) & terminationCriterionFlag
+  if (MOVEMENT_FLAGS & terminationCriterionFlag
       && maxSquaredMovement >= 0.0)
   {
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- Maximuim vertex movement: "
@@ -693,6 +715,15 @@ bool TerminationCriterion::terminate( )
         && maxSquaredMovement <= vertexMovementRelativeEps*maxSquaredInitialMovement)
     {
       return_flag = true;
+    }
+
+    if (VERTEX_MOVEMENT_ABS_EDGE_LENGTH & terminationCriterionFlag)
+    {
+      assert( vertexMovementAbsoluteAvgEdge > -1e-12 ); // make sure value actually got calculated
+      if (maxSquaredMovement <= vertexMovementAbsoluteAvgEdge)
+      {
+        return_flag = true;
+      }
     }
   }
 
@@ -831,6 +862,7 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
        break;
          //if culling on vertex movement absolute
     case VERTEX_MOVEMENT_ABSOLUTE:
+    case VERTEX_MOVEMENT_ABS_EDGE_LENGTH:
          //if movement was enough, cull
        prev_m = pd.get_max_vertex_movement_squared(previousVerticesMemento,err);
        MSQ_ERRZERO(err);
@@ -942,11 +974,23 @@ void TerminationCriterion::write_iterations( const char* filename, MsqError& err
 }
     
     
-void TerminationCriterion::initialize_queue( Mesh* ,
+void TerminationCriterion::initialize_queue( Mesh* mesh,
                                              MeshDomain* ,
                                              Settings* ,
-                                             MsqError&  )
+                                             MsqError& err )
 {
+  if (VERTEX_MOVEMENT_ABS_EDGE_LENGTH & (terminationCriterionFlag|cullingMethodFlag)) 
+  {
+    MeshUtil tool(mesh);
+    double min_len, avg_len, rms_len, max_len, dev_len;
+    tool.edge_length_distribution( min_len, avg_len, rms_len, max_len, dev_len, err );
+    MSQ_ERRRTN(err);
+    double limit = vertexMovementAvgBeta * (avg_len - dev_len);
+      // we actually calculate the square of the length
+    vertexMovementAbsoluteAvgEdge = limit * limit;
+    if (VERTEX_MOVEMENT_ABS_EDGE_LENGTH & cullingMethodFlag)
+      cullingEps = vertexMovementAbsoluteAvgEdge;
+  }
 }
 
 } //namespace Mesquite

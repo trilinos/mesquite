@@ -161,6 +161,19 @@ namespace MESQUITE_NS
          //! entire course of the optimization.
     MESQUITE_EXPORT void add_relative_vertex_movement( double value );
 
+         //! Calculates a constant \f$ \delta = \beta \times (a - \sigma) \f$
+         //! and terminates when the maximum vertex movement of an iteration
+         //! is less than delta.
+         //!
+         //! \f$ \beta \f$ is the passed value, \f$ a \f$ 
+         //! is the average edge length of the initial mesh and \f$ \sigma \f$
+         //! is the standard deviation of the edge lengths of the initial
+         //! mesh.  The initial mesh values are (re)calcualted for each 
+         //! time the instruction queue is run. 
+         //!
+         //!\param value \f$ beta \f$.  Must be in range (0,1), exclusive.
+    MESQUITE_EXPORT void add_absolute_vertex_movement_edge_length( double value );
+
          //!Terminates when the decrease in the objective function value since
          //! the previous iteration is below the given value.
     MESQUITE_EXPORT void add_absolute_successive_improvement( double value );
@@ -208,6 +221,17 @@ namespace MESQUITE_NS
          //!Cull when the decrease in the objective function value since
          //! the previous iteration is below the given value.
     MESQUITE_EXPORT void cull_on_absolute_successive_improvement( double limit );
+         //! Calculates a constant \f$ \delta = \beta \times (a - \sigma) \f$
+         //! and culls when the vertex movement  is less than delta.
+         //!
+         //! \f$ \beta \f$ is the passed value, \f$ a \f$ 
+         //! is the average edge length of the initial mesh and \f$ \sigma \f$
+         //! is the standard deviation of the edge lengths of the initial
+         //! mesh.  The initial mesh values are (re)calcualted for each 
+         //! time the instruction queue is run. 
+         //!
+         //!\param value \f$ beta \f$.  Must be in range (0,1), exclusive.
+    MESQUITE_EXPORT void cull_on_absolute_vertex_movement_edge_length( double value );
          //!Cull when the decrease in the objective function value since
          //! the previous iteration is below the given value times the
          //! decrease in the objective function value since the beginning
@@ -352,6 +376,8 @@ namespace MESQUITE_NS
     PatchDataVerticesMemento* previousVerticesMemento;//if we want relative
     double vertexMovementAbsoluteEps;
     double vertexMovementRelativeEps;
+    double vertexMovementAvgBeta; //!< input beta value used to calculate \c vertexMovementAbsoluteAvg
+    double vertexMovementAbsoluteAvgEdge; //!< calculated constant for \c VERTEX_MOVEMENT_ABS_EDGE_LENGTH
     double maxSquaredInitialMovement;
     double maxSquaredMovement;
     
