@@ -72,6 +72,7 @@ APPEND_SET(HEADERS
   Mesh/MeshImpl.hpp
   Mesh/MeshImplData.hpp
   Mesh/MeshImplTags.hpp
+  Mesh/MeshUtil.hpp
   Mesh/MeshWriter.hpp
   Mesh/MsqFreeVertexIndexIterator.hpp
   Mesh/MsqMeshEntity.hpp
@@ -95,6 +96,7 @@ APPEND_SET(SOURCES
   Mesh/MeshImpl.cpp
   Mesh/MeshImplData.cpp
   Mesh/MeshImplTags.cpp
+  Mesh/MeshUtil.cpp
   Mesh/MeshWriter.cpp
   Mesh/MsqMeshEntity.cpp
   Mesh/MsqVertex.cpp
