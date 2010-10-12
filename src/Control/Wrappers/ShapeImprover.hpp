@@ -62,7 +62,7 @@ namespace MESQUITE_NS {
      * and sigma is the standard deviation of the edge lengths
      * in the initial mesh.  beta is the value passed to this
      * function.  beta must be greater than zero and less than one.
-     * The default value for beta is 0.1.
+     * The default value for beta is 0.005.
      */
     MESQUITE_EXPORT
     void set_vertex_movement_limit_factor( double beta );

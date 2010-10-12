@@ -50,7 +50,7 @@
 
 namespace MESQUITE_NS {
 
-const double DEFAULT_BETA = 0.1;
+const double DEFAULT_BETA = 0.005;
 const int DEFUALT_PARALLEL_ITERATIONS = 10;
 
 ShapeImprover::ShapeImprover() 
