@@ -246,7 +246,7 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
   indices.resize( num_idx );
   return result;
 }
-/*
+
 static void get_u_perp( const MsqVector<3>& u,
                         MsqVector<3>& u_perp )
 {
@@ -262,34 +262,8 @@ static void get_u_perp( const MsqVector<3>& u,
     u_perp[2] = a;
   }
 }
-*/
-/* Do transform M_hat = S_a M_{3x2}, M_{2x2} Theta^-1 M_hat
- * where the plane into which we are projecting is the cross
- * product of the columns of M, such that S_a is I.  Use the
- * first column of M as u_perp.  
- *
- * Also pass back the cross product of the columns of M as u,
- * and the first column of M as u_perp, both normalized.
- */
-static inline void
-project_to_matrix_plane( const MsqMatrix<3,2>& M_in,
-                         MsqMatrix<2,2>& M_out,
-                         MsqVector<3>& u,
-                         MsqVector<3>& u_perp )
-{
-  u = M_in.column(0) * M_in.column(1);
-  double u_len = length(u);
-  u *= 1.0/u_len;
-  u_perp = M_in.column(0);
-  double len0 = length(u_perp);
-  u_perp *= 1.0/len0;
 
-   // M_out = transpose(theta)*M_in
-  M_out(0,0) = len0;
-  M_out(0,1) = u_perp % M_in.column(1);
-  M_out(1,0) = 0.0;
-  M_out(1,1) = u_len / len0;
-}
+
 
 /* Do transform M_hat = S_a M_{3x2}, M_{2x2} Theta^-1 M_hat
  * where the plane into which we are projecting is orthogonal
@@ -339,6 +313,58 @@ project_to_perp_plane(  MsqMatrix<3,2> J,
     // Project to get 2x2 A from A_hat (which might be equal to J)
   A = transpose(Theta) * J;
   return true;
+}
+
+/* Do transform M_hat = S_a M_{3x2}, M_{2x2} Theta^-1 M_hat
+ * where the plane into which we are projecting is the cross
+ * product of the columns of M, such that S_a is I.  Use the
+ * first column of M as u_perp.  
+ *
+ * Also pass back the cross product of the columns of M as u,
+ * and the first column of M as u_perp, both normalized.
+ */
+static inline void
+project_to_matrix_plane( const MsqMatrix<3,2>& M_in,
+                         MsqMatrix<2,2>& M_out,
+                         MsqVector<3>& u,
+                         MsqVector<3>& u_perp )
+{
+  u = M_in.column(0) * M_in.column(1);
+  u_perp = M_in.column(0);
+  double len0 = length(u_perp);
+  double u_len = length(u);
+  double d_perp, d_u;
+  if (!divide(1.0, len0, d_perp)) {
+    // try the other column
+    u_perp = M_in.column(1);
+    len0 = length(u_perp);
+    if (!divide(1.0, len0, d_perp)) {
+      // matrix is all zeros
+      u[0] = 0; u[1] = 0; u[2] = 1;
+      u_perp[0] = 1; u_perp[1] = 0; u_perp[2] = 0;
+      M_out = MsqMatrix<2,2>(0.0);
+    }
+    else {
+      MsqMatrix<3,2> junk;
+      get_u_perp( u_perp, u );
+      project_to_perp_plane( M_in, u, u_perp, M_out, junk );
+    }
+  }
+  else if (!divide(1.0, u_len, d_u )) {
+    MsqMatrix<3,2> junk;
+    get_u_perp( u_perp, u );
+    project_to_perp_plane( M_in, u, u_perp, M_out, junk );
+  }
+  else { // the normal case (neither column is zero)
+    u *= d_u;
+    u_perp *= d_perp;
+
+     // M_out = transpose(theta)*M_in
+    M_out(0,0) = len0;
+    M_out(0,1) = u_perp % M_in.column(1);
+    M_out(1,0) = 0.0;
+    M_out(1,1) = u_len / len0;
+  }
 }
 
 inline bool
@@ -753,7 +779,7 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
     
 void TMPQualityMetric::initialize_queue( Mesh* mesh,
                                          MeshDomain* domain,
-                                         Settings* settings,
+                                         const Settings* settings,
                                          MsqError& err )
 {
   targetCalc->initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);
