@@ -247,6 +247,10 @@ class DummyVertexSlaver : public VertexSlaver
                                    MsqError&  )
       { CPPUNIT_ASSERT(false); return 0.0; }
     virtual std::string get_name() const { return "Dummy"; }
+    virtual void initialize_queue( Mesh* ,
+                                   MeshDomain* ,
+                                   const Settings* ,
+                                   MsqError&  ) {}
 };
 
 void InstructionQueueTest::test_add_remove_vertex_slaver()

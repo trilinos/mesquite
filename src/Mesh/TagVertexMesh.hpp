@@ -180,6 +180,15 @@ class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator, public Instruction
                                    MsqError& err );
 
     virtual std::string get_name() const;
+  
+     //!\brief Called at start of instruction queue processing
+     //!
+     //! Do any preliminary global initialization, consistency checking,
+     //! etc.  Default implementation does nothing.
+    virtual void initialize_queue( Mesh* mesh,
+                                   MeshDomain* domain,
+                                   const Settings* settings,
+                                   MsqError& err );
 };
 
 

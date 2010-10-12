@@ -179,5 +179,12 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
   return 0.0;
 }
 
+void SlaveBoundaryVertices::initialize_queue( Mesh* ,
+                                              MeshDomain* ,
+                                              const Settings* ,
+                                              MsqError&  )
+{
+}
+
 
 } // namespace Mesquite

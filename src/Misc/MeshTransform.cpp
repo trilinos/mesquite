@@ -109,5 +109,12 @@ namespace MESQUITE_NS {
         mMat[i][2] *= f[i];
       }
     }      
+
+  void MeshTransform::initialize_queue( Mesh* ,
+                                   MeshDomain* ,
+                                   const Settings* ,
+                                   MsqError&  )
+    {
+    }
   
 } // namespace Mesquite

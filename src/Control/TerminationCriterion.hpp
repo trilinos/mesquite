@@ -328,7 +328,7 @@ namespace MESQUITE_NS
     
     void initialize_queue( Mesh* mesh,
                            MeshDomain* domain,
-                           Settings* settings,
+                           const Settings* settings,
                            MsqError& err );
 
  protected:

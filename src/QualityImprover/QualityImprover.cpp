@@ -57,7 +57,7 @@ QualityImprover::~QualityImprover()
     
 void QualityImprover::initialize_queue( Mesh* mesh,
                                         MeshDomain* domain,
-                                        Settings* settings,
+                                        const Settings* settings,
                                         MsqError& err )
 {
   innerTerminationCriterion->initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);

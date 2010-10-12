@@ -230,4 +230,10 @@ TagHandle TargetWriter::get_tag_handle( const std::string& base_name,
   return handle;
 }
 
+void TargetWriter::initialize_queue( Mesh* ,
+                                     MeshDomain* ,
+                                     const Settings* ,
+                                     MsqError&  )
+{
+}
 } // namespace Mesquite

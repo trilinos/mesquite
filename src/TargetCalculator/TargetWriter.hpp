@@ -61,6 +61,12 @@ public:
   
   MESQUITE_EXPORT
   double loop_over_mesh( Mesh* mesh, MeshDomain*, const Settings*, MsqError& );
+ 
+  MESQUITE_EXPORT
+  void initialize_queue( Mesh* mesh,
+                         MeshDomain* domain,
+                         const Settings* settings,
+                         MsqError& err );
 
   MESQUITE_EXPORT
   std::string get_name() const;

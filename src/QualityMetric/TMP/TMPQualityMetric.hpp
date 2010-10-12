@@ -169,7 +169,7 @@ public:
     
   virtual void initialize_queue( Mesh* mesh,
                                  MeshDomain* domain,
-                                 Settings* settings,
+                                 const Settings* settings,
                                  MsqError& err );
   
 private:

@@ -52,7 +52,7 @@ class MESQUITE_EXPORT Instruction
     virtual void initialize_queue( Mesh* mesh,
                                    MeshDomain* domain,
                                    const Settings* settings,
-                                   MsqError& err );
+                                   MsqError& err ) = 0;
   
       //! Virtual fuction implementing primary functionaliy of 
       //! instruction instance.

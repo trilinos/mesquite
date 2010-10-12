@@ -86,6 +86,11 @@ class SlaveBoundaryVertices : public VertexSlaver
                                    MsqError& err );
    
     virtual std::string get_name() const;
+
+    virtual void initialize_queue( Mesh* mesh,
+                                   MeshDomain* domain,
+                                   const Settings* settings,
+                                   MsqError& err );
     
     unsigned get_num_boundary_layers() const { return elemDepth; }
     bool boundary_is_fixed_vertices() const { return domainDoF >= 4; }

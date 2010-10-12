@@ -976,7 +976,7 @@ void TerminationCriterion::write_iterations( const char* filename, MsqError& err
     
 void TerminationCriterion::initialize_queue( Mesh* mesh,
                                              MeshDomain* ,
-                                             Settings* ,
+                                             const Settings* ,
                                              MsqError& err )
 {
   if (VERTEX_MOVEMENT_ABS_EDGE_LENGTH & (terminationCriterionFlag|cullingMethodFlag)) 

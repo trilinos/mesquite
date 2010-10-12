@@ -63,7 +63,7 @@ namespace MESQUITE_NS
     MESQUITE_EXPORT 
     virtual void initialize_queue( Mesh* mesh,
                                    MeshDomain* domain,
-                                   Settings* settings,
+                                   const Settings* settings,
                                    MsqError& err );
     
     MESQUITE_EXPORT 

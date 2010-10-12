@@ -261,5 +261,12 @@ void TagVertexMesh::release()
   MeshDecorator::release();
 }
 
+void TagVertexMesh::initialize_queue( Mesh* ,
+                                   MeshDomain* ,
+                                   const Settings* ,
+                                   MsqError&  )
+{
+}
+
 
 } // namespace Mesquite

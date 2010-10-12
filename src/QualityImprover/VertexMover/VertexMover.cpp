@@ -534,7 +534,7 @@ ERROR:
     
 void VertexMover::initialize_queue( Mesh* mesh,
                                     MeshDomain* domain,
-                                    Settings* settings,
+                                    const Settings* settings,
                                     MsqError& err )
 {
   QualityImprover::initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);
