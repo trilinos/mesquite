@@ -32,8 +32,9 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSum.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DOffset.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DTau.cpp \
-	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangleBeta.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangleAlt1.cpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangleBeta.cpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangleMu.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/InverseMeanRatio2D.cpp 
 
 MSQ_HDRS += \
@@ -65,8 +66,9 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSum.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DOffset.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DTau.hpp \
-	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangleBeta.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangleAlt1.hpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangleBeta.hpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangleMu.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TargetMetric2D.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/InverseMeanRatio2D.hpp 
 

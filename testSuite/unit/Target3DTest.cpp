@@ -324,7 +324,7 @@ void Target3DTestBase::compare_eval_with_grad_and_eval_with_hess()
   ASSERT_MATRICES_EQUAL( g, h, 1e-5 );
 }
 
-#define EPS_GRAD(A,B) std::max(1e-3,1e-3 * std::max(Frobenius(A),Frobenius(B)))
+double eps_mat( const MsqMatrix<3,3>& mu ) { return std::max( Frobenius(mu)*1e-2, 1e-4 ); }
 
 void Target3DTestBase::compare_anaytic_and_numeric_grads()
 {
@@ -350,7 +350,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
+  ASSERT_MATRICES_EQUAL( num, ana, eps_mat(num) );
   
   valid = test_metric.TargetMetric3D::evaluate_with_grad( I, A, nval, num, err );
   ASSERT_NO_ERROR(err);
@@ -359,7 +359,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
+  ASSERT_MATRICES_EQUAL( num, ana, eps_mat(num) );
   
   valid = test_metric.TargetMetric3D::evaluate_with_grad( A, I, nval, num, err );
   ASSERT_NO_ERROR(err);
@@ -368,7 +368,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
+  ASSERT_MATRICES_EQUAL( num, ana, eps_mat(num) );
   
   valid = test_metric.TargetMetric3D::evaluate_with_grad( I, B, nval, num, err );
   ASSERT_NO_ERROR(err);
@@ -377,7 +377,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
+  ASSERT_MATRICES_EQUAL( num, ana, eps_mat(num) );
   
   valid = test_metric.TargetMetric3D::evaluate_with_grad( B, I, nval, num, err );
   ASSERT_NO_ERROR(err);
@@ -386,7 +386,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
+  ASSERT_MATRICES_EQUAL( num, ana, eps_mat(num) );
    
   valid = test_metric.TargetMetric3D::evaluate_with_grad( A, B, nval, num, err );
   ASSERT_NO_ERROR(err);
@@ -395,7 +395,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
+  ASSERT_MATRICES_EQUAL( num, ana, eps_mat(num) );
   
   valid = test_metric.TargetMetric3D::evaluate_with_grad( A, I, nval, num, err );
   ASSERT_NO_ERROR(err);
@@ -404,7 +404,7 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
+  ASSERT_MATRICES_EQUAL( num, ana, eps_mat(num) );
   
     // also test inverted for non-barrier metrics
   if (Barrier)
@@ -421,15 +421,14 @@ void Target3DTestBase::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD(num,ana) );
+  ASSERT_MATRICES_EQUAL( num, ana, eps_mat(num) );
 }
 
 
 void Target3DTestBase::compare_anaytic_and_numeric_hess()
 {
   const double EPS_VAL = 1e-6;
-  const double EPS_HESS = 5e-2;
-  
+ 
   const double Avals[] = { 2, 1, 1, 1, 2, 1, 1, 1, 2 };
   const double Bvals[] = { 1.5, -0.7, -0.8, 0.8, -1.3, -0.7, 0.6, -0.9, -2.0 };
   const MsqMatrix<3,3> I( 1.0 );
@@ -448,13 +447,13 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana) );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], EPS_HESS );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, eps_mat(dmdA_num) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], eps_mat(d2mdA2_num[0]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], eps_mat(d2mdA2_num[1]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], eps_mat(d2mdA2_num[2]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], eps_mat(d2mdA2_num[3]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], eps_mat(d2mdA2_num[4]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], eps_mat(d2mdA2_num[5]) );
   
   valid = test_metric.TargetMetric3D::evaluate_with_hess( I, A, val_num, dmdA_num, d2mdA2_num, err );
   ASSERT_NO_ERROR(err);
@@ -463,13 +462,13 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana)  );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], EPS_HESS );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, eps_mat(dmdA_num) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], eps_mat(d2mdA2_num[0]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], eps_mat(d2mdA2_num[1]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], eps_mat(d2mdA2_num[2]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], eps_mat(d2mdA2_num[3]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], eps_mat(d2mdA2_num[4]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], eps_mat(d2mdA2_num[5]) );
   
   valid = test_metric.TargetMetric3D::evaluate_with_hess( A, I, val_num, dmdA_num, d2mdA2_num, err );
   ASSERT_NO_ERROR(err);
@@ -478,13 +477,13 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana)  );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], EPS_HESS );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, eps_mat(dmdA_num) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], eps_mat(d2mdA2_num[0]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], eps_mat(d2mdA2_num[1]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], eps_mat(d2mdA2_num[2]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], eps_mat(d2mdA2_num[3]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], eps_mat(d2mdA2_num[4]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], eps_mat(d2mdA2_num[5]) );
  
   valid = test_metric.TargetMetric3D::evaluate_with_hess( B, I, val_num, dmdA_num, d2mdA2_num, err );
   ASSERT_NO_ERROR(err);
@@ -493,13 +492,13 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana)  );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], EPS_HESS );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, eps_mat(dmdA_num) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], eps_mat(d2mdA2_num[0]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], eps_mat(d2mdA2_num[1]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], eps_mat(d2mdA2_num[2]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], eps_mat(d2mdA2_num[3]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], eps_mat(d2mdA2_num[4]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], eps_mat(d2mdA2_num[5]) );
   
   valid = test_metric.TargetMetric3D::evaluate_with_hess( I, B, val_num, dmdA_num, d2mdA2_num, err );
   ASSERT_NO_ERROR(err);
@@ -508,13 +507,13 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana)  );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], EPS_HESS );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, eps_mat(dmdA_num) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], eps_mat(d2mdA2_num[0]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], eps_mat(d2mdA2_num[1]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], eps_mat(d2mdA2_num[2]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], eps_mat(d2mdA2_num[3]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], eps_mat(d2mdA2_num[4]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], eps_mat(d2mdA2_num[5]) );
   
   valid = test_metric.TargetMetric3D::evaluate_with_hess( A, B, val_num, dmdA_num, d2mdA2_num, err );
   ASSERT_NO_ERROR(err);
@@ -523,13 +522,13 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana)  );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], EPS_HESS );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, eps_mat(dmdA_num) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], eps_mat(d2mdA2_num[0]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], eps_mat(d2mdA2_num[1]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], eps_mat(d2mdA2_num[2]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], eps_mat(d2mdA2_num[3]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], eps_mat(d2mdA2_num[4]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], eps_mat(d2mdA2_num[5]) );
   
   valid = test_metric.TargetMetric3D::evaluate_with_hess( B, A, val_num, dmdA_num, d2mdA2_num, err );
   ASSERT_NO_ERROR(err);
@@ -538,13 +537,13 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana)  );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], EPS_HESS );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, eps_mat(dmdA_num) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], eps_mat(d2mdA2_num[0]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], eps_mat(d2mdA2_num[1]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], eps_mat(d2mdA2_num[2]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], eps_mat(d2mdA2_num[3]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], eps_mat(d2mdA2_num[4]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], eps_mat(d2mdA2_num[5]) );
   
     // also test inverted for non-barrier metrics
   if (Barrier)
@@ -561,13 +560,13 @@ void Target3DTestBase::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
-  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD(dmdA_num,dmdA_ana)  );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], EPS_HESS );
-  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], EPS_HESS );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, eps_mat(dmdA_num) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], eps_mat(d2mdA2_num[0]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], eps_mat(d2mdA2_num[1]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], eps_mat(d2mdA2_num[2]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], eps_mat(d2mdA2_num[3]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], eps_mat(d2mdA2_num[4]) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], eps_mat(d2mdA2_num[5]) );
 }
 
 // implement metric that is the sum of the elements of 2A-W,
@@ -995,6 +994,7 @@ void TargetMetric3DTest::test_numerical_hessian()
 #include "Target3DShapeOrientBarrierAlt1.hpp"
 #include "Target3DUntangleBeta.hpp"
 #include "Target3DUntangleAlt1.hpp"
+#include "Target3DUntangleMu.hpp"
 
 #define REGISTER_TARGET3D_TEST( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
 METRIC test_ ## METRIC; \
@@ -1053,6 +1053,28 @@ CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _UnitRegister ("Unit")
 CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _FileRegister ("Target3DTest"); \
 CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _BaseRegister ( #METRIC "Test" )
 
+#define REGISTER_TARGET3D_COMPOSITE_WITH_HESS( METRIC, BASE, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
+BASE test_ ## METRIC ## _ ## BASE ## _base; \
+METRIC test_ ## METRIC ## _ ## BASE (&test_ ## METRIC ## _ ## BASE ## _base); \
+class METRIC ## _ ## BASE ## Test : public Target3DTestBase { public: \
+  METRIC ## _ ## BASE ## Test () : Target3DTestBase( (test_ ## METRIC ## _ ## BASE), (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+  CPPUNIT_TEST_SUITE( METRIC ## _ ## BASE ## Test ); \
+  CPPUNIT_TEST (test_ideal_eval); \
+  CPPUNIT_TEST (test_ideal_gradient); \
+  CPPUNIT_TEST (test_inverted); \
+  CPPUNIT_TEST (test_shape); \
+  CPPUNIT_TEST (test_scale); \
+  CPPUNIT_TEST (test_orient); \
+  CPPUNIT_TEST (compare_eval_and_eval_with_grad); \
+  CPPUNIT_TEST (compare_anaytic_and_numeric_grads); \
+  CPPUNIT_TEST (compare_eval_with_grad_and_eval_with_hess); \
+  CPPUNIT_TEST (compare_anaytic_and_numeric_hess); \
+  CPPUNIT_TEST_SUITE_END(); \
+}; \
+CPPUNIT_NS::AutoRegisterSuite< METRIC ## _ ## BASE ## Test > METRIC ## _ ## BASE ## _UnitRegister ("Unit"); \
+CPPUNIT_NS::AutoRegisterSuite< METRIC ## _ ## BASE ## Test > METRIC ## _ ## BASE ## _FileRegister ("Target3DTest"); \
+CPPUNIT_NS::AutoRegisterSuite< METRIC ## _ ## BASE ## Test > METRIC ## _ ## BASE ## _BaseRegister ( #METRIC "Test" )
+
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "Unit" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "Target3DTest" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "TargetMetric3DTest" );
@@ -1080,6 +1102,8 @@ REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeOrientBarrier,    false, fals
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeOrientBarrierAlt1,false, false, false,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DUntangleBeta,               true,  true,  true, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DUntangleAlt1,               true,  true,  true, false, 0.0 );
+REGISTER_TARGET3D_COMPOSITE_WITH_HESS( Target3DUntangleMu, Target3DSize,      true,  false,  true, false, 0.0 );
+REGISTER_TARGET3D_COMPOSITE_WITH_HESS( Target3DUntangleMu, Target3DShapeSize,false,  false,  true, false, 0.0 );
 
 TSquared3D test_TSquared3D;
 class TSquared3DTest : public Target3DTestBase {

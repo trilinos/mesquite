@@ -641,8 +641,9 @@ APPEND_SET(HEADERS
   QualityMetric/TMP/2D/Target2DSum.hpp
   QualityMetric/TMP/2D/Target2DOffset.hpp
   QualityMetric/TMP/2D/Target2DTau.hpp
-  QualityMetric/TMP/2D/Target2DUntangleBeta.hpp
   QualityMetric/TMP/2D/Target2DUntangleAlt1.hpp
+  QualityMetric/TMP/2D/Target2DUntangleBeta.hpp
+  QualityMetric/TMP/2D/Target2DUntangleMu.hpp
   QualityMetric/TMP/2D/InverseMeanRatio2D.hpp 
   )
 
@@ -676,8 +677,9 @@ APPEND_SET(SOURCES
   QualityMetric/TMP/2D/Target2DSum.cpp
   QualityMetric/TMP/2D/Target2DOffset.cpp
   QualityMetric/TMP/2D/Target2DTau.cpp
-  QualityMetric/TMP/2D/Target2DUntangleBeta.cpp
   QualityMetric/TMP/2D/Target2DUntangleAlt1.cpp
+  QualityMetric/TMP/2D/Target2DUntangleBeta.cpp
+  QualityMetric/TMP/2D/Target2DUntangleMu.cpp
   QualityMetric/TMP/2D/InverseMeanRatio2D.cpp 
   )
 
@@ -717,8 +719,9 @@ APPEND_SET(HEADERS
   QualityMetric/TMP/3D/Target3DSum.hpp
   QualityMetric/TMP/3D/Target3DOffset.hpp
   QualityMetric/TMP/3D/Target3DTau.hpp
-  QualityMetric/TMP/3D/Target3DUntangleBeta.hpp 
   QualityMetric/TMP/3D/Target3DUntangleAlt1.hpp 
+  QualityMetric/TMP/3D/Target3DUntangleBeta.hpp 
+  QualityMetric/TMP/3D/Target3DUntangleMu.hpp 
   )
 
 APPEND_SET(SOURCES
@@ -750,8 +753,9 @@ APPEND_SET(SOURCES
   QualityMetric/TMP/3D/Target3DSum.cpp
   QualityMetric/TMP/3D/Target3DOffset.cpp
   QualityMetric/TMP/3D/Target3DTau.cpp
-  QualityMetric/TMP/3D/Target3DUntangleBeta.cpp 
   QualityMetric/TMP/3D/Target3DUntangleAlt1.cpp 
+  QualityMetric/TMP/3D/Target3DUntangleBeta.cpp 
+  QualityMetric/TMP/3D/Target3DUntangleMu.cpp 
   )
 
 #
