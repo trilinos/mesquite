@@ -1078,30 +1078,41 @@ To complete this expression, use formulas \ref{adjform} and either
 
 \subsection{Derivatives of $\mu_n(T) = \left\{ |\tau-\gamma| - \left( \tau-\gamma \right) \right\}^p$ \label{untangle1}}
 
-\noindent This metric is an untangler and is valid for both $n=2$ and $n=3$. 
+\noindent This metric is an untangler and applies to both $n=2$ and $n=3$. 
+For best results, we recommend $p > 2$.
+ 
 \begin{eqnarray}
 \mu_n(T) & = & \left\{ |\tau-\gamma| - \left( \tau-\gamma \right) \right\}^p \\
          & = & \left\{ \begin{array}{cc} 
- 2^p \, (\tau-\gamma)^p & \mbox{if $\tau<\gamma$} \\
+ 2^p \, (\gamma-\tau)^p & \mbox{if $\tau<\gamma$} \\
 0                       & \mbox{if $\tau \geq \gamma$}
 \end{array} \right.
 \end{eqnarray}
+Note that the metric is continuous at all $\tau$ and at $\tau=\gamma$, in 
+particular. \newline
 
-\noindent The previous formula shows that the metric is twice differentiable everywhere, with
+\noindent The first derivative with respect to $T$ is
 \begin{eqnarray}
 \frac{\partial \mu_n}{\partial T} & = & \left\{ \begin{array}{cc} 
-p \, 2^p \, (\tau-\gamma)^{p-1} \frac{\partial \tau}{\partial T} & \mbox{if $\tau<\gamma$} \\
+- p \, 2^p \, (\gamma-\tau)^{p-1} \frac{\partial \tau}{\partial T} & \mbox{if $\tau<\gamma$} \\
 0                      & \mbox{if $\tau \geq \gamma$}
 \end{array} \right.
 \end{eqnarray}
+Note that the derivative is not continuous at $\tau=\gamma$ when $p \leq 1$. 
+Gradient-based methods should thus refrain from the case $p \leq 1$.
 
+\noindent The second derivative with respect to $T$ is
 \begin{eqnarray}
 \frac{\partial^2 \mu_n}{\partial T^2} & = & \left\{ \begin{array}{cc} 
-p \, 2^p \, (\tau-\gamma)^{p-2} \left[ (\tau-\gamma) \frac{\partial^2 \tau}{\partial T^2} + (p-1) \, \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) \right] & \mbox{if $\tau<\gamma$} \\
-0                      & \mbox{if $\tau \geq \gamma$}
-\end{array} \right.
+-p \, 2^p \, (\gamma-\tau)^{p-2} \left[ (\gamma-\tau) \frac{\partial^2 \tau}{\partial T^2} - (p-1) \, \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) \right] & \mbox{if $\tau<\gamma$} \\
+0                      & \mbox{if $\tau \geq \gamma$} 
+\end{array} \right. \nonumber \\
 \end{eqnarray}
-To complete these expressions, use formulas \ref{adjform} and either 
+Note that the second derivative is not continous at $\tau=\gamma$ when 
+$p \leq 2$.   Therefore, it is advisable to require that $p > 2$ in 
+order that Hessian-based methods work properly. \newline
+
+\noindent To complete these expressions, use formulas \ref{adjform} and either 
 \ref{2ndtau2d} or \ref{2ndtau3d}. \newline
 
 \subsection{Derivatives of $\mu_n(T) = \frac{1}{2} \left( - \tau + \sqrt{\tau^2 + \left(\epsilon \, \bar{\tau} \right)^2} \right)$ \label{untangle2}}
