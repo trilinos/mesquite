@@ -24,10 +24,8 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeOrientAlt1.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeOrientBarrier.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeOrientBarrierAlt1.cpp \
-	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeUntangle.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSize.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSizeBarrier.cpp \
-	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSizeUntangle.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSquared.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSum.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DOffset.cpp \
@@ -58,10 +56,8 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeOrientAlt1.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeOrientBarrier.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeOrientBarrierAlt1.hpp \
-	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeUntangle.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSize.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSizeBarrier.hpp \
-	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSizeUntangle.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSquared.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSum.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DOffset.hpp \

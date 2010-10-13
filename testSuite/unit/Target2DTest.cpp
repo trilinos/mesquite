@@ -764,11 +764,9 @@ void TargetMetric2DTest::test_numerical_hessian()
 #include "Target2DShapeSizeOrientAlt1.hpp"
 #include "Target2DShapeSizeOrientBarrier.hpp"
 #include "Target2DShapeSizeOrientBarrierAlt1.hpp"
-#include "Target2DShapeSizeUntangle.hpp"
 #include "InverseMeanRatio2D.hpp"
 #include "Target2DSize.hpp"
 #include "Target2DSizeBarrier.hpp"
-#include "Target2DSizeUntangle.hpp"
 #include "Target2DUntangleBeta.hpp"
 #include "Target2DUntangleAlt1.hpp"
 #include "Target2DShapeSizeAlt1.hpp"
@@ -881,11 +879,9 @@ REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeSizeOrient,           false, fals
 REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeSizeOrientAlt1,       false, false, false, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeSizeOrientBarrier,    false, false, false,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_HESS( Target2DShapeSizeOrientBarrierAlt1,false, false, false,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_GRAD( Target2DShapeSizeUntangle,          true, false,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_HESS( InverseMeanRatio2D,                false,  true,  true,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_HESS( Target2DSize,                       true, false,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_HESS( Target2DSizeBarrier,                true, false,  true,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_GRAD( Target2DSizeUntangle,               true, false,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_HESS( Target2DUntangleBeta,               true,  true,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_HESS( Target2DUntangleAlt1,               true,  true,  true, false, 0.0 );
 REGISTER_TARGET2D_COMPOSITE_WITH_HESS( Target2DUntangleMu, Target2DSize,      true,  false,  true, false, 0.0 );
