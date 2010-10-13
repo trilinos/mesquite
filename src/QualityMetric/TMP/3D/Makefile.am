@@ -31,7 +31,7 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSum.cpp  \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DOffset.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DTau.cpp \
-	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DUntangle.cpp \
+	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DUntangleBeta.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DUntangleAlt1.cpp 
 
 MSQ_HDRS += \
@@ -63,7 +63,7 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSum.hpp  \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DOffset.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DTau.hpp \
-	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DUntangle.hpp  \
+	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DUntangleBeta.hpp  \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DUntangleAlt1.hpp
 
 

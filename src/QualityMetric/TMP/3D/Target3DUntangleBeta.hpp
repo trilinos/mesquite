@@ -25,13 +25,13 @@
   ***************************************************************** */
 
 
-/** \file Target3DUntangle.hpp
+/** \file Target3DUntangleBeta.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TARGET_3D_UNTANGLE_HPP
-#define MSQ_TARGET_3D_UNTANGLE_HPP
+#ifndef MSQ_TARGET_3D_UNTANGLE_BETA_HPP
+#define MSQ_TARGET_3D_UNTANGLE_BETA_HPP
 
 #include "Mesquite.hpp"
 #include "TargetMetric3D.hpp"
@@ -40,21 +40,21 @@ namespace MESQUITE_NS {
 
 /**\brief Untangle metric
  *
- * \f$ \mu_n(T) = {|\tau - \gamma| - (\tau - \gamma)}^4 \f$
+ * \f$ \mu_n(T) = {|\tau - \gamma| - (\tau - \gamma)}^2 \f$
  *
  * Section 3.2.7 of derivs.tex
  */
-class Target3DUntangle : public TargetMetric3D
+class Target3DUntangleBeta : public TargetMetric3D
 {
 private:
   double mGamma;
 
 public:
 
-  Target3DUntangle( double gamma = 0.0 ) : mGamma(gamma) {}
+  Target3DUntangleBeta( double gamma = 0.0 ) : mGamma(gamma) {}
 
   MESQUITE_EXPORT virtual
-  ~Target3DUntangle();
+  ~Target3DUntangleBeta();
 
   MESQUITE_EXPORT virtual
   std::string get_name() const;

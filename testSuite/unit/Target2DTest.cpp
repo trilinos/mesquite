@@ -771,7 +771,7 @@ void TargetMetric2DTest::test_numerical_hessian()
 #include "Target2DSize.hpp"
 #include "Target2DSizeBarrier.hpp"
 #include "Target2DSizeUntangle.hpp"
-#include "Target2DUntangle.hpp"
+#include "Target2DUntangleBeta.hpp"
 #include "Target2DUntangleAlt1.hpp"
 #include "Target2DShapeSizeAlt1.hpp"
 
@@ -865,7 +865,7 @@ REGISTER_TARGET2D_TEST_WITH_HESS( InverseMeanRatio2D,                false,  tru
 REGISTER_TARGET2D_TEST_WITH_HESS( Target2DSize,                       true, false,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_HESS( Target2DSizeBarrier,                true, false,  true,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_GRAD( Target2DSizeUntangle,               true, false,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_HESS( Target2DUntangle,                   true,  true,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_HESS( Target2DUntangleBeta,               true,  true,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_HESS( Target2DUntangleAlt1,               true,  true,  true, false, 0.0 );
 
 TSquared2D test_TSquared2D;
