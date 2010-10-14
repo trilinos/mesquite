@@ -1712,29 +1712,94 @@ f(T) & = & \frac{g(T)}{e(T)}
 + \frac{|T|^2}{2} \frac{\partial^2 det(T)}{\partial T_i \partial T_j} \right]
 \end{eqnarray}
 
-\chapter{Derivatives of Functions of other Metrics}
+\chapter{Derivatives of Functions of Metrics} 
+A function of a metric is a function $f(\mu)$ that takes a local quality metric
+$\mu$ to a real number. Since the value of $\mu$ is also a real number (usually
+non-negative), $f$ takes a real number to a real number. Because 
+$\mu = \mu(T)$ is a function of $T$, there is also an associated local quality 
+metric $\hat{\mu} = \hat{\mu}(T) = f(\mu(T))$. The metric $\hat{\mu}$ 
+is not a composition of metrics, it is the composition of a scalar function 
+with a metric, i.e., $\hat{\mu} = f \circ \mu$. \newline
 
-\section{Untanlge Metrics}
+\noindent The derivatives of the associated local quality metric can be 
+expressed in terms of the derivatives of the original quality metric:
 
-\subsection{\label{franks} Derivatives of $\mu^\prime(T)=\{|d(T)| - d(T)\}^2$ }
 \begin{eqnarray}
-\mu^\prime(T) &=& \{|d(T)| - d(T)\}^2 \\
- d(T)        &=& (\sigma - \epsilon) - \mu(T) \\
- \frac{\partial \mu^\prime}{\partial T} 
-    &=& 2 (|d| - d)\left(\frac{|d|}{d}-1\right)\frac{\partial d}{\partial T} \\
-    &=& 4 (d - |d|)\frac{\partial d}{\partial T} \\
-    &=& -4 (d - |d|)\frac{\partial \mu}{\partial T} \\
-    &=& \left\{\begin{array}{ll}
-         -8 d \frac{\partial \mu}{\partial T} & \textrm{if } d<0 \\
-         0                                    & \textrm{if } d \ge 0 \\
-         \end{array}\right. \\
- \frac{\partial^2 \mu^\prime}{\partial T^2} 
-    &=& \left\{\begin{array}{ll}
-         8 \left( \frac{\partial \mu}{\partial T} \otimes \frac{\partial \mu}{\partial T} 
-             - d \frac{\partial^2 \mu}{\partial T^2} \right) & \textrm{if } d<0 \\
-         0                                    & \textrm{if } d>0 \\
-         \end{array}\right. 
+\frac{\partial \hat{\mu}}{\partial T} & = & \left( \frac{\partial f}{\partial \mu} \right) \, \left( \frac{\partial \mu}{\partial T} \right) \\
+\frac{\partial^2 \hat{\mu}}{\partial T^2} & = & \left( \frac{\partial f}{\partial \mu} \right) \, \left( \frac{\partial^2 \mu}{\partial T^2} \right) + \left( \frac{\partial^2 f}{\partial \mu^2} \right) \, \left( \frac{\partial \mu}{\partial T} \otimes \frac{\partial \mu}{\partial T} \right)
 \end{eqnarray}
+The previous section of this document gives the deriviatives 
+$\frac{\partial \mu}{\partial T}$ and $\frac{\partial^2 \mu}{\partial T^2}$ 
+for a variety of particular metrics, so in this section we need only 
+concentrate on the derivatives $\frac{\partial f}{\partial \mu}$ and 
+$\frac{\partial^2 f}{\partial \mu^2}$ for a variety of specific functions $f$.
+
+
+
+\section{Untangle-like Functions}
+
+\begin{eqnarray}
+f(\mu) & = & \frac{1}{2^p} \, \left\{ |\sigma - \mu | - (\sigma - \mu) \right\}^p \\
+ & = & \left\{ \begin{array}{cc} 
+0 & \mbox{if $\mu \leq \sigma$} \\
+(\mu-\sigma)^p & \mbox{if $\mu > \sigma$}
+\end{array} \right.
+\end{eqnarray}
+with $\sigma$ a parameter and $p > 2$. Note that $f$ is continuous on 
+$-\infty < \mu < \infty$, and at $\mu = \sigma$ in particular. \newline
+
+\noindent The first derivative is
+\begin{eqnarray}
+\frac{\partial f}{\partial \mu}  & = & \left\{ \begin{array}{cc} 
+0 & \mbox{if $\mu \leq \sigma$} \\
+p \, (\mu-\sigma)^{p-1} & \mbox{if $\mu > \sigma$}
+\end{array} \right.
+\end{eqnarray}
+and exists everywhere provided $p>1$. \newline
+
+\noindent The second derivative is 
+\begin{eqnarray}
+\frac{\partial^2 f}{\partial \mu^2}  & = & \left\{ \begin{array}{cc} 
+0 & \mbox{if $\mu \leq \sigma$} \\
+p \, (p-1) \, (\mu-\sigma)^{p-2} & \mbox{if $\mu > \sigma$}
+\end{array} \right.
+\end{eqnarray}
+and exists everywhere provided $p>2$. \newline
+
+\noindent Finally, the derivatives of $\hat{\mu}$ with respect to $T$ are
+\begin{eqnarray}
+\frac{\partial \hat{\mu}}{\partial T} = \left\{ \begin{array}{cc} 
+0 & \mbox{if $\mu \leq \sigma$} \\
+p \, (\mu-\sigma)^{p-1} \, \left( \frac{\partial \mu}{\partial T} \right) & \mbox{if $\mu > \sigma$}
+\end{array} \right.
+\end{eqnarray}
+and 
+\begin{eqnarray}
+\frac{\partial^2 \hat{\mu}}{\partial T^2} = \left\{ \begin{array}{cc} 
+0 & \mbox{if $\mu \leq \sigma$} \\
+p \, (\mu-\sigma)^{p-2} \, \left[ (\mu-\sigma) \, \left( \frac{\partial^2 \mu}{\partial T^2} \right) + (p-1) \, \left( \frac{\partial \mu}{\partial T} \otimes \frac{\partial \mu}{\partial T} \right) \right] & \mbox{if $\mu > \sigma$}
+\end{array} \right.
+\end{eqnarray}
+
+%\subsection{\label{franks} Derivatives of $\mu^\prime(T)=\{|d(T)| - d(T)\}^2$ }
+%\begin{eqnarray}
+%\mu^\prime(T) &=& \{|d(T)| - d(T)\}^2 \\
+% d(T)        &=& (\sigma - \epsilon) - \mu(T) \\
+% \frac{\partial \mu^\prime}{\partial T} 
+%    &=& 2 (|d| - d)\left(\frac{|d|}{d}-1\right)\frac{\partial d}{\partial T} \\
+%    &=& 4 (d - |d|)\frac{\partial d}{\partial T} \\
+%    &=& -4 (d - |d|)\frac{\partial \mu}{\partial T} \\
+%    &=& \left\{\begin{array}{ll}
+%         -8 d \frac{\partial \mu}{\partial T} & \textrm{if } d<0 \\
+%         0                                    & \textrm{if } d \ge 0 \\
+%         \end{array}\right. \\
+% \frac{\partial^2 \mu^\prime}{\partial T^2} 
+%    &=& \left\{\begin{array}{ll}
+%         8 \left( \frac{\partial \mu}{\partial T} \otimes \frac{\partial \mu}{\partial T} 
+%             - d \frac{\partial^2 \mu}{\partial T^2} \right) & \textrm{if } d<0 \\
+%         0                                    & \textrm{if } d>0 \\
+%         \end{array}\right. 
+%\end{eqnarray}
          
 
 \chapter{Derivatives of Metrics that are Explicit Functions of $A$}
