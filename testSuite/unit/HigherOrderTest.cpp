@@ -905,7 +905,7 @@ void HigherOrderTest::test_hex_basic()
   std::fill( fixed, fixed+8, 1 );
   std::fill( fixed+8, fixed+num_vtx, 0 );
   const EntityTopology type = HEXAHEDRON;
-  size_t offsets[] = { 0, num_vtx };
+  unsigned long offsets[] = { 0, num_vtx };
   ArrayMesh one_hex( 3, num_vtx, coords, fixed, 1, &type, conn, offsets );
   
     // smooth
