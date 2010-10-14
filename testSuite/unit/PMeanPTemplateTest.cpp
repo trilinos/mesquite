@@ -114,6 +114,12 @@ private:
   CPPUNIT_TEST( compare_hessian_diagonal_arithmatic );
   CPPUNIT_TEST( compare_hessian_diagonal_rms );
   
+  CPPUNIT_TEST( compare_hessian_arithmatic );
+  CPPUNIT_TEST( compare_hessian_rms );
+  
+  CPPUNIT_TEST( compare_hessian_diag_arithmatic );
+  CPPUNIT_TEST( compare_hessian_diag_rms );
+  
   CPPUNIT_TEST( test_negate_eval );
   CPPUNIT_TEST( test_negate_grad );
   CPPUNIT_TEST( test_negate_diag );
@@ -199,6 +205,16 @@ public:
     { PMeanPTemplate of( 1, NULL ); compare_hessian_diagonal( &of ); }
   void compare_hessian_diagonal_rms()
     { PMeanPTemplate of( 2, NULL ); compare_hessian_diagonal( &of ); }
+  
+  void compare_hessian_arithmatic() 
+    { PMeanPTemplate of( 1, NULL ); compare_numerical_hessian( &of ); }
+  void compare_hessian_rms()
+    { PMeanPTemplate of( 2, NULL ); compare_numerical_hessian( &of ); }
+  
+  void compare_hessian_diag_arithmatic() 
+    { PMeanPTemplate of( 1, NULL ); compare_numerical_hessian_diagonal( &of ); }
+  void compare_hessian_diag_rms()
+    { PMeanPTemplate of( 2, NULL ); compare_numerical_hessian_diagonal( &of ); }
     
   void test_negate_eval()
     { PMeanPTemplate of( 2, NULL ); test_negate_flag( EVAL, &of ); }

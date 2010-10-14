@@ -104,6 +104,9 @@ static void compare_diagonal_gradient( ObjectiveFunction* of );
 static inline void compare_hessian_diagonal( ObjectiveFunctionTemplate* of );
 static void compare_hessian_diagonal( ObjectiveFunction* of );
 
+static void compare_numerical_hessian( ObjectiveFunctionTemplate* of );
+static void compare_numerical_hessian_diagonal( ObjectiveFunctionTemplate* of );
+static void compare_numerical_hessian( ObjectiveFunction* of, bool diagonal_only );
 
 static PatchData& patch();
 
@@ -232,6 +235,24 @@ inline void ObjectiveFunctionTests::compare_hessian_diagonal( ObjectiveFunctionT
   ASSERT_NO_ERROR( err );
   of->set_quality_metric( &metric );
   compare_hessian_diagonal( (ObjectiveFunction*)of );
+}
+
+inline void ObjectiveFunctionTests::compare_numerical_hessian( ObjectiveFunctionTemplate* of )
+{
+  MsqPrintError err(std::cout);
+  IdealWeightInverseMeanRatio metric(err);
+  ASSERT_NO_ERROR( err );
+  of->set_quality_metric( &metric );
+  compare_numerical_hessian( (ObjectiveFunction*)of, false );
+}
+
+inline void ObjectiveFunctionTests::compare_numerical_hessian_diagonal( ObjectiveFunctionTemplate* of )
+{
+  MsqPrintError err(std::cout);
+  IdealWeightInverseMeanRatio metric(err);
+  ASSERT_NO_ERROR( err );
+  of->set_quality_metric( &metric );
+  compare_numerical_hessian( (ObjectiveFunction*)of, true );
 }
 
 #endif
