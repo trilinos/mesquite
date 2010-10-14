@@ -155,7 +155,8 @@ ArrayMesh::ArrayMesh( int coords_per_vertex,
 
 bool ArrayMesh::valid() const
 {
-  for (unsigned long i = 0; i < vertexCount; ++i) {
+  unsigned long off = oneBasedArrays ? 1 : 0;
+  for (unsigned long i = off; i < vertexCount+off; ++i) {
     if (fixedFlags[i] != 0 && fixedFlags[i] != 1) {
       std::cerr << "Invalid vertex fixed flag at index " << i << std::endl;
       return false;
