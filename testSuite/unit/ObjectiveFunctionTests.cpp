@@ -516,11 +516,9 @@ void ObjectiveFunctionTests::compare_numerical_hessian( ObjectiveFunction* of,
 
   MsqPrintError err(std::cout);
   PatchData pd;
-  create_four_quads_patch( pd, err ); 
+  create_qm_two_tet_patch( pd, err ); 
   ASSERT_NO_ERROR( err );
   CPPUNIT_ASSERT( pd.num_free_vertices() != 0 );
-  PlanarDomain xy(PlanarDomain::XY);
-  pd.set_domain( &xy );
   
     // get analytical Hessian from objective function
   std::vector<Vector3D> grad;
