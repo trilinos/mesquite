@@ -255,7 +255,7 @@ static double std_dev_sqr( const double* array, unsigned len )
     sqr_sum += array[i]*array[i];
   }
   
-  return (len*sqr_sum - sum*sum)/(len * (len-1));
+  return sqr_sum/len - (sum/len)*(sum/len);
 }
 
 

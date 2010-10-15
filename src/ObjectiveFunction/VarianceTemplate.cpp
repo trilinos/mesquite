@@ -127,12 +127,16 @@ bool VarianceTemplate::evaluate( EvalType type,
     // get overall OF value, update member data, etc.
   size_t n;
   accumulate( sum, sqr, qmHandles.size(), type, sum, sqr, n );
-  if (n < 2) {
+
+    // don't divide by zero
+  if (n < 1) { 
     value_out = 0.0;
     return true;
   }
   
-  value_out = qm->get_negate_flag() * (n*sqr - sum*sum) / (n*(n - 1));
+  const double rms = sqr/n;
+  const double avg = sum/n;
+  value_out = qm->get_negate_flag() * (rms - avg*avg);
   return true;
 }
 
@@ -145,13 +149,14 @@ bool VarianceTemplate::evaluate_with_gradient( EvalType type,
   QualityMetric* qm = get_quality_metric();
   qm->get_evaluations( pd, qmHandles, OF_FREE_EVALS_ONLY, err );  MSQ_ERRFALSE(err);
   
-    // zero gradient
-  grad_out.clear();
+    // zero gradient data
+  grad_out.clear();     // store sum of metric * gradient of metric, and later OF gradient
   grad_out.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
-  tmpGradient.clear();
-  tmpGradient.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
+  gradSum.clear();  // store sum of gradients of metrics
+  gradSum.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
   
     // calculate OF value and gradient for just the patch
+  Matrix3D op;
   std::vector<size_t>::const_iterator i;
   double value, sum = 0.0, sqr = 0.0;
   for (i = qmHandles.begin(); i != qmHandles.end(); ++i)
@@ -166,16 +171,19 @@ bool VarianceTemplate::evaluate_with_gradient( EvalType type,
     sqr += value*value;
 
     for (size_t j = 0; j < mIndices.size(); ++j) {
-      tmpGradient[mIndices[j]] += mGradient[j];
+      const size_t r = mIndices[j];
+      gradSum[r] += mGradient[j];
       mGradient[j] *= value;
-      grad_out[mIndices[j]] += mGradient[j];
+      grad_out[r] += mGradient[j];
     }
   }
   
-    // update member data
+    // update accumulated values (if doing BCD)
   size_t n;
   accumulate( sum, sqr, qmHandles.size(), type, sum, sqr, n );
-  if (n < 2) {
+
+    // don't divide by zero
+  if (n < 1) {
     value_out = 0.0;
     grad_out.clear();
     grad_out.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
@@ -183,14 +191,15 @@ bool VarianceTemplate::evaluate_with_gradient( EvalType type,
   }
 
     // calculate OF value
-  value_out = qm->get_negate_flag() * (n*sqr - sum*sum) / (n*(n - 1));
-  
-    // calculate gradient
+  const double rms = sqr/n;
   const double avg = sum/n;
-  const double f = 2.0 / (n - 1);
+  value_out = qm->get_negate_flag() * (rms - avg*avg);
+  
+    // Finish calculation of gradient and Hessian
+  const double f = qm->get_negate_flag() * 2.0/n;
   for (size_t k = 0; k < pd.num_free_vertices(); ++k) {
-    tmpGradient[k] *= avg;
-    grad_out[k] -= tmpGradient[k];
+    gradSum[k] *= avg;
+    grad_out[k] -= gradSum[k];
     grad_out[k] *= f;
   }
     
@@ -210,12 +219,10 @@ bool VarianceTemplate::evaluate_with_Hessian_diagonal( EvalType type,
     // zero gradient and Hessian data
   grad_out.clear();     // store sum of metric * gradient of metric, and later OF gradient
   grad_out.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
-  tmpGradient.clear();  // store sum of gradients of metrics
-  tmpGradient.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
-  tmpDiag1.clear();     // store sum of Hessians of metrics
-  tmpDiag1.resize( pd.num_free_vertices(), SymMatrix3D(0.0) );
-  tmpDiag2.clear();     // store sum of metric * Hessian of metric
-  tmpDiag2.resize( pd.num_free_vertices(), SymMatrix3D(0.0) );
+  gradSum.clear();  // store sum of gradients of metrics
+  gradSum.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
+  hessSum.clear();     // store sum of Hessians of metrics
+  hessSum.resize( pd.num_free_vertices(), SymMatrix3D(0.0) );
   hess_diag_out.clear(); // store sum of metric * outer_product(metric gradient), and later OF Hessian
   hess_diag_out.resize( pd.num_free_vertices(), SymMatrix3D(0.0) );
   
@@ -236,21 +243,24 @@ bool VarianceTemplate::evaluate_with_Hessian_diagonal( EvalType type,
 
     for (size_t j = 0; j < mIndices.size(); ++j) {
       const size_t r = mIndices[j];
-      tmpGradient[r] += mGradient[j];
+ 
+      hessSum[r] += mHessDiag[j];
+      hess_diag_out[r] += outer( mGradient[j] );
+      mHessDiag[j] *= value;
+      hess_diag_out[r] += mHessDiag[j];
+      
+      gradSum[r] += mGradient[j];
       mGradient[j] *= value;
       grad_out[r] += mGradient[j];
-      
-      hess_diag_out[r] += outer( mGradient[j] );
-      tmpDiag1[r] += mHessDiag[j];
-      mHessDiag[j] *= value;
-      tmpDiag2[r] += mHessDiag[j];
     }
   }
   
-    // update member data
+    // update accumulated values (if doing BCD)
   size_t n;
   accumulate( sum, sqr, qmHandles.size(), type, sum, sqr, n );
-  if (n < 2) {
+  
+    // don't divide by zero
+  if (n < 1) { 
     value_out = 0.0;
     grad_out.clear();
     grad_out.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
@@ -260,26 +270,22 @@ bool VarianceTemplate::evaluate_with_Hessian_diagonal( EvalType type,
   }
 
     // calculate OF value
-  value_out = qm->get_negate_flag() * (n*sqr - sum*sum) / (n*(n - 1));
+  const double rms = sqr/n;
+  const double avg = sum/n;
+  value_out = qm->get_negate_flag() * (rms - avg*avg);
   
     // Finish calculation of gradient and Hessian
-  const double dneg = qm->get_negate_flag() * 2.0;
-  const double n_inv = 1.0/n;
-  const double nless1_inv = 1.0/(n-1);
-  const double avg = sum * n_inv;
-  const double f = dneg * nless1_inv;
-  const double f2 = avg * nless1_inv;
+  const double inv_n = 1.0/n;
+  const double f = qm->get_negate_flag() * 2.0/n;
   for (size_t k = 0; k < pd.num_free_vertices(); ++k) {
-    tmpGradient[k] *= avg;
-    grad_out[k] -= tmpGradient[k];
+    hessSum[k] *= avg;
+    hess_diag_out[k] -= hessSum[k];
+    hess_diag_out[k] -= inv_n * outer( gradSum[k] );
+    hess_diag_out[k] *= f;
+    
+    gradSum[k] *= avg;
+    grad_out[k] -= gradSum[k];
     grad_out[k] *= f;
-
-    hess_diag_out[k] *= n_inv;
-    tmpDiag1[k] *= f2;
-    tmpDiag2[k] *= nless1_inv;
-    hess_diag_out[k] += tmpDiag1[k];
-    hess_diag_out[k] += tmpDiag2[k];
-    hess_diag_out[k] *= dneg;
   }
     
   return true;

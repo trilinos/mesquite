@@ -134,9 +134,9 @@ class VarianceTemplate : public ObjectiveFunctionTemplate
     /** Temporary storage for qm vertex indices */
     mutable std::vector<size_t> mIndices;
     /** Temporary storage for qm gradient */
-    mutable std::vector<Vector3D> mGradient, tmpGradient;
+    mutable std::vector<Vector3D> mGradient, gradSum;
     /** Temporary storage for qm Hessian diagonal data */
-    mutable std::vector<SymMatrix3D> mHessDiag, tmpDiag1, tmpDiag2;
+    mutable std::vector<SymMatrix3D> mHessDiag, hessSum;
 };
 
 } // namespace Mesquite

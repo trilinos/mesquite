@@ -94,7 +94,7 @@ bool StdDevTemplate::evaluate_with_Hessian_diagonal( EvalType type,
   value_out *= neg; // undo any negation done by VarianceTemplate
   value_out = sqrt( value_out ); // standard deviation
   const double f1 = 1.0/(2.0 * value_out);
-  const double f2 = neg * -0.5 / (value_out * value_out * value_out);
+  const double f2 = neg * -0.25 / (value_out * value_out * value_out);
   for (size_t i = 0; i < grad_out.size(); ++i) {
     hess_diag_out[i] *= f1;
     hess_diag_out[i] += f2 * outer( grad_out[i] );
