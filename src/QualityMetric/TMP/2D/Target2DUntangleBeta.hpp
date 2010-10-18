@@ -40,7 +40,7 @@ namespace MESQUITE_NS {
 
 /**\brief Untangle metric
  *
- * \f$ \mu_n(T) = {|\tau - \gamma| - (\tau - \gamma)}^2 \f$
+ * \f$ \mu_n(T) = \frac{1}{8} {|\tau - \gamma| - (\tau - \gamma)}^3 \f$
  *
  * Section 3.2.7 of derivs.tex
  */

@@ -53,7 +53,7 @@ bool Target2DUntangleBeta::evaluate( const MsqMatrix<2,2>& A,
   double tau = det(T);
   double d = tau - mGamma;
   double f = fabs(d) - d;
-  result = f*f;
+  result = 0.125*f*f*f;
   return true;
 }
 
@@ -67,9 +67,9 @@ bool Target2DUntangleBeta::evaluate_with_grad( const MsqMatrix<2,2>& A,
   const MsqMatrix<2,2> T = A * Winv;
   double tau = det(T);
   if (tau < mGamma) {
-    double d = tau - mGamma;
-    result = 4 * d*d;
-    deriv_wrt_A = 8 * d * transpose_adj(T);
+    double d = mGamma - tau;
+    result = d*d*d;
+    deriv_wrt_A = -3*d*d*transpose_adj(T);
     deriv_wrt_A = deriv_wrt_A * transpose(Winv);
   }
   else {
@@ -90,13 +90,13 @@ bool Target2DUntangleBeta::evaluate_with_hess( const MsqMatrix<2,2>& A,
   const MsqMatrix<2,2> T = A * Winv;
   double tau = det(T);
   if (tau < mGamma) {
-    double d = tau - mGamma;
-    result = 4 * d*d;
     const MsqMatrix<2,2> adjt = transpose_adj(T);
-    deriv_wrt_A = 8 * d * adjt;
+    double d = mGamma - tau;
+    result = d*d*d;
+    deriv_wrt_A = -3*d*d*adjt;
     deriv_wrt_A = deriv_wrt_A * transpose(Winv);
-    set_scaled_outer_product( second_wrt_A, 8, adjt );
-    pluseq_scaled_2nd_deriv_of_det( second_wrt_A, 8*d );
+    set_scaled_outer_product( second_wrt_A, 6*d, adjt );
+    pluseq_scaled_2nd_deriv_of_det( second_wrt_A, -3*d*d );
     second_deriv_wrt_product_factor( second_wrt_A, Winv );
   }
   else {
