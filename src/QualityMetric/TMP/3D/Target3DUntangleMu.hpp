@@ -43,8 +43,8 @@ namespace MESQUITE_NS {
  * This metric should be combined with Target3DSize or Target3DShapeSize
  * to produce a concrete untangle metric.
  *
- * \f$ \mu^\prime(T) = (|d| - d)^2 \f$
- * \f$ d(T) = \sigma - \epsilon - \mu(T() \f$
+ * \f$ \mu^\prime(T) = \frac{1}{8}(|d| - d)^3 \f$
+ * \f$ d(T) = \sigma - \epsilon - \mu(T()) \f$
  *
  */
 class Target3DUntangleMu : public TargetMetric3D

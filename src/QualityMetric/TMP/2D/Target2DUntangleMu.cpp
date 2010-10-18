@@ -56,7 +56,7 @@ bool Target2DUntangleMu::evaluate( const MsqMatrix<2,2>& A,
   
   const double d = mConstant - result;
   const double s = fabs(d) - d;
-  result = s*s;
+  result = 0.125*s*s*s;
   return true;
 }
 
@@ -71,9 +71,9 @@ bool Target2DUntangleMu::evaluate_with_grad( const MsqMatrix<2,2>& A,
     return false;
   
   if (mConstant < result) {
-    const double d = mConstant - result;
-    result = 4 * d*d;
-    deriv_wrt_A *= -8*d;
+    const double s = result - mConstant;
+    result = s*s*s;
+    deriv_wrt_A *= 3*s*s;
   }
   else {
     result = 0;
@@ -96,11 +96,11 @@ bool Target2DUntangleMu::evaluate_with_hess( const MsqMatrix<2,2>& A,
     return false;
   
   if (mConstant < result) {
-    const double d = mConstant - result;
-    result = 4 * d*d;
-    hess_scale( second_wrt_A, -8 * d );
-    pluseq_scaled_outer_product( second_wrt_A, 8, deriv_wrt_A );
-    deriv_wrt_A *= -8*d;
+    const double s = result - mConstant;
+    result = s*s*s;
+    hess_scale( second_wrt_A, 3*s*s );
+    pluseq_scaled_outer_product( second_wrt_A, 6*s, deriv_wrt_A );
+    deriv_wrt_A *= 3*s*s;
   }
   else {
     result = 0;
