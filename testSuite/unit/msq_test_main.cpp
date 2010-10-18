@@ -55,6 +55,7 @@ class CPPUNIT_API SummaryOutput : public CppUnit::Outputter
 
 int main(int argc, char **argv)
 {
+  CppUnit::Test* test;
   vector<CppUnit::Test*> test_list;
   CppUnit::TextUi::TestRunner runner;
   int firsttest = 1;
@@ -87,14 +88,18 @@ int main(int argc, char **argv)
       argc--;
       CppUnit::TestFactoryRegistry &registry =
         CppUnit::TestFactoryRegistry::getRegistry(argv[argc]);
-      test_list.push_back( registry.makeTest() );
+      test = registry.makeTest();
+      if (!test->countTestCases()) {
+        std::cerr << argv[argc] << ": does not match any test or group" << std::endl;
+        return 1;
+      }
+      test_list.push_back( test );
     }
     
   }
     // Otherwise do Unit and Regression suites
   else
   {
-     CppUnit::Test* test;
      test = CppUnit::TestFactoryRegistry::getRegistry("Unit").makeTest();
      test_list.push_back( test );
      test = CppUnit::TestFactoryRegistry::getRegistry("Regression").makeTest();
