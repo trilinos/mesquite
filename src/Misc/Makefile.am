@@ -16,6 +16,7 @@ MSQ_SRCS += \
 	$(SRC_MISC_DIR)/DomainClassifier.cpp \
 	$(SRC_MISC_DIR)/DomainUtil.cpp \
 	$(SRC_MISC_DIR)/DomainUtil.hpp \
+	$(SRC_MISC_DIR)/EdgeIterator.cpp \
 	$(SRC_MISC_DIR)/Exponent.cpp \
 	$(SRC_MISC_DIR)/FileTokenizer.cpp \
 	$(SRC_MISC_DIR)/MeshDomain1D.cpp \
@@ -29,6 +30,7 @@ MSQ_SRCS += \
 	$(SRC_MISC_DIR)/MsqInterrupt.cpp \
 	$(SRC_MISC_DIR)/MsqTimer.cpp \
 	$(SRC_MISC_DIR)/PlanarDomain.cpp \
+	$(SRC_MISC_DIR)/SimpleStats.cpp \
 	$(SRC_MISC_DIR)/SphericalDomain.cpp \
 	$(SRC_MISC_DIR)/Vector3D.cpp \
 	$(SRC_MISC_DIR)/VtkTypeInfo.cpp \
@@ -42,6 +44,7 @@ MSQ_HDRS += \
 	$(SRC_MISC_DIR)/ConicDomain.hpp \
 	$(SRC_MISC_DIR)/CylinderDomain.hpp \
 	$(SRC_MISC_DIR)/DomainClassifier.hpp \
+	$(SRC_MISC_DIR)/EdgeIterator.hpp \
 	$(SRC_MISC_DIR)/Exponent.hpp \
 	$(SRC_MISC_DIR)/FileTokenizer.hpp \
 	$(SRC_MISC_DIR)/Matrix3D.hpp \
@@ -56,6 +59,7 @@ MSQ_HDRS += \
 	$(SRC_MISC_DIR)/MsqMatrix.hpp \
 	$(SRC_MISC_DIR)/MsqTimer.hpp \
 	$(SRC_MISC_DIR)/PlanarDomain.hpp \
+	$(SRC_MISC_DIR)/SimpleStats.hpp \
 	$(SRC_MISC_DIR)/SphericalDomain.hpp \
 	$(SRC_MISC_DIR)/SymMatrix3D.hpp \
 	$(SRC_MISC_DIR)/Vector3D.hpp \
