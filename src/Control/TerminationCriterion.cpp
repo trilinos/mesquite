@@ -46,6 +46,7 @@
 #include "PatchData.hpp"
 #include "MeshWriter.hpp"
 #include "MeshUtil.hpp"
+#include "SimpleStats.hpp"
 
 #include <sstream>
 
@@ -982,10 +983,10 @@ void TerminationCriterion::initialize_queue( Mesh* mesh,
   if (VERTEX_MOVEMENT_ABS_EDGE_LENGTH & (terminationCriterionFlag|cullingMethodFlag)) 
   {
     MeshUtil tool(mesh);
-    double min_len, avg_len, rms_len, max_len, dev_len;
-    tool.edge_length_distribution( min_len, avg_len, rms_len, max_len, dev_len, err );
+    SimpleStats stats;
+    tool.edge_length_distribution( stats, err );
     MSQ_ERRRTN(err);
-    double limit = vertexMovementAvgBeta * (avg_len - dev_len);
+    double limit = vertexMovementAvgBeta * (stats.average() - stats.standard_deviation());
       // we actually calculate the square of the length
     vertexMovementAbsoluteAvgEdge = limit * limit;
     if (VERTEX_MOVEMENT_ABS_EDGE_LENGTH & cullingMethodFlag)

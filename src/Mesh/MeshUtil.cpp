@@ -33,8 +33,12 @@
 #include "Mesquite.hpp"
 #include "MeshUtil.hpp"
 #include "MeshInterface.hpp"
-#include "MsqVertex.hpp"
+#include "EdgeIterator.hpp"
+#include "SimpleStats.hpp"
 #include "MsqError.hpp"
+#include "TMPQualityMetric.hpp"
+#include "MappingFunction.hpp"
+#include "TargetCalculator.hpp"
 
 #include <vector>
 #include <algorithm>
@@ -43,99 +47,93 @@
 namespace MESQUITE_NS {
 
 
-void MeshUtil::edge_length_distribution( double& min_out,
-                                         double& avg_out,
-                                         double& rms_out,
-                                         double& max_out,
-                                         double& std_dev_out,
-                                         MsqError& err )
+MeshUtil::~MeshUtil() { delete globalPatch; }
+
+PatchData* MeshUtil::get_global_patch( MsqError& err ) 
 {
-  size_t count = 0;
-  avg_out = rms_out = std_dev_out = 0.0;
-  min_out = std::numeric_limits<double>::max();
-  max_out = std::numeric_limits<double>::min();
-
-    // some lists 
-  std::vector<Mesh::VertexHandle> verts, conn, adj;
-  std::vector<Mesh::VertexHandle>::iterator i;
-  std::vector<Mesh::ElementHandle> elems;
-  std::vector<Mesh::VertexHandle>::iterator j;
-  std::vector<size_t> junk(2);
-  std::vector<MsqVertex> coords;
-
-    // get all vertices in the mesh
-  myMesh->get_all_vertices( verts, err ); MSQ_ERRRTN(err);
-  
-    // for each vertex in the mesh
-  for (i = verts.begin(); i != verts.end(); ++i) {
-      // initially clear what will eventually be the list of 
-      // all opposite ends of edges at vertex i
-    adj.clear();
-  
-      // get all adjacent elements
-    elems.clear();
-    myMesh->vertices_get_attached_elements( &*i, 1, elems, junk, err ); MSQ_ERRRTN(err);
-    
-      // for each adjacent element
-    for (j = elems.begin(); j != elems.end(); ++j) {
-      EntityTopology type;
-      myMesh->elements_get_topologies( &*j, &type, 1, err ); MSQ_ERRRTN(err);
-      conn.clear();
-      myMesh->elements_get_attached_vertices( &*j, 1, conn, junk, err ); MSQ_ERRRTN(err);
-  
-        // get position of input vertex in connectivity list
-      size_t idx = std::find( conn.begin(), conn.end(), *i ) - conn.begin();
-      if (idx > TopologyInfo::corners(type))
-        continue; // skip higher-order nodes
-  
-        // get the set of other corner vertices connected to vertex i
-        // by an edge
-      unsigned n;
-      const unsigned* indices = TopologyInfo::adjacent_vertices( type, idx, n );
-      
-        // keep only those vertex handles for vertices that are
-        // a) connected to this vertex by an edge and b) for which the
-        // handle value for this vertex is less than the other, adjacent
-        // vertex (this avoids counting edges more than once.)
-      for (unsigned k = 0; k < n; ++k)
-        if (*i < conn[indices[k]])
-          adj.push_back( conn[indices[k]] );
-    }
-    
-      // remove duplicates
-    std::sort( adj.begin(), adj.end() );
-    adj.erase( std::unique( adj.begin(), adj.end() ), adj.end() );
-    adj.push_back( *i );
-    
-      // now calculate edge lengths
-    coords.resize( adj.size() );
-    myMesh->vertices_get_coordinates( &adj[0], &coords[0], adj.size(), err ); MSQ_ERRRTN(err);
-    for (size_t i = 0; i < coords.size()-1; ++i) {
-      Vector3D diff = coords[i] - coords.back();
-      double len_sqr = diff % diff;
-      double len = sqrt(len_sqr);
-      avg_out += len;
-      rms_out += len_sqr;
-      if (len < min_out)
-        min_out = len;
-      if (len > max_out)
-        max_out = len;
-      ++count;
+  if (!globalPatch) {
+    globalPatch = new PatchData;
+    globalPatch->set_mesh( myMesh );
+    if (mySettings)
+      globalPatch->attach_settings( mySettings );
+    globalPatch->fill_global_patch( err );
+    if (MSQ_CHKERR(err)) {
+      delete globalPatch;
+      globalPatch = 0;
     }
   }
-  
-  if (!count) { // no mesh
-    MSQ_SETERR(err)("Mesh contains no elements", MsqError::INVALID_MESH);
-    return;
-  }
-
-    // calculate final stats
-  avg_out /= count;
-  rms_out /= count;
-  std_dev_out = sqrt( rms_out - avg_out*avg_out );
-  rms_out = sqrt(rms_out);
+  return globalPatch;
 }
 
+void MeshUtil::edge_length_distribution( SimpleStats& results, MsqError& err )
+{
+  PatchData* pd = get_global_patch(err); MSQ_ERRRTN(err);
+  EdgeIterator iter(pd, err); MSQ_ERRRTN(err);
+  while (!iter.is_at_end()) {
+    Vector3D diff = iter.start() - iter.end();
+    results.add_squared( diff % diff );
+    iter.step( err ); MSQ_ERRRTN(err);
+  }
+ 
+  if (results.empty()) { // no mesh
+    MSQ_SETERR(err)("Mesh contains no elements", MsqError::INVALID_MESH);
+  }
+}
 
+void MeshUtil::lambda_distribution( SimpleStats& results, MsqError& err )
+{
+  PatchData& pd = *get_global_patch(err); MSQ_ERRRTN(err);
+  
+  std::vector<size_t> handles;
+  TMPQualityMetric::get_patch_evaluations( pd, handles, false, err );
+  
+  const size_t N = 64;
+  size_t count;
+  size_t indices[N];
+  MsqVector<2> derivs2D[N];
+  MsqVector<3> derivs3D[N];
+  
+  for (size_t i = 0; i < handles.size(); ++i) {
+    double lambda;
+    const Sample s = ElemSampleQM::sample( handles[i] );
+    const size_t e = ElemSampleQM::  elem( handles[i] );
+    EntityTopology type = pd.element_by_index(e).get_element_type();
+    const NodeSet bits = pd.non_slave_node_set( e );
+
+    if (TopologyInfo::dimension( type ) == 3)
+    {
+      const MappingFunction3D* mf = pd.get_mapping_function_3D( type );
+      if (!mf) {
+        MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+        return;
+      }
+      
+      MsqMatrix<3,3> W;
+      mf->jacobian( pd, e, bits, s, indices, derivs3D, count, W, err ); MSQ_ERRRTN(err);
+      assert(N >= count);
+      lambda = TargetCalculator::size( W );
+    }
+    else 
+    {
+      assert( TopologyInfo::dimension( type ) == 2 );
+      const MappingFunction2D* mf = pd.get_mapping_function_2D( type );
+      if (!mf) {
+        MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+        return;
+      }
+      
+      MsqMatrix<3,2> W;
+      mf->jacobian( pd, e, bits, s, indices, derivs2D, count, W, err ); MSQ_ERRRTN(err);
+      assert(N >= count);
+      lambda = TargetCalculator::size( W );
+    }
+
+    results.add_value( lambda );
+  }
+  
+  if (results.empty()) { // no mesh
+    MSQ_SETERR(err)("Mesh contains no elements", MsqError::INVALID_MESH);
+  }
+}
 
 } // namespace MESQUITE_NS

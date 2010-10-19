@@ -38,6 +38,9 @@ namespace MESQUITE_NS {
 
 class Mesh;
 class MsqError;
+class SimpleStats;
+class Settings;
+class PatchData;
 
 /**\brief Miscelanions operations performed on an entire \c Mesh
  *        without the conveinience of a \c PatchData.
@@ -46,24 +49,26 @@ class MeshUtil
 {
   private:
     Mesh* myMesh;
+    Settings* mySettings;
+    PatchData* globalPatch;
+    
+  protected:
+    PatchData* get_global_patch( MsqError& err );
     
   public:
-    MeshUtil( Mesh* mesh ) : myMesh( mesh ) {}
+    MeshUtil( Mesh* mesh, Settings* settings = 0 ) 
+      : myMesh( mesh ), 
+        mySettings( settings ),
+        globalPatch(0) 
+        {}
+        
+    ~MeshUtil();
     
     /**\brief Calcluate statistics for mesh edge lengths
-     *
-     *\param min_out  Minimum edge length in mesh
-     *\param avg_out  Algebraic mean of mesh edge lengths
-     *\param rms_out  Root mean squared of mesh edge lengths
-     *\param max_out  Maximum mesh edge length
-     *\param std_dev_out  Standard deviation of mesh edge lengths
      */
-    void edge_length_distribution( double& min_out,
-                                   double& avg_out,
-                                   double& rms_out,
-                                   double& max_out,
-                                   double& std_dev_out,
-                                   MsqError& err );
+    void edge_length_distribution( SimpleStats& result, MsqError& err );
+
+    void lambda_distribution( SimpleStats& result, MsqError& err );
 };
 
 

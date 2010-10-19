@@ -45,6 +45,7 @@ Tests for the TerminationCriterion class..
 #include "PatchDataInstances.hpp"
 #include "ArrayMesh.hpp"
 #include "MeshUtil.hpp"
+#include "SimpleStats.hpp"
 
 #include <iostream>
 
@@ -354,10 +355,10 @@ void TerminationCriterionTest::test_absolute_vertex_movement_edge_length()
     // calculate beta 
   const double LIMIT = 1e-4; // desired absolute limit
   MeshUtil tool(&mesh);
-  double min_len, avg_len, rms_len, max_len, std_dev_len;
-  tool.edge_length_distribution( min_len, avg_len, rms_len, max_len, std_dev_len, err );
+  SimpleStats len;
+  tool.edge_length_distribution( len, err );
   ASSERT_NO_ERROR(err);
-  const double beta = LIMIT / (avg_len - std_dev_len);
+  const double beta = LIMIT / (len.average() - len.standard_deviation());
   
     // initialize termination criterion
   TerminationCriterion tc;

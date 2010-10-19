@@ -52,14 +52,11 @@
 #include "LambdaConstant.hpp"
 
 #include "MsqFPE.hpp"
+#include "MeshUtil.hpp"
+#include "SimpleStats.hpp"
 
 namespace MESQUITE_NS {
 
-static double calculate_average_lambda( Mesh* mesh, 
-                                        TargetCalculator* tc,
-                                        bool trap_fpe,
-                                        MsqError& err );
-                                        
 void PaverMinEdgeLengthWrapper::run_wrapper( Mesh* mesh,
                                              ParallelMesh* pmesh,
                                              MeshDomain* domain,
@@ -72,7 +69,10 @@ void PaverMinEdgeLengthWrapper::run_wrapper( Mesh* mesh,
     // calculate average lambda for mesh
   ReferenceMesh ref_mesh( mesh );
   RefMeshTargetCalculator W_0( &ref_mesh );
-  double lambda = calculate_average_lambda( mesh, &W_0, settings->trap_floating_point_exception(), err ); MSQ_ERRRTN(err);
+  SimpleStats lambda_stats;
+  MeshUtil tool(mesh, settings);
+  tool.lambda_distribution( lambda_stats, err ); MSQ_ERRRTN(err);
+  double lambda = lambda_stats.average();
   
     // create objective function
   IdealShapeTarget W_i;
@@ -101,53 +101,6 @@ void PaverMinEdgeLengthWrapper::run_wrapper( Mesh* mesh,
 
   // Optimize mesh
   q.run_common( mesh, pmesh, domain, settings, err ); MSQ_CHKERR(err);  
-}
-
-double calculate_average_lambda( Mesh* mesh, 
-                                 TargetCalculator* tc,
-                                 bool trap_fpe,
-                                 MsqError& err )
-{
-  
-#ifdef ENABLE_INTERRUPT
-   // Register SIGINT handler
-  MsqInterrupt msq_interrupt;
-#endif
-
-    // Generate SIGFPE on floating point errors
-  MsqFPE fpe_trap( trap_fpe );
-
-  PatchData pd;
-  pd.set_mesh( mesh );
-  pd.fill_global_patch( err );
-  
-  std::vector<size_t> handles;
-  TMPQualityMetric::get_patch_evaluations( pd, handles, false, err );
-
-  double lambda = 0.0;
-  for (size_t i = 0; i < handles.size(); ++i) {
-    const Sample s = ElemSampleQM::sample( handles[i] );
-    const size_t e = ElemSampleQM::  elem( handles[i] );
-    if (TopologyInfo::dimension( pd.element_by_index(e).get_element_type() ) == 3)
-    {
-      MsqMatrix<3,3> W;
-      tc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
-      lambda += TargetCalculator::size( W );
-    }
-    else if (tc->have_surface_orient())
-    {
-      MsqMatrix<3,2> W;
-      tc->get_surface_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
-      lambda += TargetCalculator::size( W );
-    }
-    else
-    {
-      MsqMatrix<2,2> W;
-      tc->get_2D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
-      lambda += TargetCalculator::size( W );
-    }
-  }
-  return lambda/handles.size();
 }
 
 } // namespace MESQUITE_NS
