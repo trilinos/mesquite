@@ -30,8 +30,8 @@
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_JACOBIAN_METRIC_HPP
-#define MSQ_JACOBIAN_METRIC_HPP
+#ifndef MSQ_TMP_QUALITY_METRIC_HPP
+#define MSQ_TMP_QUALITY_METRIC_HPP
 
 #include "Mesquite.hpp"
 #include "ElemSampleQM.hpp"
