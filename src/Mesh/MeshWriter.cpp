@@ -34,6 +34,7 @@
 #include "PatchData.hpp"
 #include "PlanarDomain.hpp"
 #include "VtkTypeInfo.hpp"
+#include "EdgeIterator.hpp"
 
 #include <memory>
 #include <limits>
@@ -85,135 +86,6 @@ class Transform2D
     int vertSign;
 };
                              
-
-/**\brief Iterate over all edges in a patch*/
-class EdgeIterator
-{
-public: 
-  EdgeIterator( PatchData* patch, MsqError& err );
-  bool is_at_end() const;
-  const Vector3D& start() const;
-  const Vector3D& end() const;
-  const Vector3D* mid() const;
-  void step( MsqError& err );
-
-  struct Edge {
-    Edge( size_t vtx, size_t mid ) : otherVertex(vtx), midVertex(mid) {}
-    Edge() {}
-    size_t otherVertex;
-    size_t midVertex;
-  };
-private:
-  PatchData* patchPtr;
-  size_t vertIdx;
-  std::vector<Edge> adjList;
-  std::vector<Edge>::iterator adjIter;
-  void get_adjacent_vertices( MsqError& err );
-};
-
-bool operator<( const EdgeIterator::Edge& e1, const EdgeIterator::Edge& e2 )
-  { return e1.otherVertex < e2.otherVertex || 
-          (e1.otherVertex == e2.otherVertex && e1.midVertex < e2.midVertex); }
-
-bool operator==( const EdgeIterator::Edge& e1, const EdgeIterator::Edge& e2 )
-  { return e1.otherVertex == e2.otherVertex && e1.midVertex == e2.midVertex; }
-
-EdgeIterator::EdgeIterator( PatchData* p, MsqError& err )
-  : patchPtr(p),
-    vertIdx(0)
-{
-  p->generate_vertex_to_element_data();
-  get_adjacent_vertices( err );
-}
-
-bool EdgeIterator::is_at_end() const
-{
-  return vertIdx >= patchPtr->num_nodes() || 
-         adjIter == adjList.end();
-}
-
-const Vector3D& EdgeIterator::start() const
-  { return patchPtr->vertex_by_index( vertIdx ); }
-
-const Vector3D& EdgeIterator::end() const
-  { return patchPtr->vertex_by_index( adjIter->otherVertex ); }
-
-const Vector3D* EdgeIterator::mid() const
-  { return adjIter->midVertex < patchPtr->num_nodes() ? 
-           &patchPtr->vertex_by_index( adjIter->midVertex ) : 0; }
-
-void EdgeIterator::step( MsqError& err )
-{
-  if (adjIter != adjList.end())
-  {
-    ++adjIter;
-  }
-  
-  while (adjIter == adjList.end() && ++vertIdx < patchPtr->num_nodes())
-  {
-    get_adjacent_vertices( err );  MSQ_ERRRTN(err);
-  }
-}
-
-void EdgeIterator::get_adjacent_vertices( MsqError& err )
-{
-  adjList.clear();
-  
-    // Get all adjacent elements
-  size_t num_elem;
-  const size_t* elems = patchPtr->get_vertex_element_adjacencies( vertIdx, num_elem, err );
-  MSQ_ERRRTN(err);
-  
-    // Get all adjacent vertices from elements
-  std::vector<size_t> elem_verts;
-  for (size_t e = 0; e < num_elem; ++e)
-  {
-    MsqMeshEntity& elem = patchPtr->element_by_index(elems[e]);
-    EntityTopology type = elem.get_element_type();
-    size_t num_edges = TopologyInfo::edges( type );
-    
-    bool mid_edge, mid_face, mid_vol;
-    TopologyInfo::higher_order( type, elem.node_count(), mid_edge, mid_face, mid_vol, err );
-    MSQ_ERRRTN(err);
-    
-      // For each edge
-    for (size_t d = 0; d < num_edges; ++d)
-    {
-      const unsigned* edge = TopologyInfo::edge_vertices( type, d, err );
-      MSQ_ERRRTN(err);
-      size_t vert1 = elem.get_vertex_index( edge[0] );
-      size_t vert2 = elem.get_vertex_index( edge[1] );
-
-      size_t mid = ~(size_t)0;
-      if (mid_edge) {
-        int p = TopologyInfo::higher_order_from_side( type, elem.node_count(), 1, d, err );
-        MSQ_ERRRTN(err);
-        mid = elem.get_vertex_index_array()[p];
-      }
-
-        // If this edge contains the input vertex (vert_idx)
-        // AND the input vertex index is less than the 
-        // other vertex (avoids iterating over this edge twice)
-        // add it to the list.
-      if (vert1 > vert2)
-      {
-        if (vert2 == vertIdx)
-          adjList.push_back( Edge(vert1,mid) );
-      } 
-      else 
-      {
-        if (vert1 == vertIdx)
-          adjList.push_back( Edge(vert2,mid) );
-      }
-    }
-  }
-  
-    // Remove duplicates
-  std::sort( adjList.begin(), adjList.end() );
-  adjIter = std::unique( adjList.begin(), adjList.end() );
-  adjList.resize( adjIter - adjList.begin() );
-  adjIter = adjList.begin();
-}
 
 
 /* Write VTK file
