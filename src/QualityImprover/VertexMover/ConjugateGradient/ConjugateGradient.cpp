@@ -231,8 +231,10 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
         // Fletcher-Reeves (takes twice as long as P-R)
         //double bet = s22/s11;
 
-        // Polack-Ribiere        
-      double bet = (s22-s12)/s11;
+        // Polack-Ribiere  
+      double bet;  
+      if (!divide( s22-s12, s11, bet ))
+        return; // gradient is zero    
       //free_iter.reset();
       //while (free_iter.next()) {
       //  m=free_iter.value();
