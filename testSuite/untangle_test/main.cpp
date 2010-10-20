@@ -81,30 +81,110 @@ int old_untangle_beta_test();
 
 // Test untangle wrapper
 // Assumes all meshes lie in a plane for which the normal is [0,0,1].
-int uwt( UntangleWrapper::UntangleMetric metric,
+int uwt( bool skip,
+         UntangleWrapper::UntangleMetric metric,
          const char* input_file,
          int expected_number_of_remaining_inverted_elems,
          bool flip_domain = false );
 
-int main()
-{
-  int result = old_untangle_beta_test();
-  
-  result += uwt( UntangleWrapper::BETA, "tangled_horse1.vtk",         0 );
-  result += uwt( UntangleWrapper::BETA, "hole_in_square_tanglap.vtk", 0, true );
-  result += uwt( UntangleWrapper::BETA, "inverted-hole-2.vtk",        0 );
-  result += uwt( UntangleWrapper::BETA, "shest_grid32.vtk",           0 );
-  
-  result += uwt( UntangleWrapper::SIZE, "tangled_horse1.vtk",         0 );
-  result += uwt( UntangleWrapper::SIZE, "hole_in_square_tanglap.vtk", 4, true );
-  result += uwt( UntangleWrapper::SIZE, "inverted-hole-2.vtk",        0  );
-  result += uwt( UntangleWrapper::SIZE, "shest_grid32.vtk",           0 );
-  
-  result += uwt( UntangleWrapper::SHAPESIZE, "tangled_horse1.vtk",         0 );
-  result += uwt( UntangleWrapper::SHAPESIZE, "hole_in_square_tanglap.vtk", 0, true );
-  result += uwt( UntangleWrapper::SHAPESIZE, "inverted-hole-2.vtk",        8  );
-  result += uwt( UntangleWrapper::SHAPESIZE, "shest_grid32.vtk",           0 );
+bool brief_output = false;
+bool write_output = false;
+double mu_sigma = -1;
+double beta = -1;
 
+void usage( const char* argv0 ) {
+  std::cerr << "Usage: " << argv0 << " [-<flags>] [-c <sigma>] [-b <beta>]" << std::endl
+            << "       " << argv0 << " -h" << std::endl;
+}
+void help( const char* argv0 ) {
+  std::cout << "Usage: " << argv0 << " [-<flags>] [-c <sigma>] [-b <beta>]" << std::endl
+            << "Flags: -q : brief output" << std::endl
+            << "       -w : write result meshes" << std::endl
+            << "       -O : skip legacy untangle beta test" << std::endl
+            << "       -B : skip tests using untangle beta target metric" << std::endl
+            << "       -Z : skip tests using size untangle target metric" << std::endl
+            << "       -P : skip tests using shapesize untangle target metric" << std::endl
+            << "       -H : skip tests using 'tangled_horse1.vtk' as input" << std::endl
+            << "       -Q : skip tests using 'hole_in_square_tanglap.vtk' as input" << std::endl
+            << "       -I : skip tests using 'inverted-hole-2.vtk' as input" << std::endl
+            << "       -S : skip tests using 'shest_grid32.vtk' as input" << std::endl
+            << "       -c : specify sigma value for untangle metrics" << std::endl
+            << "       -b : specify beta value for untangle beta metric" << std::endl
+            << std::endl;
+}
+
+int main( int argc, char* argv[] )
+{
+  bool skip_old = false;
+  bool skip_beta = false;
+  bool skip_size = false;
+  bool skip_shape = false;
+  bool skip_horse = false;
+  bool skip_hole = false;
+  bool skip_invrt = false;
+  bool skip_shest = false;
+  std::list<double*> expected;
+
+  for (int i = 1; i < argc; ++i) {
+    if (!expected.empty()) {
+      char* endptr;
+      *expected.front() = strtod( argv[i], &endptr );
+      if (*endptr || *expected.front() <= 0) {
+        std::cerr << "Expected positive number, found \"" << argv[i] << '"' << std::endl;
+        usage(argv[0]);
+        return 1;
+      }
+      expected.pop_front();
+    }
+    else if (argv[i][0] == '-' && argv[i][1]) {
+      for (int j = 1; argv[i][j]; ++j) {
+        switch (argv[i][j]) {
+          case 'q': brief_output = true; break;
+          case 'w': write_output = true; break;
+          case 'O': skip_old = true; break;
+          case 'B': skip_beta = true; break;
+          case 'Z': skip_size = true; break;
+          case 'P': skip_shape = true; break;
+          case 'H': skip_horse = true; break;
+          case 'Q': skip_hole = true; break;
+          case 'I': skip_invrt = true; break;
+          case 'S': skip_shest = true; break;
+          case 'c': expected.push_back(&mu_sigma); break;
+          case 'b': expected.push_back(&beta); break;
+          case 'h': help(argv[0]); return 0;
+          default:
+            std::cerr << "Invalid flag: -" << argv[i][j] << std::endl;
+            usage(argv[0]);
+            return 1;
+        }
+      }
+    }
+    else {
+      std::cerr << "Unexpected argument: \"" << argv[i] << '"' << std::endl;
+      usage(argv[0]);
+      return 1;
+    }
+  }
+
+  int result = 0;
+  if (!skip_old)
+    result = old_untangle_beta_test();
+  
+  result += uwt( skip_beta||skip_horse, UntangleWrapper::BETA, "tangled_horse1.vtk",         0 );
+  result += uwt( skip_beta||skip_hole , UntangleWrapper::BETA, "hole_in_square_tanglap.vtk", 0, true );
+  result += uwt( skip_beta||skip_invrt, UntangleWrapper::BETA, "inverted-hole-2.vtk",        0 );
+  result += uwt( skip_beta||skip_shest, UntangleWrapper::BETA, "shest_grid32.vtk",           0 );
+
+  result += uwt( skip_size||skip_horse, UntangleWrapper::SIZE, "tangled_horse1.vtk",         0 );
+  result += uwt( skip_size||skip_hole , UntangleWrapper::SIZE, "hole_in_square_tanglap.vtk", 4, true );
+  result += uwt( skip_size||skip_invrt, UntangleWrapper::SIZE, "inverted-hole-2.vtk",        0  );
+  result += uwt( skip_size||skip_shest, UntangleWrapper::SIZE, "shest_grid32.vtk",           0 );
+
+  result += uwt( skip_shape||skip_horse, UntangleWrapper::SHAPESIZE, "tangled_horse1.vtk",         0 );
+  result += uwt( skip_shape||skip_hole , UntangleWrapper::SHAPESIZE, "hole_in_square_tanglap.vtk", 0, true );
+  result += uwt( skip_shape||skip_invrt, UntangleWrapper::SHAPESIZE, "inverted-hole-2.vtk",        8  );
+  result += uwt( skip_shape||skip_shest, UntangleWrapper::SHAPESIZE, "shest_grid32.vtk",           0 );
+  
   return result;
 }
 
@@ -145,6 +225,10 @@ int old_untangle_beta_test()
   if (err) return 1;
   QualityAssessor stop_qa=QualityAssessor(&shape_metric);
   QualityAssessor stop_qa2=QualityAssessor(&shape_metric);
+  if (brief_output) {
+    stop_qa.disable_printing_results();
+    stop_qa2.disable_printing_results();
+  }
   
   stop_qa.add_quality_assessment(&untangle);
     // **************Set stopping criterion**************
@@ -175,17 +259,20 @@ int old_untangle_beta_test()
   if (err) return 1;
   queue1.add_quality_assessor(&stop_qa2,err);
   if (err) return 1;
-  mesh.write_vtk("original_mesh.vtk", err);
+  if (write_output)
+    mesh.write_vtk("original_mesh.vtk", err);
   if (err) return 1;
   
     // launches optimization on mesh_set1
   queue1.run_instructions(&mesh, &msq_geom, err);
   if (err) return 1;
   
-  mesh.write_vtk("smoothed_mesh.vtk", err); 
+  if (write_output)
+    mesh.write_vtk("smoothed_mesh.vtk", err); 
   if (err) return 1;
   
-  print_timing_diagnostics(cout);
+  if (!brief_output)
+    print_timing_diagnostics(cout);
   return 0;
 }
 
@@ -202,16 +289,20 @@ const char* tostr( UntangleWrapper::UntangleMetric m )
   return 0;
 }
 
-int uwt( UntangleWrapper::UntangleMetric metric,
+int uwt( bool skip,
+         UntangleWrapper::UntangleMetric metric,
          const char* input_file_base,
          int expected,
          bool flip_domain )
 {
-  std::cout << std::endl
-            << "**********************************************" << std::endl
-            << "Running \"" << input_file_base << "\" for " << tostr(metric) << std::endl
-            << "**********************************************" << std::endl
-            << std::endl;
+  if (skip)
+    return 0;
+
+  if (!brief_output)
+    std::cout << std::endl << "**********************************************" << std::endl;
+  std::cout << "Running \"" << input_file_base << "\" for " << tostr(metric) << std::endl;
+  if (!brief_output)
+    std::cout << "**********************************************" << std::endl << std::endl;
 
     // get mesh
   MsqError err;
@@ -236,6 +327,11 @@ int uwt( UntangleWrapper::UntangleMetric metric,
     // run wrapper
   UntangleWrapper wrapper( metric );
   wrapper.set_vertex_movement_limit_factor( 0.01 );
+  double constant = (metric == UntangleWrapper::BETA) ? beta : mu_sigma;
+  if (constant > 0)
+    wrapper.set_metric_constant( constant );
+  if (brief_output)
+    wrapper.quality_assessor().disable_printing_results();
   wrapper.run_instructions( &mesh, &domain, err );
   if (err) {
     std::cerr << err << std::endl;
@@ -243,18 +339,21 @@ int uwt( UntangleWrapper::UntangleMetric metric,
     return 1;
   }
     // write output file
-  std::string result_file(tostr(metric));
-  result_file += "-";
-  result_file += input_file_base;
-  mesh.write_vtk( result_file.c_str(), err );
-  if (err) {
-    std::cerr << err << std::endl;
-    std::cerr << "ERROR: " << result_file << " : failed to write file" << std::endl;
-    err.clear();
+  if (write_output) {
+    std::string result_file(tostr(metric));
+    result_file += "-";
+    result_file += input_file_base;
+    mesh.write_vtk( result_file.c_str(), err );
+    if (err) {
+      std::cerr << err << std::endl;
+      std::cerr << "ERROR: " << result_file << " : failed to write file" << std::endl;
+      err.clear();
+    }
+    else {
+      std::cerr << "Wrote file: " << result_file << std::endl;
+    }
   }
-  else {
-    std::cerr << "Wrote file: " << result_file << std::endl;
-  }
+  
     // test number of inverted elements
   int count, junk;
   wrapper.quality_assessor().get_inverted_element_count( count, junk, err );
