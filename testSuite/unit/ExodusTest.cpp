@@ -30,7 +30,12 @@
 #include <stdio.h>
 static bool create_exodus_file( const char* filename );
 
+#undef DEBUG
+
 #ifndef DEBUG
+#ifndef MSQ_USING_EXODUS
+# error Attempt to build test of disabled ExodusII support
+#endif
 
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
@@ -50,10 +55,8 @@ class ExodusTest : public CppUnit::TestFixture
 {
 private:
    CPPUNIT_TEST_SUITE(ExodusTest);
-#ifdef MSQ_USING_EXODUS
    CPPUNIT_TEST (test_read);
    CPPUNIT_TEST (test_write);
-#endif
    CPPUNIT_TEST_SUITE_END();
     
 public:
@@ -241,6 +244,9 @@ public:
     }
           
   }
+
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(ExodusTest, "ExodusTest");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(ExodusTest, "Unit");
 
 #else  /* #ifndef DEBUG */
 
@@ -1439,10 +1445,3 @@ bool create_exodus_file( const char* filename )
   fclose( file );
   return rval == 1;
 }
-    
-#ifndef DEBUG
-
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(ExodusTest, "ExodusTest");
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(ExodusTest, "Unit");
-
-#endif
