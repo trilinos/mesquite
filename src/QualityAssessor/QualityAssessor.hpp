@@ -534,6 +534,35 @@ namespace MESQUITE_NS
    QualityAssessor& operator=( const QualityAssessor& copy );
    
   private:
+    
+    struct Data {
+        /** Count of inverted elements. */
+      int invertedElementCount;
+
+        /** Count of inverted Jacobians within elements.*/
+      int invertedSampleCount;
+
+        /** Number of elements */
+      size_t elementCount;
+
+        /** Total number of element Jacobians tested for inversion */
+      size_t sampleCount;
+
+        /** Number of elements with at least one free vertex */
+      size_t freeElementCount;
+      
+      int referenceCount;
+      
+      Data() : referenceCount(1) { clear(); }
+      
+      void clear() {
+        invertedElementCount = invertedSampleCount = -1;
+        elementCount = sampleCount = freeElementCount = 0;
+      }
+    };
+  
+    Data* myData;
+  
 
       //! Common code for serial and parallel loop_over_mesh
     double loop_over_mesh_internal( Mesh* mesh,
@@ -571,21 +600,6 @@ namespace MESQUITE_NS
     
     /** List of quality metrics and corresponding data */
     list_type assessList;
-
-      /** Count of inverted elements. */
-    int invertedElementCount;
-
-      /** Count of inverted Jacobians within elements.*/
-    int invertedSampleCount;
-    
-      /** Number of elements */
-    size_t elementCount;
-    
-      /** Total number of element Jacobians tested for inversion */
-    size_t sampleCount;
-    
-      /** Number of elements with at least one free vertex */
-    size_t freeElementCount;
    
     /** Stream to which to write summary of metric data */
     std::ostream& outputStream;

@@ -74,9 +74,8 @@ QualityAssessor::QualityAssessor( bool print_summary,
                                   bool free_only,
                                   const char* inverted_tag_name,
                                   std::string name) :
+  myData(new Data),
   qualityAssessorName(name),
-  invertedElementCount(-1),
-  invertedSampleCount(-1),
   outputStream( std::cout ),
   printSummary( print_summary ),
   skipFixedSamples(free_only)
@@ -92,9 +91,8 @@ QualityAssessor::QualityAssessor( std::ostream& stream,
                                   bool free_only,
                                   const char* inverted_tag_name,
                                   std::string name) :
+  myData(new Data),
   qualityAssessorName(name),
-  invertedElementCount(-1),
-  invertedSampleCount(-1),
   outputStream( stream ),
   printSummary( true ),
   skipFixedSamples(free_only)
@@ -114,9 +112,8 @@ QualityAssessor::QualityAssessor( std::ostream& output_stream,
                                   const char* metric_value_tag_name,
                                   const char* inverted_tag_name,
                                   std::string name ) :
+  myData(new Data),
   qualityAssessorName(name),
-  invertedElementCount(-1),
-  invertedSampleCount(-1),
   outputStream( output_stream ),
   printSummary( true ),
   skipFixedSamples(free_only)
@@ -138,9 +135,8 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
                                   bool print_summary,
                                   const char* inverted_tag_name,
                                   std::string name) :
+  myData(new Data),
   qualityAssessorName(name),
-  invertedElementCount(-1),
-  invertedSampleCount(-1),
   outputStream( std::cout ),
   printSummary( print_summary ),
   skipFixedSamples(free_only)
@@ -155,13 +151,9 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
 }
 
 QualityAssessor::QualityAssessor( const QualityAssessor& copy ) :
+  myData(copy.myData),
   qualityAssessorName(copy.qualityAssessorName),
   assessList(copy.assessList),
-  invertedElementCount(copy.invertedElementCount),
-  invertedSampleCount(copy.invertedSampleCount),
-  elementCount(copy.elementCount),
-  sampleCount(copy.sampleCount),
-  freeElementCount(copy.freeElementCount),
   outputStream(copy.outputStream),
   printSummary(copy.printSummary),
   invertedTagName(copy.invertedTagName),
@@ -171,6 +163,7 @@ QualityAssessor::QualityAssessor( const QualityAssessor& copy ) :
   list_type::iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter) 
     (*iter)->referenceCount++;
+  myData->referenceCount++;
 }
 
 QualityAssessor& QualityAssessor::operator=( const QualityAssessor& copy )
@@ -182,13 +175,9 @@ QualityAssessor& QualityAssessor::operator=( const QualityAssessor& copy )
       delete assessor;
   }
 
+  myData = copy.myData;
   qualityAssessorName = copy.qualityAssessorName;
   assessList = copy.assessList;
-  invertedElementCount = copy.invertedElementCount;
-  invertedSampleCount = copy.invertedSampleCount;
-  elementCount = copy.elementCount;
-  sampleCount = copy.sampleCount;
-  freeElementCount = copy.freeElementCount;
   printSummary = copy.printSummary;
   invertedTagName = copy.invertedTagName;
   fixedTagName = copy.fixedTagName;
@@ -196,6 +185,7 @@ QualityAssessor& QualityAssessor::operator=( const QualityAssessor& copy )
   
   for (iter = assessList.begin(); iter != assessList.end(); ++iter) 
     (*iter)->referenceCount++;
+  myData->referenceCount++;
     
   return *this;
 }  
@@ -208,6 +198,8 @@ QualityAssessor::~QualityAssessor()
     if (0 == --assessor->referenceCount)
       delete assessor;
   }
+  if (0 == --myData->referenceCount)
+    delete myData;
 }
  
 double QualityAssessor::Assessor::get_average() const
@@ -235,12 +227,12 @@ bool QualityAssessor::get_inverted_element_count(int &inverted_elems,
                                                  int &inverted_samples,
                                                  MsqError &err)
 {
-  if(invertedElementCount == -1){
+  if(myData->invertedElementCount == -1){
     MSQ_SETERR(err)("Number of inverted elements has not yet been calculated.", MsqError::INVALID_STATE);
     return false;
   }
-  inverted_elems = invertedElementCount;
-  inverted_samples = invertedSampleCount;
+  inverted_elems = myData->invertedElementCount;
+  inverted_samples = myData->invertedSampleCount;
   return true;
 }
 
@@ -525,9 +517,9 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
     // Do element-based metrics
   elem_patches.get_patch_handles( patches, err ); MSQ_ERRZERO(err);
 
-  invertedElementCount = invertedSampleCount = sampleCount = 0;
-  elementCount = patches.size();
-  freeElementCount = 0;
+  myData->invertedElementCount = myData->invertedSampleCount = myData->sampleCount = 0;
+  myData->elementCount = patches.size();
+  myData->freeElementCount = 0;
   
   int inverted, samples;
   bool first_pass = false;
@@ -544,7 +536,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
         bool ours = helper->is_our_element( patch_elems[0], err );
         MSQ_ERRZERO(err);
         if (!ours) {
-          --elementCount;
+          --myData->elementCount;
           continue;
         }
       }
@@ -563,13 +555,13 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
       
        //first check for inverted elements
       if (first_pass){
-        ++freeElementCount;
+        ++myData->freeElementCount;
         inverted = samples = 0;
         patch.element_by_index(0).check_element_orientation(patch, inverted, samples, err);
         MSQ_ERRZERO(err);
-        invertedElementCount += (inverted != 0);
-        invertedSampleCount += inverted;
-        sampleCount += samples;
+        myData->invertedElementCount += (inverted != 0);
+        myData->invertedSampleCount += inverted;
+        myData->sampleCount += samples;
 
         if (tagging_inverted_elements()) {
           Mesh::ElementHandle h = patch.get_element_handles_array()[0];
@@ -726,7 +718,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
       helper->communicate_min_max_to_zero(&((*iter)->minimum), &((*iter)->maximum), err);
       MSQ_ERRZERO(err);
 
-      helper->communicate_sums_to_zero(&freeElementCount, &invertedElementCount, &elementCount, &invertedSampleCount, &sampleCount, &((*iter)->count), &((*iter)->numInvalid), &((*iter)->sum), &((*iter)->sqrSum), err);
+      helper->communicate_sums_to_zero(&myData->freeElementCount, &myData->invertedElementCount, &myData->elementCount, &myData->invertedSampleCount, &myData->sampleCount, &((*iter)->count), &((*iter)->numInvalid), &((*iter)->sum), &((*iter)->sqrSum), err);
       MSQ_ERRZERO(err);
 
       if ((*iter)->have_power_mean()) {
@@ -764,8 +756,8 @@ void QualityAssessor::reset_data()
   list_type::iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
     (*iter)->reset_data();
-  invertedElementCount = -1;
-  invertedSampleCount = -1;
+  myData->invertedElementCount = -1;
+  myData->invertedSampleCount = -1;
 }
 
 QualityAssessor::Assessor::Assessor( QualityMetric* metric )
@@ -913,22 +905,22 @@ void QualityAssessor::print_summary( std::ostream& stream ) const
          << std::endl
          << std::endl;
          
-  if (freeElementCount != elementCount)
-    stream << "  Evaluating quality for " << freeElementCount 
-           << " free elements of " << elementCount 
+  if (myData->freeElementCount != myData->elementCount)
+    stream << "  Evaluating quality for " << myData->freeElementCount 
+           << " free elements of " << myData->elementCount 
            << " total elements." << std::endl;
   else
-    stream << "  Evaluating quality for " << elementCount 
+    stream << "  Evaluating quality for " << myData->elementCount 
            << " elements." << std::endl;
   
-  if (invertedElementCount) {
+  if (myData->invertedElementCount) {
     stream << "  THERE ARE "
-           << invertedElementCount
+           << myData->invertedElementCount
            << " INVERTED ELEMENTS. "
            << std::endl
            << "  (Elements invalid at "
-           << invertedSampleCount
-           << " of " << sampleCount
+           << myData->invertedSampleCount
+           << " of " << myData->sampleCount
            << " sample locations.)"
            << std::endl
            << std::endl;

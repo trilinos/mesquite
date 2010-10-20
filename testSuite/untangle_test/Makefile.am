@@ -6,4 +6,4 @@ main_DEPENDENCIES = $(LDADD)
 TESTS = $(check_PROGRAMS)
 EXTRA_DIST = CMakeLists.txt
 
-MOSTLYCLEANFILES = original_mesh.vtk  smoothed_mesh.vtk
+MOSTLYCLEANFILES = *.vtk

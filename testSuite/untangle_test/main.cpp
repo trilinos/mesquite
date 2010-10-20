@@ -55,7 +55,7 @@ describe main.cpp here
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 
-// algorythms
+// algorithms
 #include "Randomize.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "UntangleBetaQualityMetric.hpp"
@@ -65,6 +65,8 @@ describe main.cpp here
 #include "ConjugateGradient.hpp"
 #include "PlanarDomain.hpp"
 
+#include "UntangleWrapper.hpp"
+
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -72,12 +74,45 @@ using std::endl;
 
 using namespace Mesquite;
 
+#define VTK_2D_DIR MESH_FILES_DIR "2D/VTK/"
+
+// This was the original 'main' code before tests of UntangleWrapper were added
+int old_untangle_beta_test();
+
+// Test untangle wrapper
+// Assumes all meshes lie in a plane for which the normal is [0,0,1].
+int uwt( UntangleWrapper::UntangleMetric metric,
+         const char* input_file,
+         int expected_number_of_remaining_inverted_elems,
+         bool flip_domain = false );
 
 int main()
 {
+  int result = old_untangle_beta_test();
+  
+  result += uwt( UntangleWrapper::BETA, "tangled_horse1.vtk",         0 );
+  result += uwt( UntangleWrapper::BETA, "hole_in_square_tanglap.vtk", 0, true );
+  result += uwt( UntangleWrapper::BETA, "inverted-hole-2.vtk",        0 );
+  result += uwt( UntangleWrapper::BETA, "shest_grid32.vtk",           0 );
+  
+  result += uwt( UntangleWrapper::SIZE, "tangled_horse1.vtk",         0 );
+  result += uwt( UntangleWrapper::SIZE, "hole_in_square_tanglap.vtk", 4, true );
+  result += uwt( UntangleWrapper::SIZE, "inverted-hole-2.vtk",        0  );
+  result += uwt( UntangleWrapper::SIZE, "shest_grid32.vtk",           0 );
+  
+  result += uwt( UntangleWrapper::SHAPESIZE, "tangled_horse1.vtk",         0 );
+  result += uwt( UntangleWrapper::SHAPESIZE, "hole_in_square_tanglap.vtk", 0, true );
+  result += uwt( UntangleWrapper::SHAPESIZE, "inverted-hole-2.vtk",        8  );
+  result += uwt( UntangleWrapper::SHAPESIZE, "shest_grid32.vtk",           0 );
+
+  return result;
+}
+
+int old_untangle_beta_test()
+{
   Mesquite::MeshImpl mesh;
   MsqPrintError err(cout);
-  mesh.read_vtk(MESH_FILES_DIR "2D/VTK/tangled_quad.vtk", err);
+  mesh.read_vtk(VTK_2D_DIR "tangled_quad.vtk", err);
   if (err) return 1;
   
   // Set Domain Constraint
@@ -152,4 +187,93 @@ int main()
   
   print_timing_diagnostics(cout);
   return 0;
+}
+
+const char* tostr( UntangleWrapper::UntangleMetric m )
+{
+  static const char BETA[] = "BETA";
+  static const char SIZE[] = "SIZE";
+  static const char SHAPESIZE[] = "SHAPESIZE";
+  switch (m) {
+    case UntangleWrapper::BETA:      return BETA;
+    case UntangleWrapper::SIZE:      return SIZE;
+    case UntangleWrapper::SHAPESIZE: return SHAPESIZE;
+  }
+  return 0;
+}
+
+int uwt( UntangleWrapper::UntangleMetric metric,
+         const char* input_file_base,
+         int expected,
+         bool flip_domain )
+{
+  std::cout << std::endl
+            << "**********************************************" << std::endl
+            << "Running \"" << input_file_base << "\" for " << tostr(metric) << std::endl
+            << "**********************************************" << std::endl
+            << std::endl;
+
+    // get mesh
+  MsqError err;
+  MeshImpl mesh;
+  std::string input_file( VTK_2D_DIR );
+  input_file += input_file_base;
+  mesh.read_vtk( input_file.c_str(), err );
+  if (err) {
+    std::cerr << err << std::endl;
+    std::cerr << "ERROR: " << input_file << " : failed to read file" << std::endl;
+    return 1;
+  }
+    // get domain
+  std::vector<Mesh::VertexHandle> verts;
+  mesh.get_all_vertices( verts, err );
+  if (err || verts.empty()) abort();
+  MsqVertex coords;
+  mesh.vertices_get_coordinates( &verts[0], &coords, 1, err );
+  if (err) abort();
+  Vector3D norm(0,0,flip_domain ? -1 : 1);
+  PlanarDomain domain( norm, coords );
+    // run wrapper
+  UntangleWrapper wrapper( metric );
+  wrapper.set_vertex_movement_limit_factor( 0.01 );
+  wrapper.run_instructions( &mesh, &domain, err );
+  if (err) {
+    std::cerr << err << std::endl;
+    std::cerr << "ERROR: optimization failed" << std::endl;
+    return 1;
+  }
+    // write output file
+  std::string result_file(tostr(metric));
+  result_file += "-";
+  result_file += input_file_base;
+  mesh.write_vtk( result_file.c_str(), err );
+  if (err) {
+    std::cerr << err << std::endl;
+    std::cerr << "ERROR: " << result_file << " : failed to write file" << std::endl;
+    err.clear();
+  }
+  else {
+    std::cerr << "Wrote file: " << result_file << std::endl;
+  }
+    // test number of inverted elements
+  int count, junk;
+  wrapper.quality_assessor().get_inverted_element_count( count, junk, err );
+  if (err) abort();
+  if (count < expected) {
+    std::cout << "WARNING: expected " << expected 
+              << " inverted elements but finished with only " 
+              << count << std::endl
+              << "Test needs to be updated?" << std::endl;
+    return 0;
+  }
+  else if (count == expected) {
+    std::cout << "Completed with " << count << " inverted elements remaining" << std::endl;
+    return 0;
+  }
+  else {
+    std::cerr << "ERROR: expected " << expected 
+              << " inverted elements but finished with " 
+              << count << std::endl;
+    return 1;
+  }
 }

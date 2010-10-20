@@ -8,6 +8,7 @@ MSQ_SRCS += \
 	$(SRC_CONTROL_WRAPPERS_DIR)/ShapeImprover.cpp \
 	$(SRC_CONTROL_WRAPPERS_DIR)/SizeAdaptShapeWrapper.cpp \
 	$(SRC_CONTROL_WRAPPERS_DIR)/PaverMinEdgeLengthWrapper.cpp \
+	$(SRC_CONTROL_WRAPPERS_DIR)/UntangleWrapper.cpp \
 	$(SRC_CONTROL_WRAPPERS_DIR)/ViscousCFDTetShapeWrapper.cpp \
 	$(SRC_CONTROL_WRAPPERS_DIR)/Wrapper.cpp
 
@@ -17,5 +18,6 @@ MSQ_HDRS += \
 	$(SRC_CONTROL_WRAPPERS_DIR)/ShapeImprover.hpp \
 	$(SRC_CONTROL_WRAPPERS_DIR)/SizeAdaptShapeWrapper.hpp \
 	$(SRC_CONTROL_WRAPPERS_DIR)/PaverMinEdgeLengthWrapper.hpp \
+	$(SRC_CONTROL_WRAPPERS_DIR)/UntangleWrapper.hpp \
 	$(SRC_CONTROL_WRAPPERS_DIR)/ViscousCFDTetShapeWrapper.hpp \
 	$(SRC_CONTROL_WRAPPERS_DIR)/Wrapper.hpp

@@ -145,6 +145,7 @@ APPEND_SET(HEADERS
   Control/Wrappers/ShapeImprover.hpp
   Control/Wrappers/SizeAdaptShapeWrapper.hpp
   Control/Wrappers/PaverMinEdgeLengthWrapper.hpp 
+  Control/Wrappers/UntangleWrapper.hpp 
   Control/Wrappers/ViscousCFDTetShapeWrapper.hpp 
   Control/Wrappers/Wrapper.hpp 
   )
@@ -155,6 +156,7 @@ APPEND_SET(SOURCES
   Control/Wrappers/ShapeImprover.cpp
   Control/Wrappers/SizeAdaptShapeWrapper.cpp
   Control/Wrappers/PaverMinEdgeLengthWrapper.cpp
+  Control/Wrappers/UntangleWrapper.cpp 
   Control/Wrappers/ViscousCFDTetShapeWrapper.cpp
   Control/Wrappers/Wrapper.cpp 
   )
