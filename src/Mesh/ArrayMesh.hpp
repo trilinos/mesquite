@@ -141,6 +141,73 @@ class ArrayMesh : public Mesh
                bool one_based_conn_indices = false,
                unsigned nodes_per_element = 0 );
     
+    /**\brief Give mesquite access to per-entity application data via a tag
+     *
+     * Allow mesquite to access application-owned per-element and/or per-vertex
+     * data by assigning a tag name to said data.  Mesquite will be allowed
+     * to read application-owned data.  Any attempt by Mesquite to modify 
+     * the data will result in an internal error condition.
+     *
+     *\param tag_name  Tag name through which Mesquite can access the data
+     *\param data_type The type of the data
+     *\param vals_per_entity Number of values of type \c data_type that each entity has
+     *                       Data is assumed to be interleaved such that all values
+     *                       associated with a a single entity are adjacent in memory
+     *\param vertex_data     A pointer to the region of memory in which per-vertex
+     *                       values are stored.  May be NULL if per-vertex data is
+     *                       not available.  Values are assumed to be in the same 
+     *                       order as the vertex coordinates passed to the constructor
+     *                       or \c set_mesh.
+     *\param vertex_data     A pointer to the region of memory in which per-element
+     *                       values are stored.  May be NULL if per-element data is
+     *                       not available.  Values are assumed to be in the same 
+     *                       order as the element connetivity passed to the constructor
+     *                       or \c set_mesh.
+     *\param default_value   Value to return for all vertices and/or all elements
+     *                       if the cooresponding data array is null.  May be
+     *                       NULL if no default value.
+     */
+    TagHandle add_read_only_tag_data( const char* tag_name,
+                                      TagType data_type,
+                                      int vals_per_entity,
+                                      const void* vertex_data,
+                                      const void* element_data,
+                                      const void* default_value,
+                                      MsqError& err );
+    
+    /**\brief Give mesquite access to per-entity application data via a tag
+     *
+     * Allow mesquite to access and/or set application-owned per-element 
+     * and/or per-vertex data by assigning a tag name to said data.  
+     *
+     *\param tag_name  Tag name through which Mesquite can access the data
+     *\param data_type The type of the data
+     *\param vals_per_entity Number of values of type \c data_type that each entity has
+     *                       Data is assumed to be interleaved such that all values
+     *                       associated with a a single entity are adjacent in memory
+     *\param vertex_data     A pointer to the region of memory in which per-vertex
+     *                       values are stored.  May be NULL if per-vertex data is
+     *                       not available.  Values are assumed to be in the same 
+     *                       order as the vertex coordinates passed to the constructor
+     *                       or \c set_mesh.
+     *\param vertex_data     A pointer to the region of memory in which per-element
+     *                       values are stored.  May be NULL if per-element data is
+     *                       not available.  Values are assumed to be in the same 
+     *                       order as the element connetivity passed to the constructor
+     *                       or \c set_mesh.
+     *\param default_value   Value to return for all vertices and/or all elements
+     *                       if the cooresponding data array is null.  May be
+     *                       NULL if no default value.
+     */
+    TagHandle add_writable_tag_data( const char* tag_name,
+                                     TagType tag_data_type,
+                                     int vals_per_entity,
+                                     void* vertex_data,
+                                     void* element_data,
+                                     const void* default_value,
+                                     MsqError& err );
+    
+    
     virtual int get_geometric_dimension( MsqError& err );
 
     virtual void get_all_elements( std::vector<ElementHandle>& elements,
@@ -281,6 +348,36 @@ class ArrayMesh : public Mesh
     
     unsigned long* vertexAdjacencyList;
     unsigned long* vertexAdjacencyOffsets;
+    
+    static unsigned bytes( TagType type );
+    
+    static void fill( unsigned char* buffer, const unsigned char* value, size_t size, size_t count );
+    
+    struct Tag {
+      char* name;             //!< Tag name (null-terminated string)
+      TagType type;          //!< tag data type
+      unsigned size;         //!< number of *bytes* per entity
+      bool owned;            //!< true if memory for tag storage is owned by this class
+      unsigned char* vtxWritePtr;     //!< pointer to writable tag data (NULL if read-only)
+      const unsigned char* vtxReadPtr;//!< pointer to tag data
+      unsigned char* eleWritePtr;     //!< pointer to writable tag data (NULL if read-only)
+      const unsigned char* eleReadPtr;//!< pointer to tag data
+      unsigned char* defaultValue;    //!< Default value
+      Tag* next;             //!< Linked-list next pointer
+    };
+    
+    Tag* allocate_tag( const char* name, 
+                       bool owned,
+                       TagType type, 
+                       unsigned size, 
+                       const void* vertex_ro_data,
+                       void* vertex_rw_data,
+                       const void* element_ro_data,
+                       void* element_rw_data,
+                       const void* default_value,
+                       MsqError& err );
+    
+    Tag* tagList;
     
     bool valid() const;
 };

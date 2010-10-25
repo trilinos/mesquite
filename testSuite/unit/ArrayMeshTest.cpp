@@ -70,6 +70,17 @@ private:
   CPPUNIT_TEST( test_elements_get_attached_vertices_mixed_one_based );
   CPPUNIT_TEST( test_elements_get_topologies_mixed );
   
+  CPPUNIT_TEST( test_vertex_readonly_tag_data );
+  CPPUNIT_TEST( test_vertex_readonly_tag_data_one_based );
+  CPPUNIT_TEST( test_element_readonly_tag_data );
+  CPPUNIT_TEST( test_vertex_writable_tag_data );
+  CPPUNIT_TEST( test_vertex_writable_tag_data_one_based );
+  CPPUNIT_TEST( test_element_writable_tag_data );
+  CPPUNIT_TEST( test_vertex_owned_tag_data );
+  CPPUNIT_TEST( test_vertex_owned_tag_data_one_based );
+  CPPUNIT_TEST( test_element_owned_tag_data );
+  CPPUNIT_TEST( test_delete_tag );
+  
   CPPUNIT_TEST_SUITE_END();
 
   ArrayMesh *zeroBased3D, *oneBased3D, *zeroBased2D, *oneBased2D;
@@ -108,11 +119,30 @@ public:
   void test_elements_get_attached_vertices_mixed ();
   void test_elements_get_attached_vertices_mixed_one_based ();
   void test_elements_get_topologies_mixed ();
+
+  enum TagEntType { VERTEX, ONE_BASED_VERTEX, ELEMENT };
+  enum TagStorage { READONLY, WRITABLE, OWNED };
+  void test_tag_data( TagEntType type, TagStorage storage );
+  void test_readonly_tag_data( TagEntType type ) { test_tag_data( type, READONLY ); }
+  void test_writable_tag_data( TagEntType type ) { test_tag_data( type, WRITABLE ); }
+  void test_owned_tag_data( TagEntType type ) { test_tag_data( type, OWNED ); }
+
+  void test_vertex_readonly_tag_data( )           { test_readonly_tag_data( VERTEX ); }
+  void test_vertex_readonly_tag_data_one_based( ) { test_readonly_tag_data( ONE_BASED_VERTEX ); }
+  void test_element_readonly_tag_data( )          { test_readonly_tag_data( ELEMENT ); }
+  void test_vertex_writable_tag_data( )           { test_writable_tag_data( VERTEX ); }
+  void test_vertex_writable_tag_data_one_based( ) { test_writable_tag_data( ONE_BASED_VERTEX ); }
+  void test_element_writable_tag_data( )          { test_writable_tag_data( ELEMENT ); }
+  void test_vertex_owned_tag_data( )              { test_owned_tag_data( VERTEX ); }
+  void test_vertex_owned_tag_data_one_based( )    { test_owned_tag_data( ONE_BASED_VERTEX ); }
+  void test_element_owned_tag_data( )             { test_owned_tag_data( ELEMENT ); }
+  void test_delete_tag( );
 };
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(ArrayMeshTest, "ArrayMeshTest");
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(ArrayMeshTest, "Unit");
+
 
 /* Mesh:
 
@@ -895,3 +925,221 @@ void ArrayMeshTest::test_elements_get_topologies_mixed()
   for (size_t i = 0; i < num_elem; ++i)
     CPPUNIT_ASSERT_EQUAL( (int)mixed_types[elems[i]], (int)topo[i] );
 }
+
+void ArrayMeshTest::test_tag_data( TagEntType type, TagStorage storage )
+{
+    // Select what we're working with given 'type' parameter
+  ArrayMesh* const mesh = (type == ONE_BASED_VERTEX) ? oneBased3D : zeroBased3D;
+  std::vector<Mesh::EntityHandle> entities;
+  MsqError err;
+  if (type == ELEMENT)
+    mesh->get_all_elements( entities, err );
+  else
+    mesh->get_all_vertices( entities, err );
+  ASSERT_NO_ERROR(err);
+
+    // Create a tag 
+  char name1[] = "  _double_3"; name1[0] = 'A' + type; name1[1] = 'A' + storage;
+  TagHandle tag;
+  std::vector<double> values(3*entities.size());
+  double dval = -5;
+  for (std::vector<double>::iterator i = values.begin(); i != values.end(); ++i)
+    *i = dval--;
+  double* ele_ptr = (type == ELEMENT) ? &values[0] : 0;
+  double* vtx_ptr = (type != ELEMENT) ? &values[0] : 0;
+  if (storage == READONLY) {
+    tag = mesh->add_read_only_tag_data( name1, Mesh::DOUBLE, 3, vtx_ptr, ele_ptr, 0, err );
+    ASSERT_NO_ERROR(err);
+  }
+  else if (storage == WRITABLE) {
+    tag = mesh->add_writable_tag_data( name1, Mesh::DOUBLE, 3, vtx_ptr, ele_ptr, 0, err );
+    ASSERT_NO_ERROR(err);
+  }
+  else { 
+    assert(OWNED == storage);
+    tag = mesh->tag_create( name1, Mesh::DOUBLE, 3, 0, err );
+    ASSERT_NO_ERROR(err);
+    if (type == ELEMENT)
+      mesh->tag_set_element_data( tag, entities.size(), &entities[0], &values[0], err );
+    else
+      mesh->tag_set_vertex_data( tag, entities.size(), &entities[0], &values[0], err );
+    ASSERT_NO_ERROR(err);
+  }
+  
+    // Check tag properties
+  TagHandle tag2 = mesh->tag_get( name1, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( tag, tag2 );
+  std::string n;
+  Mesh::TagType t;
+  unsigned s;
+  mesh->tag_properties( tag, n, t, s, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( std::string(name1), n );
+  CPPUNIT_ASSERT_EQUAL( Mesh::DOUBLE, t );
+  CPPUNIT_ASSERT_EQUAL( 3u, s );
+  
+    // Check values returned from tag_get_*_data
+  std::vector<double> values2(3*entities.size());
+  if (ELEMENT == type) 
+    mesh->tag_get_element_data( tag, entities.size(), &entities[0], &values2[0], err );
+  else
+    mesh->tag_get_vertex_data( tag, entities.size(), &entities[0], &values2[0], err );
+  ASSERT_NO_ERROR(err);
+  ASSERT_STD_VECTORS_EQUAL( values, values2 );
+  
+    // check that we get an error for other type, because no default
+  if (ELEMENT != type) 
+    mesh->tag_get_element_data( tag, entities.size(), &entities[0], &values2[0], err );
+  else
+    mesh->tag_get_vertex_data( tag, entities.size(), &entities[0], &values2[0], err );
+  CPPUNIT_ASSERT_EQUAL( MsqError::TAG_NOT_FOUND, err.error_code() );
+  err.clear();
+  
+    // check that we can or cannot modify the values as expected
+  dval = entities.size() + 1;
+  std::vector<double> values5(values.size());
+  for (std::vector<double>::iterator i = values5.begin(); i != values5.end(); ++i)
+    *i = dval++;
+  if (ELEMENT == type) 
+    mesh->tag_set_element_data( tag, entities.size(), &entities[0], &values5[0], err );
+  else
+    mesh->tag_set_vertex_data( tag, entities.size(), &entities[0], &values5[0], err );
+  if (READONLY == storage) {
+    CPPUNIT_ASSERT( err );
+    err.clear();
+  }
+  else {
+    ASSERT_NO_ERROR(err);
+  }
+
+    // check that the values are as expected
+  if (READONLY != storage) {
+    if (ELEMENT == type) 
+      mesh->tag_get_element_data( tag, entities.size(), &entities[0], &values2[0], err );
+    else
+      mesh->tag_get_vertex_data( tag, entities.size(), &entities[0], &values2[0], err );
+    ASSERT_NO_ERROR(err);
+    ASSERT_STD_VECTORS_EQUAL( values5, values2 );
+    
+      // if WRITABLE storeage, original input array should have changed also
+    if (WRITABLE == storage) {
+      ASSERT_STD_VECTORS_EQUAL( values, values5 );
+    }
+  }
+  
+    // create a new tag with a default value
+  char name2[] = "  _int_2"; name2[0] = 'A' + type; name2[1] = 'A' + storage;
+  const int default_val[] = { 'J', 'K' };
+  if (READONLY == storage)
+    tag = mesh->add_read_only_tag_data( name2, Mesh::INT, 2, 0, 0, default_val, err );
+  else if (WRITABLE == storage)
+    tag = mesh->add_writable_tag_data( name2, Mesh::INT, 2, 0, 0, default_val, err );
+  else // OWNED == storage
+    tag = mesh->tag_create( name2, Mesh::INT, 2, default_val, err );
+  ASSERT_NO_ERROR(err);
+  
+    // Check tag properties
+  tag2 = mesh->tag_get( name2, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( tag, tag2 );
+  mesh->tag_properties( tag, n, t, s, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( std::string(name2), n );
+  CPPUNIT_ASSERT_EQUAL( Mesh::INT, t );
+  CPPUNIT_ASSERT_EQUAL( 2u, s );
+  
+    // should get default value for each entity
+  std::vector<int> values3(2*entities.size());
+  if (ELEMENT == type) 
+    mesh->tag_get_element_data( tag, entities.size(), &entities[0], &values3[0], err );
+  else
+    mesh->tag_get_vertex_data( tag, entities.size(), &entities[0], &values3[0], err );
+  ASSERT_NO_ERROR(err);
+  
+    // check that we got the default value for every entity
+  for (size_t i = 0; i < entities.size(); ++i) {
+    CPPUNIT_ASSERT_EQUAL( default_val[0], values3[2*i  ] );
+    CPPUNIT_ASSERT_EQUAL( default_val[1], values3[2*i+1] );
+  }
+  
+    // check that we cannot modify the values
+  for (size_t i = 0; i < values3.size(); ++i)
+    values[i] = i;
+  if (ELEMENT == type) 
+    mesh->tag_set_element_data( tag, entities.size(), &entities[0], &values3[0], err );
+  else
+    mesh->tag_set_vertex_data( tag, entities.size(), &entities[0], &values3[0], err );
+  if (OWNED != storage) {
+    CPPUNIT_ASSERT( err );
+    err.clear();
+  }
+  else {
+    ASSERT_NO_ERROR(err);
+  }
+
+    // check that we did set the values as expected
+  if (OWNED != storage) {
+    std::vector<int> values4(values3.size());
+    if (ELEMENT == type) 
+      mesh->tag_get_element_data( tag, entities.size(), &entities[0], &values4[0], err );
+    else
+      mesh->tag_get_vertex_data( tag, entities.size(), &entities[0], &values4[0], err );
+    ASSERT_NO_ERROR(err);
+    ASSERT_STD_VECTORS_EQUAL( values3, values4 );
+  }
+}  
+
+void ArrayMeshTest::test_delete_tag( )
+{
+  MsqError err;
+  ArrayMesh* mesh = zeroBased2D;
+  TagHandle tag, tag1, tag2, tag3;
+  tag1 = mesh->add_read_only_tag_data( "name1", Mesh::BOOL, 1, 0, 0, 0, err );
+  ASSERT_NO_ERROR(err);
+  tag2 = mesh->add_writable_tag_data( "name2", Mesh::BYTE, 5, 0, 0, 0, err );
+  ASSERT_NO_ERROR(err);
+  tag3 = mesh->tag_create( "name3", Mesh::HANDLE, 2, 0, err );
+  ASSERT_NO_ERROR(err);
+  
+  tag = mesh->tag_get( "name2", err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( tag2, tag );
+  
+  mesh->tag_delete( tag2, err );
+  ASSERT_NO_ERROR(err);
+  tag = mesh->tag_get( "name2", err );
+  CPPUNIT_ASSERT_EQUAL( MsqError::TAG_NOT_FOUND, err.error_code() );
+  err.clear();  
+  tag = mesh->tag_get( "name1", err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( tag1, tag );
+  tag = mesh->tag_get( "name3", err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( tag3, tag );
+  
+  mesh->tag_delete( tag1, err );
+  ASSERT_NO_ERROR(err);
+  tag = mesh->tag_get( "name2", err );
+  CPPUNIT_ASSERT_EQUAL( MsqError::TAG_NOT_FOUND, err.error_code() );
+  err.clear();  
+  tag = mesh->tag_get( "name1", err );
+  CPPUNIT_ASSERT_EQUAL( MsqError::TAG_NOT_FOUND, err.error_code() );
+  err.clear();  
+  tag = mesh->tag_get( "name3", err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( tag3, tag );
+  
+  mesh->tag_delete( tag3, err );
+  ASSERT_NO_ERROR(err);
+  tag = mesh->tag_get( "name2", err );
+  CPPUNIT_ASSERT_EQUAL( MsqError::TAG_NOT_FOUND, err.error_code() );
+  err.clear();  
+  tag = mesh->tag_get( "name1", err );
+  CPPUNIT_ASSERT_EQUAL( MsqError::TAG_NOT_FOUND, err.error_code() );
+  err.clear();  
+  tag = mesh->tag_get( "name3", err );
+  CPPUNIT_ASSERT_EQUAL( MsqError::TAG_NOT_FOUND, err.error_code() );
+  err.clear();  
+}
+

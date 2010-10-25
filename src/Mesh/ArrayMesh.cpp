@@ -70,7 +70,8 @@ ArrayMesh::ArrayMesh()
     nodesPerElement( 0 ),
     oneBasedArrays( false ),
     vertexAdjacencyList(0),
-    vertexAdjacencyOffsets(0)
+    vertexAdjacencyOffsets(0),
+    tagList(0)
 {}
 
 ArrayMesh::ArrayMesh( int coords_per_vertex,
@@ -96,7 +97,8 @@ ArrayMesh::ArrayMesh( int coords_per_vertex,
     nodesPerElement( nodes_per_element ),
     oneBasedArrays( one_based_conn_indices ),
     vertexAdjacencyList(0),
-    vertexAdjacencyOffsets(0)
+    vertexAdjacencyOffsets(0),
+    tagList(0)
 {
   if (oneBasedArrays) {
     coordArray -= mDimension;
@@ -133,7 +135,8 @@ ArrayMesh::ArrayMesh( int coords_per_vertex,
     nodesPerElement( 0 ),
     oneBasedArrays( one_based_conn_indices ),
     vertexAdjacencyList(0),
-    vertexAdjacencyOffsets(0)
+    vertexAdjacencyOffsets(0),
+    tagList(0)
 {
   if (oneBasedArrays) {
     coordArray -= mDimension;
@@ -182,6 +185,17 @@ void ArrayMesh::clear_mesh()
   delete [] vertexAdjacencyList;
   delete [] vertexAdjacencyOffsets;
   delete [] allocConnOffsets;
+  while (tagList) {
+    Tag* dead = tagList;
+    tagList = tagList->next;
+    delete [] dead->name;
+    delete [] dead->defaultValue;
+    if (dead->owned) {
+      delete [] dead->vtxWritePtr;
+      delete [] dead->eleWritePtr;
+    }
+    delete dead;
+  }
   mDimension = 0;
   vertexCount = 0;
   coordArray = 0;
@@ -237,10 +251,7 @@ void ArrayMesh::set_mesh( int coords_per_vertex,
 
 ArrayMesh::~ArrayMesh()
 {
-  delete [] vertexByteArray;
-  delete [] vertexAdjacencyList;
-  delete [] vertexAdjacencyOffsets;
-  delete [] allocConnOffsets;
+  clear_mesh();
 }
 
 inline const unsigned long* ArrayMesh::elem_verts( size_t e, int& n ) const
@@ -476,21 +487,296 @@ void ArrayMesh::build_vertex_adjacency_list()
   vertexAdjacencyOffsets[0] = 0; 
 }
 
-TagHandle ArrayMesh::tag_create( const std::string&, TagType, unsigned, const void*, MsqError &err)
-  { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); return (TagHandle)-1; }
-void ArrayMesh::tag_delete( TagHandle, MsqError& err )
-  { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); }
-TagHandle ArrayMesh::tag_get( const std::string&, MsqError& err )
-  { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); return (TagHandle)-1; }
-void ArrayMesh::tag_properties( TagHandle, std::string&, TagType&, unsigned&, MsqError& err )
-  { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); }
-void ArrayMesh::tag_set_element_data( TagHandle, size_t, const ElementHandle*, const void*, MsqError& err )
-  { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); }
-void ArrayMesh::tag_set_vertex_data ( TagHandle, size_t, const VertexHandle*, const void*, MsqError& err )
-  { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); }
-void ArrayMesh::tag_get_element_data( TagHandle, size_t, const ElementHandle*, void*, MsqError& err )
-  { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); }
-void ArrayMesh::tag_get_vertex_data ( TagHandle, size_t, const VertexHandle*, void*, MsqError& err )
-  { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); }
+unsigned ArrayMesh::bytes( TagType type ) {
+  switch (type) {
+    case BYTE: case BOOL: return 1;
+    case INT: return sizeof(int);
+    case DOUBLE: return sizeof(double);
+    case HANDLE: return sizeof(EntityHandle);
+  }
+  return 0;
+}
+
+void ArrayMesh::fill( unsigned char* buffer,
+                      const unsigned char* value,
+                      size_t size,
+                      size_t count )
+{
+  if (!value) {
+    memset( buffer, 0, size*count );
+    return;
+  }
+  
+  unsigned char* const end = buffer + size*count;
+  for (unsigned char* iter = buffer; iter != end; iter += size)
+    memcpy( iter, value, size );
+}
+
+ArrayMesh::Tag* ArrayMesh::allocate_tag( const char* name, 
+                                         bool owned,
+                                         TagType type, 
+                                         unsigned size,
+                                         const void* vertex_ro_data,
+                                         void* vertex_rw_data,
+                                         const void* element_ro_data,
+                                         void* element_rw_data,
+                                         const void* default_value,
+                                         MsqError& err )
+{
+    // check if name is already in use
+  for (Tag* iter = tagList; iter; iter = iter->next) {
+    if (!strcmp( iter->name, name )) {
+      MSQ_SETERR(err)(MsqError::TAG_ALREADY_EXISTS);
+      return 0;
+    }
+  }
+    
+    // allocate object
+  Tag* result = new Tag;
+  
+    // initialize members
+  result->type = type;
+  result->size = size*bytes(type);
+  result->owned = owned;
+  result->name = new char[strlen(name)+1];
+  strcpy( result->name, name );
+
+  result->vtxWritePtr = reinterpret_cast<unsigned char*>(vertex_rw_data);
+  if (vertex_rw_data) 
+    result->vtxReadPtr = reinterpret_cast<unsigned char*>(vertex_rw_data);
+  else
+    result->vtxReadPtr = reinterpret_cast<const unsigned char*>(vertex_ro_data);
+
+  result->eleWritePtr = reinterpret_cast<unsigned char*>(element_rw_data);
+  if (element_rw_data) 
+    result->eleReadPtr = reinterpret_cast<unsigned char*>(element_rw_data);
+  else
+    result->eleReadPtr = reinterpret_cast<const unsigned char*>(element_ro_data);
+  
+  if (default_value) {
+    result->defaultValue = new unsigned char[result->size];
+    memcpy( result->defaultValue, default_value, result->size );
+  }
+  else {
+    result->defaultValue = 0;
+  }
+  
+    // prepend to tag list
+  result->next = tagList;
+  tagList = result;
+  
+  return result;
+}
+
+TagHandle ArrayMesh::add_read_only_tag_data( const char* tag_name,
+                                             TagType data_type,
+                                             int vals_per_entity,
+                                             const void* vertex_data,
+                                             const void* element_data,
+                                             const void* default_value,
+                                             MsqError& err )
+{
+  Tag* tag = allocate_tag( tag_name, false,
+                           data_type, vals_per_entity, 
+                           vertex_data, 0,
+                           element_data, 0,
+                           default_value, err );
+  MSQ_ERRZERO(err);
+  return reinterpret_cast<TagHandle>(tag);
+}
+
+TagHandle ArrayMesh::add_writable_tag_data( const char* tag_name,
+                                            TagType data_type,
+                                            int vals_per_entity,
+                                            void* vertex_data,
+                                            void* element_data,
+                                            const void* default_value,
+                                            MsqError& err )
+{
+  Tag* tag = allocate_tag( tag_name, false,
+                           data_type, vals_per_entity, 
+                           0, vertex_data,
+                           0, element_data,
+                           default_value, err );
+  MSQ_ERRZERO(err);
+  return reinterpret_cast<TagHandle>(tag);
+}
+  
+TagHandle ArrayMesh::tag_create( const std::string& tag_name, 
+                                 TagType data_type, 
+                                 unsigned size, 
+                                 const void* default_value, 
+                                 MsqError &err)
+{
+  Tag* tag = allocate_tag( tag_name.c_str(), true,
+                           data_type, size, 
+                           0, 0,
+                           0, 0,
+                           default_value, err );
+  MSQ_ERRZERO(err);
+  return reinterpret_cast<TagHandle>(tag);
+}
+
+void ArrayMesh::tag_delete( TagHandle handle, MsqError& err )
+{
+  Tag* ptr = reinterpret_cast<Tag*>(handle);
+  // find previous tag pointer in list
+  if (!tagList) {
+    MSQ_SETERR(err)("Invalid tag handle", MsqError::TAG_NOT_FOUND );
+    return;
+  }
+  Tag* prev = 0;
+  for (prev = tagList; prev && prev->next != ptr; prev = prev->next);
+  if (!prev && tagList != ptr) {
+    MSQ_SETERR(err)("Invalid tag handle", MsqError::TAG_NOT_FOUND );
+    return;
+  }
+  delete [] ptr->name;
+  delete [] ptr->defaultValue;
+  if (ptr->owned) {
+    delete [] ptr->vtxWritePtr;
+    delete [] ptr->eleWritePtr;
+  }
+  if (prev)
+    prev->next = ptr->next;
+  else
+    tagList = ptr->next;
+  delete ptr;
+}
+
+
+TagHandle ArrayMesh::tag_get( const std::string& name, MsqError& err )
+{
+  for (Tag* iter = tagList; iter; iter = iter->next)
+    if (name == iter->name)
+      return reinterpret_cast<TagHandle>(iter);
+  MSQ_SETERR(err)(MsqError::TAG_NOT_FOUND);
+  return 0;
+}
+
+void ArrayMesh::tag_properties( TagHandle handle, 
+                                std::string& name, 
+                                TagType& type, 
+                                unsigned& size, 
+                                MsqError& err )
+{
+  const Tag* ptr = reinterpret_cast<const Tag*>(handle);
+  name = ptr->name;
+  type = ptr->type;
+  size = ptr->size/bytes(ptr->type);
+}
+
+void ArrayMesh::tag_set_element_data( TagHandle handle, 
+                                      size_t count, 
+                                      const ElementHandle* entities, 
+                                      const void* data, 
+                                      MsqError& err )
+{
+  Tag* tag = reinterpret_cast<Tag*>(handle);
+  if (!tag->eleWritePtr) {
+    if (!tag->owned) {
+      MSQ_SETERR(err)("Attempt to set non-writeable (application owned) tag data", 
+                      MsqError::TAG_ALREADY_EXISTS);
+      return;
+    }
+    else {
+      assert(!tag->eleReadPtr);
+      tag->eleReadPtr = tag->eleWritePtr = new unsigned char[elementCount*tag->size];
+      fill( tag->eleWritePtr, tag->defaultValue, tag->size, elementCount );
+    }
+  }
+  const unsigned char* ptr = reinterpret_cast<const unsigned char*>(data);
+    // as we're working with user-supplied arrays, make sure we're not
+    // memcpying overlapping regions
+  assert(ptr+tag->size*elementCount <= tag->eleWritePtr ||
+         tag->eleWritePtr+tag->size*elementCount <= ptr);
+  for (size_t i = 0; i < count; ++i) {
+    size_t idx = reinterpret_cast<size_t>(entities[i]);
+    memcpy( tag->eleWritePtr + idx*tag->size,
+            ptr + i*tag->size,
+            tag->size );
+  }
+}
+  
+void ArrayMesh::tag_set_vertex_data ( TagHandle handle, 
+                                      size_t count, 
+                                      const VertexHandle* entities, 
+                                      const void* data, 
+                                      MsqError& err )
+{
+  Tag* tag = reinterpret_cast<Tag*>(handle);
+  if (!tag->vtxWritePtr) {
+    if (!tag->owned) {
+      MSQ_SETERR(err)("Attempt to set non-writeable (application owned) tag data", 
+                      MsqError::TAG_ALREADY_EXISTS);
+      return;
+    }
+    else {
+      assert(!tag->vtxReadPtr);
+      tag->vtxReadPtr = tag->vtxWritePtr = new unsigned char[vertexCount*tag->size];
+      fill( tag->vtxWritePtr, tag->defaultValue, tag->size, vertexCount );
+    }
+  }
+  const unsigned char* ptr = reinterpret_cast<const unsigned char*>(data);
+    // as we're working with user-supplied arrays, make sure we're not
+    // memcpying overlapping regions
+  assert(ptr+tag->size*vertexCount <= tag->vtxWritePtr ||
+         tag->vtxWritePtr+tag->size*vertexCount <= ptr);
+  for (size_t i = 0; i < count; ++i) {
+    size_t idx = reinterpret_cast<size_t>(entities[i]) - oneBasedArrays;
+    memcpy( tag->vtxWritePtr + idx*tag->size,
+            ptr + i*tag->size,
+            tag->size );
+  }
+}
+
+void ArrayMesh::tag_get_element_data( TagHandle handle, 
+                                      size_t count, 
+                                      const ElementHandle* entities, 
+                                      void* data, 
+                                      MsqError& err )
+{
+  unsigned char* ptr = reinterpret_cast<unsigned char*>(data);
+  const Tag* tag = reinterpret_cast<const Tag*>(handle);
+  if (tag->eleReadPtr) {
+    for (size_t i = 0; i < count; ++i) {
+      size_t idx = reinterpret_cast<size_t>(entities[i]);
+      memcpy( ptr + i*tag->size,
+              tag->eleReadPtr + idx*tag->size,
+              tag->size );
+    }
+  }
+  else if (tag->defaultValue) {
+    fill( ptr, tag->defaultValue, tag->size, count );
+  }
+  else {
+    MSQ_SETERR(err)(MsqError::TAG_NOT_FOUND);
+  }
+}    
+
+void ArrayMesh::tag_get_vertex_data ( TagHandle handle, 
+                                      size_t count, 
+                                      const VertexHandle* entities, 
+                                      void* data, 
+                                      MsqError& err )
+{
+  unsigned char* ptr = reinterpret_cast<unsigned char*>(data);
+  const Tag* tag = reinterpret_cast<const Tag*>(handle);
+  if (tag->vtxReadPtr) {
+    for (size_t i = 0; i < count; ++i) {
+      size_t idx = reinterpret_cast<size_t>(entities[i]) - oneBasedArrays;
+      memcpy( ptr + i*tag->size,
+              tag->vtxReadPtr + idx*tag->size,
+              tag->size );
+    }
+  }
+  else if (tag->defaultValue) {
+    fill( ptr, tag->defaultValue, tag->size, count );
+  }
+  else {
+    MSQ_SETERR(err)(MsqError::TAG_NOT_FOUND);
+  }
+}
+
   
 } // namespace Mesquite
