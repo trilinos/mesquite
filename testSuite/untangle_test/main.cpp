@@ -362,17 +362,18 @@ int uwt( bool skip,
     std::cout << "WARNING: expected " << expected 
               << " inverted elements but finished with only " 
               << count << std::endl
-              << "Test needs to be updated?" << std::endl;
+              << "Test needs to be updated?" << std::endl << std::endl;
     return 0;
   }
   else if (count == expected) {
-    std::cout << "Completed with " << count << " inverted elements remaining" << std::endl;
+    std::cout << "Completed with " << count << " inverted elements remaining" 
+              << std::endl << std::endl;
     return 0;
   }
   else {
     std::cerr << "ERROR: expected " << expected 
               << " inverted elements but finished with " 
-              << count << std::endl;
+              << count << std::endl << std::endl;
     return 1;
   }
 }
