@@ -939,7 +939,7 @@ so that
 \end{eqnarray}
 and similarly for the second derivatives. \newline
 
-\subsection{Derivatives of $\mu_2(T)=|T|^2 - 2 \, \tau$ \label{2ds}}
+\subsection{Derivatives of $\mu_2(T)=|T|^2 - 2 \, \tau = \frac{1}{2} \, |T-(adj T)^t|^2$ \label{2ds}}
 
 This metric preserves the shape of the target and applies to $n=2$ only. \newline
 
@@ -1736,7 +1736,7 @@ $\frac{\partial^2 f}{\partial \mu^2}$ for a variety of specific functions $f$.
 
 
 
-\section{Untangle-like Functions}
+\section{Untangle-like Functions \label{franks}}
 
 \begin{eqnarray}
 f(\mu) & = & \frac{1}{2^p} \, \left\{ |\sigma - \mu | - (\sigma - \mu) \right\}^p \\
@@ -1803,10 +1803,12 @@ p \, (\mu-\sigma)^{p-2} \, \left[ (\mu-\sigma) \, \left( \frac{\partial^2 \mu}{\
          
 
 \chapter{Derivatives of Metrics that are Explicit Functions of $A$}
+Let $\omega = det(W)$. \newline
 
 \section{Derivatives of Non-Barrier Metrics}
 
 \subsection{\label{diff} Derivatives of $\mu_n(A)=|A-W|^2$}
+This is a Shape-Size-Orientation metric. \newline
 
 \begin{eqnarray}
 \mu_n (A) & = & |A-W|^2 \\
@@ -1820,6 +1822,131 @@ p \, (\mu-\sigma)^{p-2} \, \left[ (\mu-\sigma) \, \left( \frac{\partial^2 \mu}{\
 \begin{eqnarray}
 \frac{\partial^2 \mu_n}{\partial A^2} = 2 \, I_{n^2}
 \end{eqnarray}
+
+\subsection{\label{abs-size} Derivatives of $\mu_n = (\alpha-\omega)^2$}
+This is a Size metric. \newline
+
+\begin{eqnarray}
+\mu_n (A) & = & \left( \alpha - \omega \right)^2 \\
+          & = & \alpha^2 - 2 \, \alpha \, \omega + \omega^2 \nonumber
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial \mu_n}{\partial A} = 2 \, \left( \alpha - \omega \right) \, (adj A)^t
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial^2}{\partial A^2} \, (\alpha-\omega)^2 = 2 \, \left\{ (\alpha-\omega) \, \frac{\partial^2 \alpha}{\partial A^2} + \left( \frac{\partial \alpha}{\partial A} \otimes \frac{\partial \alpha}{\partial A} \right) \right\}
+\end{eqnarray}
+
+\subsection{\label{abs-unt} Derivatives of $\mu_n = \left\{ |\alpha-\gamma \, \omega|-(\alpha-\gamma \, \omega)\right\}^p$}
+This is an untangle metric, with $\gamma$ a positive parameter. For best
+results we reccomend $p>2$. \newline
+
+\begin{eqnarray}
+\mu_n & = & \left\{ |\alpha-\gamma \, \omega|-(\alpha-\gamma \, \omega)\right\}^p \\
+      & = & \left\{ \begin{array}{cc}  
+2^p \, (\gamma \, \omega - \alpha)^p & \mbox{if $\alpha-\gamma \, \omega < 0$} \\
+0 & \mbox{else}
+\end{array} \right. \nonumber
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial \mu_n}{\partial A} = \left\{ \begin{array}{cc} 
+-p \, 2^p (\gamma \, \omega - \alpha)^{p-1} \, (adj A)^t & \mbox{if $\alpha-\gamma \, \omega < 0$} \\
+0 & \mbox{else}
+\end{array} \right.
+\end{eqnarray}
+
+\subsection{\label{abs-shape} $\mu_2 = | A \, (adj W) - \left[ W \, (adj A) \right]^t |^2$}
+This is a 2D Shape metric. \newline
+
+\begin{eqnarray}
+\mu_2 & = & | A \, (adj W) - \left[ W \, (adj A) \right]^t |^2 \\
+      & = & | A \, (adj W) |^2 + | W \, (adj A) |^2 - 4 \, \alpha \, \omega \nonumber
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial \mu_2}{\partial A} = 4 \, A \, adj(W^t W) - 4 \, \omega \, (adj A)^t
+\end{eqnarray}
+
+%\subsection{\label{abs-shape} $\mu_2 = |\omega \, A - (adj A)^t \, W^t W|^2$}
+%This is a 2D Shape metric. \newline
+
+%\begin{eqnarray}
+%\mu_2 & = & |\omega \, A - (adj A)^t \, W^t W|^2 \\
+%      & = & \omega^2 \, |A|^2 + |(adj A)^t W^t W|^2 - 2 \, \alpha \, \omega \, |W|^2
+%\end{eqnarray}
+
+%\begin{eqnarray}
+%\frac{\partial \mu_2}{\partial A} = 2 \, A \, \left\{ \omega^2 \, I + adj(W^t W \, W^t W) \right\} -2 \, \omega \, |W|^2 \, (adj A)^t
+%\end{eqnarray}
+
+\subsection{\label{abs-shape-alt1} $\mu_2 = |\omega \, A^t A - \alpha \, W^t W|^2$}
+This is a 2D Shape metric. \newline
+
+\begin{eqnarray}
+\mu_2 & = & |\omega \, A^t A - \alpha \, W^t W|^2 \\
+      & = & \omega^2 \, |A^t A|^2 + \alpha^2 \, |W^t W|^2 - 2 \, \alpha \, \omega \, |A W^t|^2
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial \mu_2}{\partial A} = 4 \, \omega^2 \, A \, A^t A - 4 \, \alpha \, \omega \, A \, W^t W + 2 \, \left\{ \alpha \, |W^t W|^2 - \omega \, |A W^t|^2 \right\} \, (adj A)^t
+\end{eqnarray}
+
+\subsection{\label{abs-ShapeOr-alt2} $\mu_n = \left( |A| |W| - A \cdot W \right)^2$}
+This is a Shape+Orientation metric. \newline
+
+\begin{eqnarray}
+\mu_n & = & \left( |A| |W| - A \cdot W \right)^2 \\
+      & = & |A|^2 |W|^2 + (A \cdot W)^2 - 2 \, |A| |W| (A \cdot W) \nonumber
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial \mu_n}{\partial A} = 2 \, |W|^2 \, A + 2 \, (A \cdot W) \, W - 2 \, |W| \, \left\{ |A| \, W + (A \cdot W) \, \frac{A}{|A|} \right\}
+\end{eqnarray}
+
+\section{Derivatives of Barrier Metrics}
+
+\subsection{\label{abs-size-barrier} Derivatives of $\mu_n = \frac{\alpha}{\omega} + \frac{\omega}{\alpha} - 2$}
+This is a Size metric. \newline
+
+\begin{eqnarray}
+\mu_n(A) & = & \frac{\alpha}{\omega} + \frac{\omega}{\alpha} - 2 \\
+         & = & \frac{(\alpha-\omega)^2}{\alpha \, \omega} \nonumber
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial \mu_n}{\partial A} = \left( \frac{\alpha^2 - \omega^2}{\alpha^2 \, \omega} \right) \, (adj A)^t
+\end{eqnarray}
+
+\subsection{\label{abs-SSO-barrier} $\mu_n = |A^{-1} - W^{-1}|^2$}
+This is a Shape+Size+Orientation metric. \newline
+
+\begin{eqnarray}
+\mu_n & = & |A^{-1} - W^{-1}|^2 \\
+      & = & |A^{-1}|^2 - 2 \, tr \left( W^{-t} \, A^{-1} \right) + |W^{-1}|^2
+\end{eqnarray}
+
+\subsection{\label{abs-ss-barrier} $\mu_n=|A - A^{-t} \, W^t W|^2$}
+This is a Shape+Size metric. \newline
+
+\begin{eqnarray}
+\mu_n & = & |A - A^{-t} \, W^t W|^2 \\
+      & = & |A|^2 + |W^t W \, A^{-1}|^2 - 2 |W|^2 \nonumber
+\end{eqnarray}
+
+\subsection{\label{abs-shape-barrier} Derivatives of $\mu_2 = \frac{1}{4 \, \alpha \, \omega} \, | A \, (adj W) - \left[ W \, (adj A) \right]^t |^2$}
+This is a 2D Shape metric. \newline
+
+\begin{eqnarray}
+\mu_2 & = & \frac{1}{4 \, \alpha \, \omega}\,  | A \, (adj W) - \left[ W \, (adj A) \right]^t |^2 \\
+      & = & \frac{| A \, (adj W) |^2 + | W \, (adj A) |^2}{4 \, \alpha \, \omega} - 1 \nonumber
+\end{eqnarray}
+
+%\begin{eqnarray}
+%\frac{\partial \mu_2}{\partial A} = 4 \, A \, adj(W^t W) - 4 \, \omega \, (adj A)^t
+%\end{eqnarray}
 
 \chapter{Derivatives of Element Quality Metrics}
 
@@ -2237,47 +2364,47 @@ metric and its derivatives.  Section numbers in parantheses indicate
 metrics that are not yet implemented.  Entries with question marks indicate
 implementations for which there is no corresponding section in this document.\newline
 
-\begin{tabular}{|c|c|c|}
+\begin{tabular}{|c|c|c||c|c|}
 \hline
-Name & 2D & 3D \\
+Name & Rel 2D & Rel 3D & Abs 2D & Abs 3D \\
 \hline
-Shape & \ref{2ds} & \ref{shape3d} \\
-ShapeAlt1 & \ref{shape2d} &  \\
+Shape & \ref{2ds} & \ref{shape3d} & \ref{abs-shape} & \\
+ShapeAlt1 & \ref{shape2d} &  & \ref{abs-shape-alt1} & \\
 \hline
-ShapeBarrier & \ref{shape+2d} & \ref{shape+3d} \\
-ShapeBarrierAlt1 &  & \ref{s+1} \\
-InverseMeanRatio & \ref{imr} & \ref{imr} \\
+ShapeBarrier & \ref{shape+2d} & \ref{shape+3d} & \ref{abs-shape-barrier} & \\
+ShapeBarrierAlt1 &  & \ref{s+1} & & \\
+InverseMeanRatio & \ref{imr} & \ref{imr} & & \\ \hline
 \hline
-ShapeOrient & \ref{sho} & \ref{sho} \\
-ShapeOrientAlt1 & \ref{si+} & \ref{si+} \\
+ShapeOrient & \ref{sho} & \ref{sho} & & \\
+ShapeOrientAlt1 & \ref{si+} & \ref{si+} & & \\
+ShapeOrientAlt2 & & & \ref{abs-ShapeOr-alt2} & \ref{abs-ShapeOr-alt2} \\
 \hline
-ShapeOrientBarrier & \ref{sho_b} & \ref{sho_b} \\
-ShapeOrientBarrierAlt1 & \ref{nu-over-tau} & \ref{nu-over-tau} \\
+ShapeOrientBarrier & \ref{sho_b} & \ref{sho_b} & & \\
+ShapeOrientBarrierAlt1 & \ref{nu-over-tau} & \ref{nu-over-tau} & & \\ \hline
 \hline
-ShapeSize & \ref{magic} & \ref{ss3d} \\
-ShapeSizeAlt1 & \ref{magic2} &  \\
-ShapeSizeAlt2 & \ref{ss2d} &  \\
+ShapeSize & \ref{magic} &  & & \\
+ShapeSizeAlt1 & \ref{magic2} & & & \\
+ShapeSizeAlt2 & \ref{ss2d} & \ref{ss3d} & & \\
 \hline
-ShapeSizeBarrier & \ref{ss+1} & \ref{ss+1} \\
-ShapeSizeBarrierAlt1 & \ref{ss+32d} & \ref{ss+3d} \\
-ShapeSizeBarrierAlt2 & \ref{ss+22d} & \ref{ss+23d} \\
+ShapeSizeBarrier & \ref{ss+1} & \ref{ss+1} & \ref{abs-ss-barrier} & \\
+ShapeSizeBarrierAlt1 & \ref{ss+32d} & \ref{ss+3d} & & \\
+ShapeSizeBarrierAlt2 & \ref{ss+22d} & \ref{ss+23d} & & \\ \hline
 \hline
-ShapeSizeOrient & \ref{tmi} & \ref{tmi} \\
-ShapeSizeOrientAlt1 & \ref{diff} & \ref{diff} \\
+ShapeSizeOrient & \ref{tmi} & \ref{tmi} &  \ref{diff} & \ref{diff} \\
 \hline
-ShapeSizeOrientBarrier & \ref{sso+} & \ref{sso+} \\
-ShapeSizeOrientBarrierAlt1 & \ref{sso+2} & \ref{sso+2} \\
+ShapeSizeOrientBarrier & \ref{sso+} & \ref{sso+} & & \\
+ShapeSizeOrientBarrierAlt1 & \ref{sso+2} & \ref{sso+2} & \ref{abs-SSO-barrier} & \ref{abs-SSO-barrier} \\ \hline
 \hline
-Size & \ref{tausqr} & \ref{tausqr} \\
-Tau & \ref{tau} & \ref{tau} \\
+Size & \ref{tausqr} & \ref{tausqr} & \ref{abs-size} & \ref{abs-size} \\
+Tau & \ref{tau} & \ref{tau} & & \\
 \hline
-SizeBarrier & \ref{z+1} & \ref{z+1} \\
+SizeBarrier & \ref{z+1} & \ref{z+1} & \ref{abs-size-barrier} & \ref{abs-size-barrier} \\ 
 \hline
-Squared & \ref{tsquared} & \ref{tsquared} \\
+Squared & \ref{tsquared} & \ref{tsquared} & &  \\ \hline
 \hline
-UntangleAlt1 & \ref{untangle2} & \ref{untangle2} \\
-UntangleBeta & \ref{untangle1} & \ref{untangle1} \\
-UntangleMu & \ref{franks} & \ref{franks} \\
+UntangleAlt1 & \ref{untangle2} & \ref{untangle2} & & \\
+UntangleBeta & \ref{untangle1} & \ref{untangle1} & \ref{abs-unt} & \ref{abs-unt} \\
+UntangleMu & \ref{franks} & \ref{franks} & & \\
 \hline
 \end{tabular}
 
