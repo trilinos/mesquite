@@ -35,17 +35,38 @@
 #include "TAbs3DMetric.hpp"
 #include "TAbsQualityMetric.hpp"
 #include "TMPQualityMetricTest.hpp"
-#include "TAbs2DShapeSizeOrient.hpp"
-#include "TAbs3DShapeSizeOrient.hpp"
+#include "TRel2DShape.hpp"
+#include "TRel3DShape.hpp"
 
 using namespace Mesquite;
+
+class FauxAbsShapeMetric2D : public TAbs2DMetric {
+  TRel2DShape mMetric;
+public:
+  std::string get_name() const { return mMetric.get_name(); }
+  bool evaluate( const MsqMatrix<2,2>& A,
+                 const MsqMatrix<2,2>& W,
+                 double& result,
+                 MsqError& err )
+    { return mMetric.evaluate( A * inverse(W), result, err ); }
+};
+class FauxAbsShapeMetric3D : public TAbs3DMetric {
+  TRel3DShape mMetric;
+public:
+  std::string get_name() const { return mMetric.get_name(); }
+  bool evaluate( const MsqMatrix<3,3>& A,
+                 const MsqMatrix<3,3>& W,
+                 double& result,
+                 MsqError& err )
+    { return mMetric.evaluate( A * inverse(W), result, err ); }
+};
 
 template <> class TMPTypes<TAbsQualityMetric> {
 public:
   typedef TAbs3DMetric Metric3DType;
   typedef TAbs2DMetric Metric2DType;
-  typedef TAbs3DShapeSizeOrient Test3DType;
-  typedef TAbs2DShapeSizeOrient Test2DType;
+  typedef FauxAbsShapeMetric2D Test2DType;
+  typedef FauxAbsShapeMetric3D Test3DType;
 };
 
 class TAbsQualityMetricTest : public TMPQualityMetricTest<TAbsQualityMetric>
