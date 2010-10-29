@@ -129,6 +129,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   bool one_patch = false, did_some, all_culled;
   std::vector<Mesh::VertexHandle> patch_vertices;
   std::vector<Mesh::ElementHandle> patch_elements;
+  bool valid;
   
   PatchSet* patch_set = get_patch_set();
   if (!patch_set) {
@@ -163,8 +164,14 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   this->initialize(patch, err);        
   if (MSQ_CHKERR(err)) goto ERROR;
   
-  obj_func.initialize( mesh, domain, settings, patch_set, err ); 
+  valid = obj_func.initialize( mesh, domain, settings, patch_set, err ); 
   if (MSQ_CHKERR(err)) goto ERROR;
+  if (!valid) {
+    MSQ_SETERR(err)("ObjectiveFunction initialization failed.  Mesh "
+                    "invalid at one or more sample points.", 
+                    MsqError::INVALID_MESH);
+    goto ERROR;
+  }
   
   outer_crit->reset_outer(mesh, domain, obj_func, settings, err); 
   if (MSQ_CHKERR(err)) goto ERROR;
