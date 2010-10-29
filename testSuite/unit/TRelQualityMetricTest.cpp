@@ -74,6 +74,9 @@ public:
 };
 
 
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TRelQualityMetricTest, "TRelQualityMetricTest");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TRelQualityMetricTest, "Unit");
+
   
 void TRelQualityMetricTest::test_inverse_mean_ratio_grad()
 {

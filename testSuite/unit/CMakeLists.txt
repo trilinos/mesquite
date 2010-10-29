@@ -66,8 +66,8 @@ SET( unit_tests
      TAbs3DMetricTest
      TRel2DMetricTest
      TRel3DMetricTest
-     TAbsQualityMetricTest.cpp
-     TRelQualityMetricTest.cpp
+     TAbsQualityMetricTest
+     TRelQualityMetricTest
      TestTAbs2DMetrics
      TestTAbs3DMetrics
      TestTRel2DMetrics
@@ -100,8 +100,8 @@ SET( unit_srcs
      PatchDataInstances.hpp 
      QualityMetricTester.hpp 
      UnitUtil.hpp 
-     TMetricTests.hpp
-     TMPQualityMEtricTest.hpp )
+     TMetricTest.hpp
+     TMPQualityMetricTest.hpp )
 
 FOREACH( test ${unit_tests} )
   SET( unit_srcs ${unit_srcs} ${test}.cpp )
