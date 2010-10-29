@@ -55,8 +55,6 @@ SET( unit_tests
      StdDevTemplateTest
      SymMatrix3DTest
      TagVertexMeshTest
-     Target2DTest
-     Target3DTest
      TargetCalculatorTest
      TargetReadWriteTest
      TerminationCriterionTest
@@ -64,7 +62,16 @@ SET( unit_tests
      TriLagrangeShapeTest
      TopologyInfoTest
      TMPDerivsTest
-     TMPQualityMetricTest
+     TAbs2DMetricTest
+     TAbs3DMetricTest
+     TRel2DMetricTest
+     TRel3DMetricTest
+     TAbsQualityMetricTest.cpp
+     TRelQualityMetricTest.cpp
+     TestTAbs2DMetrics
+     TestTAbs3DMetrics
+     TestTRel2DMetrics
+     TestTRel3DMetrics
      UntangleBetaTest
      Vector3DTest
      VertexConditionNumberTest
@@ -92,7 +99,9 @@ SET( unit_srcs
      ObjectiveFunctionTests.cpp 
      PatchDataInstances.hpp 
      QualityMetricTester.hpp 
-     UnitUtil.hpp )
+     UnitUtil.hpp 
+     TMetricTests.hpp
+     TMPQualityMEtricTest.hpp )
 
 FOREACH( test ${unit_tests} )
   SET( unit_srcs ${unit_srcs} ${test}.cpp )

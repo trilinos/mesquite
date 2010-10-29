@@ -180,7 +180,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/MappingFunction/Lagrange
+# src/MappingFunction/Lagrange
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/MappingFunction/Lagrange)
@@ -200,7 +200,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/MappingFunction/Linear
+# src/MappingFunction/Linear
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/MappingFunction/Linear)
@@ -331,7 +331,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityAssessor
+# src/QualityAssessor
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityAssessor)
@@ -345,7 +345,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityImprover
+# src/QualityImprover
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover)
@@ -360,7 +360,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityImprover/TopologyModifier
+# src/QualityImprover/TopologyModifier
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/TopolofyModifier)
@@ -374,7 +374,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityImprover/VertexMover
+# src/QualityImprover/VertexMover
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover)
@@ -391,7 +391,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityImprover/VertexMover/ConjugateGradient
+# src/QualityImprover/VertexMover/ConjugateGradient
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/ConjugateGradient)
@@ -405,7 +405,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityImprover/VertexMover/Relaxation
+# src/QualityImprover/VertexMover/Relaxation
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/Relaxation)
@@ -423,7 +423,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityImprover/VertexMover/SteepestDescent
+# src/QualityImprover/VertexMover/SteepestDescent
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/SteepestDescent)
@@ -437,7 +437,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityImprover/VertexMover/NonSmoothDescent
+# src/QualityImprover/VertexMover/NonSmoothDescent
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/NonSmoothDescent)
@@ -451,7 +451,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityImprover/VertexMover/FeasibleNewton
+# src/QualityImprover/VertexMover/FeasibleNewton
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/FeasibleNewton)
@@ -465,7 +465,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityImprover/VertexMover/Randomize
+# src/QualityImprover/VertexMover/Randomize
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/Randomize)
@@ -479,7 +479,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityImprover/VertexMover/TrustRegion
+# src/QualityImprover/VertexMover/TrustRegion
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/TrustRegion)
@@ -493,7 +493,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityImprover/VertexMover/QuasiNewton
+# src/QualityImprover/VertexMover/QuasiNewton
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/QuasiNewton)
@@ -507,7 +507,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityMetric
+# src/QualityMetric
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric)
@@ -552,7 +552,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityMetric/Shape
+# src/QualityMetric/Shape
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/Shape)
@@ -576,7 +576,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityMetric/Smoothness
+# src/QualityMetric/Smoothness
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/Smoothness)
@@ -592,7 +592,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityMetric/TMP
+# src/QualityMetric/TMP
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/TMP)
@@ -600,164 +600,184 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/TMP)
 APPEND_SET(HEADERS
   QualityMetric/TMP/AffineMapMetric.hpp
   QualityMetric/TMP/TMPQualityMetric.hpp
-  QualityMetric/TMP/TMPDerivs.hpp
+  QualityMetric/TMP/TAbsQualityMetric.hpp 
+  QualityMetric/TMP/TRelQualityMetric.hpp 
   )
 
 APPEND_SET(SOURCES
   QualityMetric/TMP/AffineMapMetric.cpp
   QualityMetric/TMP/TargetMetricUtil.cpp
   QualityMetric/TMP/TargetMetricUtil.hpp
-  QualityMetric/TMP/TargetMetricDimIndep.hpp
   QualityMetric/TMP/TMPQualityMetric.cpp 
+  QualityMetric/TMP/TAbsQualityMetric.cpp 
+  QualityMetric/TMP/TRelQualityMetric.cpp 
   )
 
 #
-# src/Control/QualityMetric/TMP/2D
+# src/TargetMetric
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/TMP/2D)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/TargetMetric)
+
+#APPEND_SET(HEADERS
+#  )
+
+APPEND_SET(SOURCES
+  TargetMetric/TargetMetricDimIndep.hpp
+  TargetMetric/TMPDerivs.hpp
+  )
+
+
+#
+# src/TargetMetric/Absolute
+#
+
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/TargetMetric/Absolute)
 
 APPEND_SET(HEADERS
-  QualityMetric/TMP/2D/TargetMetric2D.hpp
-  QualityMetric/TMP/2D/InvTransBarrier2D.hpp
-  QualityMetric/TMP/2D/TSquared2D.hpp
-  QualityMetric/TMP/2D/Target2DScale.hpp
-  QualityMetric/TMP/2D/Target2DShape.hpp
-  QualityMetric/TMP/2D/Target2DShapeAlt1.hpp
-  QualityMetric/TMP/2D/Target2DShapeBarrier.hpp
-  QualityMetric/TMP/2D/Target2DShapeOrient.hpp
-  QualityMetric/TMP/2D/Target2DShapeOrientAlt1.hpp
-  QualityMetric/TMP/2D/Target2DShapeOrientBarrier.hpp
-  QualityMetric/TMP/2D/Target2DShapeOrientBarrierAlt1.hpp
-  QualityMetric/TMP/2D/Target2DShapeSize.hpp
-  QualityMetric/TMP/2D/Target2DShapeSizeAlt1.hpp
-  QualityMetric/TMP/2D/Target2DShapeSizeAlt2.hpp
-  QualityMetric/TMP/2D/Target2DShapeSizeBarrier.hpp
-  QualityMetric/TMP/2D/Target2DShapeSizeBarrierAlt1.hpp
-  QualityMetric/TMP/2D/Target2DShapeSizeBarrierAlt2.hpp
-  QualityMetric/TMP/2D/Target2DShapeSizeOrient.hpp
-  QualityMetric/TMP/2D/Target2DShapeSizeOrientAlt1.hpp
-  QualityMetric/TMP/2D/Target2DShapeSizeOrientBarrier.hpp
-  QualityMetric/TMP/2D/Target2DShapeSizeOrientBarrierAlt1.hpp
-  QualityMetric/TMP/2D/Target2DSize.hpp
-  QualityMetric/TMP/2D/Target2DSizeBarrier.hpp
-  QualityMetric/TMP/2D/Target2DSquared.hpp
-  QualityMetric/TMP/2D/Target2DSum.hpp
-  QualityMetric/TMP/2D/Target2DOffset.hpp
-  QualityMetric/TMP/2D/Target2DTau.hpp
-  QualityMetric/TMP/2D/Target2DUntangleAlt1.hpp
-  QualityMetric/TMP/2D/Target2DUntangleBeta.hpp
-  QualityMetric/TMP/2D/Target2DUntangleMu.hpp
-  QualityMetric/TMP/2D/InverseMeanRatio2D.hpp 
+  TargetMetric/Absolute/TAbs2DMetric.hpp
+  TargetMetric/Absolute/TAbs3DMetric.hpp
+  TargetMetric/Absolute/TAbs2DShapeSizeOrient.hpp
+  TargetMetric/Absolute/TAbs3DShapeSizeOrient.hpp
   )
 
 APPEND_SET(SOURCES
-  QualityMetric/TMP/2D/TargetMetric2D.cpp
-  QualityMetric/TMP/2D/InvTransBarrier2D.cpp
-  QualityMetric/TMP/2D/TSquared2D.cpp
-  QualityMetric/TMP/2D/Target2DScale.cpp
-  QualityMetric/TMP/2D/Target2DShape.cpp
-  QualityMetric/TMP/2D/Target2DShapeAlt1.cpp
-  QualityMetric/TMP/2D/Target2DShapeBarrier.cpp
-  QualityMetric/TMP/2D/Target2DShapeOrient.cpp
-  QualityMetric/TMP/2D/Target2DShapeOrientAlt1.cpp
-  QualityMetric/TMP/2D/Target2DShapeOrientBarrier.cpp
-  QualityMetric/TMP/2D/Target2DShapeOrientBarrierAlt1.cpp
-  QualityMetric/TMP/2D/Target2DShapeSize.cpp
-  QualityMetric/TMP/2D/Target2DShapeSizeAlt1.cpp
-  QualityMetric/TMP/2D/Target2DShapeSizeAlt2.cpp
-  QualityMetric/TMP/2D/Target2DShapeSizeBarrier.cpp
-  QualityMetric/TMP/2D/Target2DShapeSizeBarrierAlt1.cpp
-  QualityMetric/TMP/2D/Target2DShapeSizeBarrierAlt2.cpp
-  QualityMetric/TMP/2D/Target2DShapeSizeOrient.cpp
-  QualityMetric/TMP/2D/Target2DShapeSizeOrientAlt1.cpp
-  QualityMetric/TMP/2D/Target2DShapeSizeOrientBarrier.cpp
-  QualityMetric/TMP/2D/Target2DShapeSizeOrientBarrierAlt1.cpp
-  QualityMetric/TMP/2D/Target2DSize.cpp
-  QualityMetric/TMP/2D/Target2DSizeBarrier.cpp
-  QualityMetric/TMP/2D/Target2DSquared.cpp
-  QualityMetric/TMP/2D/Target2DSum.cpp
-  QualityMetric/TMP/2D/Target2DOffset.cpp
-  QualityMetric/TMP/2D/Target2DTau.cpp
-  QualityMetric/TMP/2D/Target2DUntangleAlt1.cpp
-  QualityMetric/TMP/2D/Target2DUntangleBeta.cpp
-  QualityMetric/TMP/2D/Target2DUntangleMu.cpp
-  QualityMetric/TMP/2D/InverseMeanRatio2D.cpp 
+  TargetMetric/Absolute/TAbs2DMetric.cpp
+  TargetMetric/Absolute/TAbs3DMetric.cpp
+  TargetMetric/Absolute/TAbs2DShapeSizeOrient.cpp
+  TargetMetric/Absolute/TAbs3DShapeSizeOrient.cpp
   )
 
-
 #
-# src/Control/QualityMetric/TMP/3D
+# src/TargetMetric/Relative
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/TMP/3D)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/TargetMetric/Relative)
 
 APPEND_SET(HEADERS
-  QualityMetric/TMP/3D/InverseMeanRatio3D.hpp
-  QualityMetric/TMP/3D/TargetMetric3D.hpp
-  QualityMetric/TMP/3D/TSquared3D.hpp
-  QualityMetric/TMP/3D/Target3DScale.hpp
-  QualityMetric/TMP/3D/Target3DShape.hpp
-  QualityMetric/TMP/3D/Target3DShapeBarrier.hpp
-  QualityMetric/TMP/3D/Target3DShapeBarrierAlt1.hpp
-  QualityMetric/TMP/3D/Target3DShapeOrient.hpp
-  QualityMetric/TMP/3D/Target3DShapeOrientAlt1.hpp
-  QualityMetric/TMP/3D/Target3DShapeOrientBarrier.hpp
-  QualityMetric/TMP/3D/Target3DShapeOrientBarrierAlt1.hpp
-  QualityMetric/TMP/3D/Target3DShapeSize.hpp
-  QualityMetric/TMP/3D/Target3DShapeSizeBarrier.hpp
-  QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt1.hpp
-  QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt2.hpp
-  QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt3.hpp
-  QualityMetric/TMP/3D/Target3DShapeSizeOrient.hpp
-  QualityMetric/TMP/3D/Target3DShapeSizeOrientAlt1.hpp
-  QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrier.hpp
-  QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrierAlt1.hpp
-  QualityMetric/TMP/3D/Target3DSize.hpp
-  QualityMetric/TMP/3D/Target3DSizeBarrier.hpp
-  QualityMetric/TMP/3D/Target3DSquared.hpp
-  QualityMetric/TMP/3D/Target3DSum.hpp
-  QualityMetric/TMP/3D/Target3DOffset.hpp
-  QualityMetric/TMP/3D/Target3DTau.hpp
-  QualityMetric/TMP/3D/Target3DUntangleAlt1.hpp 
-  QualityMetric/TMP/3D/Target3DUntangleBeta.hpp 
-  QualityMetric/TMP/3D/Target3DUntangleMu.hpp 
+  TargetMetric/Relative/TRel2DMetric.hpp
+  TargetMetric/Relative/InvTransBarrier2D.hpp
+  TargetMetric/Relative/TSquared2D.hpp
+  TargetMetric/Relative/TRel2DScale.hpp
+  TargetMetric/Relative/TRel2DShape.hpp
+  TargetMetric/Relative/TRel2DShapeAlt1.hpp
+  TargetMetric/Relative/TRel2DShapeBarrier.hpp
+  TargetMetric/Relative/TRel2DShapeOrient.hpp
+  TargetMetric/Relative/TRel2DShapeOrientAlt1.hpp
+  TargetMetric/Relative/TRel2DShapeOrientBarrier.hpp
+  TargetMetric/Relative/TRel2DShapeOrientBarrierAlt1.hpp
+  TargetMetric/Relative/TRel2DShapeSize.hpp
+  TargetMetric/Relative/TRel2DShapeSizeAlt1.hpp
+  TargetMetric/Relative/TRel2DShapeSizeAlt2.hpp
+  TargetMetric/Relative/TRel2DShapeSizeBarrier.hpp
+  TargetMetric/Relative/TRel2DShapeSizeBarrierAlt1.hpp
+  TargetMetric/Relative/TRel2DShapeSizeBarrierAlt2.hpp
+  TargetMetric/Relative/TRel2DShapeSizeOrient.hpp
+  TargetMetric/Relative/TRel2DShapeSizeOrientBarrier.hpp
+  TargetMetric/Relative/TRel2DShapeSizeOrientBarrierAlt1.hpp
+  TargetMetric/Relative/TRel2DSize.hpp
+  TargetMetric/Relative/TRel2DSizeBarrier.hpp
+  TargetMetric/Relative/TRel2DSquared.hpp
+  TargetMetric/Relative/TRel2DSum.hpp
+  TargetMetric/Relative/TRel2DOffset.hpp
+  TargetMetric/Relative/TRel2DTau.hpp
+  TargetMetric/Relative/TRel2DUntangleAlt1.hpp
+  TargetMetric/Relative/TRel2DUntangleBeta.hpp
+  TargetMetric/Relative/TRel2DUntangleMu.hpp
+  TargetMetric/Relative/InverseMeanRatio2D.hpp 
+  TargetMetric/Relative/InverseMeanRatio3D.hpp
+  TargetMetric/Relative/TRel3DMetric.hpp
+  TargetMetric/Relative/TSquared3D.hpp
+  TargetMetric/Relative/TRel3DScale.hpp
+  TargetMetric/Relative/TRel3DShape.hpp
+  TargetMetric/Relative/TRel3DShapeBarrier.hpp
+  TargetMetric/Relative/TRel3DShapeBarrierAlt1.hpp
+  TargetMetric/Relative/TRel3DShapeOrient.hpp
+  TargetMetric/Relative/TRel3DShapeOrientAlt1.hpp
+  TargetMetric/Relative/TRel3DShapeOrientBarrier.hpp
+  TargetMetric/Relative/TRel3DShapeOrientBarrierAlt1.hpp
+  TargetMetric/Relative/TRel3DShapeSize.hpp
+  TargetMetric/Relative/TRel3DShapeSizeBarrier.hpp
+  TargetMetric/Relative/TRel3DShapeSizeBarrierAlt1.hpp
+  TargetMetric/Relative/TRel3DShapeSizeBarrierAlt2.hpp
+  TargetMetric/Relative/TRel3DShapeSizeBarrierAlt3.hpp
+  TargetMetric/Relative/TRel3DShapeSizeOrient.hpp
+  TargetMetric/Relative/TRel3DShapeSizeOrientBarrier.hpp
+  TargetMetric/Relative/TRel3DShapeSizeOrientBarrierAlt1.hpp
+  TargetMetric/Relative/TRel3DSize.hpp
+  TargetMetric/Relative/TRel3DSizeBarrier.hpp
+  TargetMetric/Relative/TRel3DSquared.hpp
+  TargetMetric/Relative/TRel3DSum.hpp
+  TargetMetric/Relative/TRel3DOffset.hpp
+  TargetMetric/Relative/TRel3DTau.hpp
+  TargetMetric/Relative/TRel3DUntangleAlt1.hpp 
+  TargetMetric/Relative/TRel3DUntangleBeta.hpp 
+  TargetMetric/Relative/TRel3DUntangleMu.hpp 
   )
 
 APPEND_SET(SOURCES
-  QualityMetric/TMP/3D/InverseMeanRatio3D.cpp
-  QualityMetric/TMP/3D/TargetMetric3D.cpp
-  QualityMetric/TMP/3D/TSquared3D.cpp
-  QualityMetric/TMP/3D/Target3DScale.cpp
-  QualityMetric/TMP/3D/Target3DShape.cpp
-  QualityMetric/TMP/3D/Target3DShapeBarrier.cpp
-  QualityMetric/TMP/3D/Target3DShapeBarrierAlt1.cpp
-  QualityMetric/TMP/3D/Target3DShapeOrient.cpp
-  QualityMetric/TMP/3D/Target3DShapeOrientAlt1.cpp
-  QualityMetric/TMP/3D/Target3DShapeOrientBarrier.cpp
-  QualityMetric/TMP/3D/Target3DShapeOrientBarrierAlt1.cpp
-  QualityMetric/TMP/3D/Target3DShapeSize.cpp
-  QualityMetric/TMP/3D/Target3DShapeSizeBarrier.cpp
-  QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt1.cpp
-  QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt2.cpp
-  QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt3.cpp
-  QualityMetric/TMP/3D/Target3DShapeSizeOrient.cpp
-  QualityMetric/TMP/3D/Target3DShapeSizeOrientAlt1.cpp
-  QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrier.cpp
-  QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrierAlt1.cpp
-  QualityMetric/TMP/3D/Target3DSize.cpp
-  QualityMetric/TMP/3D/Target3DSizeBarrier.cpp
-  QualityMetric/TMP/3D/Target3DSquared.cpp
-  QualityMetric/TMP/3D/Target3DSum.cpp
-  QualityMetric/TMP/3D/Target3DOffset.cpp
-  QualityMetric/TMP/3D/Target3DTau.cpp
-  QualityMetric/TMP/3D/Target3DUntangleAlt1.cpp 
-  QualityMetric/TMP/3D/Target3DUntangleBeta.cpp 
-  QualityMetric/TMP/3D/Target3DUntangleMu.cpp 
+  TargetMetric/Relative/TRel2DMetric.cpp
+  TargetMetric/Relative/InvTransBarrier2D.cpp
+  TargetMetric/Relative/TSquared2D.cpp
+  TargetMetric/Relative/TRel2DScale.cpp
+  TargetMetric/Relative/TRel2DShape.cpp
+  TargetMetric/Relative/TRel2DShapeAlt1.cpp
+  TargetMetric/Relative/TRel2DShapeBarrier.cpp
+  TargetMetric/Relative/TRel2DShapeOrient.cpp
+  TargetMetric/Relative/TRel2DShapeOrientAlt1.cpp
+  TargetMetric/Relative/TRel2DShapeOrientBarrier.cpp
+  TargetMetric/Relative/TRel2DShapeOrientBarrierAlt1.cpp
+  TargetMetric/Relative/TRel2DShapeSize.cpp
+  TargetMetric/Relative/TRel2DShapeSizeAlt1.cpp
+  TargetMetric/Relative/TRel2DShapeSizeAlt2.cpp
+  TargetMetric/Relative/TRel2DShapeSizeBarrier.cpp
+  TargetMetric/Relative/TRel2DShapeSizeBarrierAlt1.cpp
+  TargetMetric/Relative/TRel2DShapeSizeBarrierAlt2.cpp
+  TargetMetric/Relative/TRel2DShapeSizeOrient.cpp
+  TargetMetric/Relative/TRel2DShapeSizeOrientBarrier.cpp
+  TargetMetric/Relative/TRel2DShapeSizeOrientBarrierAlt1.cpp
+  TargetMetric/Relative/TRel2DSize.cpp
+  TargetMetric/Relative/TRel2DSizeBarrier.cpp
+  TargetMetric/Relative/TRel2DSquared.cpp
+  TargetMetric/Relative/TRel2DSum.cpp
+  TargetMetric/Relative/TRel2DOffset.cpp
+  TargetMetric/Relative/TRel2DTau.cpp
+  TargetMetric/Relative/TRel2DUntangleAlt1.cpp
+  TargetMetric/Relative/TRel2DUntangleBeta.cpp
+  TargetMetric/Relative/TRel2DUntangleMu.cpp
+  TargetMetric/Relative/InverseMeanRatio2D.cpp 
+  TargetMetric/Relative/InverseMeanRatio3D.cpp
+  TargetMetric/Relative/TRel3DMetric.cpp
+  TargetMetric/Relative/TSquared3D.cpp
+  TargetMetric/Relative/TRel3DScale.cpp
+  TargetMetric/Relative/TRel3DShape.cpp
+  TargetMetric/Relative/TRel3DShapeBarrier.cpp
+  TargetMetric/Relative/TRel3DShapeBarrierAlt1.cpp
+  TargetMetric/Relative/TRel3DShapeOrient.cpp
+  TargetMetric/Relative/TRel3DShapeOrientAlt1.cpp
+  TargetMetric/Relative/TRel3DShapeOrientBarrier.cpp
+  TargetMetric/Relative/TRel3DShapeOrientBarrierAlt1.cpp
+  TargetMetric/Relative/TRel3DShapeSize.cpp
+  TargetMetric/Relative/TRel3DShapeSizeBarrier.cpp
+  TargetMetric/Relative/TRel3DShapeSizeBarrierAlt1.cpp
+  TargetMetric/Relative/TRel3DShapeSizeBarrierAlt2.cpp
+  TargetMetric/Relative/TRel3DShapeSizeBarrierAlt3.cpp
+  TargetMetric/Relative/TRel3DShapeSizeOrient.cpp
+  TargetMetric/Relative/TRel3DShapeSizeOrientBarrier.cpp
+  TargetMetric/Relative/TRel3DShapeSizeOrientBarrierAlt1.cpp
+  TargetMetric/Relative/TRel3DSize.cpp
+  TargetMetric/Relative/TRel3DSizeBarrier.cpp
+  TargetMetric/Relative/TRel3DSquared.cpp
+  TargetMetric/Relative/TRel3DSum.cpp
+  TargetMetric/Relative/TRel3DOffset.cpp
+  TargetMetric/Relative/TRel3DTau.cpp
+  TargetMetric/Relative/TRel3DUntangleAlt1.cpp 
+  TargetMetric/Relative/TRel3DUntangleBeta.cpp 
+  TargetMetric/Relative/TRel3DUntangleMu.cpp 
   )
 
 #
-# src/Control/QualityMetric/Untangle
+# src/QualityMetric/Untangle
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/Untangle)
@@ -771,7 +791,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityMetric/Volume
+# src/QualityMetric/Volume
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/Volume)
@@ -789,7 +809,7 @@ APPEND_SET(SOURCES
   )
 
 #
-# src/Control/QualityMetric/TargetCalculator
+# src/QualityMetric/TargetCalculator
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/TargetCalculator)
