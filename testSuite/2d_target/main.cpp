@@ -45,49 +45,46 @@ using std::auto_ptr;
 #include "PatchPowerMeanP.hpp"
 #include "ConjugateGradient.hpp"
 #include "PlanarDomain.hpp"
-#include "TargetMetric2D.hpp"
 #include "IdealShapeTarget.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "ReferenceMesh.hpp"
 #include "RefMeshTargetCalculator.hpp"
 
-#include "TMPQualityMetric.hpp"
+#include "TRelQualityMetric.hpp"
 #include "ElementPMeanP.hpp"
 #include "VertexPMeanP.hpp"
   
 #include "TSquared2D.hpp"
-#include "Target2DShape.hpp"
-#include "Target2DShapeBarrier.hpp"
-#include "Target2DShapeOrient.hpp"
-#include "Target2DShapeOrientAlt1.hpp"
-#include "Target2DShapeOrientBarrier.hpp"
-#include "Target2DShapeSize.hpp"
-#include "Target2DShapeSizeBarrier.hpp"
-#include "Target2DShapeSizeBarrierAlt1.hpp"
-#include "Target2DShapeSizeBarrierAlt2.hpp"
-#include "Target2DShapeSizeBarrierAlt1.hpp"
-#include "Target2DShapeSizeOrient.hpp"
-#include "Target2DShapeSizeOrientAlt1.hpp"
-#include "Target2DShapeSizeOrientBarrier.hpp"
-#include "Target2DShapeSizeOrientBarrierAlt1.hpp"
+#include "TRel2DShape.hpp"
+#include "TRel2DShapeBarrier.hpp"
+#include "TRel2DShapeOrient.hpp"
+#include "TRel2DShapeOrientAlt1.hpp"
+#include "TRel2DShapeOrientBarrier.hpp"
+#include "TRel2DShapeSize.hpp"
+#include "TRel2DShapeSizeBarrier.hpp"
+#include "TRel2DShapeSizeBarrierAlt1.hpp"
+#include "TRel2DShapeSizeBarrierAlt2.hpp"
+#include "TRel2DShapeSizeBarrierAlt1.hpp"
+#include "TRel2DShapeSizeOrient.hpp"
+#include "TRel2DShapeSizeOrientBarrier.hpp"
+#include "TRel2DShapeSizeOrientBarrierAlt1.hpp"
 
 using namespace Mesquite;
 
-static const struct { TargetMetric2D* u; const char* n; }
+static const struct { TRel2DMetric* u; const char* n; }
 metrics[] = { { new TSquared2D,                     "TSquared"               },
-              { new Target2DShape,                  "Shape"                  },
-              { new Target2DShapeBarrier,           "ShapeBarrier"           },
-              { new Target2DShapeOrient,            "ShapeOrient0"           },
-              { new Target2DShapeOrientAlt1,        "ShapeOrient1"           },
-              { new Target2DShapeOrientBarrier,     "ShapeOrientBarrier"     },
-              { new Target2DShapeSize,              "ShapeSize"              },
-              { new Target2DShapeSizeBarrier,       "ShapeSizeBarrier0"      },
-              { new Target2DShapeSizeBarrierAlt1,   "ShapeSizeBarrier1"      },
-              { new Target2DShapeSizeBarrierAlt2,   "ShapeSizeBarrier2"      },
-              { new Target2DShapeSizeOrient,        "ShapeSizeOrient0"       },
-              { new Target2DShapeSizeOrientAlt1,    "ShapeSizeOrient1"       },
-              { new Target2DShapeSizeOrientBarrier, "ShapeSizeOrientBarrier0"},
-           { new Target2DShapeSizeOrientBarrierAlt1,"ShapeSizeOrientBarrier1"},
+              { new TRel2DShape,                  "Shape"                  },
+              { new TRel2DShapeBarrier,           "ShapeBarrier"           },
+              { new TRel2DShapeOrient,            "ShapeOrient0"           },
+              { new TRel2DShapeOrientAlt1,        "ShapeOrient1"           },
+              { new TRel2DShapeOrientBarrier,     "ShapeOrientBarrier"     },
+              { new TRel2DShapeSize,              "ShapeSize"              },
+              { new TRel2DShapeSizeBarrier,       "ShapeSizeBarrier0"      },
+              { new TRel2DShapeSizeBarrierAlt1,   "ShapeSizeBarrier1"      },
+              { new TRel2DShapeSizeBarrierAlt2,   "ShapeSizeBarrier2"      },
+              { new TRel2DShapeSizeOrient,        "ShapeSizeOrient0"       },
+              { new TRel2DShapeSizeOrientBarrier, "ShapeSizeOrientBarrier0"},
+           { new TRel2DShapeSizeOrientBarrierAlt1,"ShapeSizeOrientBarrier1"},
               { 0, 0 } };
 
 enum AveragingScheme { NONE = 0, ELEMENT, VERTEX, PATCH };
@@ -111,7 +108,7 @@ static int do_smoother( const char* input_file,
 {
   MsqPrintError err(cerr);
   
-  TargetMetric2D *const target_metric = metrics[metric_idx].u;
+  TRel2DMetric *const target_metric = metrics[metric_idx].u;
   cout << "Input file:  " << input_file << endl;
   cout << "Metric:      ";
   if (avg_scheme != NONE)
@@ -134,7 +131,7 @@ static int do_smoother( const char* input_file,
     tc.reset( new IdealShapeTarget( ) );
   }
     
-  TMPQualityMetric jacobian_metric( tc.get(), target_metric, 0 );
+  TRelQualityMetric jacobian_metric( tc.get(), target_metric, 0 );
   ElementPMeanP elem_avg( of_power, &jacobian_metric );
   VertexPMeanP vtx_avg( of_power, &jacobian_metric );
   QualityMetric* mmetrics[] = { &jacobian_metric, &elem_avg, &vtx_avg, &jacobian_metric };

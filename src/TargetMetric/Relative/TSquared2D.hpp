@@ -30,16 +30,16 @@
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TARGET2D_NORM_SQR_HPP
-#define MSQ_TARGET2D_NORM_SQR_HPP
+#ifndef MSQ_TREL_2D_NORM_SQR_HPP
+#define MSQ_TREL_2D_NORM_SQR_HPP
 
 #include "Mesquite.hpp"
-#include "TargetMetric2D.hpp"
+#include "TRel2DMetric.hpp"
 
 namespace MESQUITE_NS {
 
 /** |T|^2 */
-class TSquared2D : public TargetMetric2D
+class TSquared2D : public TRel2DMetric
 {
   public:
 
@@ -47,24 +47,21 @@ class TSquared2D : public TargetMetric2D
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<2,2>& A, 
-                 const MsqMatrix<2,2>& W, 
+  bool evaluate( const MsqMatrix<2,2>& T, 
                  double& result, 
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_grad( const MsqMatrix<2,2>& A, 
-                           const MsqMatrix<2,2>& W, 
+  bool evaluate_with_grad( const MsqMatrix<2,2>& T, 
                            double& result, 
-                           MsqMatrix<2,2>& wrt_A, 
+                           MsqMatrix<2,2>& wrt_T, 
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_hess( const MsqMatrix<2,2>& A,
-                           const MsqMatrix<2,2>& W,
+  bool evaluate_with_hess( const MsqMatrix<2,2>& T,
                            double& result,
-                           MsqMatrix<2,2>& deriv_wrt_A,
-                           MsqMatrix<2,2> hess_wrt_A[3],
+                           MsqMatrix<2,2>& deriv_wrt_T,
+                           MsqMatrix<2,2> hess_wrt_T[3],
                            MsqError& err );
 };
 

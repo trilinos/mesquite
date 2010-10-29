@@ -44,13 +44,13 @@
 
 #include "IdealShapeTarget.hpp"
 #include "InverseMeanRatio2D.hpp"
-#include "Target2DShape.hpp"
+#include "TRel2DShape.hpp"
 #include "InverseMeanRatio3D.hpp"
-#include "Target2DShapeSizeOrient.hpp"
-#include "Target3DShapeSizeOrient.hpp"
-#include "Target2DShapeSize.hpp"
-#include "Target3DShapeSize.hpp"
-#include "TMPQualityMetric.hpp"
+#include "TRel2DShapeSizeOrient.hpp"
+#include "TRel3DShapeSizeOrient.hpp"
+#include "TRel2DShapeSize.hpp"
+#include "TRel3DShapeSize.hpp"
+#include "TRelQualityMetric.hpp"
 #include "PMeanPTemplate.hpp"
 #include "LPtoPTemplate.hpp"
 #include "SteepestDescent.hpp"
@@ -117,10 +117,10 @@ private:
   HexLagrangeShape hex_shape;
 #endif
   InstructionQueue q;
-  Target2DShapeSize tm2;
-  Target3DShapeSize tm3;
+  TRel2DShapeSize tm2;
+  TRel3DShapeSize tm3;
   IdealShapeTarget tc;
-  TMPQualityMetric metric;
+  TRelQualityMetric metric;
   PMeanPTemplate func;
   SteepestDescent solver;
   TerminationCriterion crit, outer;

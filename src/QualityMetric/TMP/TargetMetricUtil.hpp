@@ -26,7 +26,8 @@
 
 
 /** \file TargetMetricUtil.hpp
- *  \brief 
+ *  \brief A collection of utility code used by QualtiyMetrics
+ *         composed of TMP Target Metrics
  *  \author Jason Kraftcheck 
  */
 
@@ -34,13 +35,19 @@
 #define MSQ_TARGET_METRIC_UTIL_HPP
 
 #include "Mesquite.hpp"
+#include "SymMatrix3D.hpp"
 #include <vector>
+#include <assert.h>
 
 namespace MESQUITE_NS {
 
 template <unsigned R, unsigned C> class MsqMatrix;
+template <unsigned C> class MsqVector;
 class PatchData;
 class MsqError;
+class Vector3D;
+class Matrix3D;
+
 
 /**\brief Calculate R and Z such that \f$W\prime = Z^{-1} W\f$ and 
  *        \f$A\prime = (RZ)^{-1} A\f$
@@ -72,6 +79,141 @@ void get_elem_sample_points( PatchData& pd,
                              size_t elem,
                              std::vector<size_t>& handles,
                              MsqError& err );
+
+
+/**\brief Calculate gradient from derivatives of mapping function terms
+ *        and derivatives of target metric. */
+template <int DIM> inline
+void gradient( size_t num_free_verts,
+               const MsqVector<DIM>* dNdxi,
+               const MsqMatrix<3,DIM>& dmdA,
+               std::vector<Vector3D>& grad )
+{
+  grad.clear();
+  grad.resize( num_free_verts, Vector3D(0,0,0) );
+  for (size_t i = 0; i < num_free_verts; ++i)
+    grad[i] = Vector3D( (dmdA * dNdxi[i]).data() );
+}
+
+/**\brief Calculate Hessian from derivatives of mapping function terms
+ *        and derivatives of target metric. */
+template <int DIM, typename MAT> inline
+void hessian( size_t num_free_verts,
+              const MsqVector<DIM>* dNdxi,
+              const MsqMatrix<DIM,DIM>* d2mdA2,
+              MAT* hess )
+{
+  MsqMatrix<1,DIM> tmp[DIM][DIM];
+  size_t h = 0; // index of current Hessian block
+
+  for (size_t i = 0; i < num_free_verts; ++i) {
+  
+      // Populate TMP with vector-matrix procucts common
+      // to terms of this Hessian row.
+    const MsqMatrix<1,DIM>& gi = transpose(dNdxi[i]);
+    switch (DIM) {
+      case 3:
+        tmp[0][2] = gi * d2mdA2[2];
+        tmp[1][2] = gi * d2mdA2[4];
+        tmp[2][0] = gi * transpose(d2mdA2[2]);
+        tmp[2][1] = gi * transpose(d2mdA2[4]);
+        tmp[2][2] = gi * d2mdA2[5];
+     case 2:
+        tmp[0][1] = gi * d2mdA2[1];
+        tmp[1][0] = gi * transpose(d2mdA2[1]);
+        tmp[1][1] = gi * d2mdA2[DIM];
+      case 1:
+        tmp[0][0] = gi * d2mdA2[0];
+      case 0: 
+        break;
+      default: assert(false);
+    }
+
+      // Calculate Hessian diagonal block
+    MAT& H = hess[h++];
+    switch (DIM) {
+      case 3:
+        H(0,2) = H(2,0) = tmp[0][2] * transpose(gi);
+        H(1,2) = H(2,1) = tmp[1][2] * transpose(gi);
+        H(2,2) =          tmp[2][2] * transpose(gi);
+      case 2:
+        H(0,1) = H(1,0) = tmp[0][1] * transpose(gi);
+        H(1,1) =          tmp[1][1] * transpose(gi);
+      case 1:
+        H(0,0) =          tmp[0][0] * transpose(gi);
+      case 0: 
+        break;
+      default: assert(false);
+    }
+    
+      // Calculate remainder of Hessian row
+    for (size_t j = i+1; j < num_free_verts; ++j) {
+      MAT& H = hess[h++];
+      const MsqMatrix<DIM,1>& gj = dNdxi[j];
+      switch (DIM) {
+        case 3:
+          H(0,2) = tmp[0][2] * gj;
+          H(1,2) = tmp[1][2] * gj;
+          H(2,0) = tmp[2][0] * gj;
+          H(2,1) = tmp[2][1] * gj;
+          H(2,2) = tmp[2][2] * gj;
+        case 2:
+          H(0,1) = tmp[0][1] * gj;
+          H(1,0) = tmp[1][0] * gj;
+          H(1,1) = tmp[1][1] * gj;
+        case 1:
+          H(0,0) = tmp[0][0] * gj;
+        case 0: 
+          break;
+        default: assert(false);
+      }
+    }
+  }
+}
+
+/**\brief Calculate Hessian from derivatives of mapping function terms
+ *        and derivatives of target metric. */
+template <int DIM> inline
+void hessian_diagonal( size_t num_free_verts,
+              const MsqVector<DIM>* dNdxi,
+              const MsqMatrix<DIM,DIM>* d2mdA2,
+              SymMatrix3D* diagonal )
+{
+  for (size_t i = 0; i < num_free_verts; ++i) {
+    SymMatrix3D& H = diagonal[i];
+    for (unsigned j = 0; j < ((DIM)*(DIM+1)/2); ++j)
+      H[j] = transpose(dNdxi[i]) * d2mdA2[j] * dNdxi[i];
+  }
+}
+
+
+#ifdef PRINT_INFO
+template <int R, int C> inline 
+void write_vect( char n, const MsqMatrix<R,C>& M )
+{
+  std::cout << "  " << n << ':';
+  for (int c = 0; c < C; ++c) {
+    std::cout << '[';
+    for (int r = 0; r < R; ++r)
+      std::cout << M(r,c) << ' ';
+    std::cout << ']';
+  }
+  std::cout << std::endl;
+}
+
+template <int D> inline
+void print_info( size_t elem, Sample sample,
+                 const MsqMatrix<3,D>& A,
+                 const MsqMatrix<3,D>& W,
+                 const MsqMatrix<D,D>& T )
+{
+  std::cout << "Elem " << elem << " Dim " << sample.dimension << " Num " << sample.number << " :" << std::endl;
+  write_vect<3,D>( 'A', A );
+  write_vect<3,D>( 'W', W );
+  write_vect<D,D>( 'T', T );
+}
+#endif
+
                     
 } // namespace Mesquite
 

@@ -2,8 +2,12 @@ SRC_TARGETMETRIC_ABSOLUTE_DIR = src/TargetMetric/Absolute
 MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_TARGETMETRIC_ABSOLUTE_DIR)
 INCLUDED_MAKEFILES += $(SRC_TARGETMETRIC_ABSOLUTE_DIR)/Makefile.am
 
-MSQ_SRCS += $(SRC_TARGETMETRIC_ABSOLUTE_DIR)/Target2DShapeSizeOrientAlt1.cpp \
-            $(SRC_TARGETMETRIC_ABSOLUTE_DIR)/Target3DShapeSizeOrientAlt1.cpp
+MSQ_SRCS += $(SRC_TARGETMETRIC_ABSOLUTE_DIR)/TAbs2DShapeSizeOrient.cpp \
+            $(SRC_TARGETMETRIC_ABSOLUTE_DIR)/TAbs2DMetric.cpp \
+            $(SRC_TARGETMETRIC_ABSOLUTE_DIR)/TAbs3DShapeSizeOrient.cpp \
+            $(SRC_TARGETMETRIC_ABSOLUTE_DIR)/TAbs3DMetric.cpp
 
-MSQ_HDRS += $(SRC_TARGETMETRIC_ABSOLUTE_DIR)/Target2DShapeSizeOrientAlt1.hpp \
-            $(SRC_TARGETMETRIC_ABSOLUTE_DIR)/Target3DShapeSizeOrientAlt1.hpp
+MSQ_HDRS += $(SRC_TARGETMETRIC_ABSOLUTE_DIR)/TAbs2DShapeSizeOrient.hpp \
+            $(SRC_TARGETMETRIC_ABSOLUTE_DIR)/TAbs2DMetric.hpp \
+            $(SRC_TARGETMETRIC_ABSOLUTE_DIR)/TAbs3DShapeSizeOrient.hpp \
+            $(SRC_TARGETMETRIC_ABSOLUTE_DIR)/TAbs3DMetric.hpp

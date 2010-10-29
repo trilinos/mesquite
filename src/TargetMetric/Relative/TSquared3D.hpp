@@ -34,13 +34,13 @@
 #define MSQ_T_SQUARED_3D_HPP
 
 #include "Mesquite.hpp"
-#include "TargetMetric3D.hpp"
+#include "TRel3DMetric.hpp"
 
 namespace MESQUITE_NS {
 
 
 /**\brief |T|^2 */
-class TSquared3D : public TargetMetric3D
+class TSquared3D : public TRel3DMetric
 {
 public:
 
@@ -51,24 +51,21 @@ public:
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<3,3>& A, 
-                 const MsqMatrix<3,3>& W, 
+  bool evaluate( const MsqMatrix<3,3>& T, 
                  double& result, 
                  MsqError& err );
   
   MESQUITE_EXPORT virtual
-  bool evaluate_with_grad( const MsqMatrix<3,3>& A, 
-                           const MsqMatrix<3,3>& W, 
+  bool evaluate_with_grad( const MsqMatrix<3,3>& T, 
                            double& result, 
-                           MsqMatrix<3,3>& wrt_A, 
+                           MsqMatrix<3,3>& wrt_T, 
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_hess( const MsqMatrix<3,3>& A,
-                           const MsqMatrix<3,3>& W,
+  bool evaluate_with_hess( const MsqMatrix<3,3>& T,
                            double& result,
-                           MsqMatrix<3,3>& deriv_wrt_A,
-                           MsqMatrix<3,3> second_wrt_A[6],
+                           MsqMatrix<3,3>& deriv_wrt_T,
+                           MsqMatrix<3,3> second_wrt_T[6],
                            MsqError& err );
 };
 

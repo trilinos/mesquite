@@ -34,37 +34,34 @@
 #define MSQ_INVERSE_MEAN_RATIO_3D_HPP
 
 #include "Mesquite.hpp"
-#include "TargetMetric3D.hpp"
+#include "TRel3DMetric.hpp"
 #include <limits>
 
 namespace MESQUITE_NS {
 
 /** \f$ \frac{|T|^2}{3 det^{2/3}(T)} - 1 \f$ */
-class InverseMeanRatio3D : public TargetMetric3D {
+class InverseMeanRatio3D : public TRel3DMetric {
 public:
 
   MESQUITE_EXPORT virtual
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<3,3>& A, 
-                 const MsqMatrix<3,3>& W, 
+  bool evaluate( const MsqMatrix<3,3>& T, 
                  double& result, 
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_grad( const MsqMatrix<3,3>& A,
-                           const MsqMatrix<3,3>& W,
+  bool evaluate_with_grad( const MsqMatrix<3,3>& T,
                            double& result,
-                           MsqMatrix<3,3>& deriv_wrt_A,
+                           MsqMatrix<3,3>& deriv_wrt_T,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_hess( const MsqMatrix<3,3>& A,
-                           const MsqMatrix<3,3>& W,
+  bool evaluate_with_hess( const MsqMatrix<3,3>& T,
                            double& result,
-                           MsqMatrix<3,3>& deriv_wrt_A,
-                           MsqMatrix<3,3> second_wrt_A[6],
+                           MsqMatrix<3,3>& deriv_wrt_T,
+                           MsqMatrix<3,3> second_wrt_T[6],
                            MsqError& err );
 };
 

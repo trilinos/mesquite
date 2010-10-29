@@ -40,19 +40,15 @@ namespace MESQUITE_NS {
 std::string InvTransBarrier2D::get_name() const
   { return "InvTransBarrier"; }
 
-bool InvTransBarrier2D::evaluate( const MsqMatrix<2,2>& A, 
-                                  const MsqMatrix<2,2>& W, 
+bool InvTransBarrier2D::evaluate( const MsqMatrix<2,2>& T, 
                                   double& result, MsqError& err )
 {
-  double da = det(A);
-  double dw = det(W);
-  if (invalid_determinant(da) || invalid_determinant(dw))
+  double tau = det(T);
+  if (invalid_determinant(tau))
     return false;
-  MsqMatrix<2,2> Ap = transpose_adj(A);
-  Ap *= 1.0/da;
-  MsqMatrix<2,2> Wp = transpose_adj(W);
-  Wp *= 1.0/dw;
-  bool rval = metricPtr->evaluate( Ap, Wp, result, err );
+  MsqMatrix<2,2> Tp = transpose_adj(T);
+  Tp *= 1.0/tau;
+  bool rval = metricPtr->evaluate( Tp, result, err );
   return !MSQ_CHKERR(err) && rval;
 }
 

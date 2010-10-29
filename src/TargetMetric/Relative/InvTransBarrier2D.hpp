@@ -34,24 +34,24 @@
 #define MSQ_INV_TRANS_BARRIER_2D_HPP
 
 #include "Mesquite.hpp"
-#include "TargetMetric2D.hpp"
+#include "TRel2DMetric.hpp"
 
 namespace MESQUITE_NS {
 
 /** Make a non-barrier metric into a barrier metric by passing it T^-t */
-class InvTransBarrier2D : public TargetMetric2D
+class InvTransBarrier2D : public TRel2DMetric
 {
   public:
-  InvTransBarrier2D( TargetMetric2D* metric ) : metricPtr(metric) {}
+  InvTransBarrier2D( TRel2DMetric* metric ) : metricPtr(metric) {}
 
   MESQUITE_EXPORT virtual
   std::string get_name() const;
   
   MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<2,2>& A, const MsqMatrix<2,2>& W, double& result, MsqError& err );
+  bool evaluate( const MsqMatrix<2,2>& T, double& result, MsqError& err );
 
   private:
-  TargetMetric2D* metricPtr;
+  TRel2DMetric* metricPtr;
 };
 
 } // namespace Mesquite

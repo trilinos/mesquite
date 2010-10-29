@@ -41,46 +41,38 @@ TSquared3D::~TSquared3D() {}
 std::string TSquared3D::get_name() const
   { return "TSquared"; }
 
-bool TSquared3D::evaluate( const MsqMatrix<3,3>& A, 
-                           const MsqMatrix<3,3>& W, 
+bool TSquared3D::evaluate( const MsqMatrix<3,3>& T, 
                            double& result, 
                            MsqError& err )
 {
-  const MsqMatrix<3,3> T = A * inverse(W);
   result = sqr_Frobenius( T );
   return true;
 }
 
 
-bool TSquared3D::evaluate_with_grad( const MsqMatrix<3,3>& A, 
-                                     const MsqMatrix<3,3>& W, 
+bool TSquared3D::evaluate_with_grad( const MsqMatrix<3,3>& T, 
                                      double& result, 
-                                     MsqMatrix<3,3>& wrt_A,
+                                     MsqMatrix<3,3>& wrt_T,
                                      MsqError& )
 {
-  MsqMatrix<3,3> Winv = inverse(W);
-  MsqMatrix<3,3> T = A * Winv;
   result = sqr_Frobenius( T );
-  wrt_A = 2*T*transpose(Winv);
+  wrt_T = 2*T;
   return true;
 }
 
-bool TSquared3D::evaluate_with_hess( const MsqMatrix<3,3>& A,
-                                     const MsqMatrix<3,3>& W,
+bool TSquared3D::evaluate_with_hess( const MsqMatrix<3,3>& T,
                                      double& result,
-                                     MsqMatrix<3,3>& deriv_wrt_A,
-                                     MsqMatrix<3,3> second_wrt_A[6],
+                                     MsqMatrix<3,3>& deriv_wrt_T,
+                                     MsqMatrix<3,3> second_wrt_T[6],
                                      MsqError& err )
 {
-  MsqMatrix<3,3> Winv = inverse(W);
-  MsqMatrix<3,3> T = A * Winv;
-  MsqMatrix<3,3> V = 2 * transpose(Winv);
+  MsqMatrix<3,3> V(2.0);
   result = sqr_Frobenius( T );
-  deriv_wrt_A = T * V;
+  deriv_wrt_T = T * V;
     // diagonal blocks
-  second_wrt_A[0] = second_wrt_A[3] = second_wrt_A[5] = Winv * V;
+  second_wrt_T[0] = second_wrt_T[3] = second_wrt_T[5] = V;
     // non-diagonal blocks are zero
-  second_wrt_A[1] = second_wrt_A[2] = second_wrt_A[4] = MsqMatrix<3,3>(0.0);
+  second_wrt_T[1] = second_wrt_T[2] = second_wrt_T[4] = MsqMatrix<3,3>(0.0);
   return true;
 }
 

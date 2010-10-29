@@ -34,38 +34,35 @@
 #define MSQ_INVERSE_MEAN_RATIO_2D_HPP
 
 #include "Mesquite.hpp"
-#include "TargetMetric2D.hpp"
+#include "TRel2DMetric.hpp"
 #include <limits>
 
 namespace MESQUITE_NS {
 
 /** \f$ \frac{|T|^2}{2 det(T)} - 1 \f$ */
-class InverseMeanRatio2D : public TargetMetric2D {
+class InverseMeanRatio2D : public TRel2DMetric {
 public:
 
   MESQUITE_EXPORT virtual
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<2,2>& A, 
-                 const MsqMatrix<2,2>& W, 
+  bool evaluate( const MsqMatrix<2,2>& T, 
                  double& result, 
                  MsqError& err );
 
-  /** \f$ \frac{1}{det(T)} [ T - \frac{|T|^2}{2 det(T)}adj(T) ] W^-T \f$ */
+  /** \f$ \frac{1}{det(T)} [ T - \frac{|T|^2}{2 det(T)}adj(T) ] \f$ */
   MESQUITE_EXPORT virtual
-  bool evaluate_with_grad( const MsqMatrix<2,2>& A,
-                           const MsqMatrix<2,2>& W,
+  bool evaluate_with_grad( const MsqMatrix<2,2>& T,
                            double& result,
-                           MsqMatrix<2,2>& deriv_wrt_A,
+                           MsqMatrix<2,2>& deriv_wrt_T,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_hess( const MsqMatrix<2,2>& A,
-                           const MsqMatrix<2,2>& W,
+  bool evaluate_with_hess( const MsqMatrix<2,2>& T,
                            double& result,
-                           MsqMatrix<2,2>& deriv_wrt_A,
-                           MsqMatrix<2,2> second_wrt_A[3],
+                           MsqMatrix<2,2>& deriv_wrt_T,
+                           MsqMatrix<2,2> second_wrt_T[3],
                            MsqError& err );
 };
 

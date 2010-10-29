@@ -40,8 +40,8 @@ namespace MESQUITE_NS {
 
 class TargetCalculator;
 class WeightCalculator;
-class TargetMetric2D;
-class TargetMetric3D;
+class TRel2DMetric;
+class TRel3DMetric;
 template <unsigned R, unsigned C> class MsqMatrix;
 
 /**\brief Compare targets to affine map to ideal element.
@@ -57,13 +57,13 @@ public:
   MESQUITE_EXPORT
   AffineMapMetric( TargetCalculator* tc,
                    WeightCalculator* wc,
-                   TargetMetric2D* metric_2d,
-                   TargetMetric3D* metric_3d );
+                   TRel2DMetric* metric_2d,
+                   TRel3DMetric* metric_3d );
 
   MESQUITE_EXPORT
   AffineMapMetric( TargetCalculator* tc,
-                   TargetMetric2D* metric_2d,
-                   TargetMetric3D* metric_3d );
+                   TRel2DMetric* metric_2d,
+                   TRel3DMetric* metric_3d );
      
   MESQUITE_EXPORT virtual
   std::string get_name() const;
@@ -100,16 +100,16 @@ public:
   TargetCalculator* get_target_calculator() const { return targetCalc; }
   WeightCalculator* get_weight_calculator() const { return weightCalc; }
   
-  TargetMetric2D* get_2d_metric() const { return metric2D; }
-  TargetMetric3D* get_3d_metric() const { return metric3D; }
-  void set_2d_metric( TargetMetric2D* m ) { metric2D = m; }
-  void set_3d_metric( TargetMetric3D* m ) { metric3D = m; }
+  TRel2DMetric* get_2d_metric() const { return metric2D; }
+  TRel3DMetric* get_3d_metric() const { return metric3D; }
+  void set_2d_metric( TRel2DMetric* m ) { metric2D = m; }
+  void set_3d_metric( TRel3DMetric* m ) { metric3D = m; }
   
 private:
   TargetCalculator* targetCalc;
   WeightCalculator* weightCalc;
-  TargetMetric2D* metric2D;
-  TargetMetric3D* metric3D;
+  TRel2DMetric* metric2D;
+  TRel3DMetric* metric3D;
 };
 
 } // namespace Mesquite

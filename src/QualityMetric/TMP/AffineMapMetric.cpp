@@ -40,8 +40,8 @@
 #include "MappingFunction.hpp"
 #include "WeightCalculator.hpp"
 #include "TargetCalculator.hpp"
-#include "TargetMetric2D.hpp"
-#include "TargetMetric3D.hpp"
+#include "TRel2DMetric.hpp"
+#include "TRel3DMetric.hpp"
 #include "TargetMetricUtil.hpp"
 
 #include <functional>
@@ -59,8 +59,8 @@ MsqMatrix<3,3> TET_XFORM( TET_XFORM_VALS );
  
 AffineMapMetric::AffineMapMetric( TargetCalculator* tc,
                                   WeightCalculator* wc,
-                                  TargetMetric2D* metric_2d,
-                                  TargetMetric3D* metric_3d ) 
+                                  TRel2DMetric* metric_2d,
+                                  TRel3DMetric* metric_3d ) 
   : targetCalc(tc),
     weightCalc(wc),
     metric2D( metric_2d ),
@@ -68,8 +68,8 @@ AffineMapMetric::AffineMapMetric( TargetCalculator* tc,
 { }
  
 AffineMapMetric::AffineMapMetric( TargetCalculator* tc,
-                                  TargetMetric2D* metric_2d,
-                                  TargetMetric3D* metric_3d ) 
+                                  TRel2DMetric* metric_2d,
+                                  TRel3DMetric* metric_3d ) 
   : targetCalc(tc),
     weightCalc(0),
     metric2D( metric_2d ),
@@ -142,7 +142,7 @@ bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, Msq
 
     MsqMatrix<3,3> W;
     targetCalc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
-    rval = metric3D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
+    rval = metric3D->evaluate( A * inverse(W), value, err ); MSQ_ERRZERO(err);
   }
   else {
     if (!metric2D) {
@@ -169,7 +169,7 @@ bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, Msq
     if (type == TRIANGLE)
       A = A * TRI_XFORM;
     
-    rval = metric2D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
+    rval = metric2D->evaluate( A*inverse(W), value, err ); MSQ_ERRZERO(err);
   }
   
     // apply target weight to value

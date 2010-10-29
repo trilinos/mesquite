@@ -38,21 +38,21 @@
 
 #include "LambdaConstant.hpp"
 #include "IdealShapeTarget.hpp"
-#include "TMPQualityMetric.hpp"
+#include "TRelQualityMetric.hpp"
 #include "PMeanPTemplate.hpp"
 #include "TerminationCriterion.hpp"
 #include "SteepestDescent.hpp"
 #include "QualityAssessor.hpp"
 #include "InstructionQueue.hpp"
 
-#include "Target2DUntangleBeta.hpp"
-#include "Target2DUntangleMu.hpp"
-#include "Target2DSize.hpp"
-#include "Target2DShapeSize.hpp"
-#include "Target3DUntangleBeta.hpp"
-#include "Target3DUntangleMu.hpp"
-#include "Target3DSize.hpp"
-#include "Target3DShapeSize.hpp"
+#include "TRel2DUntangleBeta.hpp"
+#include "TRel2DUntangleMu.hpp"
+#include "TRel2DSize.hpp"
+#include "TRel2DShapeSize.hpp"
+#include "TRel3DUntangleBeta.hpp"
+#include "TRel3DUntangleMu.hpp"
+#include "TRel3DSize.hpp"
+#include "TRel3DShapeSize.hpp"
 
 #include <memory>
 
@@ -112,22 +112,22 @@ void UntangleWrapper::run_wrapper( Mesh* mesh,
   tool.reset(0);
   
     // get target metrics from user perferences
-  Target2DSize size2d;
-  Target3DSize size3d;
-  Target2DShapeSize shape2d;
-  Target3DShapeSize shape3d;
-  std::auto_ptr<TargetMetric2D> mu2d;
-  std::auto_ptr<TargetMetric3D> mu3d;
+  TRel2DSize size2d;
+  TRel3DSize size3d;
+  TRel2DShapeSize shape2d;
+  TRel3DShapeSize shape3d;
+  std::auto_ptr<TRel2DMetric> mu2d;
+  std::auto_ptr<TRel3DMetric> mu3d;
   if (qualityMetric == BETA) {
     double beta = metricConstant;
     if (beta < 0) 
       beta = (lambda.average()*lambda.average())/20;
-    mu2d.reset(new Target2DUntangleBeta( beta ));
-    mu3d.reset(new Target3DUntangleBeta( beta ));
+    mu2d.reset(new TRel2DUntangleBeta( beta ));
+    mu3d.reset(new TRel3DUntangleBeta( beta ));
   }
   else {
-    TargetMetric2D* sub2d = 0;
-    TargetMetric3D* sub3d = 0;
+    TRel2DMetric* sub2d = 0;
+    TRel3DMetric* sub3d = 0;
     if (qualityMetric == SIZE) {
       sub2d = &size2d;
       sub3d = &size3d;
@@ -137,19 +137,19 @@ void UntangleWrapper::run_wrapper( Mesh* mesh,
       sub3d = &shape3d;
     }
     if (metricConstant >= 0) {
-      mu2d.reset(new Target2DUntangleMu( sub2d, metricConstant ));
-      mu3d.reset(new Target3DUntangleMu( sub3d, metricConstant ));
+      mu2d.reset(new TRel2DUntangleMu( sub2d, metricConstant ));
+      mu3d.reset(new TRel3DUntangleMu( sub3d, metricConstant ));
     }
     else {
-      mu2d.reset(new Target2DUntangleMu( sub2d ));
-      mu3d.reset(new Target3DUntangleMu( sub3d ));
+      mu2d.reset(new TRel2DUntangleMu( sub2d ));
+      mu3d.reset(new TRel3DUntangleMu( sub3d ));
     }
   }
     
     // define objective function
   IdealShapeTarget base_target;
   LambdaConstant target( lambda.average(), &base_target );
-  TMPQualityMetric metric(&target, mu2d.get(), mu3d.get());
+  TRelQualityMetric metric(&target, mu2d.get(), mu3d.get());
   PMeanPTemplate objfunc( 1.0, &metric );
   
     // define termination criterion

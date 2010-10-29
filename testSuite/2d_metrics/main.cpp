@@ -39,26 +39,25 @@
 #include "PlanarDomain.hpp"
 #include "ReferenceMesh.hpp"
 #include "RefMeshTargetCalculator.hpp"
-#include "TMPQualityMetric.hpp"
+#include "TRelQualityMetric.hpp"
 #include "InstructionQueue.hpp"
 #include "IdealShapeTarget.hpp"
 #include "MeshWriter.hpp"
 
 #include "TSquared2D.hpp"
-#include "Target2DShape.hpp"
-#include "Target2DShapeBarrier.hpp"
-#include "Target2DShapeOrient.hpp"
-#include "Target2DShapeOrientAlt1.hpp"
-#include "Target2DShapeOrientBarrier.hpp"
-#include "Target2DShapeSize.hpp"
-#include "Target2DShapeSizeBarrier.hpp"
-#include "Target2DShapeSizeBarrierAlt1.hpp"
-#include "Target2DShapeSizeBarrierAlt2.hpp"
-#include "Target2DShapeSizeBarrierAlt1.hpp"
-#include "Target2DShapeSizeOrient.hpp"
-#include "Target2DShapeSizeOrientAlt1.hpp"
-#include "Target2DShapeSizeOrientBarrier.hpp"
-#include "Target2DShapeSizeOrientBarrierAlt1.hpp"
+#include "TRel2DShape.hpp"
+#include "TRel2DShapeBarrier.hpp"
+#include "TRel2DShapeOrient.hpp"
+#include "TRel2DShapeOrientAlt1.hpp"
+#include "TRel2DShapeOrientBarrier.hpp"
+#include "TRel2DShapeSize.hpp"
+#include "TRel2DShapeSizeBarrier.hpp"
+#include "TRel2DShapeSizeBarrierAlt1.hpp"
+#include "TRel2DShapeSizeBarrierAlt2.hpp"
+#include "TRel2DShapeSizeBarrierAlt1.hpp"
+#include "TRel2DShapeSizeOrient.hpp"
+#include "TRel2DShapeSizeOrientBarrier.hpp"
+#include "TRel2DShapeSizeOrientBarrierAlt1.hpp"
 #include "InvTransBarrier2D.hpp"
 
 #include <iostream>
@@ -90,7 +89,7 @@ typedef void (*mesh_reader_t)( MeshImpl* mesh );
 bool run_smoother( mesh_reader_t input_mesh, 
                    mesh_reader_t reference_mesh,
                    int exp, int n,
-                   TargetMetric2D* metric );
+                   TRel2DMetric* metric );
                    
 void write_mesh( mesh_reader_t mesh, const char* filename );
 void write_mesh( MeshImpl* mesh, const char* filename );
@@ -165,23 +164,22 @@ bool run_exp_5( int n );
 typedef bool (*exp_func)(int);
 const exp_func experiment[] = { &run_exp_1, &run_exp_2, &run_exp_3, &run_exp_4, &run_exp_5 };
 
-Target2DShapeSizeOrient nb1;
-Target2DShapeOrient nb2;
-Target2DShapeSize nb3;
-Target2DShape nb4;
+TRel2DShapeSizeOrient nb1;
+TRel2DShapeOrient nb2;
+TRel2DShapeSize nb3;
+TRel2DShape nb4;
 TSquared2D nb5;
-Target2DShapeOrientAlt1 nb6;
-Target2DShapeSizeOrientAlt1 nb7;
-TargetMetric2D* nb[] = { &nb1, &nb2, &nb3, &nb4, &nb5, &nb6, &nb7 };
+TRel2DShapeOrientAlt1 nb6;
+TRel2DMetric* nb[] = { &nb1, &nb2, &nb3, &nb4, &nb5, &nb6 };
 
-Target2DShapeSizeOrientBarrier b1;
-Target2DShapeOrientBarrier b2;
-Target2DShapeSizeBarrierAlt1 b3;
-Target2DShapeBarrier b4;
-Target2DShapeSizeOrientBarrierAlt1 b5;
-Target2DShapeSizeBarrier b6;
-Target2DShapeSizeBarrierAlt2 b7;
-TargetMetric2D* b[] = { &b1, &b2, &b3, &b4, &b5, &b6, &b7 };
+TRel2DShapeSizeOrientBarrier b1;
+TRel2DShapeOrientBarrier b2;
+TRel2DShapeSizeBarrierAlt1 b3;
+TRel2DShapeBarrier b4;
+TRel2DShapeSizeOrientBarrierAlt1 b5;
+TRel2DShapeSizeBarrier b6;
+TRel2DShapeSizeBarrierAlt2 b7;
+TRel2DMetric* b[] = { &b1, &b2, &b3, &b4, &b5, &b6, &b7 };
 
 bool run_exp_1( int n )
 {
@@ -252,7 +250,7 @@ bool run_exp_4( int n )
     return false;
   
   write_mesh( exp_4_init, "Exp4-initial" );
-  TargetMetric2D* m[3] = {&nb1, &b1, &b5};
+  TRel2DMetric* m[3] = {&nb1, &b1, &b5};
  
   bool r = true, tmpr;
   int beg = 0, end = 2;
@@ -417,7 +415,7 @@ void write_mesh( mesh_reader_t mesh_func, const char* filename )
 bool run_smoother( mesh_reader_t input_mesh, 
                    mesh_reader_t reference_mesh,
                    int exp, int n,
-                   TargetMetric2D* target_metric )
+                   TRel2DMetric* target_metric )
 {
   MsqError err;
   MeshImpl active, reference;
@@ -435,7 +433,7 @@ bool run_smoother( mesh_reader_t input_mesh,
     target = &ident_target;
   }
     
-  TMPQualityMetric metric( target, target_metric, 0 );
+  TRelQualityMetric metric( target, target_metric, 0 );
   
   TerminationCriterion outer, inner;
   if (LOCAL_PATCHES) {

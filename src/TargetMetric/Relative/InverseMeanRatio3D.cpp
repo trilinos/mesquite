@@ -39,12 +39,10 @@ namespace MESQUITE_NS {
 std::string InverseMeanRatio3D::get_name() const
   { return "InverseMeanRatio"; }
 
-bool InverseMeanRatio3D::evaluate( const MsqMatrix<3,3>& A, 
-                                   const MsqMatrix<3,3>& W, 
+bool InverseMeanRatio3D::evaluate( const MsqMatrix<3,3>& T, 
                                    double& result, 
                                    MsqError& err )
 {
-  const MsqMatrix<3,3> T = A * inverse(W);
   const double d = det( T );
   if (invalid_determinant(d)) {
     result = 0.0;
@@ -58,18 +56,15 @@ bool InverseMeanRatio3D::evaluate( const MsqMatrix<3,3>& A,
 }
 
 
-bool InverseMeanRatio3D::evaluate_with_grad( const MsqMatrix<3,3>& A,
-                                             const MsqMatrix<3,3>& W,
+bool InverseMeanRatio3D::evaluate_with_grad( const MsqMatrix<3,3>& T,
                                              double& result,
-                                             MsqMatrix<3,3>& deriv_wrt_A,
+                                             MsqMatrix<3,3>& deriv_wrt_T,
                                              MsqError& err )
 {
-  const MsqMatrix<3,3> Winv = inverse(W);
-  const MsqMatrix<3,3> T = A * Winv;
   const double d = det( T );
   if (invalid_determinant(d)) {
     result = 0.0;
-    deriv_wrt_A = MsqMatrix<3,3>(0.0);
+    deriv_wrt_T = MsqMatrix<3,3>(0.0);
     return false;
   }
 
@@ -78,24 +73,20 @@ bool InverseMeanRatio3D::evaluate_with_grad( const MsqMatrix<3,3>& A,
   const double inv_3_det_twothirds = inv_det_cbrt * inv_det_cbrt / 3.0;
   const double fnorm = sqr_Frobenius(T);
   result = fnorm * inv_3_det_twothirds - 1;
-  deriv_wrt_A = transpose_adj(T);
-  deriv_wrt_A *= -fnorm * inv_det / 3.0;
-  deriv_wrt_A += T;
-  deriv_wrt_A *= 2.0 * inv_3_det_twothirds;
-  deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+  deriv_wrt_T = transpose_adj(T);
+  deriv_wrt_T *= -fnorm * inv_det / 3.0;
+  deriv_wrt_T += T;
+  deriv_wrt_T *= 2.0 * inv_3_det_twothirds;
   return true;
 }
 
 
-bool InverseMeanRatio3D::evaluate_with_hess( const MsqMatrix<3,3>& A,
-                                             const MsqMatrix<3,3>& W,
+bool InverseMeanRatio3D::evaluate_with_hess( const MsqMatrix<3,3>& T,
                                              double& result,
                                              MsqMatrix<3,3>& dA,
                                              MsqMatrix<3,3> d2A[6],
                                              MsqError& err )
 {
-  const MsqMatrix<3,3> Winv = inverse(W);
-  const MsqMatrix<3,3> T = A * Winv;
   const double d = det( T );
   if (invalid_determinant(d)) {
     result = 0.0;
@@ -120,7 +111,6 @@ bool InverseMeanRatio3D::evaluate_with_hess( const MsqMatrix<3,3>& A,
   dA *= (-1.0/3.0) * f0 * f2;
   dA += T;
   dA *= f3;
-  dA = dA * transpose(Winv);
 
   MsqMatrix<3,3> op;
   int i = 0;
@@ -137,7 +127,6 @@ bool InverseMeanRatio3D::evaluate_with_hess( const MsqMatrix<3,3>& A,
     d2A[i](1,1) += f3;
     d2A[i](2,2) += f3;
     
-    d2A[i] = Winv * d2A[i] * transpose(Winv);
     ++i;
 
     for (int c = r+1; c < 3; ++c) {
@@ -157,7 +146,6 @@ bool InverseMeanRatio3D::evaluate_with_hess( const MsqMatrix<3,3>& A,
       d2A[i](2,0) -= rt(0,1);
       d2A[i](2,1) += rt(0,0);
 
-      d2A[i] = Winv * d2A[i] * transpose(Winv);
       ++i;
       s = -s;
     }

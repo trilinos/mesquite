@@ -2,10 +2,10 @@
 #include "QualityAssessor.hpp"
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "SizeMetric.hpp"
-#include "TMPQualityMetric.hpp"
+#include "TRelQualityMetric.hpp"
 #include "IdealShapeTarget.hpp"
-#include "Target3DShape.hpp"
-#include "Target2DShape.hpp"
+#include "TRel3DShape.hpp"
+#include "TRel2DShape.hpp"
 #include "InstructionQueue.hpp"
 #include "MsqError.hpp"
 #include "MeshImpl.hpp"
@@ -51,9 +51,9 @@ int main( int argc, char* argv[] )
   IdealWeightInverseMeanRatio imr;
   SizeMetric size;
   IdealShapeTarget tc;
-  Target3DShape tm_3d;
-  Target2DShape tm_2d;
-  TMPQualityMetric tmp( &tc, &tm_2d, &tm_3d );
+  TRel3DShape tm_3d;
+  TRel2DShape tm_2d;
+  TRelQualityMetric tmp( &tc, &tm_2d, &tm_3d );
   ElementMaxQM max_tmp( &tmp );
   
   int intervals = histogram.seen() ? histogram.value() : 0;

@@ -39,12 +39,10 @@ namespace MESQUITE_NS {
 std::string InverseMeanRatio2D::get_name() const
   { return "InverseMeanRatio"; }
 
-bool InverseMeanRatio2D::evaluate( const MsqMatrix<2,2>& A, 
-                                   const MsqMatrix<2,2>& W, 
+bool InverseMeanRatio2D::evaluate( const MsqMatrix<2,2>& T, 
                                    double& result, 
                                    MsqError& err )
 {
-  const MsqMatrix<2,2> T = A * inverse(W);
   const double d = det( T );
   if (invalid_determinant(d)) {
     result = 0.0;
@@ -57,42 +55,35 @@ bool InverseMeanRatio2D::evaluate( const MsqMatrix<2,2>& A,
 }
 
 
-bool InverseMeanRatio2D::evaluate_with_grad( const MsqMatrix<2,2>& A,
-                                             const MsqMatrix<2,2>& W,
+bool InverseMeanRatio2D::evaluate_with_grad( const MsqMatrix<2,2>& T,
                                              double& result,
-                                             MsqMatrix<2,2>& deriv_wrt_A,
+                                             MsqMatrix<2,2>& deriv_wrt_T,
                                              MsqError& err )
 {
-  const MsqMatrix<2,2> Winv = inverse(W);
-  const MsqMatrix<2,2> T = A * Winv;
   const double d = det( T );
   if (invalid_determinant(d)) {
     result = 0.0;
-    deriv_wrt_A = MsqMatrix<2,2>(0.0);
+    deriv_wrt_T = MsqMatrix<2,2>(0.0);
     return false;
   }
   else {
     result = sqr_Frobenius(T) / (2 * d);
-    deriv_wrt_A = transpose_adj(T);
-    deriv_wrt_A *= -result;
-    deriv_wrt_A += T;
-    deriv_wrt_A *= 1.0/d;
-    deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+    deriv_wrt_T = transpose_adj(T);
+    deriv_wrt_T *= -result;
+    deriv_wrt_T += T;
+    deriv_wrt_T *= 1.0/d;
     result -= 1.0;
     return true;
   }
 }
 
 
-bool InverseMeanRatio2D::evaluate_with_hess( const MsqMatrix<2,2>& A,
-                                             const MsqMatrix<2,2>& W,
+bool InverseMeanRatio2D::evaluate_with_hess( const MsqMatrix<2,2>& T,
                                              double& result,
                                              MsqMatrix<2,2>& dA,
                                              MsqMatrix<2,2> d2A[3],
                                              MsqError& err )
 {
-  const MsqMatrix<2,2> Winv = inverse(W);
-  const MsqMatrix<2,2> T = A * Winv;
   const double d = det( T );
   if (invalid_determinant(d)) {
     result = 0.0;
@@ -108,7 +99,6 @@ bool InverseMeanRatio2D::evaluate_with_hess( const MsqMatrix<2,2>& A,
     dA *= -result;
     dA += T;
     dA *= inv_det;
-    dA = dA * transpose(Winv);
     
     const double p3 = -result * inv_det;
     const double p1 = -2.0 * p3 * inv_det;
@@ -129,10 +119,6 @@ bool InverseMeanRatio2D::evaluate_with_hess( const MsqMatrix<2,2>& A,
     d2A[1](1,0) -= p3;
     d2A[2](0,0) += inv_det;
     d2A[2](1,1) += inv_det;
-    
-    d2A[0] = Winv * d2A[0] * transpose(Winv);
-    d2A[1] = Winv * d2A[1] * transpose(Winv);
-    d2A[2] = Winv * d2A[2] * transpose(Winv);
     
     result -= 1.0;
     return true;

@@ -53,6 +53,8 @@ msq_test_SOURCES = msq_test_main.cpp \
 	QualityMetricTester.hpp \
 	QualityMetricTester.cpp \
 	UnitUtil.hpp \
+        TMetricTests.hpp \
+	TMPQualityMetricTest.hpp \
 	ArrayMeshTest.cpp \
 	AspectRatioGammaTest.cpp \
 	AveragingQMTest.cpp \
@@ -108,8 +110,6 @@ msq_test_SOURCES = msq_test_main.cpp \
 	StdDevTemplateTest.cpp \
 	SymMatrix3DTest.cpp \
 	TagVertexMeshTest.cpp \
-	Target2DTest.cpp \
-	Target3DTest.cpp \
 	TargetCalculatorTest.cpp \
 	TargetReadWriteTest.cpp \
 	TerminationCriterionTest.cpp \
@@ -117,7 +117,16 @@ msq_test_SOURCES = msq_test_main.cpp \
 	TriLagrangeShapeTest.cpp \
 	TopologyInfoTest.cpp \
         TMPDerivsTest.cpp \
-	TMPQualityMetricTest.cpp \
+	TAbs2DMetricTest.cpp \
+        TAbs3DMetricTest.cpp \
+        TRel2DMetricTest.cpp \
+        TRel3DMetricTest.cpp \
+        TAbsQualityMetricTest.cpp \
+        TRelQualityMetricTest.cpp \
+        TestTAbs2DMetrics.cpp \
+        TestTAbs3DMetrics.cpp \
+        TestTRel2DMetrics.cpp \
+        TestTRel3DMetrics.cpp \
 	UntangleBetaTest.cpp \
 	Vector3DTest.cpp \
 	VertexConditionNumberTest.cpp \

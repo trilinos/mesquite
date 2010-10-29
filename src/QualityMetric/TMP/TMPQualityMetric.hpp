@@ -41,8 +41,8 @@ namespace MESQUITE_NS {
 
 class TargetCalculator;
 class WeightCalculator;
-class TargetMetric2D;
-class TargetMetric3D;
+class TRel2DMetric;
+class TRel3DMetric;
 class NodeSet;
 class Mesh;
 class MeshDomain;
@@ -50,12 +50,7 @@ class Settings;
 
 /**\brief Compare targets to mapping function Jacobian matrices
  *
- * A quality metric defined using 2D and 3D target metrics,
- * where the active (A) matrix compared to the target by
- * the underlying metrics is the Jacobian matrix of the
- * mapping function at a given sample point.  For surface
- * elements, A is rotated to align the normal with W, such that
- * both matrices can be reduced from 3x2 to 2x2.
+ * Base class for various TMP QualityMetric implementations
  */
 class TMPQualityMetric : public ElemSampleQM
 {
@@ -64,39 +59,12 @@ public:
   /**
    *\param tc   The target calculator 
    *\param wc   The weight calculator
-   *\param metric_2d Metric to use for surface elements - may be NULL
-   *            if mesh contains only volume elements.
-   *\param metric_3d Metric to use for volume elements - may be NULL
-   *            if mesh contains only surface elements.
    */
   TMPQualityMetric( TargetCalculator* tc,
-                    WeightCalculator* wc,
-                    TargetMetric2D* metric_2d,
-                    TargetMetric3D* metric_3d ) 
+                    WeightCalculator* wc ) 
     : targetCalc(tc),
-      weightCalc(wc),
-      metric2D( metric_2d ),
-      metric3D( metric_3d )
+      weightCalc(wc)
    {}
-
-  /**
-   *\param tc   The target calculator 
-   *\param metric_2d Metric to use for surface elements - may be NULL
-   *            if mesh contains only volume elements.
-   *\param metric_3d Metric to use for volume elements - may be NULL
-   *            if mesh contains only surface elements.
-   */
-  TMPQualityMetric( TargetCalculator* tc,
-                    TargetMetric2D* metric_2d,
-                    TargetMetric3D* metric_3d ) 
-    : targetCalc(tc),
-      weightCalc(0),
-      metric2D( metric_2d ),
-      metric3D( metric_3d )
-   {}
-     
-  MESQUITE_EXPORT virtual
-  std::string get_name() const;
   
   MESQUITE_EXPORT virtual 
   int get_negate_flag() const;
@@ -130,56 +98,30 @@ public:
                  double& value,
                  std::vector<size_t>& indices,
                  MsqError& err );
-                 
-  MESQUITE_EXPORT virtual
-  bool evaluate_with_gradient( PatchData& pd,
-                 size_t handle,
-                 double& value,
-                 std::vector<size_t>& indices,
-                 std::vector<Vector3D>& gradient,
-                 MsqError& err );
-
-  MESQUITE_EXPORT virtual
-  bool evaluate_with_Hessian_diagonal( PatchData& pd,
-                    size_t handle,
-                    double& value,
-                    std::vector<size_t>& indices,
-                    std::vector<Vector3D>& gradient,
-                    std::vector<SymMatrix3D>& Hessian_diagonal,
-                    MsqError& err );
-                    
-  MESQUITE_EXPORT virtual
-  bool evaluate_with_Hessian( PatchData& pd,
-                    size_t handle,
-                    double& value,
-                    std::vector<size_t>& indices,
-                    std::vector<Vector3D>& gradient,
-                    std::vector<Matrix3D>& Hessian,
-                    MsqError& err );
     
   void set_target_calculator( TargetCalculator* tc ) { targetCalc = tc; }
   void set_weight_calculator( WeightCalculator* wc ) { weightCalc = wc; }
   TargetCalculator* get_target_calculator() const { return targetCalc; }
   WeightCalculator* get_weight_calculator() const { return weightCalc; }
-  
-  TargetMetric2D* get_2d_metric() const { return metric2D; }
-  TargetMetric3D* get_3d_metric() const { return metric3D; }
-  void set_2d_metric( TargetMetric2D* m ) { metric2D = m; }
-  void set_3d_metric( TargetMetric3D* m ) { metric3D = m; }
     
   virtual void initialize_queue( Mesh* mesh,
                                  MeshDomain* domain,
                                  const Settings* settings,
                                  MsqError& err );
   
-private:
+protected:
 
+  std::string make_name( const char* pfx, 
+                         const std::string& name_2d, 
+                         const std::string& name_3d ) const;
+ 
+  MESQUITE_EXPORT virtual
   bool evaluate_with_indices( PatchData& pd,
                  size_t handle,
                  double& value,
                  size_t* indices,
                  size_t& num_indices,
-                 MsqError& err );
+                 MsqError& err ) = 0;
 
   bool evaluate_surface_common( // input:
                                 PatchData& pd,
@@ -196,16 +138,26 @@ private:
                                 MsqError& err );
                                 
 
-  TargetCalculator* targetCalc;
-  WeightCalculator* weightCalc;
-  TargetMetric2D* metric2D;
-  TargetMetric3D* metric3D;
+  void weight( PatchData& pd,
+               Sample sample,
+               size_t elem,
+               int num_points,
+               double& value,
+               Vector3D* grad,
+               SymMatrix3D* diag,
+               Matrix3D* hess,
+               MsqError& err );
   
   enum { MAX_ELEM_NODES = 27 };
   size_t mIndices[MAX_ELEM_NODES];
   std::vector< MsqMatrix<2,2> > hess2d;
   MsqVector<3> mDerivs3D[MAX_ELEM_NODES];
   MsqVector<2> mDerivs2D[MAX_ELEM_NODES];
+
+  TargetCalculator* targetCalc;
+  
+private:
+  WeightCalculator* weightCalc;
 };
 
 } // namespace Mesquite
