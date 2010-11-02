@@ -436,6 +436,8 @@ TMETRIC_FUNC::test_orient()
   test_non_ideal( !orientInvariant, V, W );
 }
 
+static double releps( double a ) { return std::max(1e-6,1e-8*fabs(a)); }
+
 TMETRIC_FUNC::compare_eval_and_eval_with_grad()
 {
   MsqError err;
@@ -449,7 +451,7 @@ TMETRIC_FUNC::compare_eval_and_eval_with_grad()
   valid = eval( testMetric, I, A, v, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( v, gv, 1e-6 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( v, gv, releps(v) );
   
   valid = grad( testMetric, A, B, gv, g, err );
   ASSERT_NO_ERROR(err);
@@ -457,7 +459,7 @@ TMETRIC_FUNC::compare_eval_and_eval_with_grad()
   valid = eval( testMetric, A, B, v, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( v, gv, 1e-6 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( v, gv, releps(v) );
   
     // also test inverted for non-barrier metrics
   if (Barrier)
@@ -469,7 +471,7 @@ TMETRIC_FUNC::compare_eval_and_eval_with_grad()
   valid = eval( testMetric, C, I, v, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( v, gv, 1e-6 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( v, gv, releps(v) );
 }
 
 TMETRIC_FUNC::compare_eval_with_grad_and_eval_with_hess()
@@ -485,7 +487,7 @@ TMETRIC_FUNC::compare_eval_with_grad_and_eval_with_hess()
   valid = hess( testMetric, I, A, hv, h, H, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( gv, hv, 1e-6 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( gv, hv, releps(gv) );
   ASSERT_MATRICES_EQUAL( g, h, 1e-5 );
   
   valid = grad( testMetric, A, B, gv, g, err );
@@ -494,7 +496,7 @@ TMETRIC_FUNC::compare_eval_with_grad_and_eval_with_hess()
   valid = hess( testMetric, A, B, hv, h, H, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( gv, hv, 1e-6 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( gv, hv, releps(gv) );
   ASSERT_MATRICES_EQUAL( g, h, 1e-5 );
   
     // also test inverted for non-barrier metrics
@@ -507,7 +509,7 @@ TMETRIC_FUNC::compare_eval_with_grad_and_eval_with_hess()
   valid = hess( testMetric, C, I, hv, h, H, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( gv, hv, 1e-6 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( gv, hv, releps(gv) );
   ASSERT_MATRICES_EQUAL( g, h, 1e-5 );
 }
 
