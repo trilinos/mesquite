@@ -62,7 +62,7 @@ std::string TRelQualityMetric::get_name() const
                             metric3D ? metric3D->get_name() : std::string() );
 }
 
-bool TRelQualityMetric::evaluate_with_indices( PatchData& pd,
+bool TRelQualityMetric::evaluate_internal( PatchData& pd,
                                                size_t handle,
                                                double& value,
                                                size_t* indices,

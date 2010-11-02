@@ -61,7 +61,7 @@ std::string TAbsQualityMetric::get_name() const
                             metric3D ? metric3D->get_name() : std::string() );
 }
 
-bool TAbsQualityMetric::evaluate_with_indices( PatchData& pd,
+bool TAbsQualityMetric::evaluate_internal( PatchData& pd,
                                                size_t handle,
                                                double& value,
                                                size_t* indices,

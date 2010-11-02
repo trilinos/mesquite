@@ -46,6 +46,7 @@ ObjectiveFunction* PatchPowerMeanP::clone() const
 
 bool PatchPowerMeanP::initialize_block_coordinate_descent( Mesh* mesh, 
                                                       MeshDomain* domain, 
+                                                      const Settings* settings,
                                                       PatchSet* patch_set,
                                                       MsqError& err )
 {
@@ -55,6 +56,8 @@ bool PatchPowerMeanP::initialize_block_coordinate_descent( Mesh* mesh,
   PatchData pd;
   pd.set_mesh( mesh );
   pd.set_domain( domain );
+  if (settings)
+    pd.attach_settings(settings);
   
   bool result = true;
   while (patches.get_next_patch( pd, err ) && !MSQ_CHKERR(err))

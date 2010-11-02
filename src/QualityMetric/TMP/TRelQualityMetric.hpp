@@ -128,7 +128,7 @@ public:
 protected:
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_indices( PatchData& pd,
+  bool evaluate_internal( PatchData& pd,
                  size_t handle,
                  double& value,
                  size_t* indices,

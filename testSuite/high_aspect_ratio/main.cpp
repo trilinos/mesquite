@@ -223,7 +223,7 @@ int main( int argc, char* argv[] )
     std::cerr << "Mesh contains no vertices" << std::endl;
     return USAGE_ERROR;
   }
-  std::vector<unsigned short> dof( vertices.size(), -1 );
+  std::vector<unsigned short> dof( vertices.size(), 0 );
   domain.domain_DoF( &vertices[0], &dof[0], vertices.size(), err ); CHECKERR
   int idx = std::find(dof.begin(), dof.end(), 2) - dof.begin();
   const Mesh::VertexHandle free_vertex = vertices[idx];

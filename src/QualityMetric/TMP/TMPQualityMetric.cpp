@@ -111,7 +111,7 @@ void TMPQualityMetric::get_element_evaluations( PatchData& pd,
 bool TMPQualityMetric::evaluate( PatchData& pd, size_t handle, double& value, MsqError& err )
 {
   size_t num_idx;
-  bool valid = evaluate_with_indices( pd, handle, value, mIndices, num_idx, err );
+  bool valid = evaluate_internal( pd, handle, value, mIndices, num_idx, err );
   if (MSQ_CHKERR(err) || !valid)
     return false;
   
@@ -134,7 +134,7 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
 {
   indices.resize( MAX_ELEM_NODES );
   size_t num_idx = 0;
-  bool result = evaluate_with_indices( pd, handle, value, &indices[0], num_idx, err );
+  bool result = evaluate_internal( pd, handle, value, &indices[0], num_idx, err );
   if (MSQ_CHKERR(err) || !result)
     return false;
 

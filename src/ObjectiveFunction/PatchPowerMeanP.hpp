@@ -71,6 +71,7 @@ class PatchPowerMeanP : public PMeanPTemplate
     MESQUITE_EXPORT virtual 
     bool initialize_block_coordinate_descent( Mesh* mesh, 
                                               MeshDomain* domain, 
+                                              const Settings* settings,
                                               PatchSet* user_set,
                                               MsqError& err );
     

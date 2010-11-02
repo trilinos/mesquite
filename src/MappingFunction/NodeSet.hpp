@@ -161,10 +161,9 @@ class MESQUITE_EXPORT NodeSet {
         case 1: return mid_edge_node_position(sample.number);
         case 2: return mid_face_node_position(sample.number);
         case 3: return mid_region_node_position(sample.number);
-#ifndef NDEBUG
-        default: assert(0); return ~0u;
-#endif
       }
+      assert(0);
+      return ~0u;
     }
     
     //! Mark/flag corner node
