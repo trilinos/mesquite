@@ -53,7 +53,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	QualityMetricTester.hpp \
 	QualityMetricTester.cpp \
 	UnitUtil.hpp \
-        TMetricTests.hpp \
+        TMetricTest.hpp \
 	TMPQualityMetricTest.hpp \
 	ArrayMeshTest.cpp \
 	AspectRatioGammaTest.cpp \
