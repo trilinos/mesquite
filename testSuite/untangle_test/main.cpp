@@ -176,7 +176,7 @@ int main( int argc, char* argv[] )
   result += uwt( skip_beta||skip_shest, UntangleWrapper::BETA, "shest_grid32.vtk",           0 );
 
   result += uwt( skip_size||skip_horse, UntangleWrapper::SIZE, "tangled_horse1.vtk",         0 );
-  result += uwt( skip_size||skip_hole , UntangleWrapper::SIZE, "hole_in_square_tanglap.vtk", 4, true );
+  result += uwt( skip_size||skip_hole , UntangleWrapper::SIZE, "hole_in_square_tanglap.vtk", 6, true );
   result += uwt( skip_size||skip_invrt, UntangleWrapper::SIZE, "inverted-hole-2.vtk",        0  );
   result += uwt( skip_size||skip_shest, UntangleWrapper::SIZE, "shest_grid32.vtk",           0 );
 
