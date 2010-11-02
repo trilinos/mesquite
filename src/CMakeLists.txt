@@ -380,13 +380,11 @@ APPEND_SET(SOURCES
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover)
 
 APPEND_SET(HEADERS
-  QualityImprover/VertexMover/MeanMidNodeMover.hpp
   QualityImprover/VertexMover/NullImprover.hpp
   QualityImprover/VertexMover/VertexMover.hpp
   )
 
 APPEND_SET(SOURCES
-  QualityImprover/VertexMover/MeanMidNodeMover.cpp
   QualityImprover/VertexMover/VertexMover.cpp
   )
 
