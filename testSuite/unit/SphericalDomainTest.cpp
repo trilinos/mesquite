@@ -140,7 +140,7 @@ void SphericalDomainTest::test_fit_vertices()
   }
   
   std::vector<int> fixed(num_pt, 0.0);
-  ArrayMesh mesh( 3, num_pt, coords, &fixed[0], 0, TRIANGLE, 0 );
+  ArrayMesh mesh( 3, num_pt, coords, arrptr(fixed), 0, TRIANGLE, 0 );
   SphericalDomain sph;
   MsqError err;
   sph.fit_vertices( &mesh, err );
@@ -220,7 +220,7 @@ void SphericalDomainTest::test_domain_DoF()
   std::vector<unsigned short> expected(dof.size(), 2);
   SphericalDomain dom;
   MsqPrintError err(std::cout);
-  dom.domain_DoF( &junk[0], &dof[0], junk.size(), err );
+  dom.domain_DoF( arrptr(junk), arrptr(dof), junk.size(), err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT( expected == dof );  
 }

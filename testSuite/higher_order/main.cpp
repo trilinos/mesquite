@@ -180,9 +180,9 @@ void compare_nodes( size_t start_index,
   
   
     // Get coordinates from handles
-  mesh1->vertices_get_coordinates( &handles1[0], &verts1[0], num_verts, err );
+  mesh1->vertices_get_coordinates( arrptr(handles1), arrptr(verts1), num_verts, err );
   MSQ_ERRRTN(err);
-  mesh2->vertices_get_coordinates( &handles2[0], &verts2[0], num_verts, err );
+  mesh2->vertices_get_coordinates( arrptr(handles2), arrptr(verts2), num_verts, err );
   MSQ_ERRRTN(err);
   
     // Compare coordinates

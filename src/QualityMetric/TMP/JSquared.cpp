@@ -108,7 +108,7 @@ bool JSquared::evaluate_with_indices( PatchData& pd,
     indices.resize( 27 );
     MsqVector<3> mDerivs;
     MsqMatrix<3,3> A;
-    func->jacobian( pd, e, bits, dim, num, &indices[0], mDerivs, num_vtx, A, err );
+    func->jacobian( pd, e, bits, dim, num, arrptr(indices), mDerivs, num_vtx, A, err );
     MSQ_ERRZERO( err );
     indices.resize(num_vtx);
     
@@ -130,7 +130,7 @@ bool JSquared::evaluate_with_indices( PatchData& pd,
     indices.resize( 9 );
     MsqVector<2> mDerivs;
     MsqMatrix<3,2> App;
-    func->jacobian( pd, e, bits, dim, num, &indices[0], mDerivs, num_vtx, App, err );
+    func->jacobian( pd, e, bits, dim, num, arrptr(indices), mDerivs, num_vtx, App, err );
     MSQ_ERRZERO( err );
     indices.resize(num_vtx);
     

@@ -155,7 +155,7 @@ int main( int argc, char* argv[] )
       meshes[i].get_all_vertices( verts, err );
       if (err) return 1;
       bool flag;
-      meshes[i].vertices_get_slaved_flag( &verts[0], &flag, 1, err );
+      meshes[i].vertices_get_slaved_flag( arrptr(verts), &flag, 1, err );
       if (err) {
         have_slaved_flag = false;
         std::cout << "Skipped because input file does not contain slaved attribute" << std::endl;
@@ -229,11 +229,11 @@ Vector3D get_slaved_coords( Mesh& mesh, Mesh::VertexHandle vertex, MsqError& err
   if (MSQ_CHKERR(err)) return Vector3D(0.0);
   
   std::vector<Mesh::VertexHandle> verts;
-  mesh.elements_get_attached_vertices( &elem[0], 1, verts, off, err );
+  mesh.elements_get_attached_vertices( arrptr(elem), 1, verts, off, err );
   if (MSQ_CHKERR(err)) return Vector3D(0.0);
   
   EntityTopology type;
-  mesh.elements_get_topologies( &elem[0], &type, 1, err );
+  mesh.elements_get_topologies( arrptr(elem), &type, 1, err );
   if (MSQ_CHKERR(err)) return Vector3D(0.0);
   
   size_t idx = std::find( verts.begin(), verts.end(), vertex ) - verts.begin();
@@ -285,9 +285,9 @@ int check_slaved_coords( Mesh& mesh,
   std::vector<size_t> offsets;
   mesh.get_all_elements( elems, err ); MSQ_ERRZERO(err);
   std::vector<EntityTopology> types(elems.size());
-  mesh.elements_get_topologies( &elems[0], &types[0], elems.size(), err );
+  mesh.elements_get_topologies( arrptr(elems), arrptr(types), elems.size(), err );
   MSQ_ERRZERO(err);
-  mesh.elements_get_attached_vertices( &elems[0], elems.size(),
+  mesh.elements_get_attached_vertices( arrptr(elems), elems.size(),
                                        verts, offsets, err );
   MSQ_ERRZERO(err);
   std::vector<Mesh::VertexHandle>::iterator r, e, w = verts.begin();
@@ -306,13 +306,13 @@ int check_slaved_coords( Mesh& mesh,
   bool *fixed, *slaved;
   fixed = new bool[verts.size()];
   slaved = new bool[verts.size()];
-  mesh.vertices_get_fixed_flag( &verts[0], fixed, verts.size(), err );
+  mesh.vertices_get_fixed_flag( arrptr(verts), fixed, verts.size(), err );
   if (MSQ_CHKERR(err)) {
     delete [] fixed;
     delete [] slaved;
     return 1;
   }
-  mesh.vertices_get_slaved_flag( &verts[0], slaved, verts.size(), err );
+  mesh.vertices_get_slaved_flag( arrptr(verts), slaved, verts.size(), err );
   if (MSQ_CHKERR(err)) {
     delete [] fixed;
     delete [] slaved;
@@ -330,9 +330,9 @@ int check_slaved_coords( Mesh& mesh,
   
     // get all coordinates
   std::vector<MsqVertex> free_coords(free.size()), slave_coords(slave.size());
-  mesh.vertices_get_coordinates( &free[0], &free_coords[0], free.size(), err );
+  mesh.vertices_get_coordinates( arrptr(free), arrptr(free_coords), free.size(), err );
   MSQ_ERRZERO(err);
-  mesh.vertices_get_coordinates( &slave[0], &slave_coords[0], slave.size(), err );
+  mesh.vertices_get_coordinates( arrptr(slave), arrptr(slave_coords), slave.size(), err );
   MSQ_ERRZERO(err);
   
   int error_count = 0;
@@ -394,9 +394,9 @@ int compare_node_coords( Mesh& mesh1, Mesh& mesh2, MsqError& err )
   mesh1.get_all_vertices( verts1, err ); MSQ_ERRZERO(err);
   mesh2.get_all_vertices( verts2, err ); MSQ_ERRZERO(err);
   std::vector<MsqVertex> coords1(verts1.size()), coords2(verts2.size());
-  mesh1.vertices_get_coordinates( &verts1[0], &coords1[0], verts1.size(), err );
+  mesh1.vertices_get_coordinates( arrptr(verts1), arrptr(coords1), verts1.size(), err );
   MSQ_ERRZERO(err);
-  mesh2.vertices_get_coordinates( &verts2[0], &coords2[0], verts2.size(), err );
+  mesh2.vertices_get_coordinates( arrptr(verts2), arrptr(coords2), verts2.size(), err );
   MSQ_ERRZERO(err);
   
   int error_count = 0;
@@ -422,12 +422,12 @@ int check_no_slaved_corners( Mesh& mesh, MsqError& err )
   std::vector<size_t> offsets;
   mesh.get_all_elements( elems, err );  MSQ_ERRZERO(err);
   types.resize( elems.size() );
-  mesh.elements_get_topologies( &elems[0], &types[0], elems.size(), err );  MSQ_ERRZERO(err);
-  mesh.elements_get_attached_vertices( &elems[0], elems.size(), verts, offsets, err );
+  mesh.elements_get_topologies( arrptr(elems), arrptr(types), elems.size(), err );  MSQ_ERRZERO(err);
+  mesh.elements_get_attached_vertices( arrptr(elems), elems.size(), verts, offsets, err );
   MSQ_ERRZERO(err);
   
   bool* slaved_arr = new bool[verts.size()];
-  mesh.vertices_get_slaved_flag( &verts[0], slaved_arr, verts.size(), err );
+  mesh.vertices_get_slaved_flag( arrptr(verts), slaved_arr, verts.size(), err );
   std::vector<bool> slaved(verts.size());
   std::copy( slaved_arr, slaved_arr + verts.size(), slaved.begin() );
   delete [] slaved_arr;
@@ -525,6 +525,6 @@ void tag_patch_slaved( Mesh& mesh,
 
   const Mesh::VertexHandle* verts = pd.get_vertex_handles_array() + pd.num_free_vertices();
   std::vector<int> ones( pd.num_slave_vertices(), 1 );
-  mesh.tag_set_vertex_data( tag, pd.num_slave_vertices(), verts, &ones[0], err );
+  mesh.tag_set_vertex_data( tag, pd.num_slave_vertices(), verts, arrptr(ones), err );
   MSQ_ERRRTN(err);
 }

@@ -515,7 +515,7 @@ void AveragingQMTest::check_average_and_weights( const double* vals, unsigned n,
   double avg1, avg2;
   avg1 = aqm.average_metrics( vals, n, err );
   ASSERT_NO_ERROR(err);
-  avg2 = aqm.average_metric_and_weights( &working[0], n, err );
+  avg2 = aqm.average_metric_and_weights( arrptr(working), n, err );
   ASSERT_NO_ERROR(err);
   
   CPPUNIT_ASSERT_DOUBLES_EQUAL( avg1, avg2, 1e-6 );
@@ -526,8 +526,8 @@ void AveragingQMTest::check_average_and_weights( const double* vals, unsigned n,
 void AveragingQMTest::test_average_and_weights_linear()
 {
   std::vector<double> weights1( LEN_LIST_1, 1.0/LEN_LIST_1), weights2( LEN_LIST_2, 1.0/LEN_LIST_2 );
-  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::LINEAR, &weights1[0] );
-  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::LINEAR, &weights2[0] );
+  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::LINEAR, arrptr(weights1) );
+  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::LINEAR, arrptr(weights2) );
 }
 
 void AveragingQMTest::test_average_and_weights_rms()
@@ -539,12 +539,12 @@ void AveragingQMTest::test_average_and_weights_rms()
   rms = pmean( VAL_LIST_1, LEN_LIST_1, 2.0 );
   for (i = 0; i < LEN_LIST_1; ++i)
     weights1[i] = VAL_LIST_1[i]/(LEN_LIST_1*rms);
-  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::RMS, &weights1[0] );
+  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::RMS, arrptr(weights1) );
   
   rms = pmean( VAL_LIST_2, LEN_LIST_2, 2.0 );
   for (i = 0; i < LEN_LIST_2; ++i)
     weights2[i] = VAL_LIST_2[i]/(LEN_LIST_2*rms);
-  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::RMS, &weights2[0] );
+  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::RMS, arrptr(weights2) );
 }
 
 void AveragingQMTest::test_average_and_weights_hms()
@@ -558,14 +558,14 @@ void AveragingQMTest::test_average_and_weights_hms()
     tmp = hms / VAL_LIST_1[i];
     weights1[i] = tmp*tmp*tmp / LEN_LIST_1;
   }
-  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::HMS, &weights1[0] );
+  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::HMS, arrptr(weights1) );
   
   hms = pmean( VAL_LIST_2, LEN_LIST_2, -2.0 );
   for (i = 0; i < LEN_LIST_2; ++i) {
     tmp = hms / VAL_LIST_2[i];
     weights2[i] = tmp*tmp*tmp / LEN_LIST_2;
   }
-  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::HMS, &weights2[0] );
+  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::HMS, arrptr(weights2) );
 }
 
 void AveragingQMTest::test_average_and_weights_minimum()
@@ -575,11 +575,11 @@ void AveragingQMTest::test_average_and_weights_minimum()
   
   ptr = std::min_element( VAL_LIST_1, VAL_LIST_1+LEN_LIST_1 );
   weights1[ptr-VAL_LIST_1] = 1.0;
-  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::MINIMUM, &weights1[0] );
+  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::MINIMUM, arrptr(weights1) );
   
   ptr = std::min_element( VAL_LIST_2, VAL_LIST_2+LEN_LIST_2 );
   weights2[ptr-VAL_LIST_2] = 1.0;
-  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::MINIMUM, &weights2[0] );
+  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::MINIMUM, arrptr(weights2) );
 }  
 
 void AveragingQMTest::test_average_and_weights_maximum()
@@ -589,11 +589,11 @@ void AveragingQMTest::test_average_and_weights_maximum()
   
   ptr = std::max_element( VAL_LIST_1, VAL_LIST_1+LEN_LIST_1 );
   weights1[ptr-VAL_LIST_1] = 1.0;
-  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::MAXIMUM, &weights1[0] );
+  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::MAXIMUM, arrptr(weights1) );
   
   ptr = std::max_element( VAL_LIST_2, VAL_LIST_2+LEN_LIST_2 );
   weights2[ptr-VAL_LIST_2] = 1.0;
-  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::MAXIMUM, &weights2[0] );
+  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::MAXIMUM, arrptr(weights2) );
 }  
 
 void AveragingQMTest::test_average_and_weights_harmonic()
@@ -607,14 +607,14 @@ void AveragingQMTest::test_average_and_weights_harmonic()
     tmp = h / VAL_LIST_1[i];
     weights1[i] = tmp*tmp / LEN_LIST_1;
   }
-  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::HARMONIC, &weights1[0] );
+  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::HARMONIC, arrptr(weights1) );
   
   h = pmean( VAL_LIST_2, LEN_LIST_2, -1.0 );
   for (i = 0; i < LEN_LIST_2; ++i) {
     tmp = h / VAL_LIST_2[i];
     weights2[i] = tmp*tmp / LEN_LIST_2;
   }
-  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::HARMONIC, &weights2[0] );
+  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::HARMONIC, arrptr(weights2) );
 }
 
 void AveragingQMTest::test_average_and_weights_geometric()
@@ -627,20 +627,20 @@ void AveragingQMTest::test_average_and_weights_geometric()
   for (i = 0; i < LEN_LIST_1; ++i) {
     weights1[i] = g / VAL_LIST_1[i] / LEN_LIST_1;
   }
-  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::GEOMETRIC, &weights1[0] );
+  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::GEOMETRIC, arrptr(weights1) );
 
   g = geometric_mean( VAL_LIST_2, LEN_LIST_2 );
   for (i = 0; i < LEN_LIST_2; ++i) {
     weights2[i] = g / VAL_LIST_2[i] / LEN_LIST_2;
   }
-  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::GEOMETRIC, &weights2[0] );
+  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::GEOMETRIC, arrptr(weights2) );
 }
 
 void AveragingQMTest::test_average_and_weights_sum()
 {
   std::vector<double> weights1( LEN_LIST_1, 1.0), weights2( LEN_LIST_2, 1.0);
-  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::SUM, &weights1[0] );
-  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::SUM, &weights2[0] );
+  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::SUM, arrptr(weights1) );
+  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::SUM, arrptr(weights2) );
 }
 
 void AveragingQMTest::test_average_and_weights_sum_squared()
@@ -650,11 +650,11 @@ void AveragingQMTest::test_average_and_weights_sum_squared()
   
   for (i = 0; i < LEN_LIST_1; ++i) 
     weights1[i] = 2 * VAL_LIST_1[i];
-  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::SUM_SQUARED, &weights1[0] );
+  check_average_and_weights( VAL_LIST_1, LEN_LIST_1, QualityMetric::SUM_SQUARED, arrptr(weights1) );
   
   for (i = 0; i < LEN_LIST_2; ++i) 
     weights2[i] = 2 * VAL_LIST_2[i];
-  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::SUM_SQUARED, &weights2[0] );
+  check_average_and_weights( VAL_LIST_2, LEN_LIST_2, QualityMetric::SUM_SQUARED, arrptr(weights2) );
 }
 
 void AveragingQMTest::check_average_and_weights_fails( QualityMetric::AveragingMethod scheme )

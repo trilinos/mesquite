@@ -47,6 +47,7 @@ using std::cout;
    using Mesquite::EntityTopology;
    using Mesquite::VertexPatches;
    using Mesquite::PatchIterator;
+   using Mesquite::arrptr;
 #else
 #  include <stdio.h>
 #endif
@@ -446,7 +447,7 @@ public:
     CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT_EQUAL(elems.size(), (size_t)8);
     
-    mesh.elements_get_attached_vertices( &elems[0], elems.size(),
+    mesh.elements_get_attached_vertices( arrptr(elems), elems.size(),
                                          verts, offsets, err );
     CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(verts.size() == 64);
@@ -496,7 +497,7 @@ public:
     CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT_EQUAL(elems.size(), (size_t)4);
     
-    mesh.elements_get_attached_vertices( &elems[0], elems.size(),
+    mesh.elements_get_attached_vertices( arrptr(elems), elems.size(),
                                          verts, offsets, err );
     CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(verts.size() == 16);
@@ -559,7 +560,7 @@ public:
     mesh.get_all_elements( elems, err );
     CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT_EQUAL( elems.size(), (size_t)38 );
-    mesh.elements_get_attached_vertices( &elems[0], elems.size(),
+    mesh.elements_get_attached_vertices( arrptr(elems), elems.size(),
                                          conn, offsets, err );
     CPPUNIT_ASSERT(!err);
 
@@ -687,7 +688,7 @@ public:
     CPPUNIT_ASSERT( !err && type == Mesh::INT && tagsize == 1 );
     
     int elem_data[8];
-    mesh.tag_get_element_data( th, 8, &elems[0], elem_data, err );
+    mesh.tag_get_element_data( th, 8, arrptr(elems), elem_data, err );
     CPPUNIT_ASSERT( !err );
     
     for (int i = 0; i < 8; ++i)
@@ -725,7 +726,7 @@ public:
     CPPUNIT_ASSERT( !err && type == Mesh::DOUBLE && tagsize == 3 );
     
     double elem_data[24];
-    mesh.tag_get_element_data( th, 8, &elems[0], elem_data, err );
+    mesh.tag_get_element_data( th, 8, arrptr(elems), elem_data, err );
     CPPUNIT_ASSERT( !err );
     
     for (int i = 0; i < 8; ++i)
@@ -769,7 +770,7 @@ public:
     CPPUNIT_ASSERT( !err && type == Mesh::DOUBLE && tagsize == 3 );
     
     double elem_data[24];
-    mesh.tag_get_element_data( th, 8, &elems[0], elem_data, err );
+    mesh.tag_get_element_data( th, 8, arrptr(elems), elem_data, err );
     CPPUNIT_ASSERT( !err );
     
     for (int i = 0; i < 8; ++i)
@@ -783,7 +784,7 @@ public:
     CPPUNIT_ASSERT( !err && type == Mesh::INT && tagsize == 1 );
     
     int elem_ids[8];
-    mesh.tag_get_element_data( th, 8, &elems[0], elem_ids, err );
+    mesh.tag_get_element_data( th, 8, arrptr(elems), elem_ids, err );
     CPPUNIT_ASSERT( !err );
     
     for (int i = 0; i < 8; ++i)
@@ -797,7 +798,7 @@ public:
     CPPUNIT_ASSERT( !err && type == Mesh::INT && tagsize == 1 );
     
     int values[8];
-    mesh.tag_get_element_data( th, 8, &elems[0], values, err );
+    mesh.tag_get_element_data( th, 8, arrptr(elems), values, err );
     CPPUNIT_ASSERT( !err );
     
     for (int i = 0; i < 8; ++i)
@@ -854,7 +855,7 @@ public:
     
     std::vector<Mesh::VertexHandle> verts;
     std::vector<size_t> offsets;
-    mesh.elements_get_attached_vertices( &elems[0], elems.size(), verts, offsets, err );
+    mesh.elements_get_attached_vertices( arrptr(elems), elems.size(), verts, offsets, err );
     CPPUNIT_ASSERT(!err);
     
     // get unique list of vertices
@@ -866,7 +867,7 @@ public:
 
     // get fixed flag
     bool fixed[27];
-    mesh.vertices_get_fixed_flag( &verts[0], fixed, verts.size(), err );
+    mesh.vertices_get_fixed_flag( arrptr(verts), fixed, verts.size(), err );
     CPPUNIT_ASSERT(!err);
     
     for (int i = 0; i < 27; ++i)
@@ -938,12 +939,12 @@ public:
     
     std::vector<Mesh::VertexHandle> conn;
     std::vector<size_t> offsets;
-    mesh.elements_get_attached_vertices( &elems[0], elems.size(), conn, offsets, err );
+    mesh.elements_get_attached_vertices( arrptr(elems), elems.size(), conn, offsets, err );
     CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT_EQUAL( conn.size(), (size_t)108 );
     
     EntityTopology types[NUM_ELEM];
-    mesh.elements_get_topologies( &elems[0], types, NUM_ELEM, err );
+    mesh.elements_get_topologies( arrptr(elems), types, NUM_ELEM, err );
     CPPUNIT_ASSERT(!err);
 
     static const double hex_corners[] = 

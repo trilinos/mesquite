@@ -331,10 +331,10 @@ void MeshImplTest::skin_mesh_mixed()
   CPPUNIT_ASSERT(!err);
   CPPUNIT_ASSERT_EQUAL(5u, (unsigned)verts.size());
   MsqVertex coords[5];
-  mesh.vertices_get_coordinates( &verts[0], coords, 5, err );
+  mesh.vertices_get_coordinates( arrptr(verts), coords, 5, err );
   CPPUNIT_ASSERT(!err);
   bool fixed[5];
-  mesh.vertices_get_fixed_flag( &verts[0], fixed, 5, err );
+  mesh.vertices_get_fixed_flag( arrptr(verts), fixed, 5, err );
   CPPUNIT_ASSERT(!err);
   
   int free_idx = -1;
@@ -404,10 +404,10 @@ void MeshImplTest::skin_mesh_higher_order()
   CPPUNIT_ASSERT(!err);
   CPPUNIT_ASSERT_EQUAL(13u, (unsigned)verts.size());
   MsqVertex coords[13];
-  mesh.vertices_get_coordinates( &verts[0], coords, 13, err );
+  mesh.vertices_get_coordinates( arrptr(verts), coords, 13, err );
   CPPUNIT_ASSERT(!err);
   bool fixed[13];
-  mesh.vertices_get_fixed_flag( &verts[0], fixed, 13, err );
+  mesh.vertices_get_fixed_flag( arrptr(verts), fixed, 13, err );
   CPPUNIT_ASSERT(!err);
   
   int free_idx = -1;

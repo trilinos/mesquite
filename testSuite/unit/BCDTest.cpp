@@ -134,7 +134,7 @@ void BCDTest::compare_bcd( ObjectiveFunction* OF, string name, const char* mesh_
   mesh.get_all_vertices( vertex_list, err ); ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!vertex_list.empty());
   initial_coords.resize( vertex_list.size() );
-  mesh.vertices_get_coordinates( &vertex_list[0], &initial_coords[0], vertex_list.size(), err );
+  mesh.vertices_get_coordinates( arrptr(vertex_list), arrptr(initial_coords), vertex_list.size(), err );
   ASSERT_NO_ERROR(err);
   
     // run global smoother
@@ -142,7 +142,7 @@ void BCDTest::compare_bcd( ObjectiveFunction* OF, string name, const char* mesh_
   ASSERT_NO_ERROR(err);
   mesh.write_vtk( (name + "-gbl.vtk").c_str(), err );
   global_coords.resize( vertex_list.size() );
-  mesh.vertices_get_coordinates( &vertex_list[0], &global_coords[0], vertex_list.size(), err );
+  mesh.vertices_get_coordinates( arrptr(vertex_list), arrptr(global_coords), vertex_list.size(), err );
   ASSERT_NO_ERROR(err);
   
     // restore initial vertex positions
@@ -156,7 +156,7 @@ void BCDTest::compare_bcd( ObjectiveFunction* OF, string name, const char* mesh_
   ASSERT_NO_ERROR(err);
   mesh.write_vtk( (name + "-bcd.vtk").c_str(), err );
   bcd_coords.resize( vertex_list.size() );
-  mesh.vertices_get_coordinates( &vertex_list[0], &bcd_coords[0], vertex_list.size(), err );
+  mesh.vertices_get_coordinates( arrptr(vertex_list), arrptr(bcd_coords), vertex_list.size(), err );
   ASSERT_NO_ERROR(err);
   
     // compare results

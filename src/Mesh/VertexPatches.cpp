@@ -52,7 +52,7 @@ void VertexPatches::get_patch_handles( std::vector<PatchHandle>& patch_handles_o
   if (free_vertices_only()) {
       // get fixed flags for vertices
     bool* fixed_flags = new bool[patch_handles_out.size()];
-    get_mesh()->vertices_get_fixed_flag( &patch_handles_out[0],
+    get_mesh()->vertices_get_fixed_flag( arrptr(patch_handles_out),
                                          fixed_flags,
                                          patch_handles_out.size(),
                                          err );
@@ -103,7 +103,7 @@ void VertexPatches::get_patch( PatchHandle patch_handle,
 
       // Get vertices adjacent to elements
     free_vertices_out.clear();
-    get_mesh()->elements_get_attached_vertices( &elem_handles_out[0],
+    get_mesh()->elements_get_attached_vertices( arrptr(elem_handles_out),
                                                 elem_handles_out.size(),
                                                 free_vertices_out,
                                                 junk, err );
@@ -117,7 +117,7 @@ void VertexPatches::get_patch( PatchHandle patch_handle,
   
       // Get elements adjacent to vertices
     elem_handles_out.clear();
-    get_mesh()->vertices_get_attached_elements( &free_vertices_out[0], 
+    get_mesh()->vertices_get_attached_elements( arrptr(free_vertices_out), 
                                                 free_vertices_out.size(),
                                                 elem_handles_out, 
                                                 junk, err );

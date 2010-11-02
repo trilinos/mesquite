@@ -553,7 +553,7 @@ void ObjectiveFunctionTest::test_LPtoP_value( short P, bool scale,
   if (scale) 
     expected /= values.size();
     
-  test_value( &values[0], values.size(), expected, mode, &OF );
+  test_value( arrptr(values), values.size(), expected, mode, &OF );
 }
   
 void ObjectiveFunctionTest::test_LInf_value( const std::vector<double>& values )
@@ -567,7 +567,7 @@ void ObjectiveFunctionTest::test_LInf_value( const std::vector<double>& values )
     if (fabs(values[i]) > expected)
       expected = fabs(values[i]);
     
-  test_value( &values[0], values.size(), expected, EVAL, &OF );
+  test_value( arrptr(values), values.size(), expected, EVAL, &OF );
 }
   
 void ObjectiveFunctionTest::test_max_value( const std::vector<double>& values )
@@ -581,7 +581,7 @@ void ObjectiveFunctionTest::test_max_value( const std::vector<double>& values )
     if (values[i] > expected)
       expected = values[i];
     
-  test_value( &values[0], values.size(), expected, EVAL, &OF );
+  test_value( arrptr(values), values.size(), expected, EVAL, &OF );
 }
 
 void ObjectiveFunctionTest::test_max_negate_flag( ObjectiveFunctionTemplate& of )

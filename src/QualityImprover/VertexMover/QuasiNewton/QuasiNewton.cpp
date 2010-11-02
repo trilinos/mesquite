@@ -206,18 +206,18 @@ void QuasiNewton::optimize_vertex_positions( PatchData& pd, MsqError& err )
 
     x = v[QNVEC];
     for (i = QNVEC; i--; ) {
-      a[i] = r[i] * inner( &(w[i][0]), &x[0], nn );
-      plus_eq_scaled( &x[0], -a[i], &v[i][0], nn );
+      a[i] = r[i] * inner( &(w[i][0]), arrptr(x), nn );
+      plus_eq_scaled( arrptr(x), -a[i], &v[i][0], nn );
     }
      
-    solve( &d[0], &x[0] );
+    solve( arrptr(d), arrptr(x) );
   
     for (i = QNVEC; i--; ) {
-      b[i] = r[i] * inner( &(v[i][0]), &d[0], nn );
-      plus_eq_scaled( &d[0], a[i]-b[i], &(w[i][0]), nn );
+      b[i] = r[i] * inner( &(v[i][0]), arrptr(d), nn );
+      plus_eq_scaled( arrptr(d), a[i]-b[i], &(w[i][0]), nn );
     }
     
-    alpha = -inner( &(v[QNVEC][0]), &d[0], nn );  /* direction is negated */
+    alpha = -inner( &(v[QNVEC][0]), arrptr(d), nn );  /* direction is negated */
     if (alpha > 0.0) {
       MSQ_SETERR(err)("No descent.", MsqError::INVALID_MESH);
       return;
@@ -226,7 +226,7 @@ void QuasiNewton::optimize_vertex_positions( PatchData& pd, MsqError& err )
     alpha *= sigma;
     beta = 1.0;
     
-    pd.move_free_vertices_constrained( &d[0], nn, -beta, err ); MSQ_ERRRTN(err);
+    pd.move_free_vertices_constrained( arrptr(d), nn, -beta, err ); MSQ_ERRRTN(err);
     valid = func.evaluate( pd, objn, v[QNVEC], err ); MSQ_ERRRTN(err);
     if (!valid ||
         (obj - objn < -alpha*beta - epsilon &&
@@ -244,7 +244,7 @@ void QuasiNewton::optimize_vertex_positions( PatchData& pd, MsqError& err )
           return;
         }
       
-        pd.set_free_vertices_constrained( mMemento, &d[0], nn, -beta, err ); MSQ_ERRRTN(err);
+        pd.set_free_vertices_constrained( mMemento, arrptr(d), nn, -beta, err ); MSQ_ERRRTN(err);
         valid = func.evaluate( pd, objn, err ); MSQ_ERRRTN(err);
         if (!valid) // function undefined at trial point
           beta *= beta0;

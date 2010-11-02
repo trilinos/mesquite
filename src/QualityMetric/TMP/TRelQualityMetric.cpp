@@ -194,7 +194,7 @@ bool TRelQualityMetric::evaluate_with_gradient(
   std::copy( mIndices, mIndices+num_idx, indices.begin() );
   
     // apply target weight to value
-  weight( pd, s, e, num_idx, value, &grad[0], 0, 0, err ); MSQ_ERRZERO(err);
+  weight( pd, s, e, num_idx, value, grad.empty() ? 0 : arrptr(grad), 0, 0, err ); MSQ_ERRZERO(err);
   return rval;
 }
 
@@ -239,7 +239,7 @@ bool TRelQualityMetric::evaluate_with_Hessian(
     second_deriv_wrt_product_factor( d2mdT2, Winv );
     Hessian.resize( num_idx*(num_idx+1)/2 );
     if (num_idx)
-      hessian<3>( num_idx, mDerivs3D, d2mdT2, &Hessian[0] );
+      hessian<3>( num_idx, mDerivs3D, d2mdT2, arrptr(Hessian) );
     
 #ifdef PRINT_INFO
     print_info<3>( e, s, A, W, A * inverse(W) );
@@ -272,7 +272,7 @@ bool TRelQualityMetric::evaluate_with_Hessian(
       // calculate 2D hessian
     hess2d.resize(n);
     if (n)
-      hessian<2>( num_idx, mDerivs2D, d2mdA2, &hess2d[0] );
+      hessian<2>( num_idx, mDerivs2D, d2mdA2, arrptr(hess2d) );
       // calculate surface hessian as transform of 2D hessian
     Hessian.resize(n);
     for (size_t i = 0; i < n; ++i)
@@ -292,7 +292,11 @@ bool TRelQualityMetric::evaluate_with_Hessian(
   std::copy( mIndices, mIndices+num_idx, indices.begin() );
   
     // apply target weight to value
-  weight( pd, s, e, num_idx, value, &grad[0], 0, &Hessian[0], err ); MSQ_ERRZERO(err);
+  if (!num_idx) 
+    weight( pd, s, e, num_idx, value, 0, 0, 0, err );
+  else
+    weight( pd, s, e, num_idx, value, arrptr(grad), 0, arrptr(Hessian), err ); 
+  MSQ_ERRZERO(err);
   return rval;
 }
 
@@ -337,7 +341,7 @@ bool TRelQualityMetric::evaluate_with_Hessian_diagonal(
     second_deriv_wrt_product_factor( d2mdT2, Winv );
     
     diagonal.resize( num_idx );
-    hessian_diagonal<3>(num_idx, mDerivs3D, d2mdT2, &diagonal[0] );
+    hessian_diagonal<3>(num_idx, mDerivs3D, d2mdT2, arrptr(diagonal) );
 #ifdef PRINT_INFO
     print_info<3>( e, s, A, W, A * inverse(W) );
 #endif
@@ -397,7 +401,7 @@ bool TRelQualityMetric::evaluate_with_Hessian_diagonal(
   std::copy( mIndices, mIndices+num_idx, indices.begin() );
   
     // apply target weight to value
-  weight( pd, s, e, num_idx, value, &grad[0], &diagonal[0], 0, err ); MSQ_ERRZERO(err);
+  weight( pd, s, e, num_idx, value, arrptr(grad), arrptr(diagonal), 0, err ); MSQ_ERRZERO(err);
   return rval;
 }
 

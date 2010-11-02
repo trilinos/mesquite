@@ -483,7 +483,7 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
       obj_eval.evaluate(pd, currentOFValue, mGrad, err);
       err.clear();
     }
-    write_timestep( pd, mGrad.empty() ? 0 : &mGrad[0], err);
+    write_timestep( pd, mGrad.empty() ? 0 : arrptr(mGrad), err);
   }
     
   if (plotFile.is_open()) {
@@ -548,7 +548,7 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
     }
   }
 
-  accumulate_inner( pd, of_value, mGrad.empty() ? 0 : &mGrad[0], err );  MSQ_CHKERR(err);
+  accumulate_inner( pd, of_value, mGrad.empty() ? 0 : arrptr(mGrad), err );  MSQ_CHKERR(err);
 }
 
 
@@ -939,11 +939,11 @@ void TerminationCriterion::cleanup(Mesh* mesh, MeshDomain*, MsqError &err)
     return;
   std::vector<unsigned char> bytes(vertices.size(), 0);
   std::vector<unsigned char>::iterator i;
-  mesh->vertices_get_byte( &vertices[0], &bytes[0], vertices.size(), err );
+  mesh->vertices_get_byte( arrptr(vertices), arrptr(bytes), vertices.size(), err );
   MSQ_ERRRTN(err);
   for (i = bytes.begin(); i != bytes.end(); ++i)
     *i &= ~MsqVertex::MSQ_CULLED;
-  mesh->vertices_set_byte( &vertices[0], &bytes[0], vertices.size(), err );
+  mesh->vertices_set_byte( arrptr(vertices), arrptr(bytes), vertices.size(), err );
   MSQ_ERRRTN(err);
 }
 

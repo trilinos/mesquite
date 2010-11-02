@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
     return 1;
   }
   std::vector<Mesquite::MsqVertex> coords( handles.size() );
-  mesh.vertices_get_coordinates( &handles[0], &coords[0], handles.size(), err );
+  mesh.vertices_get_coordinates( arrptr(handles), arrptr(coords), handles.size(), err );
   if (err) return 1;
   
     //create the matrix for affine transformation
@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
   
     // Get transformed coordinates
   std::vector<Mesquite::MsqVertex> coords2( handles.size() );
-  mesh.vertices_get_coordinates( &handles[0], &coords2[0], handles.size(), err );
+  mesh.vertices_get_coordinates( arrptr(handles), arrptr(coords2), handles.size(), err );
   if (err) return 1;
  
     // Compare vertex coordinates

@@ -61,6 +61,8 @@
 #endif
 
 #include <limits>
+#include <vector>
+#include <assert.h>
 
 #include "mesquite_version.h"
 #define MESQUITE_NS__(X) Mesquite##X
@@ -232,6 +234,21 @@ inline bool divide( double num, double den, double& result )
     return false;
   }
 }
+  
+/**\brief get array pointer from std::vector */
+template <typename T> inline 
+T* arrptr( std::vector< T >& v )
+{
+  assert(!v.empty());
+  return &v[0];
+}
+template <typename T> inline 
+const T* arrptr( const std::vector< T >& v )
+{
+  assert(!v.empty());
+  return &v[0];
+}
+
   
 } // namespace Mesquite
 

@@ -143,7 +143,7 @@ void MsqIRel::domain_DoF( const Mesh::VertexHandle* handle_array,
   int ierr;
   
   geomHandles.resize( count );
-  ierr = geom_from_mesh( handle_array, &geomHandles[0], dof_array, count );
+  ierr = geom_from_mesh( handle_array, arrptr(geomHandles), dof_array, count );
   if (iBase_SUCCESS != ierr) {
     MSQ_SETERR(err)(process_itaps_error( ierr ), MsqError::INTERNAL_ERROR);
     return;

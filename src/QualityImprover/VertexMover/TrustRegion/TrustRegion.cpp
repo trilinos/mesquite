@@ -161,11 +161,11 @@ void TrustRegion::optimize_vertex_positions( PatchData& pd, MsqError& err )
   double radius = 1000;		/* delta*delta */
 
  const int nn = pd.num_free_vertices();
-  wVect.resize(nn); Vector3D* w = &wVect[0];
-  zVect.resize(nn); Vector3D* z = &zVect[0];
-  dVect.resize(nn); Vector3D* d = &dVect[0];
-  pVect.resize(nn); Vector3D* p = &pVect[0];
-  rVect.resize(nn); Vector3D* r = &rVect[0];
+  wVect.resize(nn); Vector3D* w = arrptr(wVect);
+  zVect.resize(nn); Vector3D* z = arrptr(zVect);
+  dVect.resize(nn); Vector3D* d = arrptr(dVect);
+  pVect.resize(nn); Vector3D* p = arrptr(pVect);
+  rVect.resize(nn); Vector3D* r = arrptr(rVect);
 
   double norm_r, norm_g;
   double alpha, beta, kappa;
@@ -187,11 +187,11 @@ void TrustRegion::optimize_vertex_positions( PatchData& pd, MsqError& err )
 
   while (!term.terminate() && (radius > 1e-20)) {
 
-    norm_r = length_squared(&mGrad[0], nn);
+    norm_r = length_squared(arrptr(mGrad), nn);
     norm_g = sqrt(norm_r);
 
     memset(d, 0, 3*sizeof(double)*nn);
-    memcpy(r, &mGrad[0], nn*sizeof(Vector3D)); //memcpy(r, mesh->g, 3*sizeof(double)*nn);
+    memcpy(r, arrptr(mGrad), nn*sizeof(Vector3D)); //memcpy(r, mesh->g, 3*sizeof(double)*nn);
     norm_g *= cg_tol;
 
     apply_preconditioner( z, r, err); MSQ_ERRRTN(err); //prec->apply(z, r, prec, mesh);
@@ -249,7 +249,7 @@ void TrustRegion::optimize_vertex_positions( PatchData& pd, MsqError& err )
 
 #ifdef DO_STEEP_DESC    
     if (norm_d <= tr_num_tol) {
-      norm_g = length(&mGrad[0], nn);
+      norm_g = length(arrptr(mGrad), nn);
       double ll = 1.0;
       if (norm_g < tr_num_tol)
         break;
@@ -260,7 +260,7 @@ void TrustRegion::optimize_vertex_positions( PatchData& pd, MsqError& err )
     }
 #endif
 
-    alpha = inner( &mGrad[0], d, nn ); // inner(mesh->g, d, nn);
+    alpha = inner( arrptr(mGrad), d, nn ); // inner(mesh->g, d, nn);
 
     memset(p, 0, 3*sizeof(double)*nn);
     //matmul(p, mHess, d); //matmul(p, mesh, d);
@@ -309,7 +309,7 @@ void TrustRegion::optimize_vertex_positions( PatchData& pd, MsqError& err )
 
     // checks stopping criterion 
     term.accumulate_patch( pd, err ); MSQ_ERRRTN(err);
-    term.accumulate_inner( pd, objn, &mGrad[0], err ); MSQ_ERRRTN(err);
+    term.accumulate_inner( pd, objn, arrptr(mGrad), err ); MSQ_ERRRTN(err);
   }
 }    
 

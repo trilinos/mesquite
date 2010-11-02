@@ -309,22 +309,22 @@ public:
 
      double value1;     
      I_DFT mu1;
-     mu1.evaluate_element(oneTri, &elem[0], value1, err);
+     mu1.evaluate_element(oneTri, arrptr(elem), value1, err);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(3.17393, value1, .00001);
      
      double value2;     
      sI_DFT mu2;
-     mu2.evaluate_element(oneTri, &elem[0], value2, err);
+     mu2.evaluate_element(oneTri, arrptr(elem), value2, err);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(4.43943, value2, .00001);
      
      double value3;     
      RI_DFT mu3;
-     mu3.evaluate_element(oneTri, &elem[0], value3, err);
+     mu3.evaluate_element(oneTri, arrptr(elem), value3, err);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(6.20141, value3, .00001);
      
      double value4;
      sRI_DFT mu4;
-     mu4.evaluate_element(oneTri, &elem[0], value4, err);
+     mu4.evaluate_element(oneTri, arrptr(elem), value4, err);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(4.07917, value4, .00001);
 
    }

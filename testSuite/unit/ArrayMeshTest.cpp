@@ -945,8 +945,8 @@ void ArrayMeshTest::test_tag_data( TagEntType type, TagStorage storage )
   double dval = -5;
   for (std::vector<double>::iterator i = values.begin(); i != values.end(); ++i)
     *i = dval--;
-  double* ele_ptr = (type == ELEMENT) ? &values[0] : 0;
-  double* vtx_ptr = (type != ELEMENT) ? &values[0] : 0;
+  double* ele_ptr = (type == ELEMENT) ? arrptr(values) : 0;
+  double* vtx_ptr = (type != ELEMENT) ? arrptr(values) : 0;
   if (storage == READONLY) {
     tag = mesh->add_read_only_tag_data( name1, Mesh::DOUBLE, 3, vtx_ptr, ele_ptr, 0, err );
     ASSERT_NO_ERROR(err);
@@ -960,9 +960,9 @@ void ArrayMeshTest::test_tag_data( TagEntType type, TagStorage storage )
     tag = mesh->tag_create( name1, Mesh::DOUBLE, 3, 0, err );
     ASSERT_NO_ERROR(err);
     if (type == ELEMENT)
-      mesh->tag_set_element_data( tag, entities.size(), &entities[0], &values[0], err );
+      mesh->tag_set_element_data( tag, entities.size(), arrptr(entities), arrptr(values), err );
     else
-      mesh->tag_set_vertex_data( tag, entities.size(), &entities[0], &values[0], err );
+      mesh->tag_set_vertex_data( tag, entities.size(), arrptr(entities), arrptr(values), err );
     ASSERT_NO_ERROR(err);
   }
   
@@ -982,17 +982,17 @@ void ArrayMeshTest::test_tag_data( TagEntType type, TagStorage storage )
     // Check values returned from tag_get_*_data
   std::vector<double> values2(3*entities.size());
   if (ELEMENT == type) 
-    mesh->tag_get_element_data( tag, entities.size(), &entities[0], &values2[0], err );
+    mesh->tag_get_element_data( tag, entities.size(), arrptr(entities), arrptr(values2), err );
   else
-    mesh->tag_get_vertex_data( tag, entities.size(), &entities[0], &values2[0], err );
+    mesh->tag_get_vertex_data( tag, entities.size(), arrptr(entities), arrptr(values2), err );
   ASSERT_NO_ERROR(err);
   ASSERT_STD_VECTORS_EQUAL( values, values2 );
   
     // check that we get an error for other type, because no default
   if (ELEMENT != type) 
-    mesh->tag_get_element_data( tag, entities.size(), &entities[0], &values2[0], err );
+    mesh->tag_get_element_data( tag, entities.size(), arrptr(entities), arrptr(values2), err );
   else
-    mesh->tag_get_vertex_data( tag, entities.size(), &entities[0], &values2[0], err );
+    mesh->tag_get_vertex_data( tag, entities.size(), arrptr(entities), arrptr(values2), err );
   CPPUNIT_ASSERT_EQUAL( MsqError::TAG_NOT_FOUND, err.error_code() );
   err.clear();
   
@@ -1002,9 +1002,9 @@ void ArrayMeshTest::test_tag_data( TagEntType type, TagStorage storage )
   for (std::vector<double>::iterator i = values5.begin(); i != values5.end(); ++i)
     *i = dval++;
   if (ELEMENT == type) 
-    mesh->tag_set_element_data( tag, entities.size(), &entities[0], &values5[0], err );
+    mesh->tag_set_element_data( tag, entities.size(), arrptr(entities), arrptr(values5), err );
   else
-    mesh->tag_set_vertex_data( tag, entities.size(), &entities[0], &values5[0], err );
+    mesh->tag_set_vertex_data( tag, entities.size(), arrptr(entities), arrptr(values5), err );
   if (READONLY == storage) {
     CPPUNIT_ASSERT( err );
     err.clear();
@@ -1016,9 +1016,9 @@ void ArrayMeshTest::test_tag_data( TagEntType type, TagStorage storage )
     // check that the values are as expected
   if (READONLY != storage) {
     if (ELEMENT == type) 
-      mesh->tag_get_element_data( tag, entities.size(), &entities[0], &values2[0], err );
+      mesh->tag_get_element_data( tag, entities.size(), arrptr(entities), arrptr(values2), err );
     else
-      mesh->tag_get_vertex_data( tag, entities.size(), &entities[0], &values2[0], err );
+      mesh->tag_get_vertex_data( tag, entities.size(), arrptr(entities), arrptr(values2), err );
     ASSERT_NO_ERROR(err);
     ASSERT_STD_VECTORS_EQUAL( values5, values2 );
     
@@ -1052,9 +1052,9 @@ void ArrayMeshTest::test_tag_data( TagEntType type, TagStorage storage )
     // should get default value for each entity
   std::vector<int> values3(2*entities.size());
   if (ELEMENT == type) 
-    mesh->tag_get_element_data( tag, entities.size(), &entities[0], &values3[0], err );
+    mesh->tag_get_element_data( tag, entities.size(), arrptr(entities), arrptr(values3), err );
   else
-    mesh->tag_get_vertex_data( tag, entities.size(), &entities[0], &values3[0], err );
+    mesh->tag_get_vertex_data( tag, entities.size(), arrptr(entities), arrptr(values3), err );
   ASSERT_NO_ERROR(err);
   
     // check that we got the default value for every entity
@@ -1067,9 +1067,9 @@ void ArrayMeshTest::test_tag_data( TagEntType type, TagStorage storage )
   for (size_t i = 0; i < values3.size(); ++i)
     values[i] = i;
   if (ELEMENT == type) 
-    mesh->tag_set_element_data( tag, entities.size(), &entities[0], &values3[0], err );
+    mesh->tag_set_element_data( tag, entities.size(), arrptr(entities), arrptr(values3), err );
   else
-    mesh->tag_set_vertex_data( tag, entities.size(), &entities[0], &values3[0], err );
+    mesh->tag_set_vertex_data( tag, entities.size(), arrptr(entities), arrptr(values3), err );
   if (OWNED != storage) {
     CPPUNIT_ASSERT( err );
     err.clear();
@@ -1082,9 +1082,9 @@ void ArrayMeshTest::test_tag_data( TagEntType type, TagStorage storage )
   if (OWNED != storage) {
     std::vector<int> values4(values3.size());
     if (ELEMENT == type) 
-      mesh->tag_get_element_data( tag, entities.size(), &entities[0], &values4[0], err );
+      mesh->tag_get_element_data( tag, entities.size(), arrptr(entities), arrptr(values4), err );
     else
-      mesh->tag_get_vertex_data( tag, entities.size(), &entities[0], &values4[0], err );
+      mesh->tag_get_vertex_data( tag, entities.size(), arrptr(entities), arrptr(values4), err );
     ASSERT_NO_ERROR(err);
     ASSERT_STD_VECTORS_EQUAL( values3, values4 );
   }

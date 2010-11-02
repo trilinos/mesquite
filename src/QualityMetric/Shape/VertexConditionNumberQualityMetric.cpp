@@ -147,7 +147,7 @@ bool VertexConditionNumberQualityMetric::evaluate( PatchData& pd,
     }// end switch over element type
     other_vertices.clear();
   }//end loop over elements
-  fval = average_metrics(&met_vals[0], num_elems, err);  MSQ_ERRZERO(err);
+  fval = average_metrics(arrptr(met_vals), num_elems, err);  MSQ_ERRZERO(err);
   return true;
 }
 

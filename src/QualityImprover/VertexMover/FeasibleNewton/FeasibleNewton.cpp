@@ -151,7 +151,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     //    (b) stop if relative residual is small
     //    (c) stop if direction of negative curvature is obtained
 
-    mHessian.cg_solver(&d[0], &grad[0], err); MSQ_ERRRTN(err);
+    mHessian.cg_solver(arrptr(d), arrptr(grad), err); MSQ_ERRRTN(err);
 
     // 5. Check for descent direction (inner produce of gradient and
     //    direction is negative.
@@ -212,10 +212,10 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     //	       to a form of the linesearch meant for nondifferentiable
     //         functions.
 
-    pd.move_free_vertices_constrained(&d[0], nv, beta, err); MSQ_ERRRTN(err);
+    pd.move_free_vertices_constrained(arrptr(d), nv, beta, err); MSQ_ERRRTN(err);
     fn_bool = objFunc.evaluate(pd, new_value, grad, err); MSQ_ERRRTN(err);
     if ((fn_bool && (original_value - new_value >= -alpha*beta - epsilon)) ||
-        (fn_bool && (length(&grad[0], nv) < 100*convTol))) {
+        (fn_bool && (length(arrptr(grad), nv) < 100*convTol))) {
       // Armijo linesearch rules passed.
     }
     else {
@@ -235,7 +235,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       while (beta >= tol1) {
         // 6. Search along the direction
         //    (a) trial = x + beta*d
-        pd.move_free_vertices_constrained(&d[0], nv, beta, err); MSQ_ERRRTN(err);
+        pd.move_free_vertices_constrained(arrptr(d), nv, beta, err); MSQ_ERRRTN(err);
         //    (b) function evaluation
         fn_bool = objFunc.evaluate(pd, new_value, err);  MSQ_ERRRTN(err);
         //    (c) check for sufficient decrease and stop
@@ -276,12 +276,12 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 
         MSQ_PRINT(1)("Sufficient decrease not obtained in linesearch; switching to gradient.\n");
 
-	alpha = inner(&grad[0], &grad[0], nv); 	// compute norm squared of gradient
+	alpha = inner(arrptr(grad), arrptr(grad), nv); 	// compute norm squared of gradient
 	if (alpha < 1) alpha = 1;	// take max with constant
 	for (i = 0; i < nv; ++i) {
 	  d[i] = -grad[i] / alpha; 	// compute scaled gradient
 	}
-	alpha = inner(&grad[0], &d[0], nv);  	// recompute alpha
+	alpha = inner(arrptr(grad), arrptr(d), nv);  	// recompute alpha
 	alpha *= sigma;                 // equal to one for large gradient
 	beta = 1.0;
 
@@ -289,7 +289,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 	while (beta >= tol2) {
 	  // 6. Search along the direction
 	  //    (a) trial = x + beta*d
-	  pd.move_free_vertices_constrained(&d[0], nv, beta, err); MSQ_ERRRTN(err);
+	  pd.move_free_vertices_constrained(arrptr(d), nv, beta, err); MSQ_ERRRTN(err);
 	  //    (b) function evaluation
 	  fn_bool = objFunc.evaluate(pd, new_value, err);  MSQ_ERRRTN(err);
 	  //    (c) check for sufficient decrease and stop
@@ -340,7 +340,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 
     // checks stopping criterion 
     term_crit->accumulate_patch( pd, err ); MSQ_ERRRTN(err);
-    term_crit->accumulate_inner( pd, new_value, &grad[0], err ); MSQ_ERRRTN(err);
+    term_crit->accumulate_inner( pd, new_value, arrptr(grad), err ); MSQ_ERRRTN(err);
   }
   MSQ_PRINT(2)("FINISHED\n");
 }

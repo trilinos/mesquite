@@ -216,7 +216,7 @@ bool IdealWeightMeanRatio::evaluate_with_gradient( PatchData& pd,
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
     g.resize(3);
-    if (!g_fcn_2e(m, &g[0], mCoords, n, a2Con, b2Con, c2Con)) return false;
+    if (!g_fcn_2e(m, arrptr(g), mCoords, n, a2Con, b2Con, c2Con)) return false;
     break;
 
   case QUADRILATERAL:
@@ -233,7 +233,7 @@ bool IdealWeightMeanRatio::evaluate_with_gradient( PatchData& pd,
     g.resize(4);
     m = average_corner_gradients( QUADRILATERAL, fm, 4,
                                   mMetrics, mGradients, 
-                                  &g[0], err ); MSQ_ERRZERO(err);
+                                  arrptr(g), err ); MSQ_ERRZERO(err);
     break;
 
   case TETRAHEDRON:
@@ -242,7 +242,7 @@ bool IdealWeightMeanRatio::evaluate_with_gradient( PatchData& pd,
     mCoords[2] = vertices[v_i[2]];
     mCoords[3] = vertices[v_i[3]];
     g.resize(4);
-    metric_valid = g_fcn_3e(m, &g[0], mCoords, a3Con, b3Con, c3Con);
+    metric_valid = g_fcn_3e(m, arrptr(g), mCoords, a3Con, b3Con, c3Con);
     if (!metric_valid) return false;
     break;
 
@@ -258,7 +258,7 @@ bool IdealWeightMeanRatio::evaluate_with_gradient( PatchData& pd,
     g.resize(5);
     m = average_corner_gradients( PYRAMID, fm, 4,
                                   mMetrics, mGradients,
-                                  &g[0], err ); MSQ_ERRZERO(err);
+                                  arrptr(g), err ); MSQ_ERRZERO(err);
     break;
     
   case PRISM:
@@ -273,7 +273,7 @@ bool IdealWeightMeanRatio::evaluate_with_gradient( PatchData& pd,
     g.resize(6);
     m = average_corner_gradients( PRISM, fm, 6,
                                   mMetrics, mGradients,
-                                  &g[0], err ); MSQ_ERRZERO(err);
+                                  arrptr(g), err ); MSQ_ERRZERO(err);
     break;
 
   case HEXAHEDRON:
@@ -288,7 +288,7 @@ bool IdealWeightMeanRatio::evaluate_with_gradient( PatchData& pd,
     g.resize(8);
     m = average_corner_gradients( HEXAHEDRON, fm, 8,
                                   mMetrics, mGradients,
-                                  &g[0], err ); MSQ_ERRZERO(err);
+                                  arrptr(g), err ); MSQ_ERRZERO(err);
      break;
 
   default:
@@ -358,7 +358,7 @@ bool IdealWeightMeanRatio::evaluate_with_Hessian_diagonal( PatchData& pd,
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
     g.resize(3), h.resize(3);
-    if (!h_fcn_2e(m, &g[0], mHessians, mCoords, n, a2Con, b2Con, c2Con)) return false;
+    if (!h_fcn_2e(m, arrptr(g), mHessians, mCoords, n, a2Con, b2Con, c2Con)) return false;
     h[0] = mHessians[0].upper();
     h[1] = mHessians[3].upper();
     h[2] = mHessians[5].upper();
@@ -378,7 +378,7 @@ bool IdealWeightMeanRatio::evaluate_with_Hessian_diagonal( PatchData& pd,
     g.resize(4), h.resize(4);
     m = average_corner_hessian_diagonals( QUADRILATERAL, fm, 4,
                                  mMetrics, mGradients, mHessians,
-                                 &g[0], &h[0], err );
+                                 arrptr(g), arrptr(h), err );
     MSQ_ERRZERO( err );
     break;
 
@@ -388,7 +388,7 @@ bool IdealWeightMeanRatio::evaluate_with_Hessian_diagonal( PatchData& pd,
     mCoords[2] = vertices[v_i[2]];
     mCoords[3] = vertices[v_i[3]];
     g.resize(4), h.resize(4);
-    metric_valid = h_fcn_3e(m, &g[0], mHessians, mCoords, a3Con, b3Con, c3Con);
+    metric_valid = h_fcn_3e(m, arrptr(g), mHessians, mCoords, a3Con, b3Con, c3Con);
     if (!metric_valid) return false;
     h[0] = mHessians[0].upper();
     h[1] = mHessians[4].upper();
@@ -410,7 +410,7 @@ bool IdealWeightMeanRatio::evaluate_with_Hessian_diagonal( PatchData& pd,
     g.resize(5), h.resize(5);
     m = average_corner_hessian_diagonals( PYRAMID, fm, 4,
                                  mMetrics, mGradients, mHessians,
-                                 &g[0], &h[0], err );
+                                 arrptr(g), arrptr(h), err );
     MSQ_ERRZERO( err );
     break;
 
@@ -427,7 +427,7 @@ bool IdealWeightMeanRatio::evaluate_with_Hessian_diagonal( PatchData& pd,
     g.resize(6), h.resize(6);
     m = average_corner_hessian_diagonals( PRISM, fm, 6,
                                  mMetrics, mGradients, mHessians,
-                                 &g[0], &h[0], err );
+                                 arrptr(g), arrptr(h), err );
     MSQ_ERRZERO( err );
     break;
 
@@ -444,7 +444,7 @@ bool IdealWeightMeanRatio::evaluate_with_Hessian_diagonal( PatchData& pd,
     g.resize(8), h.resize(8);
     m = average_corner_hessian_diagonals( HEXAHEDRON, fm, 8,
                                  mMetrics, mGradients, mHessians,
-                                 &g[0], &h[0], err );
+                                 arrptr(g), arrptr(h), err );
     MSQ_ERRZERO( err );
     break;
 
@@ -517,7 +517,7 @@ bool IdealWeightMeanRatio::evaluate_with_Hessian( PatchData& pd,
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
     g.resize(3), h.resize(6);
-    if (!h_fcn_2e(m, &g[0], &h[0], mCoords, n, a2Con, b2Con, c2Con)) return false;
+    if (!h_fcn_2e(m, arrptr(g), arrptr(h), mCoords, n, a2Con, b2Con, c2Con)) return false;
     break;
 
   case QUADRILATERAL:
@@ -534,7 +534,7 @@ bool IdealWeightMeanRatio::evaluate_with_Hessian( PatchData& pd,
     g.resize(4), h.resize(10);
     m = average_corner_hessians( QUADRILATERAL, fm, 4,
                                  mMetrics, mGradients, mHessians,
-                                 &g[0], &h[0], err );
+                                 arrptr(g), arrptr(h), err );
     MSQ_ERRZERO( err );
     break;
 
@@ -544,7 +544,7 @@ bool IdealWeightMeanRatio::evaluate_with_Hessian( PatchData& pd,
     mCoords[2] = vertices[v_i[2]];
     mCoords[3] = vertices[v_i[3]];
     g.resize(4), h.resize(10);
-    metric_valid = h_fcn_3e(m, &g[0], &h[0], mCoords, a3Con, b3Con, c3Con);
+    metric_valid = h_fcn_3e(m, arrptr(g), arrptr(h), mCoords, a3Con, b3Con, c3Con);
     if (!metric_valid) return false;
     break;
 
@@ -562,7 +562,7 @@ bool IdealWeightMeanRatio::evaluate_with_Hessian( PatchData& pd,
     g.resize(5), h.resize(15);
     m = average_corner_hessians( PYRAMID, fm, 4,
                                  mMetrics, mGradients, mHessians,
-                                 &g[0], &h[0], err );
+                                 arrptr(g), arrptr(h), err );
     MSQ_ERRZERO( err );
     break;
 
@@ -579,7 +579,7 @@ bool IdealWeightMeanRatio::evaluate_with_Hessian( PatchData& pd,
     g.resize(6), h.resize(21);
     m = average_corner_hessians( PRISM, fm, 6,
                                  mMetrics, mGradients, mHessians,
-                                 &g[0], &h[0], err );
+                                 arrptr(g), arrptr(h), err );
     MSQ_ERRZERO( err );
     break;
 
@@ -596,7 +596,7 @@ bool IdealWeightMeanRatio::evaluate_with_Hessian( PatchData& pd,
     g.resize(8), h.resize(36);
     m = average_corner_hessians( HEXAHEDRON, fm, 8,
                                  mMetrics, mGradients, mHessians,
-                                 &g[0], &h[0], err );
+                                 arrptr(g), arrptr(h), err );
     MSQ_ERRZERO( err );
     break;
 

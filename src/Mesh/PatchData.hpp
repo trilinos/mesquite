@@ -235,21 +235,21 @@ namespace MESQUITE_NS
       //! Returns a pointer to the start of the vertex array.
     MESQUITE_EXPORT const MsqVertex* get_vertex_array( MsqError& err ) const;
     //MsqVertex* get_vertex_array(MsqError &err);
-    MESQUITE_EXPORT const MsqVertex* get_vertex_array() const { return &vertexArray[0]; }
-    //MsqVertex* get_vertex_array()             { return &vertexArray[0]; }
+    MESQUITE_EXPORT const MsqVertex* get_vertex_array() const { return arrptr(vertexArray); }
+    //MsqVertex* get_vertex_array()             { return arrptr(vertexArray); }
     
       //! Returns a pointer to the start of the element array.
     MESQUITE_EXPORT const MsqMeshEntity* get_element_array( MsqError& err ) const;
     MESQUITE_EXPORT MsqMeshEntity* get_element_array(MsqError &err);
     
     MESQUITE_EXPORT size_t* get_connectivity_array( )
-      { return &elemConnectivityArray[0]; }
+      { return arrptr(elemConnectivityArray); }
       
     MESQUITE_EXPORT Mesh::ElementHandle* get_element_handles_array( )
-      { return &elementHandlesArray[0]; }
+      { return arrptr(elementHandlesArray); }
     
     MESQUITE_EXPORT Mesh::VertexHandle* get_vertex_handles_array()
-      { return &vertexHandlesArray[0]; }
+      { return arrptr(vertexHandlesArray); }
     
       //! Returns the start of the vertex->element array.
       //! For each vertex in the patch, this array holds
@@ -815,13 +815,13 @@ namespace MESQUITE_NS
   {
     if (vertexArray.empty()) 
       MSQ_SETERR(err)( "No vertex array defined", MsqError::INVALID_STATE );
-    return &vertexArray[0];
+    return arrptr(vertexArray);
   }
   //inline MsqVertex* PatchData::get_vertex_array(MsqError &err) 
   //{
   //  if (vertexArray.empty()) 
   //    MSQ_SETERR(err)( "No vertex array defined", MsqError::INVALID_STATE );
-  //  return &vertexArray[0];
+  //  return arrptr(vertexArray);
   //}
   
   /*! \brief Returns the PatchData element array.
@@ -830,13 +830,13 @@ namespace MESQUITE_NS
   {
     if (elementArray.empty()) 
       MSQ_SETERR(err)( "No element array defined", MsqError::INVALID_STATE );
-    return &elementArray[0];
+    return arrptr(elementArray);
   }
   inline MsqMeshEntity* PatchData::get_element_array(MsqError &err)
   {
     if (elementArray.empty()) 
       MSQ_SETERR(err)( "No element array defined", MsqError::INVALID_STATE );
-    return &elementArray[0];
+    return arrptr(elementArray);
   }
  
   /*! \brief set the coordinates of a vertex in the raw array
@@ -898,12 +898,12 @@ namespace MESQUITE_NS
     given a pointer to the vertex. */
   inline size_t PatchData::get_vertex_index(MsqVertex* vertex)
   {
-    return vertex - &vertexArray[0];
+    return vertex - arrptr(vertexArray);
   }
   
   inline size_t PatchData::get_element_index(MsqMeshEntity* element)
   {
-    return element - &elementArray[0];
+    return element - arrptr(elementArray);
   }
 
   inline void PatchData::get_free_vertex_coordinates( std::vector<Vector3D>& coords_out ) const

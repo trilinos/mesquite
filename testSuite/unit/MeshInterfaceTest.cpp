@@ -51,6 +51,7 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+using Mesquite::arrptr;
 
 class MeshInterfaceTest : public CppUnit::TestFixture
 {
@@ -95,7 +96,7 @@ public:
       // Get mesh data
     mMesh->get_all_elements( mElements, mErr );
     CPPUNIT_ASSERT(!mErr);
-    mMesh->elements_get_attached_vertices( &mElements[0],
+    mMesh->elements_get_attached_vertices( arrptr(mElements),
                                            mElements.size(),
                                            mConnectivity,
                                            mOffsets,
@@ -145,7 +146,7 @@ public:
     correct_coords[7].set(-1.732,2.732,0);
     correct_coords[8].set(-2.732,1,0);
 
-    mMesh->vertices_get_coordinates(&mVertices[0], coords, nbVert, mErr);
+    mMesh->vertices_get_coordinates(arrptr(mVertices), coords, nbVert, mErr);
     CPPUNIT_ASSERT(!mErr);
     for (size_t i=0; i<nbVert; ++i) {
       for (int j=0; j<3; ++j)
@@ -178,7 +179,7 @@ public:
     size_t nbVert = mVertices.size();
     bool correct_fixed[9] = {false, false, false, true, true, true, true, true, true};
     bool fixed[9];
-    mMesh->vertices_get_fixed_flag( &mVertices[0], fixed, 9, mErr );
+    mMesh->vertices_get_fixed_flag( arrptr(mVertices), fixed, 9, mErr );
     CPPUNIT_ASSERT(!mErr);
     for (size_t i=0; i<nbVert; ++i) {
       CPPUNIT_ASSERT(fixed[i] == correct_fixed[i]);
@@ -190,7 +191,7 @@ public:
     size_t nbVert = mVertices.size();
     size_t i;
 	unsigned char* bytes = new unsigned char[nbVert];
-    mMesh->vertices_get_byte(&mVertices[0], bytes, nbVert, mErr); 
+    mMesh->vertices_get_byte(arrptr(mVertices), bytes, nbVert, mErr); 
     CPPUNIT_ASSERT(!mErr);
 
     // Asserts all vertex bytes are initialised to 0. 
@@ -199,7 +200,7 @@ public:
 
     // Test various vertex byte read / write routines.
     bytes[3] |= 4;
-    mMesh->vertices_set_byte(&mVertices[0], bytes, nbVert, mErr); 
+    mMesh->vertices_set_byte(arrptr(mVertices), bytes, nbVert, mErr); 
     CPPUNIT_ASSERT(!mErr);
     mMesh->vertex_set_byte(mVertices[5], 8, mErr); 
     CPPUNIT_ASSERT(!mErr);
@@ -207,7 +208,7 @@ public:
     mMesh->vertex_get_byte(mVertices[3], &byte, mErr);
     CPPUNIT_ASSERT(!mErr);
     CPPUNIT_ASSERT(byte == 4);
-    mMesh->vertices_get_byte(&mVertices[0], bytes, nbVert, mErr);
+    mMesh->vertices_get_byte(arrptr(mVertices), bytes, nbVert, mErr);
     CPPUNIT_ASSERT(!mErr);
     for (i=0; i<nbVert; ++i) {
       if (i==3)
@@ -229,7 +230,7 @@ public:
 
     std::vector<Mesquite::Mesh::ElementHandle> elements;
     std::vector<size_t> offsets;
-    mMesh->vertices_get_attached_elements( &mVertices[0],
+    mMesh->vertices_get_attached_elements( arrptr(mVertices),
                                            mVertices.size(),
                                            elements,
                                            offsets,
@@ -331,7 +332,7 @@ public:
     int nb_quads=0;
     int nb_tri=0;
     Mesquite::EntityTopology* topos = new Mesquite::EntityTopology[nbElem];
-    mMesh->elements_get_topologies(&mElements[0], topos, nbElem, mErr);
+    mMesh->elements_get_topologies(arrptr(mElements), topos, nbElem, mErr);
     CPPUNIT_ASSERT(!mErr);
     for (size_t i=0; i<nbElem; ++i) {
       switch (topos[i]) {
@@ -374,7 +375,7 @@ public:
     // Creates same list from the mesh implementation
     std::vector<Mesquite::MsqVertex> tri_coords(3);
     mMesh->vertices_get_coordinates(&mConnectivity[mOffsets[tri_index]],
-                                    &tri_coords[0], 3, mErr );
+                                    arrptr(tri_coords), 3, mErr );
     CPPUNIT_ASSERT(!mErr);
 
     // Makes sure both list contain the same elements (not necessarily in the same order).

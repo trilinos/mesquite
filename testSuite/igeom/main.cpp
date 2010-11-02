@@ -173,7 +173,7 @@ bool check_results( Mesh& mesh, MeshDomain* dom, MsqError& err )
   std::vector<Mesh::VertexHandle> handles;
   mesh.get_all_vertices( handles, err ); MSQ_ERRZERO(err);
   std::vector<MsqVertex> coords(handles.size());
-  mesh.vertices_get_coordinates( &handles[0], &coords[0], handles.size(), err );
+  mesh.vertices_get_coordinates( arrptr(handles), arrptr(coords), handles.size(), err );
   MSQ_ERRZERO(err);
   
   bool valid = true;
@@ -189,7 +189,7 @@ bool check_results( Mesh& mesh, MeshDomain* dom, MsqError& err )
   }
   
   std::vector<unsigned short> dof(handles.size()), exp_dof(handles.size(),2);
-  dom->domain_DoF( &handles[0], &dof[0], handles.size(), err ); MSQ_ERRZERO(err);
+  dom->domain_DoF( arrptr(handles), arrptr(dof), handles.size(), err ); MSQ_ERRZERO(err);
   if (dof != exp_dof) {
     std::cerr << "Invalid domain dimension for one or more vertices" << std::endl;
     valid = false;
@@ -197,7 +197,7 @@ bool check_results( Mesh& mesh, MeshDomain* dom, MsqError& err )
   
   c = 0;
   std::vector<Vector3D> normals( coords.begin(), coords.end() );
-  dom->vertex_normal_at( &handles[0], &normals[0], handles.size(), err );
+  dom->vertex_normal_at( arrptr(handles), arrptr(normals), handles.size(), err );
   MSQ_ERRZERO(err);
   for (size_t i = 0; i < handles.size(); ++i) {
     Vector3D exp_norm = ~(coords[i] - SPHERE_CENTER);
@@ -239,8 +239,8 @@ MeshDomain* get_itaps_domain()
   }
   
   Vector3D bmin, bmax;
-  iGeom_getEntBoundBox( igeom, sphere_surf, &bmin[0], &bmin[1], &bmin[2],
-                        &bmax[0], &bmax[1], &bmax[2], &ierr ); CHKIGEOM;
+  iGeom_getEntBoundBox( igeom, sphere_surf, arrptr(bmin), &bmin[1], &bmin[2],
+                        arrptr(bmax), &bmax[1], &bmax[2], &ierr ); CHKIGEOM;
   Vector3D center = 0.5 * (bmin + bmax);
   Vector3D rad = 0.5 * (bmax - bmin);
   if ((center - SPHERE_CENTER).length() > EPS ||

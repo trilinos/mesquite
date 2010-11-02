@@ -115,7 +115,7 @@ int main( int argc, char* argv[] )
   mesh.get_all_elements( elem_array, err ); 
   CPPUNIT_ASSERT(!err);
   CPPUNIT_ASSERT( elem_array.size() == 12 );
-  mesh.elements_get_attached_vertices( &elem_array[0],
+  mesh.elements_get_attached_vertices( arrptr(elem_array),
                                         elem_array.size(),
                                         vert_array,
                                         conn_offsets,
@@ -124,7 +124,7 @@ int main( int argc, char* argv[] )
   CPPUNIT_ASSERT(vert_array.size() == 60);
   CPPUNIT_ASSERT(conn_offsets.size() == 13);
   EntityTopology type_array[12];
-  mesh.elements_get_topologies( &elem_array[0], type_array, 12, err );
+  mesh.elements_get_topologies( arrptr(elem_array), type_array, 12, err );
   CPPUNIT_ASSERT(!err);
   
     // Verify element types and number of vertices
@@ -145,7 +145,7 @@ int main( int argc, char* argv[] )
     // Verify that apex is at origin and all other vertices are
     // on unit sphere
   MsqVertex vertices[60];
-  mesh.vertices_get_coordinates( &vert_array[0], vertices, 60, err );
+  mesh.vertices_get_coordinates( arrptr(vert_array), vertices, 60, err );
   CPPUNIT_ASSERT(!err);
   for (i = 0; i < 60; ++i)
   {

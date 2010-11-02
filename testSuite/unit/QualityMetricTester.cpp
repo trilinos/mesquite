@@ -264,7 +264,7 @@ void QualityMetricTester::get_ideal_element( EntityTopology type,
     fixed[free_vertex_index] = false;
 
   MsqPrintError err( std::cout );
-  pd.fill( n, elem_verts, 1, type, &conn[0], fixed, err );
+  pd.fill( n, elem_verts, 1, type, arrptr(conn), fixed, err );
   delete [] fixed;
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
 }
@@ -2355,7 +2355,7 @@ void QualityMetricTester::test_ideal_element_positive_definite_Hessian(
         CPPUNIT_ASSERT( Hess[h_idx].positive_definite() );
       }
         // check that the entire Hessian is positive definite
-      //CPPUNIT_ASSERT( positive_definite( &Hess[0], n ) );
+      //CPPUNIT_ASSERT( positive_definite( arrptr(Hess), n ) );
     } // for(j < handles.size())
   } // for(i < types.size())
 }

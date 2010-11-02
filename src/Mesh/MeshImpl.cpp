@@ -251,8 +251,8 @@ static bool is_side_boundary( MeshImplData* myMesh,
     MSQ_ERRZERO(err);
     int sides2 = TopologyInfo::adjacent( type2, side_dim );
     for (int j = 0; j < sides2; ++j) {
-      if (TopologyInfo::compare_sides( (const size_t*)&verts[0],  type,  side_num, 
-                                       (const size_t*)&verts2[0], type2, j, 
+      if (TopologyInfo::compare_sides( (const size_t*)arrptr(verts),  type,  side_num, 
+                                       (const size_t*)arrptr(verts2), type2, j, 
                                        side_dim, err))
         boundary = false;
       MSQ_ERRZERO(err);
@@ -542,7 +542,7 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
       }
       vtk_write_attrib_data( file, 
                              desc, 
-                             &tagdata[0],
+                             arrptr(tagdata),
                              myMesh->num_vertices(),
                              err ); MSQ_ERRRTN(err);
     }
@@ -605,7 +605,7 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
       }
       vtk_write_attrib_data( file, 
                              desc, 
-                             &tagdata[0],
+                             arrptr(tagdata),
                              myMesh->num_elements(),
                              err ); MSQ_ERRRTN(err);
     }
@@ -669,7 +669,7 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
   
     // Get the vertex coordinates
   std::vector<double> coords(vert_count * 3);
-  double* x_iter = &coords[0];
+  double* x_iter = arrptr(coords);
   double* y_iter = &coords[vert_count];
   double* z_iter = &coords[2*vert_count];
   numCoords = dim;
@@ -699,7 +699,7 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
   
     // Get block list
   std::vector<int> block_ids(block_count);
-  exo_err = ex_get_elem_blk_ids(file_id, &block_ids[0]);
+  exo_err = ex_get_elem_blk_ids(file_id, arrptr(block_ids));
   if (exo_err < 0)
   {
     MSQ_SETERR(err)("Unable to read block IDs from file.", MsqError::PARSE_ERROR);
@@ -761,7 +761,7 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
     
     if (conn.size() < (unsigned)(num_block_elems*verts_per_elem))
       conn.resize( num_block_elems*verts_per_elem );
-    exo_err = ex_get_elem_conn( file_id, block_ids[i], &conn[0] );
+    exo_err = ex_get_elem_conn( file_id, block_ids[i], arrptr(conn) );
     if (exo_err < 0)
     {
       MSQ_SETERR(err)("Unable to read element block connectivity.",
@@ -793,7 +793,7 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
     }
   }
   std::vector<int> fixed_nodes(num_fixed_nodes);
-  exo_err = ex_get_node_set(file_id, 111, &fixed_nodes[0]);
+  exo_err = ex_get_node_set(file_id, 111, arrptr(fixed_nodes));
   if(exo_err<0){
     MSQ_SETERR(err)("Error retrieving fixed nodes.", MsqError::PARSE_ERROR);
   }
@@ -934,7 +934,7 @@ void MeshImpl::write_exodus(const char* out_filename,
     return;
   }
     //put the coords
-  exo_err = ex_put_coord(file_id, &coords[0], &coords[vert_count], &coords[2*vert_count]);
+  exo_err = ex_put_coord(file_id, arrptr(coords), &coords[vert_count], &coords[2*vert_count]);
   if (exo_err < 0)
   {
     MSQ_SETERR(err)("Unable to put vertex coordinates in file.",MsqError::IO_ERROR);
@@ -1040,7 +1040,7 @@ void MeshImpl::write_exodus(const char* out_filename,
       }
 
         // Write element block connectivity
-      exo_err = ex_put_elem_conn( file_id, block_id, &conn[0] );
+      exo_err = ex_put_elem_conn( file_id, block_id, arrptr(conn) );
       if (exo_err<0)
       {
         MSQ_SETERR(err)("Error writing element connectivity.", MsqError::IO_ERROR );
@@ -1085,7 +1085,7 @@ void MeshImpl::write_exodus(const char* out_filename,
       return;
     }
 
-    exo_err=ex_put_node_set(file_id, 111, &fixed_nodes[0]);
+    exo_err=ex_put_node_set(file_id, 111, arrptr(fixed_nodes));
     if(exo_err<0) {
       MSQ_SETERR(err)("Error while writing node set.", MsqError::IO_ERROR);
       return;
@@ -1114,7 +1114,7 @@ void MeshImpl::get_all_elements( std::vector<ElementHandle>& elems,
   myMesh->all_elements( temp, err ); MSQ_ERRRTN(err);
   elems.resize( temp.size() );
   if (!elems.empty())
-    memcpy( &elems[0], &temp[0], sizeof(size_t)*temp.size() );
+    memcpy( arrptr(elems), arrptr(temp), sizeof(size_t)*temp.size() );
 }
 
 void MeshImpl::get_all_vertices( std::vector<VertexHandle>& verts,
@@ -1125,7 +1125,7 @@ void MeshImpl::get_all_vertices( std::vector<VertexHandle>& verts,
   myMesh->all_vertices( temp, err ); MSQ_ERRRTN(err);
   verts.resize( temp.size() );
   if (!verts.empty())
-    memcpy( &verts[0], &temp[0], sizeof(size_t)*temp.size() );
+    memcpy( arrptr(verts), arrptr(temp), sizeof(size_t)*temp.size() );
 }
 
 // Returns a pointer to an iterator that iterates over the
@@ -1859,7 +1859,7 @@ void MeshImpl::vtk_read_polygons( FileTokenizer& tokens, MsqError& err )
     long count;
     tokens.get_long_ints( 1, &count, err );                 MSQ_ERRRTN(err);
     conn.resize( count );
-    tokens.get_long_ints( count, &conn[0], err );    MSQ_ERRRTN(err);
+    tokens.get_long_ints( count, arrptr(conn), err );    MSQ_ERRRTN(err);
     myMesh->reset_element( i, conn, POLYGON, err );         MSQ_ERRRTN(err);
   } 
 }
@@ -1901,7 +1901,7 @@ void MeshImpl::vtk_read_unstructured_grid( FileTokenizer& tokens, MsqError& err 
     long count;
     tokens.get_long_ints( 1, &count, err);                  MSQ_ERRRTN(err);
     conn.resize( count );
-    tokens.get_long_ints( count, &conn[0], err );    MSQ_ERRRTN(err);
+    tokens.get_long_ints( count, arrptr(conn), err );    MSQ_ERRRTN(err);
     myMesh->reset_element( i, conn, MIXED, err );           MSQ_ERRRTN(err);
   }
  
@@ -2213,7 +2213,7 @@ void MeshImpl::vtk_store_point_data( const void* data, TagDescription& tag, MsqE
   if (!vertex_handles.empty()) 
     myTags->set_vertex_data( tag_handle, 
                              vertex_handles.size(),
-                             &vertex_handles[0],
+                             arrptr(vertex_handles),
                              data,
                              err );  MSQ_ERRRTN(err);
 }
@@ -2272,7 +2272,7 @@ void MeshImpl::vtk_store_cell_data( const void* data, TagDescription& tag, MsqEr
   if (!element_handles.empty()) 
     myTags->set_element_data( tag_handle, 
                               element_handles.size(),
-                              &element_handles[0],
+                              arrptr(element_handles),
                               data,
                               err ); MSQ_ERRRTN(err);
 }
@@ -2378,7 +2378,7 @@ void* MeshImpl::vtk_read_scalar_attrib( FileTokenizer& tokens,
   vector<long> table( size*count );
   if (type > 0 && type < 10)  // Is an integer type
   {
-    tokens.get_long_ints( table.size(), &table[0], err );   
+    tokens.get_long_ints( table.size(), arrptr(table), err );   
     MSQ_ERRZERO(err);
   }
   else // Is a real-number type
@@ -2408,7 +2408,7 @@ void* MeshImpl::vtk_read_scalar_attrib( FileTokenizer& tokens,
   tokens.get_long_ints( 1, &table_count, err );               MSQ_ERRZERO(err);
  
   vector<float> table_data(table_count*4);
-  tokens.get_floats( table_data.size(), &table_data[0], err );MSQ_ERRZERO(err);
+  tokens.get_floats( table_data.size(), arrptr(table_data), err );MSQ_ERRZERO(err);
   
     // Create list from indexed data
   

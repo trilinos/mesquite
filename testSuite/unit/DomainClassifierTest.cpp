@@ -451,7 +451,7 @@ void DomainClassifierTest::test_classify_by_handle()
   MsqPrintError err(std::cerr);
   DomainClassifier domain;
   DomainClassifier::classify_by_handle( domain, &myMesh,
-                                        &myDomains[0], myDomains.size(),
+                                        arrptr(myDomains), myDomains.size(),
                                         err );
   CPPUNIT_ASSERT(!err);
   
@@ -463,7 +463,7 @@ void DomainClassifierTest::test_valid_classification()
   MsqPrintError err(std::cerr);
   DomainClassifier domain;
   DomainClassifier::classify_by_handle( domain, &myMesh,
-                                        &myDomains[0], myDomains.size(),
+                                        arrptr(myDomains), myDomains.size(),
                                         err );
   CPPUNIT_ASSERT(!err);
 
@@ -488,13 +488,13 @@ void DomainClassifierTest::test_classify_by_tag()
     if (!vtx_data.empty()) {
       myMesh.tag_set_vertex_data( tag, vtx_data.size(), 
                                   &(myDomains[i].vertices[0]),
-                                  &vtx_data[0], err );
+                                  arrptr(vtx_data), err );
       CPPUNIT_ASSERT(!err);
     }
     if (!elm_data.empty()) {
       myMesh.tag_set_element_data( tag, elm_data.size(), 
                                    &(myDomains[i].elements[0]),
-                                   &elm_data[0], err );
+                                   arrptr(elm_data), err );
       CPPUNIT_ASSERT(!err);
     }
     
@@ -505,8 +505,8 @@ void DomainClassifierTest::test_classify_by_tag()
   DomainClassifier domain;
   DomainClassifier::classify_by_tag( domain, &myMesh,
                                      "domain", 
-                                     &dom_list[0],
-                                     &id_list[0],
+                                     arrptr(dom_list),
+                                     arrptr(id_list),
                                      myDomains.size(),
                                      err );
   CPPUNIT_ASSERT(!err);
@@ -526,7 +526,7 @@ void DomainClassifierTest::test_classify_skin()
   DomainClassifier domain;
   DomainClassifier::classify_skin_geometrically( domain, &myMesh,
                                         1e-6,
-                                        &arr[0], &domainDims[0],
+                                        arrptr(arr), arrptr(domainDims),
                                         arr.size(), err );
   CPPUNIT_ASSERT(!err);
 
@@ -545,7 +545,7 @@ void DomainClassifierTest::test_classify_by_geometry()
   DomainClassifier domain;
   DomainClassifier::classify_geometrically( domain, &myMesh,
                                         1e-6,
-                                        &arr[0], &domainDims[0],
+                                        arrptr(arr), arrptr(domainDims),
                                         arr.size(), err );
   CPPUNIT_ASSERT(!err);
 

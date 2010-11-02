@@ -49,7 +49,7 @@ void ReferenceMesh::get_reference_vertex_coordinates(
                            MsqError& err )
 {
   tmpStorage.resize( num_vertices );
-  mMesh->vertices_get_coordinates( vertices, &tmpStorage[0], num_vertices, err );
+  mMesh->vertices_get_coordinates( vertices, arrptr(tmpStorage), num_vertices, err );
   MSQ_ERRRTN(err);
   std::copy( tmpStorage.begin(), tmpStorage.end(), coordinates_out );
 }

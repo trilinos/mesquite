@@ -285,7 +285,7 @@ void MsqIMesh::set_active_set( iBase_EntitySetHandle elem_set,
   get_all_vertices( verts, err ); MSQ_ERRRTN(err);
   if (!verts.empty()) {
     std::vector<unsigned char> zeros( verts.size(), 0 );
-    vertices_set_byte( &verts[0], &zeros[0], verts.size(), err );
+    vertices_set_byte( arrptr(verts), arrptr(zeros), verts.size(), err );
     MSQ_CHKERR(err);
   }
 }
@@ -325,7 +325,7 @@ void MsqIMesh::get_flag_data( iBase_TagHandle tag,
 
   if (type == iBase_INTEGER) {
     std::vector<int> values(num_vtx);
-    int* ptr = &values[0];
+    int* ptr = arrptr(values);
     iMesh_getIntArrData( meshInstance, arr, num_vtx, tag, &ptr, &alloc, &size, &ierr );
     for (int i = 0; i < size; ++i)
       flag_array[i] = !!values[i];
@@ -337,7 +337,7 @@ void MsqIMesh::get_flag_data( iBase_TagHandle tag,
     }
     else {
       std::vector<char> values(num_vtx);
-      char* ptr = &values[0];
+      char* ptr = arrptr(values);
       iMesh_getArrData( meshInstance, arr, num_vtx, tag, &ptr, &alloc, &size, &ierr );
       for (int i = 0; i < size; ++i)
         flag_array[i] = !!values[i];
@@ -391,7 +391,7 @@ void MsqIMesh::vertices_get_coordinates(
     return;
 
   std::vector<double> dbl_store( 3*num_vtx );
-  double* dbl_array = &dbl_store[0];
+  double* dbl_array = arrptr(dbl_store);
   
   int ierr, junk = 3*num_vtx, junk2;
   assert( sizeof(VertexHandle) == sizeof(iBase_EntityHandle) );
@@ -462,7 +462,7 @@ void MsqIMesh::vertices_set_byte (
   int ierr;
   assert( sizeof(VertexHandle) == sizeof(iBase_EntityHandle) );
   const iBase_EntityHandle* arr = reinterpret_cast<const iBase_EntityHandle*>(vert_array);
-  iMesh_setIntArrData( meshInstance, arr, array_size, byteTag, &data[0], array_size, &ierr );
+  iMesh_setIntArrData( meshInstance, arr, array_size, byteTag, arrptr(data), array_size, &ierr );
   if (iBase_SUCCESS != ierr) 
     MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
 }
@@ -492,7 +492,7 @@ void MsqIMesh::vertices_get_byte(
 
   std::vector<int> data(array_size);
   int ierr;
-  int* ptr = &data[0];
+  int* ptr = arrptr(data);
   int junk1 = data.size(), junk2;
   assert( sizeof(VertexHandle) == sizeof(iBase_EntityHandle) );
   const iBase_EntityHandle* arr = reinterpret_cast<const iBase_EntityHandle*>(vert_array);
@@ -524,7 +524,7 @@ void MsqIMesh::get_adjacent_entities( const iBase_EntityHandle* source,
   
   assert( sizeof(size_t) >= sizeof(int) );
   offsets.resize( num_source + 1 );
-  int* ptr2 = (int*)&offsets[0];
+  int* ptr2 = (int*)arrptr(offsets);
   bool expand = false;
   if (sizeof(size_t) > sizeof(int))
     expand = true;
@@ -536,7 +536,7 @@ void MsqIMesh::get_adjacent_entities( const iBase_EntityHandle* source,
   {
     target.resize( target.capacity() );
     int junk1 = target.capacity(), junk3 = offsets.size();
-    iBase_EntityHandle* ptr = reinterpret_cast<iBase_EntityHandle*>(&target[0]);
+    iBase_EntityHandle* ptr = reinterpret_cast<iBase_EntityHandle*>(arrptr(target));
     iMesh_getEntArrAdj( meshInstance, source, num_source,
                         target_type, 
                         &ptr, &junk1, &num_adj, 
@@ -553,7 +553,7 @@ void MsqIMesh::get_adjacent_entities( const iBase_EntityHandle* source,
   {
     target.resize( num_adj );
     int junk1 = target.capacity(), junk3 = offsets.size();
-    iBase_EntityHandle* ptr = reinterpret_cast<iBase_EntityHandle*>(&target[0]);
+    iBase_EntityHandle* ptr = reinterpret_cast<iBase_EntityHandle*>(arrptr(target));
     iMesh_getEntArrAdj( meshInstance, source, num_source,
                         target_type, 
                         &ptr, &junk1, &num_adj, 
@@ -579,7 +579,7 @@ void MsqIMesh::get_adjacent_entities( const iBase_EntityHandle* source,
     }
     
     target.resize( num_adj );
-    std::copy( mArray, mArray + num_adj, reinterpret_cast<iBase_EntityHandle*>(&target[0]) );
+    std::copy( mArray, mArray + num_adj, reinterpret_cast<iBase_EntityHandle*>(arrptr(target)) );
     free( mArray );
   }
   
@@ -689,7 +689,7 @@ void MsqIMesh::get_all_elements( std::vector<ElementHandle>& elements,
     if (elements.empty())
       return;
     
-    iBase_EntityHandle* ptr = reinterpret_cast<iBase_EntityHandle*>(&elements[0]);
+    iBase_EntityHandle* ptr = reinterpret_cast<iBase_EntityHandle*>(arrptr(elements));
     if (num_face) {
       count_in = num_face+num_vol;
       iMesh_getEntities( meshInstance, inputSet, 
@@ -727,7 +727,7 @@ void MsqIMesh::get_all_elements( std::vector<ElementHandle>& elements,
       return;
     elements.resize( count );
     
-    iBase_EntityHandle* ptr = reinterpret_cast<iBase_EntityHandle*>(&elements[0]);
+    iBase_EntityHandle* ptr = reinterpret_cast<iBase_EntityHandle*>(arrptr(elements));
     count_in = count;
     iMesh_getEntities( meshInstance, inputSet, 
                        inputSetType, iMesh_ALL_TOPOLOGIES,
@@ -749,7 +749,7 @@ void MsqIMesh::get_all_vertices( std::vector<VertexHandle>& vertices,
     return;  
   
   std::vector<size_t> offsets;
-  elements_get_attached_vertices( &elems[0], elems.size(), vertices, offsets, err );
+  elements_get_attached_vertices( arrptr(elems), elems.size(), vertices, offsets, err );
   MSQ_CHKERR(err);
   
   std::sort( vertices.begin(), vertices.end() );
@@ -774,7 +774,7 @@ void MsqIMesh::elements_get_topologies(
     topo_array = (int*)element_topologies;
   else {
     topo_store.resize(num_elements);
-    topo_array = &topo_store[0];
+    topo_array = arrptr(topo_store);
   }
   
   int ierr, junk1 = num_elements, junk2;

@@ -290,7 +290,7 @@ void PatchSetTest::test_vertex_patches()
   CPPUNIT_ASSERT(!vertex_handles.empty());
   
   bool *fixed = new bool[vertex_handles.size()];
-  myMesh.vertices_get_fixed_flag(&vertex_handles[0], fixed, vertex_handles.size(), err );
+  myMesh.vertices_get_fixed_flag(arrptr(vertex_handles), fixed, vertex_handles.size(), err );
   if (err) { delete [] fixed; fixed = 0; }
   CPPUNIT_ASSERT(!err);
   
@@ -324,7 +324,7 @@ void PatchSetTest::test_vertex_patches()
     
       // Get adjacent elements from myMesh to compare with
     element_handles.clear();
-    myMesh.vertices_get_attached_elements( &patch_verts[0], 1, 
+    myMesh.vertices_get_attached_elements( arrptr(patch_verts), 1, 
                                            element_handles, offsets, err );
     CPPUNIT_ASSERT(!err);
     

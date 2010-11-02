@@ -455,9 +455,9 @@ void TerminationCriterionTest::test_gradient_common( bool absolute, bool L2 )
   
   double limit = LIMIT;
   if (!absolute) 
-    limit *= func_ptr(&grad[0],pd.num_free_vertices());
+    limit *= func_ptr(arrptr(grad),pd.num_free_vertices());
 
-  while (func_ptr(&grad[0],pd.num_free_vertices()) > limit) {
+  while (func_ptr(arrptr(grad),pd.num_free_vertices()) > limit) {
     CPPUNIT_ASSERT(!tc.terminate());
 
     value *= 0.1;
@@ -465,7 +465,7 @@ void TerminationCriterionTest::test_gradient_common( bool absolute, bool L2 )
     ofEval.evaluate( pd, junk, grad, err );
     ASSERT_NO_ERROR(err);
  
-    tc.accumulate_inner( pd, 0.0, &grad[0], err );
+    tc.accumulate_inner( pd, 0.0, arrptr(grad), err );
     ASSERT_NO_ERROR(err);
     tc.accumulate_patch( pd, err );
     ASSERT_NO_ERROR(err);

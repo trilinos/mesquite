@@ -70,7 +70,7 @@ void XYRectangle::setup( Mesh* mesh, MsqError& err )
   }
   
   std::vector<MsqVertex> coords(vertices.size());
-  mesh->vertices_get_coordinates( &vertices[0], &coords[0], coords.size(), err ); MSQ_ERRRTN(err);
+  mesh->vertices_get_coordinates( arrptr(vertices), arrptr(coords), coords.size(), err ); MSQ_ERRRTN(err);
   
   for (size_t i = 0; i < vertices.size(); ++i) {
     for (int d = 0; d < 3; ++d) {

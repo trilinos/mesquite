@@ -113,7 +113,7 @@ void Mesquite::SphericalDomain::fit_vertices( Mesh* mesh, MsqError& err, double 
   std::vector<Mesh::VertexHandle> verts;
   mesh->get_all_vertices( verts, err );
   if (!MSQ_CHKERR(err))
-    fit_vertices( mesh, &verts[0], verts.size(), err, epsilon );
+    fit_vertices( mesh, arrptr(verts), verts.size(), err, epsilon );
 }
 
 void Mesquite::SphericalDomain::fit_vertices( Mesh* mesh, 
@@ -123,14 +123,14 @@ void Mesquite::SphericalDomain::fit_vertices( Mesh* mesh,
                                               double epsilon )
 {
   std::vector<MsqVertex> coords(num_verts);
-  mesh->vertices_get_coordinates( verts, &coords[0], num_verts, err );
+  mesh->vertices_get_coordinates( verts, arrptr(coords), num_verts, err );
   MSQ_ERRRTN(err);
   
   if (epsilon <= 0.0)
-    epsilon = DomainUtil::default_tolerance( &coords[0], num_verts );
+    epsilon = DomainUtil::default_tolerance( arrptr(coords), num_verts );
   
   Vector3D pts[4];
-  if (!DomainUtil::non_coplanar_vertices( &coords[0], num_verts, pts, epsilon )) {
+  if (!DomainUtil::non_coplanar_vertices( arrptr(coords), num_verts, pts, epsilon )) {
     MSQ_SETERR(err)("All vertices are co-planar", MsqError::INVALID_MESH);
     return;
   }

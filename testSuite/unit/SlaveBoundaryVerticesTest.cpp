@@ -183,7 +183,7 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
   CPPUNIT_ASSERT(!verts.empty());
   if (boundary >= 4) {
     bool* flags = new bool[verts.size()];
-    mesh.vertices_get_fixed_flag( &verts[0], flags, verts.size(), err );
+    mesh.vertices_get_fixed_flag( arrptr(verts), flags, verts.size(), err );
     if (err) 
       delete [] flags;
     ASSERT_NO_ERROR(err);
@@ -195,7 +195,7 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
   }
   else {
     std::vector<unsigned short> dim(verts.size());
-    domain.domain_DoF( &verts[0], &dim[0], verts.size(), err );
+    domain.domain_DoF( arrptr(verts), arrptr(dim), verts.size(), err );
     ASSERT_NO_ERROR(err);
     for (size_t i = 0; i < verts.size(); ++i)
       if (dim[i] <= boundary) {
@@ -242,7 +242,7 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!elems.empty());
   std::vector<EntityTopology> types(elems.size());
-  mesh.elements_get_topologies( &elems[0], &types[0], elems.size(), err );
+  mesh.elements_get_topologies( arrptr(elems), arrptr(types), elems.size(), err );
   ASSERT_NO_ERROR(err);
   for (size_t i = 0; i < elems.size(); ++i) {
     std::vector<Mesh::VertexHandle> conn;
@@ -260,7 +260,7 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
     // Now build a map of all fixed vertices
   std::set<Mesh::VertexHandle> fixed_vertices;
   bool* fixed = new bool[verts.size()];
-  mesh.vertices_get_fixed_flag( &verts[0], fixed, verts.size(), err );
+  mesh.vertices_get_fixed_flag( arrptr(verts), fixed, verts.size(), err );
   if (err)
     delete [] fixed;
   ASSERT_NO_ERROR(err);
@@ -278,7 +278,7 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
   
     // Now verify the results
   std::vector<unsigned char> bytes( verts.size() );
-  mesh.vertices_get_byte( &verts[0], &bytes[0], verts.size(), err );
+  mesh.vertices_get_byte( arrptr(verts), arrptr(bytes), verts.size(), err );
   ASSERT_NO_ERROR(err);
   for (size_t i = 0; i < verts.size(); ++i) {
     bool in_non_slave = (non_slave.find( verts[i] ) != non_slave.end());

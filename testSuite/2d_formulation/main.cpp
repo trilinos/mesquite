@@ -151,10 +151,10 @@ void run_test( Grouping grouping, int of_power, Weight w, const string filename 
   vector<MsqVertex> mesh_coords, expected_coords;
   mesh.get_all_vertices( verts, err ); CHKERR(err)
   mesh_coords.resize(verts.size());
-  mesh.vertices_get_coordinates( &verts[0], &mesh_coords[0], verts.size(), err ); CHKERR(err)
+  mesh.vertices_get_coordinates( arrptr(verts), arrptr(mesh_coords), verts.size(), err ); CHKERR(err)
   expected_mesh.get_all_vertices( verts, err ); CHKERR(err)
   expected_coords.resize(verts.size());
-  expected_mesh.vertices_get_coordinates( &verts[0], &expected_coords[0], verts.size(), err ); CHKERR(err)
+  expected_mesh.vertices_get_coordinates( arrptr(verts), arrptr(expected_coords), verts.size(), err ); CHKERR(err)
   if (expected_coords.size() != mesh_coords.size()) {
     cerr << "Invlid expected mesh.  Vertex count doesn't match" << endl;
     exit(1);

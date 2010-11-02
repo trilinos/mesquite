@@ -151,7 +151,7 @@ int MsqCommonIGeom::normal( iBase_EntityHandle geom, Vector3D& coord ) const
 int MsqCommonIGeom::normal( iBase_EntityHandle geom, Vector3D coords[], unsigned count ) const
 {
   geomHandles.resize( count, geom );
-  return normal( &geomHandles[0], coords, count );
+  return normal( arrptr(geomHandles), coords, count );
 }
  
 int MsqCommonIGeom::normal( const iBase_EntityHandle* geom_handles, 
@@ -164,11 +164,11 @@ int MsqCommonIGeom::normal( const iBase_EntityHandle* geom_handles,
   
     // copy input coordinates into array
   coordArray.clear();
-  coordArray.insert( coordArray.begin(), &coords[0][0], &coords[0][0] + 3*count );
+  coordArray.insert( coordArray.begin(), arrptr(coords)[0], arrptr(coords)[0] + 3*count );
    
     // define junk variables required for ITAPS "consistancy"
   int junk_1 = count*3, junk_2 = count*3;
-  double* norm_ptr = &coords[0][0];
+  double* norm_ptr = arrptr(coords)[0];
   
     // get the normals
   int ierr;
@@ -176,7 +176,7 @@ int MsqCommonIGeom::normal( const iBase_EntityHandle* geom_handles,
                        geom_handles,
                        count,
                        iBase_INTERLEAVED,
-                       &coordArray[0],
+                       arrptr(coordArray),
                        count*3,
                        &norm_ptr,
                        &junk_1,
@@ -194,8 +194,8 @@ int MsqCommonIGeom::closest_and_normal( iBase_EntityHandle geom,
   int ierr;
   iGeom_getEntNrmlPlXYZ( geomIFace, geom, 
                          position[0], position[1], position[2], 
-                         &closest[0], &closest[1], &closest[2],
-                          &normal[0],  &normal[1],  &normal[2],
+                         arrptr(closest), &closest[1], &closest[2],
+                          arrptr(normal),  &normal[1],  &normal[2],
                          &ierr );
   return ierr;
 }
@@ -210,7 +210,7 @@ int MsqCommonIGeom::get_dimension( const iBase_EntityHandle* geom_handle,
   
     // define junk variables required for ITAPS "consistancy"
   int junk_1 = count, junk_2 = count;
-  int* type_ptr = &typeArray[0];
+  int* type_ptr = arrptr(typeArray);
   
     // get the types
   iGeom_getArrType( geomIFace, geom_handle, count, &type_ptr, &junk_1, &junk_2, &ierr );

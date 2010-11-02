@@ -84,7 +84,7 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
   std::sort( vertices.begin(), vertices.end() );
   std::vector<unsigned short> depth( vertices.size(), elemDepth+1 );
   BoolArr fixed( vertices.size() );
-  mesh->vertices_get_fixed_flag( &vertices[0], fixed.mArray, vertices.size(), err );
+  mesh->vertices_get_fixed_flag( arrptr(vertices), fixed.mArray, vertices.size(), err );
   MSQ_ERRZERO(err);
   
     // Initialize map with boundary vertices.
@@ -102,7 +102,7 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
     }
     
     std::vector<unsigned short> dof( vertices.size() );
-    domain->domain_DoF( &vertices[0], &dof[0], vertices.size(), err ); MSQ_ERRZERO(err);
+    domain->domain_DoF( arrptr(vertices), arrptr(dof), vertices.size(), err ); MSQ_ERRZERO(err);
     for (size_t i = 0; i < vertices.size(); ++i)
       if (dof[i] <= dim)
         depth[i] = 0;
@@ -154,7 +154,7 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
     // Now remove any corner vertices from the slaved set
   std::vector<Mesh::VertexHandle>::iterator p;
   std::vector<EntityTopology> types(elements.size());
-  mesh->elements_get_topologies( &elements[0], &types[0], elements.size(), err ); MSQ_ERRZERO(err);
+  mesh->elements_get_topologies( arrptr(elements), arrptr(types), elements.size(), err ); MSQ_ERRZERO(err);
   for (j = elements.begin(); j != elements.end(); ++j) {
     const unsigned corners = TopologyInfo::corners(types[j-elements.begin()]);
     conn.clear(); junk.clear();
@@ -167,7 +167,7 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
   
     // Now mark all vertices *not* within specified depth as slave vertices.
   std::vector<unsigned char> bytes( vertices.size() );
-  mesh->vertices_get_byte( &vertices[0], &bytes[0], vertices.size(), err ); MSQ_ERRZERO(err);
+  mesh->vertices_get_byte( arrptr(vertices), arrptr(bytes), vertices.size(), err ); MSQ_ERRZERO(err);
   for (size_t i = 0; i < vertices.size(); ++i) {
     if (depth[i] <= elemDepth || fixed[i])
       bytes[i] &= ~MsqVertex::MSQ_DEPENDENT;
@@ -175,7 +175,7 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
       bytes[i] |= MsqVertex::MSQ_DEPENDENT;
   }
   
-  mesh->vertices_set_byte( &vertices[0], &bytes[0], vertices.size(), err ); MSQ_ERRZERO(err);
+  mesh->vertices_set_byte( arrptr(vertices), arrptr(bytes), vertices.size(), err ); MSQ_ERRZERO(err);
   return 0.0;
 }
 

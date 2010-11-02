@@ -47,7 +47,7 @@ int main( int argc, char* argv[] )
   mesh.get_all_vertices( verts, err );
   if (err) return 1;
   bool* fixed = new bool[verts.size()];
-  mesh.vertices_get_fixed_flag( &verts[0], fixed, verts.size(), err );
+  mesh.vertices_get_fixed_flag( arrptr(verts), fixed, verts.size(), err );
   if (err) return 1;
   std::vector<Mesh::VertexHandle> skin;
   for (size_t i = 0; i < verts.size(); ++i)
@@ -122,7 +122,7 @@ int main( int argc, char* argv[] )
     depth_vals[i] = depth[verts[i]];
   TagHandle tag = mesh.tag_create( "depth", Mesh::INT, 1, 0, err );
   if (err) return 1;
-  mesh.tag_set_vertex_data( tag, verts.size(), &verts[0], &depth_vals[0], err );
+  mesh.tag_set_vertex_data( tag, verts.size(), arrptr(verts), arrptr(depth_vals), err );
   if (err) return 1;
   
   
@@ -134,7 +134,7 @@ int main( int argc, char* argv[] )
       depth_vals[i] = 0;
   tag = mesh.tag_create( "slaved", Mesh::INT, 1, 0, err );
   if (err) return 1;
-  mesh.tag_set_vertex_data( tag, verts.size(), &verts[0], &depth_vals[0], err );
+  mesh.tag_set_vertex_data( tag, verts.size(), arrptr(verts), arrptr(depth_vals), err );
   if (err) return 1;
   
     // perturb mid-edge nodes along boundary
@@ -148,12 +148,12 @@ int main( int argc, char* argv[] )
     if (err) return 1;
     assert(curr.size() == 1);
     conn.clear();
-    mesh.elements_get_attached_vertices( &curr[0], 1, conn, off, err );
+    mesh.elements_get_attached_vertices( arrptr(curr), 1, conn, off, err );
     if (err) return 1;
     
     // estimate element center
     coords.resize( conn.size() );
-    mesh.vertices_get_coordinates( &conn[0], &coords[0], conn.size(), err );
+    mesh.vertices_get_coordinates( arrptr(conn), arrptr(coords), conn.size(), err );
     if (err) return 1;
     
     Vector3D mean(0.0);

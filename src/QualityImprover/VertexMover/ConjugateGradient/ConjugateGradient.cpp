@@ -151,7 +151,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   
   if(conjGradDebug>0){
     MSQ_PRINT(2)("\nCG's DEGUB LEVEL = %i \n",conjGradDebug);
-    grad_norm=Linf(&fGrad[0],fGrad.size());
+    grad_norm=Linf(arrptr(fGrad),fGrad.size());
     MSQ_PRINT(2)("\nCG's FIRST VALUE = %f,grad_norm = %f",f,grad_norm);
     MSQ_PRINT(2)("\n   TIME %f",c_timer.since_birth());
     grad_norm=MSQ_MAX_CAP;
@@ -197,7 +197,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       
     }
     if(alp!=0){
-      pd.move_free_vertices_constrained( &pGrad[0], num_vert, alp, err );
+      pd.move_free_vertices_constrained( arrptr(pGrad), num_vert, alp, err );
       MSQ_ERRRTN(err);
       
       if (! objFunc.update(pd, f, fNewGrad, err)){
@@ -209,7 +209,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       assert(fNewGrad.size() == (unsigned)num_vert);
       
       if(conjGradDebug>0){
-        grad_norm=Linf(&fNewGrad[0],num_vert);
+        grad_norm=Linf(arrptr(fNewGrad),num_vert);
         MSQ_PRINT(2)("\nCG's VALUE = %f,  iter. = %i,  grad_norm = %f,  alp = %f",f,i,grad_norm,alp);
         MSQ_PRINT(2)("\n   TIME %f",c_timer.since_birth());
       }
@@ -244,7 +244,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       }
       if(conjGradDebug>2){
         MSQ_PRINT(2)(" \nSEARCH DIRECTION INFINITY NORM = %e",
-                   Linf(&fNewGrad[0],num_vert));
+                   Linf(arrptr(fNewGrad),num_vert));
       }
       
     }//end if on alp == 0
@@ -253,7 +253,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       //Update mesh before checking criterion
       //pd.update_mesh(err);
     term_crit->accumulate_patch( pd, err ); MSQ_ERRRTN(err);
-    term_crit->accumulate_inner( pd, f, &fGrad[0], err );  MSQ_ERRRTN(err);
+    term_crit->accumulate_inner( pd, f, arrptr(fGrad), err );  MSQ_ERRRTN(err);
   }//end while
   if(conjGradDebug>0){
     MSQ_PRINT(2)("\nConjugate Gradient complete i=%i ",i);
@@ -314,7 +314,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
     //while step takes mesh into infeasible region and ...
   while (j<jmax && !feasible && alp>MSQ_MIN) {
     ++j;
-    pd.set_free_vertices_constrained(pMemento,&pGrad[0],num_vertices,alp,err);
+    pd.set_free_vertices_constrained(pMemento,arrptr(pGrad),num_vertices,alp,err);
     feasible=objFunc.evaluate(pd,f,err); MSQ_ERRZERO(err);
       //if not feasible, try a smaller alp (take smaller step)
     if(!feasible){
@@ -334,7 +334,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
     while (j<jmax && found == 0){
       ++j;
       alp *= rho;
-      pd.set_free_vertices_constrained(pMemento,&pGrad[0],num_vertices,alp,err);
+      pd.set_free_vertices_constrained(pMemento,arrptr(pGrad),num_vertices,alp,err);
         //Get new obj value
         //if patch is now invalid, then the feasible region is  convex or
         //we have an error.  For now, we assume an error.
@@ -363,7 +363,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       ++j;
       alp*=rho;
       //step alp in search direction from original positions
-      pd.set_free_vertices_constrained(pMemento,&pGrad[0],num_vertices,alp,err);MSQ_ERRZERO(err);
+      pd.set_free_vertices_constrained(pMemento,arrptr(pGrad),num_vertices,alp,err);MSQ_ERRZERO(err);
 
         //get new objective function value
       if (! objFunc.evaluate(pd,fnew,err))
@@ -392,7 +392,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
         //scale alp up (rho must be less than 1)
       alp /= rho;
       //step alp in search direction from original positions
-      pd.set_free_vertices_constrained(pMemento,&pGrad[0],num_vertices,alp,err);MSQ_ERRZERO(err);
+      pd.set_free_vertices_constrained(pMemento,arrptr(pGrad),num_vertices,alp,err);MSQ_ERRZERO(err);
 
       feasible = objFunc.evaluate(pd,fnew, err);MSQ_ERRZERO(err);
       if ( ! feasible ){

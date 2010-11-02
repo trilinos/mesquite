@@ -254,8 +254,8 @@ void iMeshTest::matchVertexCoordinates()
   
     // get vertex coordinates
   vector<MsqVertex> coordinates( num_pts );
-  myMesh->vertices_get_coordinates( &vertices[0],
-                                    &coordinates[0],
+  myMesh->vertices_get_coordinates( arrptr(vertices),
+                                    arrptr(coordinates),
                                     num_pts,
                                     err );
   CPPUNIT_ASSERT( !err );
@@ -310,7 +310,7 @@ void iMeshTest::matchElementConnectivity()
   myMesh->get_all_elements( elements, err );
   CPPUNIT_ASSERT(!err);
   CPPUNIT_ASSERT_EQUAL( num_tri, elements.size() );
-  myMesh->elements_get_attached_vertices( &elements[0],
+  myMesh->elements_get_attached_vertices( arrptr(elements),
                                           elements.size(),
                                           vertices,
                                           offsets,
@@ -357,7 +357,7 @@ void iMeshTest::testVertexIterator()
 
     // mark each vertex as it is encountered
   std::vector<int> marks(num_pts);
-  memset( &marks[0], 0, num_pts * sizeof(int) );
+  memset( arrptr(marks), 0, num_pts * sizeof(int) );
   
     // iterate over vertices
   size_t count = 0;
@@ -437,9 +437,9 @@ void iMeshTest::testVertexFlagNone( bool fixed )
   bool* b = new bool[handles.size()];
   std::fill( b, b+handles.size(), true );
   if (fixed)
-    myMesh->vertices_get_fixed_flag( &handles[0], b, handles.size(), err );
+    myMesh->vertices_get_fixed_flag( arrptr(handles), b, handles.size(), err );
   else
-    myMesh->vertices_get_slaved_flag( &handles[0], b, handles.size(), err );
+    myMesh->vertices_get_slaved_flag( arrptr(handles), b, handles.size(), err );
   size_t first_true = std::find( b, b+handles.size(), true ) - b;
   delete [] b;
   ASSERT_NO_ERROR(err);
@@ -475,7 +475,7 @@ void iMeshTest::testVertexFlag( bool fixed, iBase_TagValueType type )
   myMesh->get_all_vertices( handles, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!handles.empty());
-  iBase_EntityHandle* ihandles = reinterpret_cast<iBase_EntityHandle*>(&handles[0]);
+  iBase_EntityHandle* ihandles = reinterpret_cast<iBase_EntityHandle*>(arrptr(handles));
   
   if (type == iBase_INTEGER) {
       // define alternating values for flag
@@ -484,7 +484,7 @@ void iMeshTest::testVertexFlag( bool fixed, iBase_TagValueType type )
       values[i] = fixed;
 
       // set flag on vertices
-    iMesh_setIntArrData( myIMesh, ihandles, handles.size(), tag, &values[0], values.size(), &ierr );
+    iMesh_setIntArrData( myIMesh, ihandles, handles.size(), tag, arrptr(values), values.size(), &ierr );
     CPPUNIT_ASSERT_EQUAL( (int)iBase_SUCCESS, ierr );
   }
   else if (type == iBase_BYTES ) {
@@ -494,7 +494,7 @@ void iMeshTest::testVertexFlag( bool fixed, iBase_TagValueType type )
       values[i] = fixed;
 
       // set flag on vertices
-    iMesh_setArrData( myIMesh, ihandles, handles.size(), tag, &values[0], values.size(), &ierr );
+    iMesh_setArrData( myIMesh, ihandles, handles.size(), tag, arrptr(values), values.size(), &ierr );
     CPPUNIT_ASSERT_EQUAL( (int)iBase_SUCCESS, ierr );
   }
   else {
@@ -504,9 +504,9 @@ void iMeshTest::testVertexFlag( bool fixed, iBase_TagValueType type )
     // get flag through MsqIMesh
   bool* b = new bool[handles.size()];
   if (fixed)
-    myMesh->vertices_get_fixed_flag( &handles[0], b, handles.size(), err );
+    myMesh->vertices_get_fixed_flag( arrptr(handles), b, handles.size(), err );
   else
-    myMesh->vertices_get_slaved_flag( &handles[0], b, handles.size(), err );
+    myMesh->vertices_get_slaved_flag( arrptr(handles), b, handles.size(), err );
   std::vector<bool> flags(b, b+handles.size());
   delete [] b;
   ASSERT_NO_ERROR(err);
@@ -652,11 +652,11 @@ void iMeshTest::testIntTag()
   std::vector<int>::iterator iter1, iter2;
   for (iter1 = data1.begin(); iter1 != data1.end(); ++iter1)
     *iter1 = rand();
-  myMesh->tag_set_element_data( tag, num_tri, triIndexToHandle, &data1[0], err );
+  myMesh->tag_set_element_data( tag, num_tri, triIndexToHandle, arrptr(data1), err );
   CPPUNIT_ASSERT( !err );
   
     // get tag data from all triangles and compare
-  myMesh->tag_get_element_data( tag, num_tri, triIndexToHandle, &data2[0], err );
+  myMesh->tag_get_element_data( tag, num_tri, triIndexToHandle, arrptr(data2), err );
   CPPUNIT_ASSERT( !err );
   for (iter1 = data1.begin(), iter2 = data2.begin(); 
        iter1 != data1.end(); ++iter1, ++iter2)
@@ -704,11 +704,11 @@ void iMeshTest::testDoubleTag()
   std::vector<double>::iterator iter1, iter2;
   for (iter1 = data1.begin(); iter1 != data1.end(); ++iter1)
     *iter1 = sqrt(abs(rand()));
-  myMesh->tag_set_vertex_data( tag, num_pts, vtxIndexToHandle, &data1[0], err );
+  myMesh->tag_set_vertex_data( tag, num_pts, vtxIndexToHandle, arrptr(data1), err );
   CPPUNIT_ASSERT( !err );
   
     // get tag data from all vertices and compare
-  myMesh->tag_get_vertex_data( tag, num_pts, vtxIndexToHandle, &data2[0], err );
+  myMesh->tag_get_vertex_data( tag, num_pts, vtxIndexToHandle, arrptr(data2), err );
   CPPUNIT_ASSERT( !err );
   for (iter1 = data1.begin(), iter2 = data2.begin(); 
        iter1 != data1.end(); ++iter1, ++iter2)

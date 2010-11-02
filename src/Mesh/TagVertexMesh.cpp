@@ -109,7 +109,7 @@ void TagVertexMesh::copy_all_coordinates( MsqError& err )
     return;
   
   std::vector<MsqVertex> coords(handles.size());
-  get_mesh()->vertices_get_coordinates( &handles[0], &coords[0], handles.size(), err );
+  get_mesh()->vertices_get_coordinates( arrptr(handles), arrptr(coords), handles.size(), err );
   MSQ_ERRRTN(err);
   
   std::vector<double> data( 3*handles.size() );
@@ -121,7 +121,7 @@ void TagVertexMesh::copy_all_coordinates( MsqError& err )
     j += 3;
   }
   
-  tag_set_vertex_data( tagHandle, handles.size(), &handles[0], &data[0], err );
+  tag_set_vertex_data( tagHandle, handles.size(), arrptr(handles), arrptr(data), err );
   MSQ_ERRRTN(err);
 }
 
@@ -186,7 +186,7 @@ void TagVertexMesh::vertices_get_coordinates( const VertexHandle vert_array[],
   }
   else {
     std::vector<double> coords( num_vtx * 3 );
-    get_mesh()->tag_get_vertex_data( tagHandle, num_vtx, vert_array, &coords[0], err );
+    get_mesh()->tag_get_vertex_data( tagHandle, num_vtx, vert_array, arrptr(coords), err );
     MSQ_ERRRTN(err);
     MsqVertex* coordinates_end = coordinates + num_vtx;
     std::vector<double>::const_iterator i = coords.begin();

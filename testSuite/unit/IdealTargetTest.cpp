@@ -149,7 +149,7 @@ void IdealTargetTest::get_calc_target( EntityTopology type,
   std::vector<double> coords( 24, 0.0 );
   const size_t conn[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
   PatchData pd;
-  pd.fill( 8, &coords[0], 1, type, conn, 0, err );
+  pd.fill( 8, arrptr(coords), 1, type, conn, 0, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   pd.attach_settings( &settings );
   

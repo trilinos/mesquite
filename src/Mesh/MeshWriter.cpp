@@ -491,7 +491,7 @@ void write_stl( Mesh* mesh, const char* filename, MsqError& err )
     
       // Get vertex coordinates
     mesh->elements_get_attached_vertices( &elem, 1, verts, offsets, err ); MSQ_ERRRTN(err);
-    mesh->vertices_get_coordinates( &verts[0], coords, 3, err ); MSQ_ERRRTN(err);
+    mesh->vertices_get_coordinates( arrptr(verts), coords, 3, err ); MSQ_ERRRTN(err);
     
       // Get triagnle normal
     Vector3D n = (coords[0] - coords[1]) * (coords[0] - coords[2]);
@@ -847,7 +847,7 @@ void write_eps_triangle( Mesh* mesh,
     MSQ_SETERR(err)("Invalid element type", MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
-  mesh->vertices_get_coordinates( &verts[0], coords, verts.size(), err ); MSQ_ERRRTN(err);
+  mesh->vertices_get_coordinates( arrptr(verts), coords, verts.size(), err ); MSQ_ERRRTN(err);
   
   Vector3D coords2[6];
   std::copy( coords, coords+verts.size(), coords2 );
@@ -856,7 +856,7 @@ void write_eps_triangle( Mesh* mesh,
   bool* fixed = 0;
   if (draw_nodes) {
     fixed = fixed_store;
-    mesh->vertices_get_fixed_flag( &verts[0], fixed, verts.size(), err ); MSQ_ERRRTN(err);
+    mesh->vertices_get_fixed_flag( arrptr(verts), fixed, verts.size(), err ); MSQ_ERRRTN(err);
   }
   write_eps_triangle( coords2, verts.size(), filename, draw_iso_lines, draw_nodes, err, fixed, width, height );
 }

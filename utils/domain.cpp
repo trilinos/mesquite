@@ -236,7 +236,7 @@ MeshDomain* process_domain_args( MeshImpl* mesh )
     std::vector<Mesh::ElementHandle> elems;
     mesh->get_all_elements( elems, err );
     std::vector<EntityTopology> types( elems.size() );
-    mesh->elements_get_topologies( &elems[0], &types[0], elems.size(), err );
+    mesh->elements_get_topologies( arrptr(elems), arrptr(types), elems.size(), err );
     EntityTopology max_type = *std::max_element( types.begin(), types.end() );
     int max_elem_dim = TopologyInfo::dimension( max_type );
   
@@ -249,8 +249,8 @@ MeshDomain* process_domain_args( MeshImpl* mesh )
         DomainClassifier::classify_skin_geometrically( *result,
                                                 mesh,
                                                 1e-4,
-                                                &domains[0],
-                                                &domain_dims[0],
+                                                arrptr(domains),
+                                                arrptr(domain_dims),
                                                 domains.size(),
                                                 err );
       }
@@ -258,8 +258,8 @@ MeshDomain* process_domain_args( MeshImpl* mesh )
         DomainClassifier::classify_geometrically( *result,
                                                 mesh,
                                                 1e-4,
-                                                &domains[0],
-                                                &domain_dims[0],
+                                                arrptr(domains),
+                                                arrptr(domain_dims),
                                                 domains.size(),
                                                 err );
       }

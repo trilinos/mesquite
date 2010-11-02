@@ -233,12 +233,12 @@ void BoundedCylinderDomainTest::test_create_curve_from_mesh()
   CPPUNIT_ASSERT(!err);
   CPPUNIT_ASSERT_EQUAL( handles.size(), (size_t)9 );
   std::vector<MsqVertex> vertices( handles.size() );
-  mesh.vertices_get_coordinates( &handles[0], &vertices[0], handles.size(), err );
+  mesh.vertices_get_coordinates( arrptr(handles), arrptr(vertices), handles.size(), err );
   CPPUNIT_ASSERT(!err);
   
     // Get the dimension of the geometry each vertex is bound to
   std::vector<unsigned short> dims( handles.size() );
-  d.domain_DoF( &handles[0], &dims[0], handles.size(), err );
+  d.domain_DoF( arrptr(handles), arrptr(dims), handles.size(), err );
   CPPUNIT_ASSERT(!err);
   
     // Check that the four corner vertices are on the curves

@@ -144,7 +144,7 @@ int main( int argc, char* argv[] )
   mesh.get_all_elements( elem_array, err ); 
   CPPUNIT_ASSERT(!err);
   CPPUNIT_ASSERT_EQUAL( elem_array.size(), NUM_ELEM );
-  mesh.elements_get_attached_vertices( &elem_array[0],
+  mesh.elements_get_attached_vertices( arrptr(elem_array),
                                         elem_array.size(),
                                         vert_array,
                                         conn_offsets,
@@ -153,7 +153,7 @@ int main( int argc, char* argv[] )
   CPPUNIT_ASSERT_EQUAL(vert_array.size() , VERT_PER_ELEM*NUM_ELEM);
   CPPUNIT_ASSERT_EQUAL(conn_offsets.size() , NUM_ELEM+1);
   EntityTopology type_array[NUM_ELEM];
-  mesh.elements_get_topologies( &elem_array[0], type_array, NUM_ELEM, err );
+  mesh.elements_get_topologies( arrptr(elem_array), type_array, NUM_ELEM, err );
   CPPUNIT_ASSERT(!err);
   
     // Verify element types and number of vertices
@@ -178,7 +178,7 @@ int main( int argc, char* argv[] )
     // boundary and all wedges share a single edge which is the axis
     // of the prism.
   MsqVertex vertices[NUM_ELEM*VERT_PER_ELEM];
-  mesh.vertices_get_coordinates( &vert_array[0], vertices, NUM_ELEM*VERT_PER_ELEM, err );
+  mesh.vertices_get_coordinates( arrptr(vert_array), vertices, NUM_ELEM*VERT_PER_ELEM, err );
   CPPUNIT_ASSERT(!err);
   for (i = 0; i < NUM_ELEM*VERT_PER_ELEM; ++i)
   {

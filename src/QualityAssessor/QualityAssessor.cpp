@@ -1152,7 +1152,7 @@ void QualityAssessor::Assessor::print_histogram( std::ostream& stream,
       
       // print num_graph characters using array of fill characters.
     graph_chars[num_graph] = '\0';
-    stream << &graph_chars[0] << std::endl;
+    stream << arrptr(graph_chars) << std::endl;
     graph_chars[num_graph] = GRAPH_CHAR;
   }
   

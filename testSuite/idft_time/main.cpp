@@ -372,7 +372,7 @@ double run( QualityMetric* metric,
     exit(1);
   }
   std::vector<MsqVertex> coords(handles.size());
-  mesh.vertices_get_coordinates( &handles[0], &coords[0], handles.size(), err );
+  mesh.vertices_get_coordinates( arrptr(handles), arrptr(coords), handles.size(), err );
   Vector3D min(HUGE_VAL), max(-HUGE_VAL);
   for (size_t i = 0; i < coords.size(); ++i) {
     for (int j = 0; j < 3; ++j) {

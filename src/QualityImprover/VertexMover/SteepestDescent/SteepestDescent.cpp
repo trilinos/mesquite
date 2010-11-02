@@ -139,7 +139,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       // Move vertices to new positions.
       // Note: step direction is -gradient so we pass +gradient and 
       //       -step_size to achieve the same thing.
-      pd.move_free_vertices_constrained( &gradient[0], gradient.size(), -step_size, err ); MSQ_ERRRTN(err);
+      pd.move_free_vertices_constrained( arrptr(gradient), gradient.size(), -step_size, err ); MSQ_ERRRTN(err);
       // Evaluate objective function for new vertices.  We call the
       // 'evaluate' form here because we aren't sure yet if we want to
       // keep these vertices.  Until we call 'update', we have the option
@@ -177,7 +177,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       //if (cosineStep) {
       //  unprojected = gradient;
       //  pd.project_gradient( gradient, err ); MSQ_ERRRTN(err);
-      //  double dot = inner_product( &gradient[0], &unprojected[0], gradient.size() );
+      //  double dot = inner_product( arrptr(gradient), arrptr(unprojected), gradient.size() );
       //  double lensqr1 = length_squared( gradient );
       //  double lensqr2 = length_squared( unprojected );
       //  double cossqr = dot * dot / lensqr1 / lensqr2;
@@ -193,7 +193,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       // for each iteration so we don't need to re-caculate the value
       // over the entire mesh.
     term_crit->accumulate_patch( pd, err );  MSQ_ERRRTN(err);
-    term_crit->accumulate_inner( pd, original_value, &gradient[0], err ); MSQ_ERRRTN(err); 
+    term_crit->accumulate_inner( pd, original_value, arrptr(gradient), err ); MSQ_ERRRTN(err); 
       
       // Calculate initial step size for next iteration using step size 
       // from this iteration

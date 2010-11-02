@@ -72,7 +72,7 @@ void BoundedCylinderDomain::create_curve( double distance,
   }
   
   std::vector<MsqVertex> coords(handles.size());
-  mesh->vertices_get_coordinates( &handles[0], &coords[0], handles.size(), err );
+  mesh->vertices_get_coordinates( arrptr(handles), arrptr(coords), handles.size(), err );
   MSQ_ERRRTN(err);
   
   std::vector<Mesh::EntityHandle> list;

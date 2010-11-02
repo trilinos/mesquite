@@ -115,7 +115,7 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
         TagHandle tag = get_target_tag( 3, samples.size(), mesh,  err ); MSQ_ERRZERO(err);
         mesh->tag_set_element_data( tag, 1, 
                                     patch.get_element_handles_array(), 
-                                    &targets3d[0], err ); MSQ_ERRZERO(err);
+                                    arrptr(targets3d), err ); MSQ_ERRZERO(err);
       }
       else if(targetCalc->have_surface_orient()) {
         targets2dorient.resize( samples.size() );
@@ -132,7 +132,7 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
         TagHandle tag = get_target_tag( 2, samples.size(), mesh, err ); MSQ_ERRZERO(err);
         mesh->tag_set_element_data( tag, 1, 
                                     patch.get_element_handles_array(), 
-                                    &targets2dorient[0], err ); MSQ_ERRZERO(err);
+                                    arrptr(targets2dorient), err ); MSQ_ERRZERO(err);
       }
       else {
         targets2d.resize( samples.size() );
@@ -148,7 +148,7 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
         TagHandle tag = get_target_tag( 2, samples.size(), mesh, err ); MSQ_ERRZERO(err);
         mesh->tag_set_element_data( tag, 1, 
                                     patch.get_element_handles_array(), 
-                                    &targets2d[0], err ); MSQ_ERRZERO(err);
+                                    arrptr(targets2d), err ); MSQ_ERRZERO(err);
       }
     }
       
@@ -160,7 +160,7 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
       TagHandle tag = get_weight_tag( samples.size(), mesh, err ); MSQ_ERRZERO(err);
       mesh->tag_set_element_data( tag, 1, 
                                   patch.get_element_handles_array(),
-                                  &weights[0], err ); MSQ_ERRZERO(err);
+                                  arrptr(weights), err ); MSQ_ERRZERO(err);
     }
   }
 

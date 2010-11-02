@@ -189,7 +189,7 @@ static PlanarDomain make_domain( Mesh* mesh, MsqError& err )
     exit(1);
   }
   std::vector<MsqVertex> coords(vertices.size());
-  mesh->vertices_get_coordinates( &vertices[0], &coords[0], vertices.size(), err );
+  mesh->vertices_get_coordinates( arrptr(vertices), arrptr(coords), vertices.size(), err );
   if (MSQ_CHKERR(err)) { return PlanarDomain( minimum, maximum ); }
   std::vector<MsqVertex>::const_iterator i;
   for (i = coords.begin(); i != coords.end(); ++i) {

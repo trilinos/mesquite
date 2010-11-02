@@ -169,7 +169,7 @@ void find_z10_extreme_elements( Mesh& mesh,
     verts.clear(); junk.clear();
     mesh.elements_get_attached_vertices( &*i, 1, verts, junk, err ); MSQ_ERRRTN(err);
     coords.resize(verts.size());
-    mesh.vertices_get_coordinates( &verts[0], &coords[0], verts.size(), err ); MSQ_ERRRTN(err);
+    mesh.vertices_get_coordinates( arrptr(verts), arrptr(coords), verts.size(), err ); MSQ_ERRRTN(err);
     
     for (std::vector<MsqVertex>::iterator j = coords.begin(); j != coords.end(); ++j) {
       double z = (*j)[2];
@@ -194,7 +194,7 @@ void elem_areas( Mesh& mesh, const elem_vec_t& elems,
   mean = 0.0;
   
   std::vector<EntityTopology> types(elems.size());
-  mesh.elements_get_topologies( &elems[0], &types[0], elems.size(), err ); MSQ_ERRRTN(err);
+  mesh.elements_get_topologies( arrptr(elems), arrptr(types), elems.size(), err ); MSQ_ERRRTN(err);
   
   std::vector<Mesh::VertexHandle> verts;
   std::vector<MsqVertex> coords;
@@ -203,7 +203,7 @@ void elem_areas( Mesh& mesh, const elem_vec_t& elems,
     verts.clear(); junk.clear();
     mesh.elements_get_attached_vertices( &elems[i], 1, verts, junk, err ); MSQ_ERRRTN(err);
     coords.resize(verts.size());
-    mesh.vertices_get_coordinates( &verts[0], &coords[0], verts.size(), err ); MSQ_ERRRTN(err);
+    mesh.vertices_get_coordinates( arrptr(verts), arrptr(coords), verts.size(), err ); MSQ_ERRRTN(err);
     
     Vector3D v1, v2;
     double area;

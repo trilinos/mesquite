@@ -1090,7 +1090,7 @@ void PatchData::get_subpatch(size_t center_vertex_index,
   }
   
     // Re-order vertices and initialize other data in subpatch
-  subpatch.initialize_data( &offsets[0], &subpatch.byteArray[0], err ); 
+  subpatch.initialize_data( arrptr(offsets), &subpatch.byteArray[0], err ); 
   MSQ_ERRRTN(err);
   
     // Copy vertex data into subpatch.  subpatch.vertexHandlesArray contains
@@ -1110,7 +1110,7 @@ void PatchData::get_subpatch(size_t center_vertex_index,
   subpatch.myDomain = myDomain;
   subpatch.mSettings = mSettings;
   
-  notify_sub_patch( subpatch, &vertices[0], elements.empty() ? 0 : &elements[0], err ); MSQ_CHKERR(err);
+  notify_sub_patch( subpatch, arrptr(vertices), elements.empty() ? 0 : arrptr(elements), err ); MSQ_CHKERR(err);
 }
 
 //! Adjust the position of the specified vertex so that it
@@ -1165,7 +1165,7 @@ void PatchData::update_cached_normals( MsqError& err )
   
     // Determine which vertices lie on surfaces
   vertexDomainDOF.resize( num_nodes() );
-  domain->domain_DoF( &vertexHandlesArray[0], &vertexDomainDOF[0], num_nodes(), err );
+  domain->domain_DoF( arrptr(vertexHandlesArray), arrptr(vertexDomainDOF), num_nodes(), err );
   MSQ_ERRRTN(err);
   
     // Count how many vertices have a single normal
@@ -1184,7 +1184,7 @@ void PatchData::update_cached_normals( MsqError& err )
   if (n == num_nodes())
   {
     std::copy( vertexArray.begin(), vertexArray.end(), normalData.begin() );
-    domain->vertex_normal_at( &vertexHandlesArray[0], &normalData[0], num_nodes(), err );
+    domain->vertex_normal_at( arrptr(vertexHandlesArray), arrptr(normalData), num_nodes(), err );
     vertexNormalIndices.clear();
     vertexDomainDOF.clear();
     MSQ_ERRRTN(err);
@@ -1597,7 +1597,7 @@ void PatchData::initialize_data( size_t* elem_offset_array,
      
     // Use vertAdjacencyOffsets array as temporary storage.
   vertAdjacencyOffsets.resize( vertexHandlesArray.size() + 1 );
-  size_t* vertex_index_map = &vertAdjacencyOffsets[0];
+  size_t* vertex_index_map = arrptr(vertAdjacencyOffsets);
   
     // Count number of free vertices and initialize vertex_index_map
   numFreeVertices = 0;
@@ -1700,7 +1700,7 @@ void PatchData::fill( size_t num_vertex, const double* coords,
 {
   std::vector<EntityTopology> types(num_elem);
   std::fill( types.begin(), types.end(), type );
-  const EntityTopology* type_ptr = num_elem ? &types[0] : 0;
+  const EntityTopology* type_ptr = num_elem ? arrptr(types) : 0;
   this->fill( num_vertex, coords, num_elem, type_ptr, connectivity, fixed, err );
   MSQ_CHKERR(err);
 }
@@ -1715,7 +1715,7 @@ void PatchData::fill( size_t num_vertex, const double* coords,
   std::vector<size_t> lengths( num_elem );
   std::transform( types, types + num_elem, lengths.begin(), 
                       std::ptr_fun(TopologyInfo::corners) );
-  const size_t* len_ptr = num_elem ? &lengths[0] : 0;
+  const size_t* len_ptr = num_elem ? arrptr(lengths) : 0;
   this->fill( num_vertex, coords, num_elem, types, len_ptr, conn, fixed, err );
   MSQ_CHKERR(err);
 } 
@@ -1768,7 +1768,7 @@ void PatchData::fill( size_t num_vertex, const double* coords,
   const Settings::HigherOrderSlaveMode ho_mode = mSettings ? mSettings->get_slaved_ho_node_mode() : Settings::SLAVE_ALL;
   switch (ho_mode) {
   case Settings::SLAVE_ALL:
-    enslave_higher_order_nodes( &offsets[0], &byteArray[0], err );  
+    enslave_higher_order_nodes( arrptr(offsets), arrptr(byteArray), err );  
     MSQ_ERRRTN(err);
     break;
   case Settings::SLAVE_NONE:
@@ -1781,7 +1781,7 @@ void PatchData::fill( size_t num_vertex, const double* coords,
     return;
   }
   
-  this->initialize_data( &offsets[0], &byteArray[0], err );  MSQ_ERRRTN(err);
+  this->initialize_data( arrptr(offsets), arrptr(byteArray), err );  MSQ_ERRRTN(err);
   
     // initialize_data will re-order vertex handles and
     // update element connectivity accordingly.  Use
@@ -1859,7 +1859,7 @@ void PatchData::set_mesh_entities(
   }
   
   elementHandlesArray = elements;
-  get_mesh()->elements_get_attached_vertices( &elementHandlesArray[0],
+  get_mesh()->elements_get_attached_vertices( arrptr(elementHandlesArray),
                                               elementHandlesArray.size(),
                                               vertexHandlesArray,
                                               offsetArray,
@@ -1868,22 +1868,22 @@ void PatchData::set_mesh_entities(
     // Construct CSR-rep element connectivity data
   size_t num_vert = vertexHandlesArray.size();
   elemConnectivityArray.resize( num_vert );
-  make_handles_unique( &vertexHandlesArray[0], 
+  make_handles_unique( arrptr(vertexHandlesArray), 
                        num_vert, 
-                       &elemConnectivityArray[0] ); 
+                       arrptr(elemConnectivityArray) ); 
   vertexHandlesArray.resize( num_vert );
 
     // Get element topologies
   std::vector<EntityTopology> elem_topologies(elementHandlesArray.size());
-  get_mesh()->elements_get_topologies( &elementHandlesArray[0],
-                                       &elem_topologies[0],
+  get_mesh()->elements_get_topologies( arrptr(elementHandlesArray),
+                                       arrptr(elem_topologies),
                                        elementHandlesArray.size(),
                                        err ); MSQ_ERRRTN(err);
   
     // get vertex bits from mesh
   byteArray.resize( vertexHandlesArray.size() );
-  get_mesh()->vertices_get_byte( &vertexHandlesArray[0],
-                                 &byteArray[0],
+  get_mesh()->vertices_get_byte( arrptr(vertexHandlesArray),
+                                 arrptr(byteArray),
                                  vertexHandlesArray.size(),
                                  err ); MSQ_ERRRTN(err);
   unsigned char byte_mask = MsqVertex::MSQ_CULLED;
@@ -1897,7 +1897,7 @@ void PatchData::set_mesh_entities(
   if (!mSettings || mSettings->get_fixed_vertex_mode() == Settings::FIXED_FLAG) {
       // Get vertex-fixed flags
     bool* fixed_flags = get_bool_array( vertexHandlesArray.size() );
-    get_mesh()->vertices_get_fixed_flag( &vertexHandlesArray[0], 
+    get_mesh()->vertices_get_fixed_flag( arrptr(vertexHandlesArray), 
                                        fixed_flags,
                                        vertexHandlesArray.size(),
                                        err);  MSQ_ERRRTN(err);
@@ -1909,7 +1909,7 @@ void PatchData::set_mesh_entities(
   else if (get_domain()) {
     int dim = mSettings->get_fixed_vertex_mode();
     std::vector<unsigned short> dof( vertexHandlesArray.size() );
-    get_domain()->domain_DoF( &vertexHandlesArray[0], &dof[0], vertexHandlesArray.size(), err );
+    get_domain()->domain_DoF( arrptr(vertexHandlesArray), arrptr(dof), vertexHandlesArray.size(), err );
     MSQ_ERRRTN(err);
     for (size_t i = 0; i < vertexHandlesArray.size(); ++i) {
       if (dof[i] <= dim)
@@ -1967,12 +1967,12 @@ void PatchData::set_mesh_entities(
   const Settings::HigherOrderSlaveMode ho_mode = mSettings ? mSettings->get_slaved_ho_node_mode() : Settings::SLAVE_ALL;
   switch (ho_mode) {
   case Settings::SLAVE_ALL:
-    enslave_higher_order_nodes( &offsetArray[0], &byteArray[0], err ); 
+    enslave_higher_order_nodes( arrptr(offsetArray), arrptr(byteArray), err ); 
     MSQ_ERRRTN(err);
     break;
   case Settings::SLAVE_FLAG:
     flags = get_bool_array( vertexHandlesArray.size() );
-    get_mesh()->vertices_get_slaved_flag( &vertexHandlesArray[0], 
+    get_mesh()->vertices_get_slaved_flag( arrptr(vertexHandlesArray), 
                                           flags,
                                           vertexHandlesArray.size(),
                                           err); MSQ_ERRRTN(err);
@@ -1988,12 +1988,12 @@ void PatchData::set_mesh_entities(
   }
   
     // get element connectivity, group vertices by free/slave/fixed state
-  initialize_data( &offsetArray[0], &byteArray[0], err ); MSQ_ERRRTN(err);
+  initialize_data( arrptr(offsetArray), arrptr(byteArray), err ); MSQ_ERRRTN(err);
   
     // get vertex coordinates
   vertexArray.resize( vertexHandlesArray.size() );
-  get_mesh()->vertices_get_coordinates( &vertexHandlesArray[0],
-                                    &vertexArray[0],
+  get_mesh()->vertices_get_coordinates( arrptr(vertexHandlesArray),
+                                    arrptr(vertexArray),
                                     vertexHandlesArray.size(),
                                     err ); MSQ_ERRRTN(err);
 

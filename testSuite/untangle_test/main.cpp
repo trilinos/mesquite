@@ -320,7 +320,7 @@ int uwt( bool skip,
   mesh.get_all_vertices( verts, err );
   if (err || verts.empty()) abort();
   MsqVertex coords;
-  mesh.vertices_get_coordinates( &verts[0], &coords, 1, err );
+  mesh.vertices_get_coordinates( arrptr(verts), &coords, 1, err );
   if (err) abort();
   Vector3D norm(0,0,flip_domain ? -1 : 1);
   PlanarDomain domain( norm, coords );

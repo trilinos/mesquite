@@ -225,7 +225,7 @@ static void find_skin( Mesh* mesh,
             unsigned num_side_vtx2;
             const unsigned* side_vtx2 = TopologyInfo::side_vertices( adj_type, dim-1, s2, num_side_vtx2 );
             if (num_side_vtx2 == num_side_vtx &&
-                compare_sides( num_side_vtx, side_vtx, &vertices[0], side_vtx2, &adj_vtx[0] )) {
+                compare_sides( num_side_vtx, side_vtx, arrptr(vertices), side_vtx2, arrptr(adj_vtx) )) {
               found_adj = true;
               break;
             }
@@ -233,7 +233,7 @@ static void find_skin( Mesh* mesh,
         }
         else {
           if (TopologyInfo::corners(adj_type) == num_side_vtx)
-            if (compare_sides( num_side_vtx, side_vtx, &vertices[0], elem_idx, &adj_vtx[0] ))
+            if (compare_sides( num_side_vtx, side_vtx, arrptr(vertices), elem_idx, arrptr(adj_vtx) ))
               side_elem.push_back( adj_elem[a] );
         }
       }
@@ -269,7 +269,7 @@ static void find_skin( Mesh* mesh,
           }
           
           num_side_vtx = extra_side_vtx.size();
-          side_vtx = &extra_side_vtx[0];
+          side_vtx = arrptr(extra_side_vtx);
         }
       
         for (unsigned v = 0; v < num_side_vtx; ++v)
@@ -423,7 +423,7 @@ static void geom_classify_elements( Mesh* mesh,
     verts.clear();
     mesh->elements_get_attached_vertices( &*iter, 1, verts, junk, err ); MSQ_ERRRTN(err);
     coords.resize(verts.size());
-    mesh->vertices_get_coordinates( &verts[0], &coords[0], verts.size(), err ); MSQ_ERRRTN(err);
+    mesh->vertices_get_coordinates( arrptr(verts), arrptr(coords), verts.size(), err ); MSQ_ERRRTN(err);
 
       // get all 2D domains that contain first vertex
     std::vector<int> doms;
@@ -473,7 +473,7 @@ void DomainClassifier::classify_geometrically( DomainClassifier& result,
     // classify vertices by position
   std::vector<Mesh::VertexHandle> vertices;
   mesh->get_all_vertices( vertices, err ); MSQ_ERRRTN(err);
-  geom_classify_vertices( mesh, &domains[0], dim_indices[3], vertices, tolerance, err );
+  geom_classify_vertices( mesh, arrptr(domains), dim_indices[3], vertices, tolerance, err );
   MSQ_ERRRTN(err);
   
     // get elements and types
@@ -482,7 +482,7 @@ void DomainClassifier::classify_geometrically( DomainClassifier& result,
   if (elems.empty())
     return;
   std::vector<EntityTopology> types( elems.size() );
-  mesh->elements_get_topologies( &elems[0], &types[0], elems.size(), err );
+  mesh->elements_get_topologies( arrptr(elems), arrptr(types), elems.size(), err );
   MSQ_ERRRTN(err);
   
     // get rid of elements w/ dimension other than 2
@@ -497,15 +497,15 @@ void DomainClassifier::classify_geometrically( DomainClassifier& result,
  
     // classify elements using vertex classification
   std::vector<Mesh::ElementHandle> unknown;
-  vert_classify_elements( mesh, &domains[0], domains.size(), dim_indices, elems, unknown, err );
+  vert_classify_elements( mesh, arrptr(domains), domains.size(), dim_indices, elems, unknown, err );
   MSQ_ERRRTN(err);
   
     // classify unknown elements geometrically
   elems.swap( unknown );
   unknown.clear();
-  geom_classify_elements( mesh, &domains[0], domains.size(), dim_indices, elems, unknown, tolerance, err );
+  geom_classify_elements( mesh, arrptr(domains), domains.size(), dim_indices, elems, unknown, tolerance, err );
   
-  classify_by_handle( result, mesh, &domains[0], domains.size(), err );
+  classify_by_handle( result, mesh, arrptr(domains), domains.size(), err );
 }
   
 
@@ -530,25 +530,25 @@ void DomainClassifier::classify_skin_geometrically( DomainClassifier& result,
   find_skin( mesh, vertices, elements, err ); MSQ_ERRRTN(err);
   
     // classify vertices by position
-  geom_classify_vertices( mesh, &domains[0], dim_indices[3], vertices, tolerance, err );
+  geom_classify_vertices( mesh, arrptr(domains), dim_indices[3], vertices, tolerance, err );
   MSQ_ERRRTN(err);
  
     // classify elements using vertex classification
   std::vector<Mesh::ElementHandle> unknown;
-  vert_classify_elements( mesh, &domains[0], domains.size(), dim_indices, elements, unknown, err );
+  vert_classify_elements( mesh, arrptr(domains), domains.size(), dim_indices, elements, unknown, err );
   MSQ_ERRRTN(err);
   
     // classify unknown elements geometrically
   elements.swap( unknown );
   unknown.clear();
-  geom_classify_elements( mesh, &domains[0], domains.size(), dim_indices, elements, unknown, tolerance, err );
+  geom_classify_elements( mesh, arrptr(domains), domains.size(), dim_indices, elements, unknown, tolerance, err );
 
   if (!unknown.empty()) {
     MSQ_SETERR(err)("Count not classify all skin elements", MsqError::INVALID_MESH );
     return;
   }
   
-  classify_by_handle( result, mesh, &domains[0], domains.size(), err );
+  classify_by_handle( result, mesh, arrptr(domains), domains.size(), err );
 }
   
 
@@ -588,7 +588,7 @@ void DomainClassifier::classify_by_tag( DomainClassifier& result,
   
   std::map<int,DomainSet*>::const_iterator iter;
   std::vector<int> ids( vertices.size() );
-  mesh->tag_get_vertex_data( tag, vertices.size(), &vertices[0], &ids[0], err );  MSQ_ERRRTN(err);
+  mesh->tag_get_vertex_data( tag, vertices.size(), arrptr(vertices), arrptr(ids), err );  MSQ_ERRRTN(err);
   for (size_t j = 0; j < vertices.size(); ++j) {
     iter = idmap.find( ids[j] );
     if (iter != idmap.end())
@@ -598,7 +598,7 @@ void DomainClassifier::classify_by_tag( DomainClassifier& result,
   ids.clear();
   ids.resize( elements.size() );
   if (!elements.empty()) {
-    mesh->tag_get_element_data( tag, elements.size(), &elements[0], &ids[0], err ); 
+    mesh->tag_get_element_data( tag, elements.size(), arrptr(elements), arrptr(ids), err ); 
     if (err) {
       err.clear();
     }
@@ -612,7 +612,7 @@ void DomainClassifier::classify_by_tag( DomainClassifier& result,
   }
   
   if (!sets.empty())
-    classify_by_handle( result, mesh, &sets[0], sets.size(), err );
+    classify_by_handle( result, mesh, arrptr(sets), sets.size(), err );
 }
                               
 
@@ -727,7 +727,7 @@ static bool next_vertex( Mesh* mesh,
 
   std::vector<EntityTopology> elem_types( vtx_elems.size() );
   if (!vtx_elems.empty()) {
-    mesh->elements_get_topologies( &vtx_elems[0], &elem_types[0], vtx_elems.size(), err );
+    mesh->elements_get_topologies( arrptr(vtx_elems), arrptr(elem_types), vtx_elems.size(), err );
     MSQ_ERRZERO(err);
   }
 
@@ -857,7 +857,7 @@ void DomainClassifier::test_valid_classification( Mesh* mesh,
       dimmap[&domains[i]] = 2;
     else {
       dof.resize( domains[i].vertices.size() );
-      domains[i].domain->domain_DoF( &(domains[i].vertices[0]), &dof[0], dof.size(), err );
+      domains[i].domain->domain_DoF( &(domains[i].vertices[0]), arrptr(dof), dof.size(), err );
       MSQ_ERRRTN(err);
       unsigned short dim = *std::max_element( dof.begin(), dof.end() );
       dimmap[&domains[i]] = dim;
@@ -975,7 +975,7 @@ void DomainClassifier::test_valid_classification( Mesh* mesh,
                                               err ); MSQ_ERRRTN(err);
         types.resize( vert_elems.size() );
         if (!vert_elems.empty()) {
-          mesh->elements_get_topologies( &vert_elems[0], &types[0], 
+          mesh->elements_get_topologies( arrptr(vert_elems), arrptr(types), 
                                  vert_elems.size(), err ); MSQ_ERRRTN(err);
         }
         while (!vert_elems.empty()) {
@@ -1021,7 +1021,7 @@ void DomainClassifier::test_valid_classification( Mesh* mesh,
                                             err ); MSQ_ERRRTN(err);
       types.resize( vert_elems.size() );
       if (!vert_elems.empty()) {
-        mesh->elements_get_topologies( &vert_elems[0], &types[0], 
+        mesh->elements_get_topologies( arrptr(vert_elems), arrptr(types), 
                                vert_elems.size(), err ); MSQ_ERRRTN(err);
       }
       while (!vert_elems.empty()) {
@@ -1073,7 +1073,7 @@ void DomainClassifier::test_valid_classification( Mesh* mesh,
                                               err ); MSQ_ERRRTN(err);
         types.resize( vert_elems.size() );
         if (!vert_elems.empty()) {
-          mesh->elements_get_topologies( &vert_elems[0], &types[0], 
+          mesh->elements_get_topologies( arrptr(vert_elems), arrptr(types), 
                                  vert_elems.size(), err ); MSQ_ERRRTN(err);
         }
         while (!vert_elems.empty()) {

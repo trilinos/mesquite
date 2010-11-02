@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
     if (err) return 1;
 
     bool* fixed_flags = new bool[vertices.size()];
-    mesh.vertices_get_fixed_flag( &vertices[0], fixed_flags, vertices.size(), err );
+    mesh.vertices_get_fixed_flag( arrptr(vertices), fixed_flags, vertices.size(), err );
     if (err) return 1;
 
     // find one free vertex

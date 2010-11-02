@@ -866,7 +866,7 @@ void PatchDataTest::test_quad8_patch( bool reorder, bool slaved )
     for (int j = 0; j < 8; ++j)
       conn[j] = (size_t)pd.get_vertex_handles_array()[conn[j]];
     size_t idx = (size_t)pd.get_element_handles_array()[i];
-    ASSERT_ARRAYS_EQUAL( input_conn + 8*idx, &conn[0], 8 );
+    ASSERT_ARRAYS_EQUAL( input_conn + 8*idx, arrptr(conn), 8 );
   }
 }
 
@@ -875,8 +875,8 @@ void PatchDataTest::get_quad8_mesh( Mesh*& mesh_out )
   static std::vector<int> fixed_flags(fixed, fixed+NUM_VTX);
   static std::vector<double> coords(input_coords, input_coords+3*NUM_VTX);
   static std::vector<unsigned long> conn( input_conn, input_conn+8*NUM_ELEM );
-  mesh_out = new ArrayMesh( 3, NUM_VTX, &coords[0], &fixed_flags[0], 
-                  NUM_ELEM, QUADRILATERAL, &conn[0], false,
+  mesh_out = new ArrayMesh( 3, NUM_VTX, arrptr(coords), arrptr(fixed_flags), 
+                  NUM_ELEM, QUADRILATERAL, arrptr(conn), false,
                   8 );
 }
 
@@ -938,7 +938,7 @@ void PatchDataTest::test_fixed_by_geom_dim( unsigned dim )
   CPPUNIT_ASSERT(!elems.empty());
   
   std::vector<unsigned short> dims(verts.size());
-  domain->domain_DoF( &verts[0], &dims[0], verts.size(), err );
+  domain->domain_DoF( arrptr(verts), arrptr(dims), verts.size(), err );
   ASSERT_NO_ERROR(err);
   
   for (size_t i = 0; i < pd.num_free_vertices(); ++i) {
@@ -972,12 +972,12 @@ void PatchDataTest::get_higher_order_vertices( Mesh* mesh,
   mesh->get_all_elements( elems, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!elems.empty());
-  mesh->elements_get_attached_vertices( &elems[0], elems.size(),
+  mesh->elements_get_attached_vertices( arrptr(elems), elems.size(),
                                         verts, offsets, err );
   CPPUNIT_ASSERT_EQUAL( elems.size()+1, offsets.size() );
   ASSERT_NO_ERROR(err);
   std::vector<EntityTopology> types(elems.size());
-  mesh->elements_get_topologies( &elems[0], &types[0], elems.size(), err );
+  mesh->elements_get_topologies( arrptr(elems), arrptr(types), elems.size(), err );
   ASSERT_NO_ERROR(err);
   
     // clear initial state
@@ -994,7 +994,7 @@ void PatchDataTest::get_higher_order_vertices( Mesh* mesh,
     std::sort( verts.begin(), verts.end() );
     verts.erase( std::unique( verts.begin(), verts.end() ), verts.end() );
     bool* fixed = new bool[verts.size()];
-    mesh->vertices_get_fixed_flag( &verts[0], fixed, verts.size(), err );
+    mesh->vertices_get_fixed_flag( arrptr(verts), fixed, verts.size(), err );
     ASSERT_NO_ERROR(err);
     for (size_t i = 0; i < verts.size(); ++i) {
       if (fixed[i]) {
@@ -1085,7 +1085,7 @@ void PatchDataTest::test_patch_data_mesh_calcualted_ho_nodes()
   
   if (!slaved.empty()) {
     MsqPrintError err(std::cerr);
-    mesh->vertices_set_byte( &slaved[0], &bytes[0], slaved.size(), err );
+    mesh->vertices_set_byte( arrptr(slaved), arrptr(bytes), slaved.size(), err );
     ASSERT_NO_ERROR(err);
   }
   

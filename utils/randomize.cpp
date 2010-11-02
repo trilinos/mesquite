@@ -88,7 +88,7 @@ void UnOptimizer::optimize_vertex_positions( PatchData &pd, MsqError &err) {
   pd.get_minmax_edge_length( junk, coeff );
   
   for (int i = 0; i < 100; ++i) {
-    pd.set_free_vertices_constrained( memento, &grad[0], 1, coeff, err ); MSQ_ERRRTN(err);
+    pd.set_free_vertices_constrained( memento, arrptr(grad), 1, coeff, err ); MSQ_ERRRTN(err);
     state = objectiveFunction->evaluate( ObjectiveFunction::CALCULATE, pd, val, true, err );
     MSQ_ERRRTN(err);
     if (state)

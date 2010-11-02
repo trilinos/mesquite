@@ -109,12 +109,12 @@ void Mesquite::PlanarDomain::fit_vertices( Mesh* mesh, MsqError& err, double eps
 
   std::vector<Mesh::VertexHandle> verts, fixed;
   mesh->get_all_vertices( verts, err ); MSQ_ERRRTN(err);
-  DomainUtil::get_fixed_vertices( mesh, &verts[0], verts.size(), fixed, err ); MSQ_ERRRTN(err);
+  DomainUtil::get_fixed_vertices( mesh, arrptr(verts), verts.size(), fixed, err ); MSQ_ERRRTN(err);
   
   bool do_all_verts = true;
   if (fixed.size() > 2) {
     do_all_verts = false;
-    fit_vertices( mesh, &fixed[0], fixed.size(), err, epsilon );
+    fit_vertices( mesh, arrptr(fixed), fixed.size(), err, epsilon );
     
       // if we failed with only the fixed vertices, try again with all of the 
       // vertices
@@ -125,7 +125,7 @@ void Mesquite::PlanarDomain::fit_vertices( Mesh* mesh, MsqError& err, double eps
   }
   
   if (do_all_verts) {
-    fit_vertices( mesh, &verts[0], verts.size(), err, epsilon );
+    fit_vertices( mesh, arrptr(verts), verts.size(), err, epsilon );
     MSQ_ERRRTN(err);
   }
   
@@ -143,12 +143,12 @@ void Mesquite::PlanarDomain::fit_vertices( Mesh* mesh, MsqError& err, double eps
       continue;
     
     verts.clear();
-    mesh->elements_get_attached_vertices( &elems[0], 1, verts, junk, err ); MSQ_ERRRTN(err);
+    mesh->elements_get_attached_vertices( arrptr(elems), 1, verts, junk, err ); MSQ_ERRRTN(err);
     if (verts.size() < 3)
       continue;
     
     coords.resize( verts.size() );
-    mesh->vertices_get_coordinates( &verts[0], &coords[0], 3, err ); MSQ_ERRRTN(err);
+    mesh->vertices_get_coordinates( arrptr(verts), arrptr(coords), 3, err ); MSQ_ERRRTN(err);
     Vector3D n = (coords[1] - coords[0]) * (coords[2] - coords[0]);
     ++total_count;
     if (n % mNormal < 0.0)
@@ -167,14 +167,14 @@ void Mesquite::PlanarDomain::fit_vertices( Mesquite::Mesh* mesh,
                                            double epsilon )
 {
   std::vector<MsqVertex> coords( num_verts );
-  mesh->vertices_get_coordinates( verts, &coords[0], num_verts, err ); 
+  mesh->vertices_get_coordinates( verts, arrptr(coords), num_verts, err ); 
   MSQ_ERRRTN(err);
   
   if (epsilon <= 0.0)
-    epsilon = DomainUtil::default_tolerance( &coords[0], num_verts );
+    epsilon = DomainUtil::default_tolerance( arrptr(coords), num_verts );
   
   Vector3D pts[3];
-  if (!DomainUtil::non_colinear_vertices( &coords[0], num_verts, pts, epsilon )) {
+  if (!DomainUtil::non_colinear_vertices( arrptr(coords), num_verts, pts, epsilon )) {
     MSQ_SETERR(err)("All vertices are colinear", MsqError::INVALID_MESH);
     return;
   }

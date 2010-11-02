@@ -176,7 +176,7 @@ void tet_dihedral_angle_ratios( Mesh& mesh,
     mesh.elements_get_attached_vertices( &e, 1, verts, junk, err );
     assert(!err);
     assert(verts.size() == 4);
-    mesh.vertices_get_coordinates( &verts[0], &coords[0], 4, err );
+    mesh.vertices_get_coordinates( arrptr(verts), arrptr(coords), 4, err );
     assert(!err);
     
     Vector3D v01 = coords[1] - coords[0];
