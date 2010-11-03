@@ -218,7 +218,7 @@ void TRelQualityMetricTest::regression_inverse_mean_ratio_hess()
   bool exp_rval, act_rval;
   exp_rval = ref_metric.evaluate_with_Hessian( pd, hand1, exp_val, exp_idx, exp_grad, exp_hess, err );
   ASSERT_NO_ERROR(err);
-  act_rval = ref_metric.QualityMetric::evaluate_with_Hessian( pd, hand2, act_val, act_idx, act_grad, act_hess, err );
+  act_rval = ref_metric.QualityMetric::evaluate_with_Hessian( pd, hand1, act_val, act_idx, act_grad, act_hess, err );
   CPPUNIT_ASSERT( exp_rval );
   CPPUNIT_ASSERT( act_rval );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( exp_val, act_val, 1e-5 );
