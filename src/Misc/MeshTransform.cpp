@@ -86,15 +86,19 @@ namespace MESQUITE_NS {
   void MeshTransform::add_translation( const Vector3D& offset )
     { mVec += offset; }
   
-  void MeshTransform::add_rotation( const Vector3D& a, double radians )
+  void MeshTransform::add_rotation( const Vector3D& axis, double radians )
     {
       const double c = cos(radians);
       const double s = sin(radians);
+      const Vector3D a = axis/axis.length();
       const Matrix3D m1(    c,   -a[2]*s, a[1]*s,
                           a[2]*s,   c,   -a[0]*s,
                          -a[1]*s, a[0]*s,   c    );
-      mMat = m1 * mMat;
-      mVec = m1 * mVec;
+      Matrix3D m2;
+      m2.outer_product(a,a);
+      Matrix3D rot = m1 + (1.0 - c) * m2;
+      mMat = rot * mMat;
+      mVec = rot * mVec;
     }
   
   void MeshTransform::add_scale( double factor )
