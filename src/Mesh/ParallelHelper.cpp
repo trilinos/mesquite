@@ -290,7 +290,7 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
 
   /* get the data from the mesquite mesh */
   mesh->vertices_get_global_id(arrptr(vertices),arrptr(gid),num_vertex,err); MSQ_ERRRTN(err);
-  mesh->vertices_get_fixed_flag(arrptr(vertices),arrptr(app_fixed),num_vertex,err); MSQ_ERRRTN(err);
+  mesh->vertices_get_fixed_flag(arrptr(vertices),app_fixed,num_vertex,err); MSQ_ERRRTN(err);
   mesh->vertices_get_processor_id(arrptr(vertices),arrptr(proc_owner),num_vertex,err); MSQ_ERRRTN(err);
 
   /* create temporary Tag for the local IDs */
@@ -997,7 +997,7 @@ void ParallelHelperImpl::smoothing_close(MsqError& err)
     std::vector<size_t> gid(num_vertex);
     mesh->vertices_get_global_id(arrptr(vertices),arrptr(gid),num_vertex,err); MSQ_ERRRTN(err);
     bool* app_fixed = new bool[num_vertex];
-    mesh->vertices_get_fixed_flag(arrptr(vertices),arrptr(app_fixed),num_vertex,err); MSQ_ERRRTN(err);
+    mesh->vertices_get_fixed_flag(arrptr(vertices),app_fixed,num_vertex,err); MSQ_ERRRTN(err);
     std::vector<int> proc_owner(num_vertex);
     mesh->vertices_get_processor_id(arrptr(vertices),arrptr(proc_owner),num_vertex,err); MSQ_ERRRTN(err);
 

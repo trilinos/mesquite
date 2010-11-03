@@ -42,6 +42,8 @@ static bool create_exodus_file( const char* filename );
 #include "MsqVertex.hpp"
 #include "MsqError.hpp"
 
+using Mesquite::arrptr;
+
 #include "cppunit/extensions/HelperMacros.h"
 
 #include <iostream>
