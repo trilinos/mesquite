@@ -884,15 +884,22 @@ namespace MESQUITE_NS
   //}
   
   inline const MsqVertex& PatchData::vertex_by_index( size_t index ) const
-    { return vertexArray[index]; }
+  { 
+    assert(index < vertexArray.size());
+    return vertexArray[index]; 
+  }
   
   inline MsqMeshEntity& PatchData::element_by_index(size_t index)
   {
-    return elementArray[index];
+     assert(index < elementArray.size()); 
+     return elementArray[index];
   }
   
   inline const MsqMeshEntity& PatchData::element_by_index( size_t index ) const
-    { return elementArray[index]; }
+  { 
+     assert(index < elementArray.size()); 
+     return elementArray[index];
+  }
   
   /*! gets the index of a vertex in the PatchData vertex array,
     given a pointer to the vertex. */
