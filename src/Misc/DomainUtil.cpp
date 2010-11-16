@@ -101,7 +101,7 @@ bool non_colinear_vertices( const MsqVertex* verts,
   size_t second_idx = 1;
   double dist_sqr = (verts[first_idx] - verts[second_idx]).length_squared();
   for (size_t i = 2; i < num_verts; ++i) {
-    double ds = (coords_out[second_idx] - verts[i]).length_squared();
+    double ds = (verts[second_idx] - verts[i]).length_squared();
     if (ds > dist_sqr) {
       dist_sqr = ds;
       second_idx = i;
