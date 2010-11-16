@@ -2530,7 +2530,7 @@ void QualityMetricTester::test_hessian_with_fixed_vertex( EntityTopology type,
     const size_t j = conn[i];
     CPPUNIT_ASSERT_DOUBLES_EQUAL( val, val_fixed, 1e-5 );
     CPPUNIT_ASSERT_VECTORS_EQUAL( grad[j], grad_fixed.front(), 1e-5 );
-    CPPUNIT_ASSERT_MATRICES_EQUAL( hess[n*j - j*(j-1)/2], hess_fixed.front(), 1e-5 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( hess[n*j - j*(j-1)/2], hess_fixed.front(), 1e-4 );
   }
 }
 
@@ -2588,6 +2588,6 @@ void QualityMetricTester::test_diagonal_with_fixed_vertex( EntityTopology type,
     const size_t j = conn[i];
     CPPUNIT_ASSERT_DOUBLES_EQUAL( val, val_fixed, 1e-5 );
     CPPUNIT_ASSERT_VECTORS_EQUAL( grad[j], grad_fixed.front(), 1e-5 );
-    CPPUNIT_ASSERT_MATRICES_EQUAL( hess[j], hess_fixed.front(), 1e-5 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( hess[j], hess_fixed.front(), 1e-4 );
   }
 }
