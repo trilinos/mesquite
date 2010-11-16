@@ -308,7 +308,7 @@ namespace MESQUITE_NS
 	MESQUITE_EXPORT
     void get_adjacent_vertex_indices(size_t vertex_index,
                                      std::vector<size_t> &vert_indices,
-                                     MsqError &err);
+                                     MsqError &err) const;
     
     
       /*! \brief Get the indices of entities attached to entity 
@@ -735,7 +735,7 @@ namespace MESQUITE_NS
       // (avoids reallocation of temp space)
     std::vector<size_t> offsetArray;
     std::vector<unsigned char> byteArray;
-    std::vector<bool> bitMap;
+    mutable std::vector<bool> bitMap;
     bool* boolArray;
     size_t boolArraySize;
     bool* get_bool_array( size_t size ) {

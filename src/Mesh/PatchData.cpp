@@ -627,7 +627,7 @@ const size_t* PatchData::get_vertex_element_adjacencies( size_t vertex_index,
 */
 void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
                                             std::vector<size_t> &vert_indices,
-                                            MsqError &err)
+                                            MsqError &err) const
 {
   bitMap.clear();
   bitMap.resize( num_nodes(), false );
@@ -636,7 +636,7 @@ void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
   size_t conn_idx, curr_vtx_idx;
   const unsigned* adj;
   unsigned num_adj, i;
-  std::vector<MsqMeshEntity>::iterator e;
+  std::vector<MsqMeshEntity>::const_iterator e;
   for (e = elementArray.begin(); e != elementArray.end(); ++e) {
     conn = e->get_vertex_index_array();
     conn_idx = std::find( conn, conn + e->node_count(), vertex_index ) - conn;
