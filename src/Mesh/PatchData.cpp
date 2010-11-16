@@ -643,7 +643,18 @@ void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
     if (conn_idx == e->node_count())
       continue;
     
-    adj = TopologyInfo::adjacent_vertices( e->get_element_type(), conn_idx, num_adj );
+      // If a higher-order node, return corners of side/face
+      // that node is in the center of.
+    EntityTopology type = e->get_element_type();
+    if (conn_idx >= TopologyInfo::corners(type)) {
+      unsigned dim, id;
+      TopologyInfo::side_from_higher_order( type, e->node_count(), conn_idx,
+                                            dim, id, err ); MSQ_ERRRTN(err);
+      adj = TopologyInfo::side_vertices( type, dim, id, num_adj );
+    }
+    else {
+      adj = TopologyInfo::adjacent_vertices( e->get_element_type(), conn_idx, num_adj );
+    }
     for (i = 0; i < num_adj; ++i) {
       curr_vtx_idx = conn[ adj[i] ]; // get index into patch vertex list
       if (!bitMap[curr_vtx_idx]) {

@@ -73,6 +73,7 @@ double get_delta_C( const PatchData& pd,
   if (indices.size() == 1u) {
     pd.get_adjacent_vertex_indices( indices.front(), tmp_vect, err );
     MSQ_ERRZERO(err);
+    assert(!tmp_vect.empty());
     tmp_vect.push_back( indices.front() );
     beg = tmp_vect.begin();
     end = tmp_vect.end();
@@ -182,6 +183,7 @@ bool QualityMetric::evaluate_with_Hessian( PatchData& pd,
 
     // get initial pertubation amount
   const double delta_C = get_delta_C( pd, indices, err ); MSQ_ERRZERO(err);
+  assert(delta_C < 1e30);
   const double delta_inv_C = 1.0/delta_C;
   const int reduction_limit = 15;
 
