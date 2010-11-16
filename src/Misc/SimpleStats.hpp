@@ -58,7 +58,7 @@ public:
   /**\brief variance of values */
   double variance() const { return valueSqrSum/valueCount - average()*average(); }
   /**\brief standard deviation of values */
-  double standard_deviation() const { return sqrt(variance()); }
+  double standard_deviation() const { return sqrt(fabs(variance())); }
 
   /**\brief incorporate another value into statistics */
   void add_value( double value ) {
