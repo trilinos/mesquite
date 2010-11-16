@@ -221,6 +221,20 @@ inline SymMatrix3D inverse( const SymMatrix3D& a )
   return result;
 }
 
+inline double Frobenius_2( const SymMatrix3D& a )
+{
+  return   a[0]*a[0] +
+         2*a[1]*a[1] +
+         2*a[2]*a[2] +
+           a[3]*a[3] +
+         2*a[4]*a[5] +
+           a[5]*a[5];
+}
+
+inline double Frobenius( const SymMatrix3D& a )
+  { return std::sqrt( Frobenius_2(a) ); };
+
+
 } // namespace Mesquite
 
 #endif
