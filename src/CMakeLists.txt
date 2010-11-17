@@ -519,7 +519,8 @@ APPEND_SET(HEADERS
   QualityMetric/ElementPMeanP.hpp
   QualityMetric/ElementQM.hpp
   QualityMetric/MultiplyQualityMetric.hpp
-  QualityMetric/NumericalQM.hpp
+  QualityMetric/Debug/NumericalQM.hpp
+  QualityMetric/Debug/CompareQM.hpp
   QualityMetric/PMeanPMetric.hpp
   QualityMetric/PowerQualityMetric.hpp
   QualityMetric/QualityMetric.hpp
@@ -538,7 +539,8 @@ APPEND_SET(SOURCES
   QualityMetric/ElementPMeanP.cpp
   QualityMetric/ElementQM.cpp
   QualityMetric/MultiplyQualityMetric.cpp
-  QualityMetric/NumericalQM.cpp
+  QualityMetric/Debug/NumericalQM.cpp
+  QualityMetric/Debug/CompareQM.cpp
   QualityMetric/PMeanPMetric.cpp
   QualityMetric/PowerQualityMetric.cpp
   QualityMetric/QualityMetric.cpp
