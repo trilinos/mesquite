@@ -164,11 +164,11 @@ int MsqCommonIGeom::normal( const iBase_EntityHandle* geom_handles,
   
     // copy input coordinates into array
   coordArray.clear();
-  coordArray.insert( coordArray.begin(), arrptr(coords)[0], arrptr(coords)[0] + 3*count );
+  coordArray.insert( coordArray.begin(), &coords[0][0], &coords[0][0] + 3*count );
    
     // define junk variables required for ITAPS "consistancy"
   int junk_1 = count*3, junk_2 = count*3;
-  double* norm_ptr = arrptr(coords)[0];
+  double* norm_ptr = &coords[0][0];
   
     // get the normals
   int ierr;
@@ -194,8 +194,8 @@ int MsqCommonIGeom::closest_and_normal( iBase_EntityHandle geom,
   int ierr;
   iGeom_getEntNrmlPlXYZ( geomIFace, geom, 
                          position[0], position[1], position[2], 
-                         arrptr(closest), &closest[1], &closest[2],
-                          arrptr(normal),  &normal[1],  &normal[2],
+                         &closest[0], &closest[1], &closest[2],
+                         &normal[0],  &normal[1],  &normal[2],
                          &ierr );
   return ierr;
 }
