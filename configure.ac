@@ -6,8 +6,9 @@ AC_CONFIG_AUX_DIR(./config_aux)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR(include/Mesquite.hpp)
 AC_CANONICAL_SYSTEM
-dnl AM_INIT_AUTOMAKE([subdir-objects])
-AM_INIT_AUTOMAKE
+m4_ifdef([AM_SILENT_RULES],
+[AM_INIT_AUTOMAKE([color-tests])],
+[AM_INIT_AUTOMAKE])
 
 if test "x$CXXFLAGS" = "x"; then
   have_user_CXXFLAGS=no
@@ -51,8 +52,16 @@ AC_ARG_ENABLE( [debug],
                                  --enable-debug-symbols
                                  --enable-debug-output=1,2
                                  --enable-trap-fpe
-                                 --enable-quite-make])], 
+                                 --enable-silent-rules])], 
   [MSQ_DO_DEBUG="$enableval"], [MSQ_DO_DEBUG=""] )
+
+m4_ifdef([AM_SILENT_RULES],[
+  if test "xyes" = "x$MSQ_DO_DEBUG"; then
+    AM_SILENT_RULES(yes)
+  else
+    AM_SILENT_RULES(no)
+  fi
+])
 
 AC_ARG_ENABLE( [compile-optimized],
   [AC_HELP_STRING([--enable-compile-optimized],[Compile optimized (-O2)])],
