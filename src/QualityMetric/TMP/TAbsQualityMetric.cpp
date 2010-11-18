@@ -53,6 +53,8 @@
 #include <functional>
 #include <algorithm>
 
+#define NUMERICAL_2D_HESSIAN
+
 namespace MESQUITE_NS {
 
 std::string TAbsQualityMetric::get_name() const
@@ -236,20 +238,21 @@ bool TAbsQualityMetric::evaluate_with_Hessian(
       return false;
     }
 
+#ifdef NUMERICAL_2D_HESSIAN
     // return finite difference approximation for now
 
     return QualityMetric::evaluate_with_Hessian( pd, handle,
                                            value, indices, grad, Hessian,
                                            err );
-    /*
+#else
     MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];
-    MsqMatrix<3,2> SaT_Th;
+    MsqMatrix<3,2> M;
     rval = evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
-                             mDerivs2D, W, A, SaT_Th, err ); 
+                             mDerivs2D, W, A, M, err ); 
     if (MSQ_CHKERR(err) || !rval)
       return false;
     rval = metric2D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
-    gradient<2>( num_idx, mDerivs2D, SaT_Th * dmdA, grad );
+    gradient<2>( num_idx, mDerivs2D, M * dmdA, grad );
     const size_t n = num_idx*(num_idx+1)/2;
       // calculate 2D hessian
     hess2d.resize(n);
@@ -258,11 +261,11 @@ bool TAbsQualityMetric::evaluate_with_Hessian(
       // calculate surface hessian as transform of 2D hessian
     Hessian.resize(n);
     for (size_t i = 0; i < n; ++i)
-      Hessian[i] = Matrix3D( (SaT_Th * hess2d[i] * transpose(SaT_Th)).data() );
+      Hessian[i] = Matrix3D( (M * hess2d[i] * transpose(M)).data() );
 #ifdef PRINT_INFO
     print_info<2>( e, s, J, Wp, A * inverse(W) );
 #endif
-    */
+#endif
   }
   else {
     assert(0);
@@ -331,19 +334,20 @@ bool TAbsQualityMetric::evaluate_with_Hessian_diagonal(
       return false;
     }
 
+#ifdef NUMERICAL_2D_HESSIAN
     // use finite diference approximation for now
     return QualityMetric::evaluate_with_Hessian_diagonal( pd, handle,
                                            value, indices, grad, diagonal,
                                            err );
-/*
+#else
     MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];
-    MsqMatrix<3,2> SaT_Th;
+    MsqMatrix<3,2> M;
     rval = evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
-                             mDerivs2D, W, A, SaT_Th, err ); 
+                             mDerivs2D, W, A, M, err ); 
     if (MSQ_CHKERR(err) || !rval)
       return false;
     rval = metric2D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
-    gradient<2>( num_idx, mDerivs2D, SaT_Th * dmdA, grad );
+    gradient<2>( num_idx, mDerivs2D, M * dmdA, grad );
 
     diagonal.resize( num_idx );
     for (size_t i = 0; i < num_idx; ++i) {
@@ -352,20 +356,20 @@ bool TAbsQualityMetric::evaluate_with_Hessian_diagonal(
       block2d(0,1) = transpose(mDerivs2D[i]) * d2mdA2[1] * mDerivs2D[i];
       block2d(1,0) = block2d(0,1);
       block2d(1,1) = transpose(mDerivs2D[i]) * d2mdA2[2] * mDerivs2D[i];
-      MsqMatrix<3,2> p = SaT_Th * block2d;
+      MsqMatrix<3,2> p = M * block2d;
       
       SymMatrix3D& H = diagonal[i];
-      H[0] = p.row(0) * transpose(SaT_Th.row(0));
-      H[1] = p.row(0) * transpose(SaT_Th.row(1));
-      H[2] = p.row(0) * transpose(SaT_Th.row(2));
-      H[3] = p.row(1) * transpose(SaT_Th.row(1));
-      H[4] = p.row(1) * transpose(SaT_Th.row(2));
-      H[5] = p.row(2) * transpose(SaT_Th.row(2));
+      H[0] = p.row(0) * transpose(M.row(0));
+      H[1] = p.row(0) * transpose(M.row(1));
+      H[2] = p.row(0) * transpose(M.row(2));
+      H[3] = p.row(1) * transpose(M.row(1));
+      H[4] = p.row(1) * transpose(M.row(2));
+      H[5] = p.row(2) * transpose(M.row(2));
     }
 #ifdef PRINT_INFO
     print_info<2>( e, s, J, Wp, A * inverse(W) );
 #endif
-*/
+#endif
   }
   else {
     assert(0);
@@ -377,7 +381,11 @@ bool TAbsQualityMetric::evaluate_with_Hessian_diagonal(
   std::copy( mIndices, mIndices+num_idx, indices.begin() );
   
     // apply target weight to value
-  weight( pd, s, e, num_idx, value, arrptr(grad), arrptr(diagonal), 0, err ); MSQ_ERRZERO(err);
+  if (!num_idx)
+    weight( pd, s, e, num_idx, value, 0, 0, 0, err );
+  else
+    weight( pd, s, e, num_idx, value, arrptr(grad), arrptr(diagonal), 0, err );
+  MSQ_CHKERR(err);
   return rval;
 }
 

@@ -54,6 +54,8 @@
 #include <functional>
 #include <algorithm>
 
+#define NUMERICAL_2D_HESSIAN
+
 namespace MESQUITE_NS {
 
 std::string TRelQualityMetric::get_name() const
@@ -251,36 +253,37 @@ bool TRelQualityMetric::evaluate_with_Hessian(
       return false;
     }
 
+#ifdef NUMERICAL_2D_HESSIAN
     // return finite difference approximation for now
 
     return QualityMetric::evaluate_with_Hessian( pd, handle,
                                            value, indices, grad, Hessian,
                                            err );
-    /*
+#else
     MsqMatrix<2,2> W, A, dmdT, d2mdT2[3];
-    MsqMatrix<3,2> SaT_Th;
+    MsqMatrix<3,2> M;
     rval = evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
-                             mDerivs2D, W, A, SaT_Th, err ); 
+                             mDerivs2D, W, A, M, err ); 
     if (MSQ_CHKERR(err) || !rval)
       return false;
     const MsqMatrix<2,2> Winv = inverse(W);
     const MsqMatrix<2,2> T = A*Winv;
     rval = metric2D->evaluate_with_hess( T, value, dmdT, d2mdT2, err ); MSQ_ERRZERO(err);
-    gradient<2>( num_idx, mDerivs2D, SaT_Th * dmdT * transpose(Winv), grad );
+    gradient<2>( num_idx, mDerivs2D, M * dmdT * transpose(Winv), grad );
+      // calculate 2D hessian
     second_deriv_wrt_product_factor( d2mdT2, Winv );
     const size_t n = num_idx*(num_idx+1)/2;
-      // calculate 2D hessian
     hess2d.resize(n);
     if (n)
-      hessian<2>( num_idx, mDerivs2D, d2mdA2, arrptr(hess2d) );
+      hessian<2>( num_idx, mDerivs2D, d2mdT2, arrptr(hess2d) );
       // calculate surface hessian as transform of 2D hessian
     Hessian.resize(n);
     for (size_t i = 0; i < n; ++i)
-      Hessian[i] = Matrix3D( (SaT_Th * hess2d[i] * transpose(SaT_Th)).data() );
+      Hessian[i] = Matrix3D( (M * hess2d[i] * transpose(M)).data() );
 #ifdef PRINT_INFO
     print_info<2>( e, s, J, Wp, A * inverse(W) );
 #endif
-    */
+#endif
   }
   else {
     assert(0);
@@ -352,21 +355,22 @@ bool TRelQualityMetric::evaluate_with_Hessian_diagonal(
       return false;
     }
 
+#ifdef NUMERICAL_2D_HESSIAN
     // use finite diference approximation for now
     return QualityMetric::evaluate_with_Hessian_diagonal( pd, handle,
                                            value, indices, grad, diagonal,
                                            err );
-/*
+#else
     MsqMatrix<2,2> W, A, dmdT, d2mdT2[3];
-    MsqMatrix<3,2> SaT_Th;
+    MsqMatrix<3,2> M;
     rval = evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
-                             mDerivs2D, W, A, SaT_Th, err ); 
+                             mDerivs2D, W, A, M, err ); 
     if (MSQ_CHKERR(err) || !rval)
       return false;
     const MsqMatrix<2,2> Winv = inverse(W);
     const MsqMatrix<2,2> T = A*Winv;
     rval = metric2D->evaluate_with_hess( T, value, dmdT, d2mdT2, err ); MSQ_ERRZERO(err);
-    gradient<2>( num_idx, mDerivs2D, SaT_Th * dmdT * transpose(Winv), grad );
+    gradient<2>( num_idx, mDerivs2D, M * dmdT * transpose(Winv), grad );
     second_deriv_wrt_product_factor( d2mdT2, Winv );
 
     diagonal.resize( num_idx );
@@ -376,20 +380,20 @@ bool TRelQualityMetric::evaluate_with_Hessian_diagonal(
       block2d(0,1) = transpose(mDerivs2D[i]) * d2mdT2[1] * mDerivs2D[i];
       block2d(1,0) = block2d(0,1);
       block2d(1,1) = transpose(mDerivs2D[i]) * d2mdT2[2] * mDerivs2D[i];
-      MsqMatrix<3,2> p = SaT_Th * block2d;
+      MsqMatrix<3,2> p = M * block2d;
       
       SymMatrix3D& H = diagonal[i];
-      H[0] = p.row(0) * transpose(SaT_Th.row(0));
-      H[1] = p.row(0) * transpose(SaT_Th.row(1));
-      H[2] = p.row(0) * transpose(SaT_Th.row(2));
-      H[3] = p.row(1) * transpose(SaT_Th.row(1));
-      H[4] = p.row(1) * transpose(SaT_Th.row(2));
-      H[5] = p.row(2) * transpose(SaT_Th.row(2));
+      H[0] = p.row(0) * transpose(M.row(0));
+      H[1] = p.row(0) * transpose(M.row(1));
+      H[2] = p.row(0) * transpose(M.row(2));
+      H[3] = p.row(1) * transpose(M.row(1));
+      H[4] = p.row(1) * transpose(M.row(2));
+      H[5] = p.row(2) * transpose(M.row(2));
     }
 #ifdef PRINT_INFO
     print_info<2>( e, s, J, Wp, A * inverse(W) );
 #endif
-*/
+#endif
   }
   else {
     assert(0);
@@ -401,7 +405,11 @@ bool TRelQualityMetric::evaluate_with_Hessian_diagonal(
   std::copy( mIndices, mIndices+num_idx, indices.begin() );
   
     // apply target weight to value
-  weight( pd, s, e, num_idx, value, arrptr(grad), arrptr(diagonal), 0, err ); MSQ_ERRZERO(err);
+  if (!num_idx) 
+    weight( pd, s, e, num_idx, value, 0, 0, 0, err );
+  else
+    weight( pd, s, e, num_idx, value, arrptr(grad), arrptr(diagonal), 0, err ); 
+  MSQ_ERRZERO(err);
   return rval;
 }
 
