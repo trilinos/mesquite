@@ -510,6 +510,8 @@ APPEND_SET(SOURCES
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric)
 
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/Debug)
+
 APPEND_SET(HEADERS
   QualityMetric/AddQualityMetric.hpp
   QualityMetric/AveragingQM.hpp
