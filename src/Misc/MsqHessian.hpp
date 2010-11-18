@@ -129,11 +129,19 @@ namespace MESQUITE_NS
         // to initialize(..).
       void clear();
       
+      inline double norm() const; //!< Frobenius norm
+      
     private:
       MsqHessian& operator=( const MsqHessian& h );
       MsqHessian( const MsqHessian& copy ); 
     };
 
+  inline double MsqHessian::norm() const {
+    double sum = 0.0;
+    for (size_t i = 0; i < mRowStart[mSize]; ++i)
+      sum += Frobenius_2(mEntries[i]);
+    return sqrt(sum);
+  }
 
   /*! Sets all Hessian entries to zero. This is usually used before 
     starting to accumulate elements hessian in the objective function

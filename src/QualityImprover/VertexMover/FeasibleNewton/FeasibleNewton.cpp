@@ -115,9 +115,6 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 
   // 1.  Allocate a hessian and calculate the sparsity pattern.
   mHessian.initialize(pd, err); MSQ_ERRRTN(err);
-
-  // 3.  Calculate the norm of the gradient for the patch
-  MSQ_DBGOUT(3) << "  o  gradient norm: " << length(grad) << std::endl;
   
   // does the Feasible Newton iteration until stopping is required.
   // Terminate when inner termination criterion signals.
@@ -131,19 +128,31 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       MSQ_SETERR(err)("invalid patch for hessian calculation", MsqError::INTERNAL_ERROR);
       return; 
     }
-  
-    // Prints out free vertices coordinates. 
-    if (MSQ_DBG(3)) {
-      MSQ_DBGOUT(3) << "\n  o Free vertices ("<< pd.num_free_vertices()
-                <<")original coordinates:\n ";
-      MSQ_ERRRTN(err);
-      const MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_ERRRTN(err);
-      MsqFreeVertexIndexIterator ind1(pd, err); MSQ_ERRRTN(err);
-      ind1.reset();
-      while (ind1.next()) {
-        MSQ_DBGOUT(3) << "\t\t\t" << toto1[ind1.value()];
-      }
+
+    if (MSQ_DBG(3)) { // avoid expensive norm calculations if debug flag is off
+      MSQ_DBGOUT(3) << "  o  objective function: " << original_value << std::endl;
+      MSQ_DBGOUT(3) << "  o  gradient norm: " << length(grad) << std::endl;
+      MSQ_DBGOUT(3) << "  o  Hessian norm: " << mHessian.norm() << std::endl;
     }
+    
+    // Prints out free vertices coordinates. 
+    //
+    // Comment out the following because it is way to verbose for larger
+    // problems.  Consider doing:
+    //  inner_term_crit->write_mesh_steps( "filename.vtk" );
+    // instead.
+    // - j.kraftcheck 2010-11-17
+//    if (MSQ_DBG(3)) {
+//      MSQ_DBGOUT(3) << "\n  o Free vertices ("<< pd.num_free_vertices()
+//                <<")original coordinates:\n ";
+//      MSQ_ERRRTN(err);
+//      const MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_ERRRTN(err);
+//      MsqFreeVertexIndexIterator ind1(pd, err); MSQ_ERRRTN(err);
+//      ind1.reset();
+//      while (ind1.next()) {
+//        MSQ_DBGOUT(3) << "\t\t\t" << toto1[ind1.value()];
+//      }
+//    }
       
     // 4. Calculate a direction using preconditionned conjugate gradients
     //    to find a zero of the Newton system of equations (H*d = -g)
@@ -165,6 +174,9 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     // If direction is positive, does a gradient (steepest descent) step.
 
     if (alpha > -epsilon) {
+    
+      MSQ_DBGOUT(3) << "  o  alpha = " << alpha << " (rejected)" << std::endl;
+    
       if (!havePrintedDirectionMessage) {
         MSQ_PRINT(1)("Newton direction not guaranteed descent.  Ensure preconditioner is positive definite.\n");
         havePrintedDirectionMessage = true;
@@ -183,6 +195,9 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       // }
       // alpha = inner(grad, d, nv);  	// recompute alpha
       // 				// equal to one for large gradient
+    }
+    else {
+      MSQ_DBGOUT(3) << "  o  alpha = " << alpha << std::endl;
     }
     
     alpha *= sigma;
@@ -217,21 +232,25 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     if ((fn_bool && (original_value - new_value >= -alpha*beta - epsilon)) ||
         (fn_bool && (length(arrptr(grad), nv) < 100*convTol))) {
       // Armijo linesearch rules passed.
+      MSQ_DBGOUT(3) << "  o  beta = " << beta << " (accepted without line search)" << std::endl;
     }
     else {
       if (!fn_bool) {
 	// Function undefined.  Use the higher decrease rate.
         beta *= beta0;
+        MSQ_DBGOUT(3) << "  o  beta = " << beta << " (invalid step)" << std::endl;
       }
       else {
 	// Function defined, but not sufficient decrease
         // Use the lower decrease rate.
         beta *= beta1;
+        MSQ_DBGOUT(3) << "  o  beta = " << beta << " (insufficient decrease)" << std::endl;
       }
       pd.set_to_vertices_memento(coordsMem, err); MSQ_ERRRTN(err);
       
       // Standard Armijo linesearch rules
  
+      MSQ_DBGOUT(3) << "  o  Doing line search" << std::endl;
       while (beta >= tol1) {
         // 6. Search along the direction
         //    (a) trial = x + beta*d
@@ -328,15 +347,15 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     }
 
     // Prints out free vertices coordinates. 
-    if (MSQ_DBG(3)) {
-      MSQ_DBGOUT(3) << "  o Free vertices new coordinates: \n";
-      const MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_ERRRTN(err);
-      MsqFreeVertexIndexIterator ind(pd, err); MSQ_ERRRTN(err);
-      ind.reset();
-      while (ind.next()) {
-        MSQ_DBGOUT(3) << "\t\t\t" << toto1[ind.value()];
-      }
-    }
+//    if (MSQ_DBG(3)) {
+//      MSQ_DBGOUT(3) << "  o Free vertices new coordinates: \n";
+//      const MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_ERRRTN(err);
+//      MsqFreeVertexIndexIterator ind(pd, err); MSQ_ERRRTN(err);
+//      ind.reset();
+//      while (ind.next()) {
+//        MSQ_DBGOUT(3) << "\t\t\t" << toto1[ind.value()];
+//      }
+//    }
 
     // checks stopping criterion 
     term_crit->accumulate_patch( pd, err ); MSQ_ERRRTN(err);
