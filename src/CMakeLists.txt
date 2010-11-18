@@ -32,10 +32,6 @@ ENDIF()
 SET(HEADERS "")
 SET(SOURCES "")
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../include)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../include)
-
 APPEND_SET(HEADERS
   ${CMAKE_CURRENT_BINARY_DIR}/../include/mesquite_config.h
   ${CMAKE_CURRENT_BINARY_DIR}/../include/mesquite_version.h
@@ -48,8 +44,6 @@ APPEND_SET(HEADERS
 #
 # src/Mesh
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/Mesh)
 
 IF (TPL_ENABLE_MPI)
   APPEND_SET(HEADERS
@@ -112,8 +106,6 @@ APPEND_SET(SOURCES
 # src/Control
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/Control)
-
 APPEND_SET(HEADERS
   Control/Instruction.hpp
   Control/InstructionQueue.hpp
@@ -136,8 +128,6 @@ APPEND_SET(SOURCES
 #
 # src/Control/Wrappers
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/Control/Wrappers)
 
 APPEND_SET(HEADERS
   Control/Wrappers/LaplacianIQ.hpp
@@ -165,8 +155,6 @@ APPEND_SET(SOURCES
 # src/MappingFunction
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/MappingFunction)
-
 APPEND_SET(HEADERS
   MappingFunction/MappingFunction.hpp
   MappingFunction/NodeSet.hpp
@@ -182,8 +170,6 @@ APPEND_SET(SOURCES
 #
 # src/MappingFunction/Lagrange
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/MappingFunction/Lagrange)
 
 APPEND_SET(HEADERS
   MappingFunction/Lagrange/HexLagrangeShape.hpp
@@ -202,8 +188,6 @@ APPEND_SET(SOURCES
 #
 # src/MappingFunction/Linear
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/MappingFunction/Linear)
 
 APPEND_SET(HEADERS
   MappingFunction/Linear/LinearHexahedron.hpp
@@ -226,8 +210,6 @@ APPEND_SET(SOURCES
 #
 # src/Misc
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/Misc)
 
 APPEND_SET(HEADERS
   Misc/BoundedCylinderDomain.hpp
@@ -294,8 +276,6 @@ ENDIF()
 # src/ObjectiveFuntion
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/ObjectiveFunction)
-
 APPEND_SET(HEADERS
   ObjectiveFunction/CompositeOFAdd.hpp
   ObjectiveFunction/CompositeOFMultiply.hpp
@@ -334,8 +314,6 @@ APPEND_SET(SOURCES
 # src/QualityAssessor
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityAssessor)
-
 APPEND_SET(HEADERS
   QualityAssessor/QualityAssessor.hpp
   )
@@ -347,8 +325,6 @@ APPEND_SET(SOURCES
 #
 # src/QualityImprover
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover)
 
 APPEND_SET(HEADERS
   QualityImprover/PatchSetUser.hpp
@@ -363,8 +339,6 @@ APPEND_SET(SOURCES
 # src/QualityImprover/TopologyModifier
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/TopolofyModifier)
-
 APPEND_SET(HEADERS
   QualityImprover/TopologyModifier/TopologyModifier.hpp
   )
@@ -376,8 +350,6 @@ APPEND_SET(SOURCES
 #
 # src/QualityImprover/VertexMover
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover)
 
 APPEND_SET(HEADERS
   QualityImprover/VertexMover/NullImprover.hpp
@@ -392,8 +364,6 @@ APPEND_SET(SOURCES
 # src/QualityImprover/VertexMover/ConjugateGradient
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/ConjugateGradient)
-
 APPEND_SET(HEADERS
   QualityImprover/VertexMover/ConjugateGradient/ConjugateGradient.hpp
   )
@@ -405,8 +375,6 @@ APPEND_SET(SOURCES
 #
 # src/QualityImprover/VertexMover/Relaxation
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/Relaxation)
 
 APPEND_SET(HEADERS
   QualityImprover/VertexMover/Relaxation/RelaxationSmoother.hpp
@@ -424,8 +392,6 @@ APPEND_SET(SOURCES
 # src/QualityImprover/VertexMover/SteepestDescent
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/SteepestDescent)
-
 APPEND_SET(HEADERS
   QualityImprover/VertexMover/SteepestDescent/SteepestDescent.hpp
   )
@@ -437,8 +403,6 @@ APPEND_SET(SOURCES
 #
 # src/QualityImprover/VertexMover/NonSmoothDescent
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/NonSmoothDescent)
 
 APPEND_SET(HEADERS
   QualityImprover/VertexMover/NonSmoothDescent/NonSmoothDescent.hpp
@@ -452,8 +416,6 @@ APPEND_SET(SOURCES
 # src/QualityImprover/VertexMover/FeasibleNewton
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/FeasibleNewton)
-
 APPEND_SET(HEADERS
   QualityImprover/VertexMover/FeasibleNewton/FeasibleNewton.hpp
   )
@@ -465,8 +427,6 @@ APPEND_SET(SOURCES
 #
 # src/QualityImprover/VertexMover/Randomize
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/Randomize)
 
 APPEND_SET(HEADERS
   QualityImprover/VertexMover/Randomize/Randomize.hpp
@@ -480,8 +440,6 @@ APPEND_SET(SOURCES
 # src/QualityImprover/VertexMover/TrustRegion
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/TrustRegion)
-
 APPEND_SET(HEADERS
   QualityImprover/VertexMover/TrustRegion/TrustRegion.hpp
   )
@@ -494,8 +452,6 @@ APPEND_SET(SOURCES
 # src/QualityImprover/VertexMover/QuasiNewton
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityImprover/VertexMover/QuasiNewton)
-
 APPEND_SET(HEADERS
   QualityImprover/VertexMover/QuasiNewton/QuasiNewton.hpp
   )
@@ -507,10 +463,6 @@ APPEND_SET(SOURCES
 #
 # src/QualityMetric
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric)
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/Debug)
 
 APPEND_SET(HEADERS
   QualityMetric/AddQualityMetric.hpp
@@ -557,8 +509,6 @@ APPEND_SET(SOURCES
 # src/QualityMetric/Shape
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/Shape)
-
 APPEND_SET(HEADERS
   QualityMetric/Shape/AspectRatioGammaQualityMetric.hpp
   QualityMetric/Shape/ConditionNumberFunctions.hpp
@@ -581,8 +531,6 @@ APPEND_SET(SOURCES
 # src/QualityMetric/Smoothness
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/Smoothness)
-
 APPEND_SET(HEADERS
   QualityMetric/Smoothness/EdgeLengthQualityMetric.hpp
   QualityMetric/Smoothness/EdgeLengthRangeQualityMetric.hpp
@@ -596,8 +544,6 @@ APPEND_SET(SOURCES
 #
 # src/QualityMetric/TMP
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/TMP)
 
 APPEND_SET(HEADERS
   QualityMetric/TMP/AffineMapMetric.hpp
@@ -619,8 +565,6 @@ APPEND_SET(SOURCES
 # src/TargetMetric
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/TargetMetric)
-
 #APPEND_SET(HEADERS
 #  )
 
@@ -633,8 +577,6 @@ APPEND_SET(SOURCES
 #
 # src/TargetMetric/Absolute
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/TargetMetric/Absolute)
 
 APPEND_SET(HEADERS
   TargetMetric/Absolute/TAbs2DMetric.hpp
@@ -653,8 +595,6 @@ APPEND_SET(SOURCES
 #
 # src/TargetMetric/Relative
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/TargetMetric/Relative)
 
 APPEND_SET(HEADERS
   TargetMetric/Relative/TRel2DMetric.hpp
@@ -782,8 +722,6 @@ APPEND_SET(SOURCES
 # src/QualityMetric/Untangle
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/Untangle)
-
 APPEND_SET(HEADERS
   QualityMetric/Untangle/UntangleBetaQualityMetric.hpp
   )
@@ -795,8 +733,6 @@ APPEND_SET(SOURCES
 #
 # src/QualityMetric/Volume
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/Volume)
 
 APPEND_SET(HEADERS
   QualityMetric/Volume/EdgeLengthMetric.hpp
@@ -813,8 +749,6 @@ APPEND_SET(SOURCES
 #
 # src/QualityMetric/TargetCalculator
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/TargetCalculator)
 
 APPEND_SET(HEADERS
   TargetCalculator/CachingTargetCalculator.hpp
@@ -861,10 +795,6 @@ APPEND_SET(SOURCES
 #
 # itaps
 #
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../itaps)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps)
-
 
 
 #the key here is that the generated files have to be marked as generated using the SET_SOURCE_FILES_PROPERTIES
