@@ -356,7 +356,7 @@ void CompareQM::check_hess( size_t handle,
   
   for (size_t r = 0; r < n; ++r) {
     const size_t r2 = index_map[r];
-    for (size_t c = r+1; c < n; ++c) {
+    for (size_t c = r; c < n; ++c) {
       const size_t c2 = index_map[c];
       size_t idx1 = n*r - r*(r+1)/2 + c;
       Matrix3D h2;
