@@ -415,19 +415,7 @@ void MsqHessian::compute_preconditioner(MsqError &/*err*/)
   for (m=0; m<mSize; ++m) {
     diag_block = mEntries + mRowStart[m]; // Gets block at position m,m .
 
-#if DIAGONAL_PRECONDITIONER
-    // find sum, and computes inverse, or 0 if sum = 0 .
-    sum = (*diag_block)[0][0] + (*diag_block)[1][1] + (*diag_block)[2][2];
-    double inv_sum;
-    if (sum != 0.) 
-      inv_sum = 1 / sum;
-    else
-      inv_sum = 0.;
-    
-    mPreconditioner[m][0][0] = inv_sum;
-    mPreconditioner[m][1][1] = inv_sum;
-    mPreconditioner[m][2][2] = inv_sum;
-#else
+#if !DIAGONAL_PRECONDITIONER
     // calculate LDL^T factorization of the diagonal block
     //  L = [1 pre[0][1] pre[0][2]]
     //      [0 1         pre[1][2]]
@@ -440,7 +428,7 @@ void MsqHessian::compute_preconditioner(MsqError &/*err*/)
     // use the diagonal method.
     bool use_diag = false;
     
-    if ((*diag_block)[0][0] == 0.0) {
+    if (fabs((*diag_block)[0][0]) < DBL_EPSILON) {
       use_diag = true;
     }
     else {
@@ -451,7 +439,7 @@ void MsqHessian::compute_preconditioner(MsqError &/*err*/)
           mPreconditioner[m][0][0];
       sum = ((*diag_block)[1][1] -
              (*diag_block)[0][1] * mPreconditioner[m][0][1]);
-      if(fabs(sum)<=MSQ_DBL_MIN)
+      if(fabs(sum)<=DBL_EPSILON)
         use_diag = true;
       else{
         mPreconditioner[m][1][1] = 1.0 / sum;
@@ -465,7 +453,7 @@ void MsqHessian::compute_preconditioner(MsqError &/*err*/)
                 (*diag_block)[0][2]*mPreconditioner[m][0][2] - 
                 mPreconditioner[m][1][2]*tmp);
 
-        if(fabs(sum)<= MSQ_DBL_MIN)
+        if(fabs(sum)<= DBL_EPSILON)
           use_diag = true;
         else
           mPreconditioner[m][2][2] = 1.0 / sum;
@@ -473,14 +461,15 @@ void MsqHessian::compute_preconditioner(MsqError &/*err*/)
       }
       
     }
-    if(use_diag){
-    
+    if(use_diag)
+#endif
+    {    
         // Either this is a fixed vertex or the diagonal block is not
         // invertible.  Switch to the diagonal preconditioner in this
         // case.
 
       sum = (*diag_block)[0][0] + (*diag_block)[1][1] + (*diag_block)[2][2];
-      if (fabs(sum) > MSQ_DBL_MIN) 
+      if (fabs(sum) > DBL_EPSILON) 
         sum = 1 / sum;
       else
         sum = 0.0;
@@ -492,8 +481,6 @@ void MsqHessian::compute_preconditioner(MsqError &/*err*/)
       mPreconditioner[m][1][2] = 0.0;
       mPreconditioner[m][2][2] = sum;
     }
-    
-#endif
   }
 }
 
