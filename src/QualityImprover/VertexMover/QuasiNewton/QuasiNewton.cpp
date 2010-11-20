@@ -109,7 +109,7 @@ void QuasiNewton::solve( Vector3D* z_arr, const Vector3D* v_arr ) const
 {
   SymMatrix3D pd;
   
-  const double small = 1e-100;
+  const double small = DBL_EPSILON;
   const size_t nn = mHess.size();
   for (size_t i = 0; i < nn; ++i) {
 
