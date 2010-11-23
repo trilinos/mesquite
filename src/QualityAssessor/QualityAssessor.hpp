@@ -274,7 +274,8 @@ namespace MESQUITE_NS
     void add_quality_assessment( QualityMetric* metric,
                                  int histogram_intervals = 0,
                                  double power_mean = 0.0,
-                                 const char* metric_value_tag_name = 0 );
+                                 const char* metric_value_tag_name = 0,
+                                 const char* metric_label = 0 );
     
     /**\brief Same as add_quality_assessment, except that the average
      *        metric value is also used as the return value from loop_over_mesh.
@@ -284,7 +285,8 @@ namespace MESQUITE_NS
     void set_stopping_assessment( QualityMetric* metric,
                                   int histogram_intervals = 0,
                                   double power_mean = 0.0,
-                                  const char* metric_value_tag_name = 0 );
+                                  const char* metric_value_tag_name = 0,
+                                  const char* metric_label = 0 );
 
     /**\brief Register a QualityMetric for use in quality assessment.
      *
@@ -318,7 +320,8 @@ namespace MESQUITE_NS
                                    double max,
                                    int intervals,
                                    double power_mean = 0.0,
-                                   const char* metric_value_tag_name = 0 );
+                                   const char* metric_value_tag_name = 0,
+                                   const char* metric_label = 0 );
     
     virtual MESQUITE_EXPORT
     void initialize_queue( Mesh* mesh,
@@ -394,7 +397,7 @@ namespace MESQUITE_NS
     {
       public:
       
-        MESQUITE_EXPORT Assessor( QualityMetric* metric );
+        MESQUITE_EXPORT Assessor( QualityMetric* metric, const char* name = 0 );
         
         MESQUITE_EXPORT double get_average() const ;
         MESQUITE_EXPORT double get_maximum() const { return maximum; }
@@ -435,6 +438,8 @@ namespace MESQUITE_NS
         /** Get the QualityMetric */
         MESQUITE_EXPORT QualityMetric* get_metric() const { return qualMetric; }
         
+        MESQUITE_EXPORT const std::string& get_label() const { return mLabel; }
+        
         /** Add a value to the running counts */
         MESQUITE_EXPORT void add_value( double metric_value );
         
@@ -467,6 +472,7 @@ namespace MESQUITE_NS
         friend class QualityAssessor;
         
         QualityMetric *const qualMetric; //< The quality metric
+        std::string mLabel;
         
         unsigned long count;  //< The total number of times the metric was evaluated
         
@@ -575,7 +581,7 @@ namespace MESQUITE_NS
      *  QualityMetric, or create it if is not found in
      *  the list.
      */
-    list_type::iterator find_or_add( QualityMetric* qm );
+    list_type::iterator find_or_add( QualityMetric* qm, const char* label = 0 );
 
     /** Find an Assessor corresponding to the passed
      *  QualityMetric, or create it if is not found in

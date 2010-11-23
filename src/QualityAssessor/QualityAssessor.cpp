@@ -241,9 +241,10 @@ bool QualityAssessor::get_inverted_element_count(int &inverted_elems,
 void QualityAssessor::add_quality_assessment( QualityMetric* metric,
                                               int histogram_intervals,
                                               double power_mean,
-                                              const char* tag_name )
+                                              const char* tag_name,
+                                              const char* label )
 { 
-  list_type::iterator i = find_or_add( metric );
+  list_type::iterator i = find_or_add( metric, label );
   (*i)->pMean = power_mean;
   if (histogram_intervals > 0)
     (*i)->histogram.resize( histogram_intervals+2 );
@@ -256,7 +257,9 @@ void QualityAssessor::add_quality_assessment( QualityMetric* metric,
     (*i)->tagName = tag_name;
 }
 
-QualityAssessor::list_type::iterator QualityAssessor::find_or_add( QualityMetric* qm )
+QualityAssessor::list_type::iterator QualityAssessor::find_or_add( 
+                                                QualityMetric* qm,
+                                                const char* label )
 {
   list_type::iterator iter;
   
@@ -268,7 +271,7 @@ QualityAssessor::list_type::iterator QualityAssessor::find_or_add( QualityMetric
     // If metric not found in list, add it
   if (iter == assessList.end())
   {
-    Assessor* new_assessor = new Assessor(qm);
+    Assessor* new_assessor = new Assessor(qm, label);
     new_assessor->referenceCount = 1;
     if (qm->get_metric_type() == QualityMetric::VERTEX_BASED)
     {
@@ -307,13 +310,14 @@ the stoppingMetric pointer and the stoppingFunction data members.
 void QualityAssessor::set_stopping_assessment( QualityMetric* metric,
                                                int histogram_intervals,
                                                double power_mean,
-                                               const char* tag_name )
+                                               const char* tag_name,
+                                               const char* label )
 {
   list_type::iterator i = find_stopping_assessment();
   if (i != assessList.end())
     (*i)->set_stopping_function(false);
 
-  i = find_or_add( metric );
+  i = find_or_add( metric, label );
   (*i)->pMean = power_mean;
   if (histogram_intervals > 0)
     (*i)->histogram.resize( histogram_intervals+2 );
@@ -343,11 +347,12 @@ void QualityAssessor::add_histogram_assessment( QualityMetric* metric,
                                                 double max_val,
                                                 int intervals,
                                                 double power_mean,
-                                                const char* tag_name )
+                                                const char* tag_name,
+                                                const char* label )
 {
   if (intervals < 1)
     intervals = 1;
-  list_type::iterator i = find_or_add( metric );
+  list_type::iterator i = find_or_add( metric, label );
   (*i)->pMean = power_mean;
   (*i)->histMin = min_val;
   (*i)->histMax = max_val;
@@ -760,8 +765,9 @@ void QualityAssessor::reset_data()
   myData->invertedSampleCount = -1;
 }
 
-QualityAssessor::Assessor::Assessor( QualityMetric* metric )
+QualityAssessor::Assessor::Assessor( QualityMetric* metric, const char* label )
   : qualMetric(metric),
+    mLabel( label ? std::string(label) : metric->get_name() ),
     pMean(0.0),
     haveHistRange(false),
     histMin(1.0),
@@ -786,7 +792,7 @@ const QualityAssessor::Assessor* QualityAssessor::get_results( const char* name 
 {
   list_type::const_iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
-    if ((*iter)->get_metric()->get_name() == name)
+    if ((*iter)->get_label() == name)
       return *iter;
   return 0;
 }
@@ -939,7 +945,7 @@ void QualityAssessor::print_summary( std::ostream& stream ) const
       stream << "  " << (*iter)->get_invalid_element_count()
              << " OF " << (*iter)->get_count()
              << " ENTITIES EVALUATED TO AN UNDEFINED VALUE FOR " 
-             << (*iter)->get_metric()->get_name()
+             << (*iter)->get_label()
              << std::endl << std::endl;
     }
   }
@@ -978,8 +984,8 @@ void QualityAssessor::print_summary( std::ostream& stream ) const
   }
   unsigned namewidth = 0;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
-    if ((*iter)->get_metric()->get_name().size() > namewidth)
-      namewidth = (*iter)->get_metric()->get_name().size();
+    if ((*iter)->get_label().size() > namewidth)
+      namewidth = (*iter)->get_label().size();
   if (namewidth > maxnwidth)
     namewidth = maxnwidth;
   if (namewidth < 7)  // at least enough width for the column header
@@ -1004,8 +1010,8 @@ void QualityAssessor::print_summary( std::ostream& stream ) const
     // print metric values
   for (iter = assessList.begin(); iter != assessList.end(); ++iter) {
       // print name
-    stream << std::setw(namewidth) << (*iter)->get_metric()->get_name();
-    if ((*iter)->get_metric()->get_name().size() > namewidth) 
+    stream << std::setw(namewidth) << (*iter)->get_label();
+    if ((*iter)->get_label().size() > namewidth) 
       stream << std::endl << std::setw(namewidth) << " ";
       // print minimum
     stream << std::setw(NUMW) << (*iter)->get_minimum();
@@ -1106,7 +1112,7 @@ void QualityAssessor::Assessor::print_histogram( std::ostream& stream,
 
   
     // Write title
-  stream << std::endl << indent << get_metric()->get_name() << " histogram:";
+  stream << std::endl << indent << get_label() << " histogram:";
   if (log_plot)
     stream << " (log10 plot)";
   stream << std::endl;
