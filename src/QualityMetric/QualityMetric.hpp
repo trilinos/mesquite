@@ -71,7 +71,10 @@ namespace MESQUITE_NS
    {
    protected:
 
-     QualityMetric( ) {}
+     QualityMetric( ) : 
+      keepFiniteDiffEps(false), 
+      haveFiniteDiffEps(false) 
+      {}
 
    public:
 
@@ -343,6 +346,14 @@ namespace MESQUITE_NS
      int feasible;
      
      std::vector<Matrix3D> tmpHess;
+     bool keepFiniteDiffEps; //!< True if gradient finite difference
+                             //!< calculation should set \c finiteDiffEps
+     bool haveFiniteDiffEps; //!< True if finite difference Hessian code
+                             //!< has calculated \c finiteDiffEps 
+     double finiteDiffEps; //!< Location for finite difference Hessian code
+                           //!< to store this value so that it doesn't need
+                           //!< to be recalculated if the gradient calculation
+                           //!< is also finite difference
    };
 
 

@@ -95,7 +95,7 @@ double get_delta_C( const PatchData& pd,
     }
   }
   
-  return 5e-6*sqrt(min_dist_sqr) + 5e-7*sqrt(sum_dist_sqr/(end-beg));
+  return 3e-6*sqrt(min_dist_sqr) + 5e-7*sqrt(sum_dist_sqr/(end-beg));
 }
     
 
@@ -114,7 +114,14 @@ bool QualityMetric::evaluate_with_gradient( PatchData& pd,
     return true;
 
     // get initial pertubation amount
-  const double delta_C = get_delta_C( pd, indices, err ); MSQ_ERRZERO(err);
+  double delta_C = finiteDiffEps;
+  if (!haveFiniteDiffEps) {
+    delta_C = get_delta_C( pd, indices, err ); MSQ_ERRZERO(err);
+    if (keepFiniteDiffEps) {
+      finiteDiffEps = delta_C;
+      haveFiniteDiffEps = true;
+    }
+  }
   const double delta_inv_C = 1.0/delta_C;
   const int reduction_limit = 15;
 
@@ -175,14 +182,26 @@ bool QualityMetric::evaluate_with_Hessian( PatchData& pd,
 {
   indices.clear();
   gradient.clear();
+  keepFiniteDiffEps = true;
   bool valid = evaluate_with_gradient( pd, handle, value, indices, gradient, err );
-  if (MSQ_CHKERR(err) || !valid)
+  keepFiniteDiffEps = false;
+  if (MSQ_CHKERR(err) || !valid) {
+    haveFiniteDiffEps = false;
     return false;
-  if (indices.empty())
+  }
+  if (indices.empty()){
+    haveFiniteDiffEps = false;
     return true;
+  }
 
     // get initial pertubation amount
-  const double delta_C = get_delta_C( pd, indices, err ); MSQ_ERRZERO(err);
+  double delta_C;
+  if (haveFiniteDiffEps) {
+    delta_C = finiteDiffEps;
+  }
+  else {
+    delta_C = get_delta_C( pd, indices, err ); MSQ_ERRZERO(err);
+  }
   assert(delta_C < 1e30);
   const double delta_inv_C = 1.0/delta_C;
   const int reduction_limit = 15;
@@ -211,6 +230,7 @@ bool QualityMetric::evaluate_with_Hessian( PatchData& pd,
         if (++counter >= reduction_limit) {
           MSQ_SETERR(err)("Algorithm did not successfully compute element's "
                            "Hessian.\n",MsqError::INTERNAL_ERROR);
+          haveFiniteDiffEps = false;
           return false;
         }
         
@@ -235,6 +255,7 @@ bool QualityMetric::evaluate_with_Hessian( PatchData& pd,
       }
     }  // for(j)
   } // for(indices)
+  haveFiniteDiffEps = false;
   return true;
 }
 
