@@ -25,29 +25,28 @@
   ***************************************************************** */
 
 
-/** \file TRel2DOffset.hpp
+/** \file TPower2.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TREL_2D_OFFSET_HPP
-#define MSQ_TREL_2D_OFFSET_HPP
+#ifndef MSQ_T_POWER2_HPP
+#define MSQ_T_POWER2_HPP
 
 #include "Mesquite.hpp"
-#include "TRel2DMetric.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
-/** \f$ \mu\prime = \mu + \alpha\f$ */
-class TRel2DOffset : public TRel2DMetric
+/** \f$ \mu\prime = \mu^2 \f$ */
+class TPower2 : public TMetric
 {
-  double mAlpha;
-  TRel2DMetric* mMetric;
+  TMetric* mMetric;
 
 public:
 
-  TRel2DOffset( double alpha, TRel2DMetric* metric ) 
-    : mAlpha(alpha), mMetric(metric) {}
+  TPower2( TMetric* metric ) 
+    : mMetric(metric) {}
   
   MESQUITE_EXPORT virtual
   std::string get_name() const;
@@ -68,6 +67,24 @@ public:
                            double& result,
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqMatrix<2,2> second_wrt_T[3],
+                           MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate( const MsqMatrix<3,3>& T, 
+                 double& result, 
+                 MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<3,3>& T,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_T,
+                           MsqError& err );
+  
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_hess( const MsqMatrix<3,3>& T,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_T,
+                           MsqMatrix<3,3> second_wrt_T[6],
                            MsqError& err );
 };
 

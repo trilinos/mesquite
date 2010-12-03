@@ -25,35 +25,45 @@
   ***************************************************************** */
 
 
-/** \file InvTransBarrier2D.hpp
+/** \file InvTransBarrier.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_INV_TRANS_BARRIER_2D_HPP
-#define MSQ_INV_TRANS_BARRIER_2D_HPP
-
 #include "Mesquite.hpp"
-#include "TRel2DMetric.hpp"
+#include "InvTransBarrier.hpp"
+#include "MsqMatrix.hpp"
+#include "MsqError.hpp"
 
 namespace MESQUITE_NS {
 
-/** Make a non-barrier metric into a barrier metric by passing it T^-t */
-class InvTransBarrier2D : public TRel2DMetric
+std::string InvTransBarrier::get_name() const
+  { return "InvTransBarrier"; }
+
+bool InvTransBarrier::evaluate( const MsqMatrix<2,2>& T, 
+                                double& result, MsqError& err )
 {
-  public:
-  InvTransBarrier2D( TRel2DMetric* metric ) : metricPtr(metric) {}
+  double tau = det(T);
+  if (invalid_determinant(tau))
+    return false;
+  MsqMatrix<2,2> Tp = transpose_adj(T);
+  Tp *= 1.0/tau;
+  bool rval = metricPtr->evaluate( Tp, result, err );
+  return !MSQ_CHKERR(err) && rval;
+}
 
-  MESQUITE_EXPORT virtual
-  std::string get_name() const;
-  
-  MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<2,2>& T, double& result, MsqError& err );
+bool InvTransBarrier::evaluate( const MsqMatrix<3,3>& T, 
+                                double& result, 
+                                MsqError& err )
+{
+  double tau = det(T);
+  if (invalid_determinant(tau))
+    return false;
+  MsqMatrix<3,3> Tp = transpose_adj(T);
+  Tp *= 1.0/tau;
+  bool rval = metricPtr->evaluate( Tp, result, err );
+  return !MSQ_CHKERR(err) && rval;
+}
 
-  private:
-  TRel2DMetric* metricPtr;
-};
 
 } // namespace Mesquite
-
-#endif

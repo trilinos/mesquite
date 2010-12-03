@@ -1,7 +1,7 @@
 /* ***************************************************************** 
     MESQUITE -- The Mesh Quality Improvement Toolkit
 
-    Copyright 2009 Sandia National Laboratories.  Developed at the
+    Copyright 2006 Sandia National Laboratories.  Developed at the
     University of Wisconsin--Madison under SNL contract number
     624796.  The U.S. Government and the University of Wisconsin
     retain certain rights to this software.
@@ -19,38 +19,51 @@
     You should have received a copy of the GNU Lesser General Public License 
     (lgpl.txt) along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    (2009) kraftche@cae.wisc.edu    
-
+ 
+    (2006) kraftche@cae.wisc.edu
+   
   ***************************************************************** */
 
 
-/** \file TRel3DOffset.hpp
+/** \file TSizeNB.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TREL_3D_OFFSET_HPP
-#define MSQ_TREL_3D_OFFSET_HPP
+#ifndef MSQ_T_SIZE_NB_HPP
+#define MSQ_T_SIZE_NB_HPP
 
 #include "Mesquite.hpp"
-#include "TRel3DMetric.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
-/** \f$ \mu\prime = \mu  + \alpha \f$ */
-class TRel3DOffset : public TRel3DMetric
+
+/** (det(T)-1)^2 */
+class TSizeNB : public TMetric
 {
-  double mAlpha;
-  TRel3DMetric* mMetric;
-
-public:
-
-  TRel3DOffset( double alpha, TRel3DMetric* metric ) 
-    : mAlpha(alpha), mMetric(metric) {}
+  public:
   
   MESQUITE_EXPORT virtual
   std::string get_name() const;
+
+  MESQUITE_EXPORT virtual
+  bool evaluate( const MsqMatrix<2,2>& T, 
+                 double& result, 
+                 MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<2,2>& T,
+                           double& result,
+                           MsqMatrix<2,2>& deriv_wrt_T,
+                           MsqError& err );
+  
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_hess( const MsqMatrix<2,2>& T,
+                           double& result,
+                           MsqMatrix<2,2>& deriv_wrt_T,
+                           MsqMatrix<2,2> second_wrt_T[3],
+                           MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& T, 
@@ -72,6 +85,7 @@ public:
 };
 
 
-} // namespace MESQUITE_NS
+
+} // namespace Mesquite
 
 #endif

@@ -25,48 +25,37 @@
   ***************************************************************** */
 
 
-/** \file TRel2DSizeBarrier.hpp
+/** \file InvTransBarrier.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TREL_2D_SIZE_BARRIER_HPP
-#define MSQ_TREL_2D_SIZE_BARRIER_HPP
+#ifndef MSQ_INV_TRANS_BARRIER_HPP
+#define MSQ_INV_TRANS_BARRIER_HPP
 
 #include "Mesquite.hpp"
-#include "TRel2DMetric.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
-
-/** det(T) + 1/det(T) -2 */
-class TRel2DSizeBarrier : public TRel2DMetric
+/** Make a non-barrier metric into a barrier metric by passing it T^-t */
+class InvTransBarrier : public TMetric
 {
-public:
-  
+  public:
+  InvTransBarrier( TMetric* metric ) : metricPtr(metric) {}
+
   MESQUITE_EXPORT virtual
   std::string get_name() const;
-
-  MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<2,2>& T, 
-                 double& result, 
-                 MsqError& err );
-
-  MESQUITE_EXPORT virtual
-  bool evaluate_with_grad( const MsqMatrix<2,2>& T,
-                           double& result,
-                           MsqMatrix<2,2>& deriv_wrt_T,
-                           MsqError& err );
   
   MESQUITE_EXPORT virtual
-  bool evaluate_with_hess( const MsqMatrix<2,2>& T,
-                           double& result,
-                           MsqMatrix<2,2>& deriv_wrt_T,
-                           MsqMatrix<2,2> second_wrt_T[3],
-                           MsqError& err );
+  bool evaluate( const MsqMatrix<2,2>& T, double& result, MsqError& err );
+  
+  MESQUITE_EXPORT virtual
+  bool evaluate( const MsqMatrix<3,3>& T, double& result, MsqError& err );
+
+  private:
+  TMetric* metricPtr;
 };
-
-
 
 } // namespace Mesquite
 

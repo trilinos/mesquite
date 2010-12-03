@@ -25,27 +25,26 @@
   ***************************************************************** */
 
 
-/** \file TRel2DSizeBarrier.cpp
+/** \file TSizeBarrier.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DSizeBarrier.hpp"
+#include "TSizeBarrier.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DSizeBarrier::get_name() const
+std::string TSizeBarrier::get_name() const
   { return "Size"; }
 
-bool TRel2DSizeBarrier::evaluate( const MsqMatrix<2,2>& T, 
-                                  double& result, 
-                                  MsqError&  )
+template <int DIM> static inline
+bool eval( const MsqMatrix<DIM,DIM>& T, double& result )
 {
   double d = det(T);
-  if (invalid_determinant(d)) {
+  if (TMetric::invalid_determinant(d)) {
     result = 0.0;
     return false;
   }
@@ -53,14 +52,19 @@ bool TRel2DSizeBarrier::evaluate( const MsqMatrix<2,2>& T,
   return true;  
 }
 
+bool TSizeB::evaluate( const MsqMatrix<2,2>& T, 
+                       double& result, 
+                       MsqError&  )
+{
+  return eval( T, result );
+}
 
-bool TRel2DSizeBarrier::evaluate_with_grad( const MsqMatrix<2,2>& T,
-                                            double& result,
-                                            MsqMatrix<2,2>& deriv_wrt_T,
-                                            MsqError& err )
+template <int DIM> static inline
+bool grad( const MsqMatrix<DIM,DIM>& T, double& result, 
+           MsqMatrix<DIM,DIM>& deriv_wrt_T )
 {
   double d = det(T);
-  if (invalid_determinant(d)) {
+  if (TMetric::invalid_determinant(d)) {
     result = 0.0;
     return false;
   }
@@ -68,26 +72,51 @@ bool TRel2DSizeBarrier::evaluate_with_grad( const MsqMatrix<2,2>& T,
   deriv_wrt_T = (1 - 1/(d*d)) * transpose_adj(T);
   return true;  
 }
-  
-bool TRel2DSizeBarrier::evaluate_with_hess( const MsqMatrix<2,2>& T,
-                                            double& result,
-                                            MsqMatrix<2,2>& deriv_wrt_T,
-                                            MsqMatrix<2,2> second_wrt_T[3],
-                                            MsqError& err )
+
+
+bool TSizeB::evaluate_with_grad( const MsqMatrix<2,2>& T,
+                                 double& result,
+                                 MsqMatrix<2,2>& deriv_wrt_T,
+                                 MsqError& )
+{
+  return grad( T, result, deriv_wrt_T );
+}
+
+template <int DIM> static inline
+bool hess( const MsqMatrix<DIM,DIM>& T, double& result, 
+           MsqMatrix<DIM,DIM>& deriv_wrt_T, MsqMatrix<DIM,DIM>* second_wrt_T )
 {
   double d = det(T);
-  if (invalid_determinant(d)) {
+  if (TMetric::invalid_determinant(d)) {
     result = 0.0;
     return false;
   }
   result = d + 1.0/d - 2.0;
-  MsqMatrix<2,2> adjt = transpose_adj(T);
+  MsqMatrix<DIM,DIM> adjt = transpose_adj(T);
   const double f = 1 - 1/(d*d);
   deriv_wrt_T = f * adjt;
   
   set_scaled_outer_product( second_wrt_T, 2/(d*d*d), adjt );
-  pluseq_scaled_2nd_deriv_of_det( second_wrt_T, f );
+  pluseq_scaled_2nd_deriv_of_det( second_wrt_T, f, T );
   return true;  
+}
+  
+bool TSizeB::evaluate_with_hess( const MsqMatrix<2,2>& T,
+                                 double& result,
+                                 MsqMatrix<2,2>& deriv_wrt_T,
+                                 MsqMatrix<2,2> second_wrt_T[3],
+                                 MsqError& )
+{
+  return hess( T, result, deriv_wrt_T, second_wrt_T );
+}
+  
+bool TSizeB::evaluate_with_hess( const MsqMatrix<3,3>& T,
+                                 double& result,
+                                 MsqMatrix<3,3>& deriv_wrt_T,
+                                 MsqMatrix<3,3> second_wrt_T[3],
+                                 MsqError& )
+{
+  return hess( T, result, deriv_wrt_T, second_wrt_T );
 }
 
 

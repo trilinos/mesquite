@@ -104,6 +104,9 @@ void pluseq_scaled_2nd_deriv_of_det( MsqMatrix<3,3> R[6],
  */
 inline
 void pluseq_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[3], double alpha );
+inline
+void pluseq_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[3], double alpha, const MsqMatrix<2,2>& )
+  { pluseq_scaled_2nd_deriv_of_det( R, alpha ); }
 
 /**\brief \f$ R = \alpha \frac{\partial}{\partial T}det(T) \f$
  *
@@ -122,6 +125,9 @@ void set_scaled_2nd_deriv_of_det( MsqMatrix<3,3> R[6],
  */
 inline
 void set_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[3], double alpha );
+inline
+void set_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[3], double alpha, const MsqMatrix<2,2>& )
+  { set_scaled_2nd_deriv_of_det( R, alpha ); }
 
 /**\brief \f$ R += \alpha \frac{\partial^2}{\partial T^2}tr(adj T) \f$
  *

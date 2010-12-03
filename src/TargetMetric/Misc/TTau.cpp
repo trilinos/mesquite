@@ -25,48 +25,36 @@
   ***************************************************************** */
 
 
-/** \file TRel3DOffset.cpp
+/** \file TTau.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel3DOffset.hpp"
+#include "TTau.hpp"
 #include "MsqMatrix.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel3DOffset::get_name() const
-  { return "offset(" + mMetric->get_name() + ')'; }
 
-bool TRel3DOffset::evaluate( const MsqMatrix<3,3>& T, 
-                            double& result, 
-                            MsqError& err )
+TTau::~TTau() {}
+
+std::string TTau::get_name() const { return "Tau"; }
+
+bool TTau::evaluate( const MsqMatrix<2,2>& T, 
+                     double& result, 
+                     MsqError&  )
 {
-  bool rval = mMetric->evaluate( T, result, err );
-  result += mAlpha;
-  return rval;
+  result = det(T);
+  return true;
 }
 
-bool TRel3DOffset::evaluate_with_grad( const MsqMatrix<3,3>& T,
-                                       double& result,
-                                       MsqMatrix<3,3>& deriv_wrt_T,
-                                       MsqError& err )
+bool TTau::evaluate( const MsqMatrix<3,3>& T, 
+                     double& result, 
+                     MsqError&  )
 {
-  bool rval = mMetric->evaluate_with_grad( T, result, deriv_wrt_T, err );
-  result += mAlpha;
-  return rval;
-}
-
-bool TRel3DOffset::evaluate_with_hess( const MsqMatrix<3,3>& T,
-                                       double& result,
-                                       MsqMatrix<3,3>& deriv_wrt_T,
-                                       MsqMatrix<3,3> second_wrt_T[6],
-                                       MsqError& err )
-{
-  bool rval = mMetric->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );
-  result += mAlpha;
-  return rval;
+  result = det(T);
+  return true;
 }
 
 

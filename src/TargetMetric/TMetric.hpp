@@ -238,7 +238,6 @@ public:
                            MsqMatrix<3,3> second_wrt_T[6],
                            MsqError& err );
                            
-protected:
   static inline bool invalid_determinant( double d )
     { return d < 1e-12; }
 };

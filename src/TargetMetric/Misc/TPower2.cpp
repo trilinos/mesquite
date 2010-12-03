@@ -25,34 +25,43 @@
   ***************************************************************** */
 
 
-/** \file TRel3DSquared.cpp
+/** \file TSquared.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel3DSquared.hpp"
+#include "TSquared.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel3DSquared::get_name() const
+std::string TSquared::get_name() const
   { return "sqr(" + mMetric->get_name() + ')'; }
 
-bool TRel3DSquared::evaluate( const MsqMatrix<3,3>& T, 
-                                double& result, 
-                                MsqError& err )
+bool TPower2::evaluate( const MsqMatrix<2,2>& T, 
+                        double& result, 
+                        MsqError& err )
 {
   bool rval = mMetric->evaluate( T, result, err );
   result *= result;
   return rval;
 }
 
-bool TRel3DSquared::evaluate_with_grad( const MsqMatrix<3,3>& T,
-                                          double& result,
-                                          MsqMatrix<3,3>& deriv_wrt_T,
-                                          MsqError& err )
+bool TPower2::evaluate( const MsqMatrix<3,3>& T, 
+                        double& result, 
+                        MsqError& err )
+{
+  bool rval = mMetric->evaluate( T, result, err );
+  result *= result;
+  return rval;
+}
+
+bool TPower2::evaluate_with_grad( const MsqMatrix<2,2>& T,
+                                  double& result,
+                                  MsqMatrix<2,2>& deriv_wrt_T,
+                                  MsqError& err )
 {
   bool rval = mMetric->evaluate_with_grad( T, result, deriv_wrt_T, err );
   deriv_wrt_T *= 2 * result;
@@ -60,11 +69,38 @@ bool TRel3DSquared::evaluate_with_grad( const MsqMatrix<3,3>& T,
   return rval;
 }
 
-bool TRel3DSquared::evaluate_with_hess( const MsqMatrix<3,3>& T,
-                                          double& result,
-                                          MsqMatrix<3,3>& deriv_wrt_T,
-                                          MsqMatrix<3,3> second_wrt_T[3],
-                                          MsqError& err )
+bool TPower2::evaluate_with_grad( const MsqMatrix<3,3>& T,
+                                  double& result,
+                                  MsqMatrix<3,3>& deriv_wrt_T,
+                                  MsqError& err )
+{
+  bool rval = mMetric->evaluate_with_grad( T, result, deriv_wrt_T, err );
+  deriv_wrt_T *= 2 * result;
+  result *= result;
+  return rval;
+}
+
+bool TPower2::evaluate_with_hess( const MsqMatrix<2,2>& T,
+                                  double& result,
+                                  MsqMatrix<2,2>& deriv_wrt_T,
+                                  MsqMatrix<2,2> second_wrt_T[3],
+                                  MsqError& err )
+{
+  bool rval = mMetric->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );
+  second_wrt_T[0] *= 2 * result;
+  second_wrt_T[1] *= 2 * result;
+  second_wrt_T[2] *= 2 * result;
+  pluseq_scaled_outer_product( second_wrt_T, 2.0, deriv_wrt_T );
+  deriv_wrt_T *= 2 * result;
+  result *= result;
+  return rval;
+}
+
+bool TPower2::evaluate_with_hess( const MsqMatrix<3,3>& T,
+                                  double& result,
+                                  MsqMatrix<3,3>& deriv_wrt_T,
+                                  MsqMatrix<3,3> second_wrt_T[3],
+                                  MsqError& err )
 {
   bool rval = mMetric->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );
   second_wrt_T[0] *= 2 * result;

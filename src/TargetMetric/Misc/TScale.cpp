@@ -25,33 +25,42 @@
   ***************************************************************** */
 
 
-/** \file TRel2DScale.cpp
+/** \file TScale.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DScale.hpp"
+#include "TScale.hpp"
 #include "MsqMatrix.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DScale::get_name() const
+std::string TScale::get_name() const
   { return "scale(" + mMetric->get_name() + ')'; }
 
-bool TRel2DScale::evaluate( const MsqMatrix<2,2>& T, 
-                            double& result, 
-                            MsqError& err )
+bool TScale::evaluate( const MsqMatrix<2,2>& T, 
+                       double& result, 
+                       MsqError& err )
 {
   bool rval = mMetric->evaluate( T, result, err );
   result *= mAlpha;
   return rval;
 }
 
-bool TRel2DScale::evaluate_with_grad( const MsqMatrix<2,2>& T,
-                                      double& result,
-                                      MsqMatrix<2,2>& deriv_wrt_T,
-                                      MsqError& err )
+bool TScale::evaluate( const MsqMatrix<3,3>& T, 
+                       double& result, 
+                       MsqError& err )
+{
+  bool rval = mMetric->evaluate( T, result, err );
+  result *= mAlpha;
+  return rval;
+}
+
+bool TScale::evaluate_with_grad( const MsqMatrix<2,2>& T,
+                                 double& result,
+                                 MsqMatrix<2,2>& deriv_wrt_T,
+                                 MsqError& err )
 {
   bool rval = mMetric->evaluate_with_grad( T, result, deriv_wrt_T, err );
   result *= mAlpha;
@@ -59,11 +68,22 @@ bool TRel2DScale::evaluate_with_grad( const MsqMatrix<2,2>& T,
   return rval;
 }
 
-bool TRel2DScale::evaluate_with_hess( const MsqMatrix<2,2>& T,
-                                      double& result,
-                                      MsqMatrix<2,2>& deriv_wrt_T,
-                                      MsqMatrix<2,2> second_wrt_T[3],
-                                      MsqError& err )
+bool TScale::evaluate_with_grad( const MsqMatrix<3,3>& T,
+                                 double& result,
+                                 MsqMatrix<3,3>& deriv_wrt_T,
+                                 MsqError& err )
+{
+  bool rval = mMetric->evaluate_with_grad( T, result, deriv_wrt_T, err );
+  result *= mAlpha;
+  deriv_wrt_T *= mAlpha;
+  return rval;
+}
+
+bool TScale::evaluate_with_hess( const MsqMatrix<2,2>& T,
+                                 double& result,
+                                 MsqMatrix<2,2>& deriv_wrt_T,
+                                 MsqMatrix<2,2> second_wrt_T[3],
+                                 MsqError& err )
 {
   bool rval = mMetric->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );
   result *= mAlpha;
@@ -71,6 +91,24 @@ bool TRel2DScale::evaluate_with_hess( const MsqMatrix<2,2>& T,
   second_wrt_T[0] *= mAlpha;
   second_wrt_T[1] *= mAlpha;
   second_wrt_T[2] *= mAlpha;
+  return rval;
+}
+
+bool TScale::evaluate_with_hess( const MsqMatrix<3,3>& T,
+                                 double& result,
+                                 MsqMatrix<3,3>& deriv_wrt_T,
+                                 MsqMatrix<3,3> second_wrt_T[3],
+                                 MsqError& err )
+{
+  bool rval = mMetric->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );
+  result *= mAlpha;
+  deriv_wrt_T *= mAlpha;
+  second_wrt_T[0] *= mAlpha;
+  second_wrt_T[1] *= mAlpha;
+  second_wrt_T[2] *= mAlpha;
+  second_wrt_T[3] *= mAlpha;
+  second_wrt_T[4] *= mAlpha;
+  second_wrt_T[5] *= mAlpha;
   return rval;
 }
 

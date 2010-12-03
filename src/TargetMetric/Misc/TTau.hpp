@@ -25,49 +25,41 @@
   ***************************************************************** */
 
 
-/** \file TRel3DSum.hpp
+/** \file TTau.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TREL_2D_SUM_HPP
-#define MSQ_TREL_2D_SUM_HPP
+#ifndef MSQ_T_TAU_HPP
+#define MSQ_T_TAU_HPP
 
 #include "Mesquite.hpp"
-#include "TRel3DMetric.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
-/** \f$ \mu\prime = \mu_1 + \mu_2 \f$ */
-class TRel3DSum : public TRel3DMetric
-{
-  TRel3DMetric *mu1, *mu2;
-
+/**\brief det(T) 
+ *
+ * Intended for use in QualityAssessment only.  If used elsewhere,
+ * analytical derivatives should probably be implemented.
+ */
+class TTau : public TMetric {
 public:
+  MESQUITE_EXPORT virtual
+  ~TTau();
 
-  TRel3DSum( TRel3DMetric* metric1, TRel3DMetric* metric2 ) 
-    : mu1(metric1), mu2(metric2) {}
-  
   MESQUITE_EXPORT virtual
   std::string get_name() const;
+
+  MESQUITE_EXPORT virtual
+  bool evaluate( const MsqMatrix<2,2>& T, 
+                 double& result, 
+                 MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& T, 
                  double& result, 
                  MsqError& err );
-
-  MESQUITE_EXPORT virtual
-  bool evaluate_with_grad( const MsqMatrix<3,3>& T,
-                           double& result,
-                           MsqMatrix<3,3>& deriv_wrt_T,
-                           MsqError& err );
-  
-  MESQUITE_EXPORT virtual
-  bool evaluate_with_hess( const MsqMatrix<3,3>& T,
-                           double& result,
-                           MsqMatrix<3,3>& deriv_wrt_T,
-                           MsqMatrix<3,3> second_wrt_T[6],
-                           MsqError& err );
 };
 
 
