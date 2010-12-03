@@ -106,6 +106,72 @@ do_finite_difference( int r, int c, TargetMetric* metric,
 
 template <typename TargetMetric, unsigned Dim>
 static inline bool
+do_numerical_gradient( TargetMetric* metric,
+                       MsqMatrix<Dim, Dim> A,
+                       const MsqMatrix<Dim, Dim>& W,
+                       double& value,
+                       MsqMatrix<Dim,Dim>& grad,
+                       MsqError& err )
+{
+  bool valid = evaluate( A, W, result, err );
+  if (MSQ_CHKERR(err) || !valid)
+    return valid;
+  
+  switch (Dim) {
+    case 3:
+  wrt_A(0,2) = do_finite_difference( 0, 2, this, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(1,2) = do_finite_difference( 1, 2, this, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(2,0) = do_finite_difference( 2, 0, this, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(2,1) = do_finite_difference( 2, 1, this, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(2,2) = do_finite_difference( 2, 2, this, A, W, result, err ); MSQ_ERRZERO(err);
+    case 2:
+  wrt_A(0,1) = do_finite_difference( 0, 1, this, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(1,0) = do_finite_difference( 1, 0, this, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(1,1) = do_finite_difference( 1, 1, this, A, W, result, err ); MSQ_ERRZERO(err);
+    case 1:
+  wrt_A(0,0) = do_finite_difference( 0, 0, this, A, W, result, err ); MSQ_ERRZERO(err);
+    break;
+    default:
+     assert(false);
+  }
+  return true;
+}
+
+template <typename TargetMetric, unsigned Dim>
+static inline bool
+do_numerical_gradient( TargetMetric* metric,
+                       MsqMatrix<Dim, Dim> A,
+                       double& value,
+                       MsqMatrix<Dim,Dim>& grad,
+                       MsqError& err )
+{
+  bool valid = evaluate( A, result, err );
+  if (MSQ_CHKERR(err) || !valid)
+    return valid;
+  
+  switch (Dim) {
+    case 3:
+  wrt_A(0,2) = do_finite_difference( 0, 2, this, A, result, err ); MSQ_ERRZERO(err);
+  wrt_A(1,2) = do_finite_difference( 1, 2, this, A, result, err ); MSQ_ERRZERO(err);
+  wrt_A(2,0) = do_finite_difference( 2, 0, this, A, result, err ); MSQ_ERRZERO(err);
+  wrt_A(2,1) = do_finite_difference( 2, 1, this, A, result, err ); MSQ_ERRZERO(err);
+  wrt_A(2,2) = do_finite_difference( 2, 2, this, A, result, err ); MSQ_ERRZERO(err);
+    case 2:
+  wrt_A(0,1) = do_finite_difference( 0, 1, this, A, result, err ); MSQ_ERRZERO(err);
+  wrt_A(1,0) = do_finite_difference( 1, 0, this, A, result, err ); MSQ_ERRZERO(err);
+  wrt_A(1,1) = do_finite_difference( 1, 1, this, A, result, err ); MSQ_ERRZERO(err);
+    case 1:
+  wrt_A(0,0) = do_finite_difference( 0, 0, this, A, result, err ); MSQ_ERRZERO(err);
+    break;
+    default:
+     assert(false);
+  }
+  return true;
+}
+
+
+template <typename TargetMetric, unsigned Dim>
+static inline bool
 do_numerical_hessian( TargetMetric* metric, 
                       MsqMatrix<Dim, Dim> A,
                       const MsqMatrix<Dim, Dim>& W,
