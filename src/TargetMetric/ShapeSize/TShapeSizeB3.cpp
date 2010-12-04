@@ -25,21 +25,21 @@
   ***************************************************************** */
 
 
-/** \file TRel2DShapeSizeBarrierAlt2.cpp
+/** \file TShapeSizeB3.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DShapeSizeBarrierAlt2.hpp"
+#include "TShapeSizeB3.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DShapeSizeBarrierAlt2::get_name() const
-  { return "ShapeSizeBarrier"; }
+std::string TShapeSizeB3::get_name() const
+  { return "TShapeSizeB3"; }
 
-bool TRel2DShapeSizeBarrierAlt2::evaluate( const MsqMatrix<2,2>& T, 
+bool TShapeSizeB3::evaluate( const MsqMatrix<2,2>& T, 
                                            double& result, 
                                            MsqError& )
 {
@@ -53,7 +53,7 @@ bool TRel2DShapeSizeBarrierAlt2::evaluate( const MsqMatrix<2,2>& T,
   return true;
 }
 
-bool TRel2DShapeSizeBarrierAlt2::evaluate_with_grad( const MsqMatrix<2,2>& T,
+bool TShapeSizeB3::evaluate_with_grad( const MsqMatrix<2,2>& T,
                                                      double& result,
                                                      MsqMatrix<2,2>& deriv_wrt_T,
                                                      MsqError& err )
@@ -72,7 +72,7 @@ bool TRel2DShapeSizeBarrierAlt2::evaluate_with_grad( const MsqMatrix<2,2>& T,
   return true;
 }
 
-bool TRel2DShapeSizeBarrierAlt2::evaluate_with_hess( const MsqMatrix<2,2>& T,
+bool TShapeSizeB3::evaluate_with_hess( const MsqMatrix<2,2>& T,
                                                      double& result,
                                                      MsqMatrix<2,2>& deriv_wrt_T,
                                                      MsqMatrix<2,2> second_wrt_T[3],
@@ -99,5 +99,71 @@ bool TRel2DShapeSizeBarrierAlt2::evaluate_with_hess( const MsqMatrix<2,2>& T,
   return true;
 }
 
+
+bool TShapeSizeB3::evaluate( const MsqMatrix<3,3>& T, 
+                             double& result, 
+                             MsqError& )
+{
+  const double tau = det(T);
+  if (invalid_determinant(tau)) { // barrier
+    result = 0.0;
+    return false;
+  }
+  
+  double n = Frobenius(T);
+  result = n*n*n - 3*MSQ_SQRT_THREE*( log(tau) + 1 );
+  return true;
+}
+
+bool TShapeSizeB3::evaluate_with_grad( const MsqMatrix<3,3>& T,
+                                       double& result,
+                                       MsqMatrix<3,3>& deriv_wrt_T,
+                                       MsqError& err )
+{
+  const double tau = det(T);
+  if (invalid_determinant(tau)) { // barrier
+    result = 0.0;
+    return false;
+  }
+  
+  double n = Frobenius(T);
+  result = n*n*n - 3*MSQ_SQRT_THREE*( log(tau) + 1 );
+  
+  const MsqMatrix<3,3> adjt = transpose_adj(T);
+  deriv_wrt_T = T;
+  deriv_wrt_T *= 3*n;
+  deriv_wrt_T -= 3*MSQ_SQRT_THREE/tau * adjt;
+  
+  return true;
+}
+
+bool TShapeSizeB3::evaluate_with_hess( const MsqMatrix<3,3>& T,
+                                       double& result,
+                                       MsqMatrix<3,3>& deriv_wrt_T,
+                                       MsqMatrix<3,3> second_wrt_T[6],
+                                       MsqError& err )
+{
+  const double tau = det(T);
+  if (invalid_determinant(tau)) { // barrier
+    result = 0.0;
+    return false;
+  }
+  
+  double n = Frobenius(T);
+  result = n*n*n - 3*MSQ_SQRT_THREE*( log(tau) + 1 );
+  
+  const MsqMatrix<3,3> adjt = transpose_adj(T);
+  const double it = 1/tau;
+  deriv_wrt_T = T;
+  deriv_wrt_T *= 3*n;
+  deriv_wrt_T -= 3*MSQ_SQRT_THREE*it * adjt;
+  
+  set_scaled_outer_product( second_wrt_T, 3/n, T );
+  pluseq_scaled_I( second_wrt_T, 3*n );
+  pluseq_scaled_2nd_deriv_of_det( second_wrt_T, -3*MSQ_SQRT_THREE*it, T );
+  pluseq_scaled_outer_product( second_wrt_T, 3*MSQ_SQRT_THREE*it*it, adjt );
+  
+  return true;
+}
 
 } // namespace Mesquite

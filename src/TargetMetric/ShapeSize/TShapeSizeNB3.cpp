@@ -19,32 +19,83 @@
     You should have received a copy of the GNU Lesser General Public License 
     (lgpl.txt) along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    (2009) kraftche@cae.wisc.edu    
-
+ 
+    (2009) kraftche@cae.wisc.edu
+   
   ***************************************************************** */
 
 
-/** \file TRel3DShapeSize.cpp
+/** \file TShapeSizeNB3.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel3DShapeSize.hpp"
+#include "TShapeSizeNB3.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-TRel3DShapeSize::~TRel3DShapeSize() {}
+std::string TShapeSizeNB3::get_name() const
+  { return "TShapeSizeNB3"; }
 
-std::string TRel3DShapeSize::get_name() const
-  { return "ShapeSize"; }
+bool TShapeSizeNB3::evaluate( const MsqMatrix<2,2>& T, 
+                                    double& result, 
+                                    MsqError&  )
+{
+  const double nT = sqr_Frobenius(T);
+  const double tau = det(T);
+  const double tau1 = tau - 1;
+  result = 2*nT - 4*tau + mGamma*tau1*tau1;
+  return true;
+}
 
-bool TRel3DShapeSize::evaluate( const MsqMatrix<3,3>& T, 
-                                double& result, 
-                                MsqError& )
+
+bool TShapeSizeNB3::evaluate_with_grad( const MsqMatrix<2,2>& T, 
+                                              double& result, 
+                                              MsqMatrix<2,2>& deriv_wrt_T,
+                                              MsqError& err )
+{
+  const double nT = sqr_Frobenius(T);
+  const double tau = det(T);
+  const double tau1 = tau - 1;
+  result = 2*nT - 4*tau + mGamma*tau1*tau1;
+ 
+  deriv_wrt_T = T;
+  deriv_wrt_T *= 4;
+  deriv_wrt_T += (2*mGamma*tau1 - 4) * transpose_adj(T);
+
+  return true;
+}
+
+bool TShapeSizeNB3::evaluate_with_hess( const MsqMatrix<2,2>& T, 
+                                              double& result, 
+                                              MsqMatrix<2,2>& deriv_wrt_T,
+                                              MsqMatrix<2,2> second[3],
+                                              MsqError& err )
+{
+  const double nT = sqr_Frobenius(T);
+  const double tau = det(T);
+  const double tau1 = tau - 1;
+  result = 2*nT - 4*tau + mGamma*tau1*tau1;
+ 
+  const double f = 2*mGamma*tau1 - 4;
+  const MsqMatrix<2,2> adjt = transpose_adj(T);
+  deriv_wrt_T = T;
+  deriv_wrt_T *= 4;
+  deriv_wrt_T += f * adjt;
+
+  set_scaled_outer_product( second, 2*mGamma, adjt );
+  pluseq_scaled_I( second, 4 );
+  pluseq_scaled_2nd_deriv_of_det( second, f );
+  
+  return true;
+}
+
+bool TShapeSizeNB3::evaluate( const MsqMatrix<3,3>& T, 
+                              double& result, 
+                              MsqError& )
 {
   const double nT = Frobenius(T);
   const double tau = det(T);
@@ -54,10 +105,10 @@ bool TRel3DShapeSize::evaluate( const MsqMatrix<3,3>& T,
 }
 
 
-bool TRel3DShapeSize::evaluate_with_grad( const MsqMatrix<3,3>& T, 
-                                          double& result, 
-                                          MsqMatrix<3,3>& wrt_T,
-                                          MsqError&  )
+bool TShapeSizeNB3::evaluate_with_grad( const MsqMatrix<3,3>& T, 
+                                        double& result, 
+                                        MsqMatrix<3,3>& wrt_T,
+                                        MsqError&  )
 {
   const double nT = Frobenius(T);
   const double tau = det(T);
@@ -71,11 +122,11 @@ bool TRel3DShapeSize::evaluate_with_grad( const MsqMatrix<3,3>& T,
   return true;
 }
 
-bool TRel3DShapeSize::evaluate_with_hess( const MsqMatrix<3,3>& T,
-                                          double& result,
-                                          MsqMatrix<3,3>& wrt_T,
-                                          MsqMatrix<3,3> second[6],
-                                          MsqError& err )
+bool TShapeSizeNB3::evaluate_with_hess( const MsqMatrix<3,3>& T,
+                                        double& result,
+                                        MsqMatrix<3,3>& wrt_T,
+                                        MsqMatrix<3,3> second[6],
+                                        MsqError& err )
 {
   const double nT = Frobenius(T);
   const double tau = det(T);

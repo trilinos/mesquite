@@ -25,23 +25,23 @@
   ***************************************************************** */
 
 
-/** \file TRel2DShapeSizeBarrier.cpp
+/** \file TShapeSizeB1.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DShapeSizeBarrier.hpp"
+#include "TShapeSizeB1.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DShapeSizeBarrier::get_name() const
-  { return "ShapeSizeBarrier"; }
+std::string TShapeSizeB1::get_name() const
+  { return "TShapeSizeB1"; }
 
-bool TRel2DShapeSizeBarrier::evaluate( const MsqMatrix<2,2>& T, 
-                                       double& result, 
-                                       MsqError&  )
+bool TShapeSizeB1::evaluate( const MsqMatrix<2,2>& T, 
+                             double& result, 
+                             MsqError&  )
 {
   const double tau = det(T);
   if (invalid_determinant(tau)) { // barrier
@@ -55,10 +55,10 @@ bool TRel2DShapeSizeBarrier::evaluate( const MsqMatrix<2,2>& T,
   return true;
 }
 
-bool TRel2DShapeSizeBarrier::evaluate_with_grad( const MsqMatrix<2,2>& T,
-                                                 double& result,
-                                                 MsqMatrix<2,2>& deriv_wrt_T,
-                                                 MsqError& err )
+bool TShapeSizeB1::evaluate_with_grad( const MsqMatrix<2,2>& T,
+                                       double& result,
+                                       MsqMatrix<2,2>& deriv_wrt_T,
+                                       MsqError& err )
 {
   const double tau = det(T);
   if (invalid_determinant(tau)) { // barrier
@@ -78,11 +78,11 @@ bool TRel2DShapeSizeBarrier::evaluate_with_grad( const MsqMatrix<2,2>& T,
   return true;
 }
 
-bool TRel2DShapeSizeBarrier::evaluate_with_hess( const MsqMatrix<2,2>& T,
-                                                 double& result,
-                                                 MsqMatrix<2,2>& deriv_wrt_T,
-                                                 MsqMatrix<2,2> second_wrt_T[3],
-                                                 MsqError& err )
+bool TShapeSizeB1::evaluate_with_hess( const MsqMatrix<2,2>& T,
+                                       double& result,
+                                       MsqMatrix<2,2>& deriv_wrt_T,
+                                       MsqMatrix<2,2> second_wrt_T[3],
+                                       MsqError& err )
 {
   const double tau = det(T);
   if (invalid_determinant(tau)) { // barrier

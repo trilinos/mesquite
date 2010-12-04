@@ -25,26 +25,26 @@
   ***************************************************************** */
 
 
-/** \file TRel2DShapeSize.cpp
+/** \file TShapeSize2DNB1.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DShapeSize.hpp"
+#include "TShapeSize2DNB1.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DShapeSize::get_name() const
-  { return "ShapeSize"; }
+std::string TShapeSize2DNB1::get_name() const
+  { return "TShapeSize2DNB1"; }
 
 /** \f$ \mu(T) = |T|^2 - 2 \psi(T) + 2 \f$
  *  \f$ \psi(T) = \sqrt{|T|^2 + 2 \tau} \f$
  *  \f$ \tau = det(T) \f$
  */
-bool TRel2DShapeSize::evaluate( const MsqMatrix<2,2>& T, 
+bool TShapeSize2DNB1::evaluate( const MsqMatrix<2,2>& T, 
                                 double& result, 
                                 MsqError&  )
 {
@@ -64,7 +64,7 @@ bool TRel2DShapeSize::evaluate( const MsqMatrix<2,2>& T,
 }
 
 
-bool TRel2DShapeSize::evaluate_with_grad( const MsqMatrix<2,2>& T, 
+bool TShapeSize2DNB1::evaluate_with_grad( const MsqMatrix<2,2>& T, 
                                           double& result, 
                                           MsqMatrix<2,2>& deriv_wrt_T,
                                           MsqError& err )
@@ -90,7 +90,7 @@ bool TRel2DShapeSize::evaluate_with_grad( const MsqMatrix<2,2>& T,
   return true;
 }
 
-bool TRel2DShapeSize::evaluate_with_hess( const MsqMatrix<2,2>& T, 
+bool TShapeSize2DNB1::evaluate_with_hess( const MsqMatrix<2,2>& T, 
                                           double& result, 
                                           MsqMatrix<2,2>& deriv_wrt_T,
                                           MsqMatrix<2,2> second[3],

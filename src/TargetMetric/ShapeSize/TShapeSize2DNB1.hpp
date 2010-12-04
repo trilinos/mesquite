@@ -1,7 +1,7 @@
 /* ***************************************************************** 
     MESQUITE -- The Mesh Quality Improvement Toolkit
 
-    Copyright 2009 Sandia National Laboratories.  Developed at the
+    Copyright 2006 Sandia National Laboratories.  Developed at the
     University of Wisconsin--Madison under SNL contract number
     624796.  The U.S. Government and the University of Wisconsin
     retain certain rights to this software.
@@ -20,26 +20,26 @@
     (lgpl.txt) along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
-    (2009) kraftche@cae.wisc.edu
+    (2006) kraftche@cae.wisc.edu
    
   ***************************************************************** */
 
 
-/** \file TRel2DShapeSizeAlt1.hpp
+/** \file TShapeSize2DNB1.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TARGET2DSHAPE_SIZE_ALT1_HPP
-#define MSQ_TARGET2DSHAPE_SIZE_ALT1_HPP
+#ifndef MSQ_T_SHAPE_SIZE_2D_NB_1_HPP
+#define MSQ_T_SHAPE_SIZE_2D_NB_1_HPP
 
 #include "Mesquite.hpp"
-#include "TRel2DMetric.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
-/** 3.2.4: \f$ \frac{|T|^2+2}{2\psi(T)} - 1 \f$ */
-class TRel2DShapeSizeAlt1 : public TRel2DMetric
+/** |T|^2 - 2*sqrt(|T|^2 + 2*det(T))+2 */
+class TShapeSize2DNB1 : public TMetric2D
 {
   public:
 
@@ -63,7 +63,6 @@ class TRel2DShapeSizeAlt1 : public TRel2DMetric
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqMatrix<2,2> second_wrt_T[3],
                            MsqError& err );
-
 };
 
 

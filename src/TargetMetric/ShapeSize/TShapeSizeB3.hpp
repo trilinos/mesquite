@@ -25,21 +25,21 @@
   ***************************************************************** */
 
 
-/** \file TRel2DShapeSizeBarrierAlt1.hpp
+/** \file TShapeSizeB3.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TREL_2D_SHAPE_SIZE_BARRIER_ALT1_HPP
-#define MSQ_TREL_2D_SHAPE_SIZE_BARRIER_ALT1_HPP
+#ifndef MSQ_T_SHAPE_SIZE_B_3_HPP
+#define MSQ_T_SHAPE_SIZE_B_3_HPP
 
 #include "Mesquite.hpp"
-#include "TRel2DMetric.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
-/** (|T|^2 - 2*sqrt(|T|^2 + 2*det(T))+2) / (2 det(T)) */
-class TRel2DShapeSizeBarrierAlt1 : public TRel2DMetric
+/** |T|^2 - 2 * ln(det(T)) - 2 */
+class TShapeSizeB3 : public TMetric
 {
   public:
   
@@ -48,20 +48,38 @@ class TRel2DShapeSizeBarrierAlt1 : public TRel2DMetric
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<2,2>& T, 
-                 double& result,
+                 double& result, 
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_grad( const MsqMatrix<2,2>& T, 
-                           double& result, 
+  bool evaluate_with_grad( const MsqMatrix<2,2>& T,
+                           double& result,
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_hess( const MsqMatrix<2,2>& T, 
-                           double& result, 
+  bool evaluate_with_hess( const MsqMatrix<2,2>& T,
+                           double& result,
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqMatrix<2,2> second_wrt_T[3],
+                           MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate( const MsqMatrix<3,3>& T, 
+                 double& result, 
+                 MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<3,3>& T,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_T,
+                           MsqError& err );
+  
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_hess( const MsqMatrix<3,3>& T,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_T,
+                           MsqMatrix<3,3> second_wrt_T[6],
                            MsqError& err );
 };
 

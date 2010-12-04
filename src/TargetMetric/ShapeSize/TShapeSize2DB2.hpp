@@ -19,62 +19,54 @@
     You should have received a copy of the GNU Lesser General Public License 
     (lgpl.txt) along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    (2006) kraftche@cae.wisc.edu    
-
+ 
+    (2006) kraftche@cae.wisc.edu
+   
   ***************************************************************** */
 
 
-/** \file TSquared3D.cpp
+/** \file TShapeSize2DB2.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
+#ifndef MSQ_T_SHAPE_SIZE_2D_B_2_HPP
+#define MSQ_T_SHAPE_SIZE_2D_B_2_HPP
+
 #include "Mesquite.hpp"
-#include "TSquared3D.hpp"
-#include "MsqMatrix.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
-TSquared3D::~TSquared3D() {}
+/** (|T|^2 - 2*sqrt(|T|^2 + 2*det(T))+2) / (2 det(T)) */
+class TShapeSize2DB2 : public TMetric2D
+{
+  public:
+  
+  MESQUITE_EXPORT virtual
+  std::string get_name() const;
 
-std::string TSquared3D::get_name() const
-  { return "TSquared"; }
+  MESQUITE_EXPORT virtual
+  bool evaluate( const MsqMatrix<2,2>& T, 
+                 double& result,
+                 MsqError& err );
 
-bool TSquared3D::evaluate( const MsqMatrix<3,3>& T, 
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<2,2>& T, 
                            double& result, 
-                           MsqError& err )
-{
-  result = sqr_Frobenius( T );
-  return true;
-}
+                           MsqMatrix<2,2>& deriv_wrt_T,
+                           MsqError& err );
 
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_hess( const MsqMatrix<2,2>& T, 
+                           double& result, 
+                           MsqMatrix<2,2>& deriv_wrt_T,
+                           MsqMatrix<2,2> second_wrt_T[3],
+                           MsqError& err );
+};
 
-bool TSquared3D::evaluate_with_grad( const MsqMatrix<3,3>& T, 
-                                     double& result, 
-                                     MsqMatrix<3,3>& wrt_T,
-                                     MsqError& )
-{
-  result = sqr_Frobenius( T );
-  wrt_T = 2*T;
-  return true;
-}
-
-bool TSquared3D::evaluate_with_hess( const MsqMatrix<3,3>& T,
-                                     double& result,
-                                     MsqMatrix<3,3>& deriv_wrt_T,
-                                     MsqMatrix<3,3> second_wrt_T[6],
-                                     MsqError& err )
-{
-  MsqMatrix<3,3> V(2.0);
-  result = sqr_Frobenius( T );
-  deriv_wrt_T = T * V;
-    // diagonal blocks
-  second_wrt_T[0] = second_wrt_T[3] = second_wrt_T[5] = V;
-    // non-diagonal blocks are zero
-  second_wrt_T[1] = second_wrt_T[2] = second_wrt_T[4] = MsqMatrix<3,3>(0.0);
-  return true;
-}
 
 
 } // namespace Mesquite
+
+#endif

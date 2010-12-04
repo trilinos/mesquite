@@ -25,23 +25,23 @@
   ***************************************************************** */
 
 
-/** \file TRel3DShapeSizeBarrierAlt1.cpp
+/** \file TShapeSize3DB2.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel3DShapeSizeBarrierAlt1.hpp"
+#include "TShapeSize3DB2.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel3DShapeSizeBarrierAlt1::get_name() const
-  { return "ShapeSizeBarrier1"; }
+std::string TShapeSize3DB2::get_name() const
+  { return "TShapeSize3DB2"; }
 
-bool TRel3DShapeSizeBarrierAlt1::evaluate( const MsqMatrix<3,3>& T, 
-                                           double& result, 
-                                           MsqError&  )
+bool TShapeSize3DB2::evaluate( const MsqMatrix<3,3>& T, 
+                               double& result, 
+                               MsqError&  )
 {
   const double tau = det(T);
   if (invalid_determinant(tau)) { // barrier
@@ -55,10 +55,10 @@ bool TRel3DShapeSizeBarrierAlt1::evaluate( const MsqMatrix<3,3>& T,
   return true;
 }
 
-bool TRel3DShapeSizeBarrierAlt1::evaluate_with_grad( const MsqMatrix<3,3>& T,
-                                                     double& result,
-                                                     MsqMatrix<3,3>& deriv_wrt_T,
-                                                     MsqError& err )
+bool TShapeSize3DB2::evaluate_with_grad( const MsqMatrix<3,3>& T,
+                                         double& result,
+                                         MsqMatrix<3,3>& deriv_wrt_T,
+                                         MsqError& err )
 {
   const double tau = det(T);
   if (invalid_determinant(tau)) { // barrier
@@ -83,11 +83,11 @@ bool TRel3DShapeSizeBarrierAlt1::evaluate_with_grad( const MsqMatrix<3,3>& T,
 }
 
 
-bool TRel3DShapeSizeBarrierAlt1::evaluate_with_hess( const MsqMatrix<3,3>& T,
-                                                     double& result,
-                                                     MsqMatrix<3,3>& wrt_T,
-                                                     MsqMatrix<3,3> second[6],
-                                                     MsqError& err )
+bool TShapeSize3DB2::evaluate_with_hess( const MsqMatrix<3,3>& T,
+                                         double& result,
+                                         MsqMatrix<3,3>& wrt_T,
+                                         MsqMatrix<3,3> second[6],
+                                         MsqError& err )
 {
   const double tau = det(T);
   if (invalid_determinant(tau)) { // barrier

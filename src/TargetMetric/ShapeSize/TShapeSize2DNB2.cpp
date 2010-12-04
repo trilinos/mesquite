@@ -25,28 +25,28 @@
   ***************************************************************** */
 
 
-/** \file TRel2DShapeSizeAlt1.cpp
+/** \file TSpaheSize2DNB2.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DShapeSizeAlt1.hpp"
+#include "TSpaheSize2DNB2.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DShapeSizeAlt1::get_name() const
-  { return "ShapeSize1"; }
+std::string TSpaheSize2DNB2::get_name() const
+  { return "TShapeSize2DNB2"; }
 
 /** \f$ \mu(T) = \frac{|T|^2+2}{2\psi(T)} - 1 \f$
  *  \f$ \psi(T) = \sqrt{|T|^2 + 2 \tau}\f$
  *  \f$ \tau = det(T) \f$
  */
-bool TRel2DShapeSizeAlt1::evaluate( const MsqMatrix<2,2>& T, 
-                                    double& result, 
-                                    MsqError&  )
+bool TSpaheSize2DNB2::evaluate( const MsqMatrix<2,2>& T, 
+                                double& result, 
+                                MsqError&  )
 {
   double frob_sqr = sqr_Frobenius(T);
   double psi = sqrt( frob_sqr + 2.0*det(T) );
@@ -67,10 +67,10 @@ bool TRel2DShapeSizeAlt1::evaluate( const MsqMatrix<2,2>& T,
 }
 
 
-bool TRel2DShapeSizeAlt1::evaluate_with_grad( const MsqMatrix<2,2>& T, 
-                                              double& result, 
-                                              MsqMatrix<2,2>& deriv_wrt_T,
-                                              MsqError& err )
+bool TSpaheSize2DNB2::evaluate_with_grad( const MsqMatrix<2,2>& T, 
+                                          double& result, 
+                                          MsqMatrix<2,2>& deriv_wrt_T,
+                                          MsqError& err )
 {
   double frob_sqr = sqr_Frobenius(T);
   double psi = sqrt( frob_sqr + 2.0*det(T) );
@@ -99,11 +99,11 @@ bool TRel2DShapeSizeAlt1::evaluate_with_grad( const MsqMatrix<2,2>& T,
 }
 
 
-bool TRel2DShapeSizeAlt1::evaluate_with_hess( const MsqMatrix<2,2>& T, 
-                                              double& result, 
-                                              MsqMatrix<2,2>& deriv_wrt_T,
-                                              MsqMatrix<2,2> second[3],
-                                              MsqError& err )
+bool TSpaheSize2DNB2::evaluate_with_hess( const MsqMatrix<2,2>& T, 
+                                          double& result, 
+                                          MsqMatrix<2,2>& deriv_wrt_T,
+                                          MsqMatrix<2,2> second[3],
+                                          MsqError& err )
 {
   double frob_sqr = sqr_Frobenius(T);
   double psi = sqrt( frob_sqr + 2.0*det(T) );

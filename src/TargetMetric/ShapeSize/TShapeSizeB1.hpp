@@ -1,7 +1,7 @@
 /* ***************************************************************** 
     MESQUITE -- The Mesh Quality Improvement Toolkit
 
-    Copyright 2009 Sandia National Laboratories.  Developed at the
+    Copyright 2006 Sandia National Laboratories.  Developed at the
     University of Wisconsin--Madison under SNL contract number
     624796.  The U.S. Government and the University of Wisconsin
     retain certain rights to this software.
@@ -20,54 +20,67 @@
     (lgpl.txt) along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
-    (2009) kraftche@cae.wisc.edu
+    (2006) kraftche@cae.wisc.edu
    
   ***************************************************************** */
 
 
-/** \file TRel2DShapeSizeAlt2.hpp
+/** \file TShapeSizeB1.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TREL_2D_SHAPE_SIZE_ALT2_HPP
-#define MSQ_TREL_2D_SHAPE_SIZE_ALT2_HPP
+#ifndef MSQ_T_SHAPE_SIZE_B_1_HPP
+#define MSQ_T_SHAPE_SIZE_B_1_HPP
 
 #include "Mesquite.hpp"
-#include "TRel2DMetric.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
-/** \f$ |T - adj T^t|^2 + \gamma (\tau - 1)^2 \f$ */
-class TRel2DShapeSizeAlt2 : public TRel2DMetric
+/** |T - T-inverse-transpose|^2 */
+class TShapeSizeB1 : public TMetric
 {
   public:
   
-  TRel2DShapeSizeAlt2( double gamma = 2.0 ) : mGamma(gamma) {}
-
   MESQUITE_EXPORT virtual
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<2,2>& T, 
-                 double& result,
+                 double& result, 
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_grad( const MsqMatrix<2,2>& T, 
-                           double& result, 
+  bool evaluate_with_grad( const MsqMatrix<2,2>& T,
+                           double& result,
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_hess( const MsqMatrix<2,2>& T, 
-                           double& result, 
+  bool evaluate_with_hess( const MsqMatrix<2,2>& T,
+                           double& result,
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqMatrix<2,2> second_wrt_T[3],
                            MsqError& err );
-  private:
+
+  MESQUITE_EXPORT virtual
+  bool evaluate( const MsqMatrix<3,3>& T, 
+                 double& result, 
+                 MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<3,3>& T,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_T,
+                           MsqError& err );
   
-  double mGamma;
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_hess( const MsqMatrix<3,3>& T,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_T,
+                           MsqMatrix<3,3> second_wrt_T[6],
+                           MsqError& err );
 };
 
 

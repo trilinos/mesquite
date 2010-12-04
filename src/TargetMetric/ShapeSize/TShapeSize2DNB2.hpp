@@ -25,43 +25,43 @@
   ***************************************************************** */
 
 
-/** \file TRel3DShapeSizeBarrierAlt1.hpp
+/** \file TSpaheSize2DNB2.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TREL_3D_SHAPE_SIZE_BARRIER_ALT1_HPP
-#define MSQ_TREL_3D_SHAPE_SIZE_BARRIER_ALT1_HPP
+#ifndef MSQ_T_SHAPE_SIZE_2D_NB_2_HPP
+#define MSQ_T_SHAPE_SIZE_2D_NB_2_HPP
 
 #include "Mesquite.hpp"
-#include "TRel3DMetric.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
-/** 3.3.12: (|T|^2 + |adj(T)|^2)/6\tau - 1 */
-class TRel3DShapeSizeBarrierAlt1 : public TRel3DMetric
+/** 3.2.4: \f$ \frac{|T|^2+2}{2\psi(T)} - 1 \f$ */
+class TSpaheSize2DNB2 : public TMetric2D
 {
   public:
-  
+
   MESQUITE_EXPORT virtual
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<3,3>& T, 
-                 double& result, 
+  bool evaluate( const MsqMatrix<2,2>& T, 
+                 double& result,
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_grad( const MsqMatrix<3,3>& T,
-                           double& result,
-                           MsqMatrix<3,3>& deriv_wrt_T,
+  bool evaluate_with_grad( const MsqMatrix<2,2>& T, 
+                           double& result, 
+                           MsqMatrix<2,2>& deriv_wrt_T,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_hess( const MsqMatrix<3,3>& T,
-                           double& result,
-                           MsqMatrix<3,3>& deriv_wrt_T,
-                           MsqMatrix<3,3> second_wrt_T[6],
+  bool evaluate_with_hess( const MsqMatrix<2,2>& T, 
+                           double& result, 
+                           MsqMatrix<2,2>& deriv_wrt_T,
+                           MsqMatrix<2,2> second_wrt_T[3],
                            MsqError& err );
 
 };

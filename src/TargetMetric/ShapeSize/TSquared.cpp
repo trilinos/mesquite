@@ -25,51 +25,47 @@
   ***************************************************************** */
 
 
-/** \file TSquared2D.cpp
+/** \file TSquared.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TSquared2D.hpp"
+#include "TSquared.hpp"
 #include "MsqMatrix.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TSquared2D::get_name() const
+std::string TSquared::get_name() const
   { return "TSquared"; }
 
-bool TSquared2D::evaluate( const MsqMatrix<2,2>& T, 
-                          double& result, MsqError& )
+
+template <int DIM> static inline
+bool eval( const MsqMatrix<DIM,DIM>& T, double& result)
 {
   result = sqr_Frobenius( T );
-  return true;
+  return true;  
 }
 
-bool TSquared2D::evaluate_with_grad( const MsqMatrix<2,2>& T, 
-                                     double& result, 
-                                     MsqMatrix<2,2>& wrt_T,
-                                     MsqError& )
+template <int DIM> static inline
+bool grad( const MsqMatrix<DIM,DIM>& T, double& result, MsqMatrix<DIM,DIM>& wrt_T )
 {
   result = sqr_Frobenius( T );
   wrt_T = 2*T;
   return true;
 }
 
-bool TSquared2D::evaluate_with_hess( const MsqMatrix<2,2>& T,
-                                     double& result,
-                                     MsqMatrix<2,2>& deriv_wrt_T,
-                                     MsqMatrix<2,2> second_wrt_T[3],
-                                     MsqError& err )
+template <int DIM> static inline
+bool hess( const MsqMatrix<DIM,DIM>& T, double& result, 
+           MsqMatrix<DIM,DIM>& deriv_wrt_T, MsqMatrix<DIM,DIM>* second_wrt_T )
 {
   result = sqr_Frobenius( T );
   deriv_wrt_T = 2 * T;
-    // diagonal blocks
-  second_wrt_T[0] = second_wrt_T[2] = MsqMatrix<2,2>(2.0);
-    // non-diagonal blocks are zero
-  second_wrt_T[1].zero();
+  set_scaled_I( second_wrt_T, 2.0 );
   return true;
 }
+
+TMP_TEMPL_IMPL_COMMON(TSquared)
 
 
 } // namespace Mesquite
