@@ -52,20 +52,6 @@ bool eval( const MsqMatrix<DIM,DIM>& T, double& result )
   return true;  
 }
 
-bool TSizeB::evaluate( const MsqMatrix<2,2>& T, 
-                       double& result, 
-                       MsqError&  )
-{
-  return eval( T, result );
-}
-
-bool TSizeB::evaluate( const MsqMatrix<3,3>& T, 
-                       double& result, 
-                       MsqError&  )
-{
-  return eval( T, result );
-}
-
 template <int DIM> static inline
 bool grad( const MsqMatrix<DIM,DIM>& T, double& result, 
            MsqMatrix<DIM,DIM>& deriv_wrt_T )
@@ -78,23 +64,6 @@ bool grad( const MsqMatrix<DIM,DIM>& T, double& result,
   result = d + 1.0/d - 2.0;
   deriv_wrt_T = (1 - 1/(d*d)) * transpose_adj(T);
   return true;  
-}
-
-
-bool TSizeB::evaluate_with_grad( const MsqMatrix<2,2>& T,
-                                 double& result,
-                                 MsqMatrix<2,2>& deriv_wrt_T,
-                                 MsqError& )
-{
-  return grad( T, result, deriv_wrt_T );
-}
-
-bool TSizeB::evaluate_with_grad( const MsqMatrix<3,3>& T,
-                                 double& result,
-                                 MsqMatrix<3,3>& deriv_wrt_T,
-                                 MsqError& )
-{
-  return grad( T, result, deriv_wrt_T );
 }
 
 template <int DIM> static inline
@@ -115,24 +84,7 @@ bool hess( const MsqMatrix<DIM,DIM>& T, double& result,
   pluseq_scaled_2nd_deriv_of_det( second_wrt_T, f, T );
   return true;  
 }
-  
-bool TSizeB::evaluate_with_hess( const MsqMatrix<2,2>& T,
-                                 double& result,
-                                 MsqMatrix<2,2>& deriv_wrt_T,
-                                 MsqMatrix<2,2> second_wrt_T[3],
-                                 MsqError& )
-{
-  return hess( T, result, deriv_wrt_T, second_wrt_T );
-}
-  
-bool TSizeB::evaluate_with_hess( const MsqMatrix<3,3>& T,
-                                 double& result,
-                                 MsqMatrix<3,3>& deriv_wrt_T,
-                                 MsqMatrix<3,3> second_wrt_T[3],
-                                 MsqError& )
-{
-  return hess( T, result, deriv_wrt_T, second_wrt_T );
-}
 
+TMP_TEMPL_IMPL_COMMON(TSizeB)
 
 } // namespace Mesquite

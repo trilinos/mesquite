@@ -49,16 +49,6 @@ bool eval( const MsqMatrix<DIM,DIM>& T, double& result)
   return true;  
 }
 
-bool TSizeNB::evaluate( const MsqMatrix<2,2>& T, double& result, MsqError& )
-{
-  return eval(T,result);
-}
-
-bool TSizeNB::evaluate( const MsqMatrix<3,3>& T, double& result, MsqError& )
-{
-  return eval(T,result);
-}
-
 template <int DIM> static inline
 bool grad( const MsqMatrix<DIM,DIM>& T, double& result, MsqMatrix<DIM,DIM>& deriv )
 {
@@ -66,22 +56,6 @@ bool grad( const MsqMatrix<DIM,DIM>& T, double& result, MsqMatrix<DIM,DIM>& deri
   result = d1*d1;
   deriv_wrt_T = 2 * d1 * transpose_adj(T);
   return true;  
-}
-
-bool TSizeNB::evaluate_with_grad( const MsqMatrix<2,2>& T,
-                                  double& result,
-                                  MsqMatrix<2,2>& deriv_wrt_T,
-                                  MsqError& )
-{
-  return grad( T, result, deriv_wrt_T );
-}
-
-bool TSizeNB::evaluate_with_grad( const MsqMatrix<3,3>& T,
-                                  double& result,
-                                  MsqMatrix<3,3>& deriv_wrt_T,
-                                  MsqError& )
-{
-  return grad( T, result, deriv_wrt_T );
 }
 
 template <int DIM> static inline
@@ -96,23 +70,7 @@ bool hess( const MsqMatrix<DIM,DIM>& T, double& result,
   pluseq_scaled_2nd_deriv_of_det( second, 2 * d1, T );
   return true;  
 }
-  
-bool TSizeNB::evaluate_with_hess( const MsqMatrix<2,2>& T,
-                                  double& result,
-                                  MsqMatrix<2,2>& deriv_wrt_T,
-                                  MsqMatrix<2,2> second_wrt_T[3],
-                                  MsqError& )
-{
-  return hess( T, result, deriv_wrt_T, second_wrt_T );
-}
-  
-bool TSizeNB::evaluate_with_hess( const MsqMatrix<3,3>& T,
-                                  double& result,
-                                  MsqMatrix<3,3>& deriv_wrt_T,
-                                  MsqMatrix<3,3> second_wrt_T[3],
-                                  MsqError& )
-{
-  return hess( T, result, deriv_wrt_T, second_wrt_T );
-}
+
+TMP_TEMPL_IMPL_COMMON(TSizeNB)
 
 } // namespace Mesquite
