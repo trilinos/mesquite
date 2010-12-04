@@ -600,8 +600,8 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/TMP)
 APPEND_SET(HEADERS
   QualityMetric/TMP/AffineMapMetric.hpp
   QualityMetric/TMP/TMPQualityMetric.hpp
-  QualityMetric/TMP/TAbsQualityMetric.hpp 
-  QualityMetric/TMP/TRelQualityMetric.hpp 
+  QualityMetric/TMP/AWQualityMetric.hpp 
+  QualityMetric/TMP/TQualityMetric.hpp 
   )
 
 APPEND_SET(SOURCES
@@ -609,8 +609,8 @@ APPEND_SET(SOURCES
   QualityMetric/TMP/TargetMetricUtil.cpp
   QualityMetric/TMP/TargetMetricUtil.hpp
   QualityMetric/TMP/TMPQualityMetric.cpp 
-  QualityMetric/TMP/TAbsQualityMetric.cpp 
-  QualityMetric/TMP/TRelQualityMetric.cpp 
+  QualityMetric/TMP/AWQualityMetric.cpp 
+  QualityMetric/TMP/TQualityMetric.cpp 
   )
 
 #
