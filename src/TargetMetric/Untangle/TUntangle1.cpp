@@ -25,37 +25,38 @@
   ***************************************************************** */
 
 
-/** \file TRel3DUntangleAlt1.cpp
+/** \file TUntangle1.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel3DUntangleAlt1.hpp"
+#include "TUntangle1.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
 
-TRel3DUntangleAlt1::~TRel3DUntangleAlt1()
+TUntangle1::~TUntangle1()
 {}
 
-std::string TRel3DUntangleAlt1::get_name() const
-  { return "Untangle2"; }
+std::string TUntangle1::get_name() const
+  { return "Untangle1"; }
 
-bool TRel3DUntangleAlt1::evaluate( const MsqMatrix<3,3>& T, 
-                                     double& result, 
-                                     MsqError& err )
+
+template <unsigned DIM> static inline
+bool TUntangle1::eval( const MsqMatrix<DIM,DIM>& T, 
+                       double& result )
 {
   double tau = det(T);
   result = 0.5 * (sqrt(tau*tau + mFactor) - tau);
   return true;
 }
 
-bool TRel3DUntangleAlt1::evaluate_with_grad( const MsqMatrix<3,3>& T,
-                                               double& result,
-                                               MsqMatrix<3,3>& deriv_wrt_T,
-                                               MsqError& err )
+template <unsigned DIM> static inline
+bool TUntangle1::grad( const MsqMatrix<DIM,DIM>& T, 
+                       double& result, 
+                       MsqMatrix<DIM,DIM>& deriv_wrt_T )
 {
   double tau = det(T);
   double g = sqrt(tau*tau + mFactor);
@@ -66,13 +67,13 @@ bool TRel3DUntangleAlt1::evaluate_with_grad( const MsqMatrix<3,3>& T,
   return true;
 }
 
-bool TRel3DUntangleAlt1::evaluate_with_hess( const MsqMatrix<3,3>& T,
-                                               double& result,
-                                               MsqMatrix<3,3>& deriv_wrt_T,
-                                               MsqMatrix<3,3> second_wrt_T[6],
-                                               MsqError& err )
+template <unsigned DIM> static inline
+bool TUntangle1::hess( const MsqMatrix<DIM,DIM>& T, 
+                       double& result, 
+                       MsqMatrix<DIM,DIM>& deriv_wrt_T, 
+                       MsqMatrix<DIM,DIM>* second_wrt_T )
 {
-  const MsqMatrix<3,3> adjt = transpose_adj(T);
+  const MsqMatrix<DIM,DIM> adjt = transpose_adj(T);
   double tau = det(T);
   double g = sqrt(tau*tau + mFactor);
   double f = 0.5 * (tau/g - 1);
@@ -86,5 +87,9 @@ bool TRel3DUntangleAlt1::evaluate_with_hess( const MsqMatrix<3,3>& T,
   
   return true;
 }
+
+
+MSQ_T_TEMPL_IMPL_COMMON(TUntangle1)
+
 
 } // namespace MESQUITE_NS

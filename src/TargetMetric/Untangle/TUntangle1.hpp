@@ -25,16 +25,16 @@
   ***************************************************************** */
 
 
-/** \file TRel3DUntangleAlt1.hpp
+/** \file TUntangle1.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TARGET_3D_UNTANGLE_ALT1_HPP
-#define MSQ_TARGET_3D_UNTANGLE_ALT1_HPP
+#ifndef MSQ_T_UNTANGLE_1_HPP
+#define MSQ_T_UNTANGLE_1_HPP
 
 #include "Mesquite.hpp"
-#include "TRel3DMetric.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
@@ -44,39 +44,47 @@ namespace MESQUITE_NS {
  *
  * Section 3.2.8 of derivs.tex
  */
-class TRel3DUntangleAlt1 : public TRel3DMetric
+class TUntangle1 : public TMetric
 {
 private:
   double mFactor;
 
 public:
 
-  TRel3DUntangleAlt1( double epsilon = 1e-6, double tau_bar = 1.0 ) 
+  TUntangle1( double epsilon = 1e-6, double tau_bar = 1.0 ) 
     : mFactor(epsilon*epsilon*tau_bar*tau_bar) {}
 
   MESQUITE_EXPORT virtual
-  ~TRel3DUntangleAlt1();
+  ~TUntangle1();
 
   MESQUITE_EXPORT virtual
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<3,3>& T, 
+  bool evaluate( const MsqMatrix<2,2>& T, 
                  double& result, 
                  MsqError& err );
   
   MESQUITE_EXPORT virtual
-  bool evaluate_with_grad( const MsqMatrix<3,3>& T,
+  bool evaluate_with_grad( const MsqMatrix<2,2>& T,
                            double& result,
-                           MsqMatrix<3,3>& deriv_wrt_T,
+                           MsqMatrix<2,2>& deriv_wrt_T,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_hess( const MsqMatrix<3,3>& T,
+  bool evaluate_with_hess( const MsqMatrix<2,2>& T,
                            double& result,
-                           MsqMatrix<3,3>& deriv_wrt_T,
-                           MsqMatrix<3,3> second_wrt_T[6],
+                           MsqMatrix<2,2>& deriv_wrt_T,
+                           MsqMatrix<2,2> second_wrt_T[3],
                            MsqError& err );
+
+private:
+  template <unsigned D> inline
+  bool eval( const MsqMatrix<D,D>& T, double& result );
+  template <unsigned D> inline
+  bool grad( const MsqMatrix<D,D>& T, double& result, MsqMatrix<D,D>& first );
+  template <unsigned D> inline
+  bool hess( const MsqMatrix<D,D>& T, double& result, MsqMatrix<D,D>& first, MsqMatrix<D,D>* second );
 };
 
 

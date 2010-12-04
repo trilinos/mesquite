@@ -25,13 +25,13 @@
   ***************************************************************** */
 
 
-/** \file TRel3DUntangle.cpp
+/** \file TRel2DUntangle.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel3DUntangleMu.hpp"
+#include "TUntangleMu.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 #include "MsqError.hpp"
@@ -39,15 +39,16 @@
 namespace MESQUITE_NS {
 
 
-TRel3DUntangleMu::~TRel3DUntangleMu()
+TUntangleMu::~TUntangleMu()
 {}
 
-std::string TRel3DUntangleMu::get_name() const
+std::string TUntangleMu::get_name() const
   { return "untangle(" + mBaseMetric->get_name() + ")"; }
 
-bool TRel3DUntangleMu::evaluate( const MsqMatrix<3,3>& T, 
-                                   double& result, 
-                                   MsqError& err )
+
+template <unsigned DIM> static inline
+bool TUntangleMu::eval( const MsqMatrix<DIM,DIM>& T, 
+                        double& result )
 {
   bool valid = mBaseMetric->evaluate( T, result, err );
   if (MSQ_CHKERR(err) || !valid)
@@ -59,10 +60,10 @@ bool TRel3DUntangleMu::evaluate( const MsqMatrix<3,3>& T,
   return true;
 }
 
-bool TRel3DUntangleMu::evaluate_with_grad( const MsqMatrix<3,3>& T,
-                                             double& result,
-                                             MsqMatrix<3,3>& deriv_wrt_T,
-                                             MsqError& err )
+template <unsigned DIM> static inline
+bool TUntangleMu::grad( const MsqMatrix<DIM,DIM>& T, 
+                        double& result, 
+                        MsqMatrix<DIM,DIM>& deriv_wrt_T )
 {
   bool valid = mBaseMetric->evaluate_with_grad( T, result, deriv_wrt_T, err );
   if (MSQ_CHKERR(err) || !valid)
@@ -75,18 +76,17 @@ bool TRel3DUntangleMu::evaluate_with_grad( const MsqMatrix<3,3>& T,
   }
   else {
     result = 0;
-    deriv_wrt_T = MsqMatrix<3,3>(0.0);
+    deriv_wrt_T = MsqMatrix<DIM,DIM>(0.0);
   }
   
   return true;
 }
 
-
-bool TRel3DUntangleMu::evaluate_with_hess( const MsqMatrix<3,3>& T,
-                                             double& result,
-                                             MsqMatrix<3,3>& deriv_wrt_T,
-                                             MsqMatrix<3,3> second_wrt_T[6],
-                                             MsqError& err )
+template <unsigned DIM> static inline
+bool TUntangleMu::hess( const MsqMatrix<DIM,DIM>& T, 
+                        double& result, 
+                        MsqMatrix<DIM,DIM>& deriv_wrt_T, 
+                        MsqMatrix<DIM,DIM>* second_wrt_T )
 {
   bool valid = mBaseMetric->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );
   if (MSQ_CHKERR(err) || !valid)
@@ -101,12 +101,13 @@ bool TRel3DUntangleMu::evaluate_with_hess( const MsqMatrix<3,3>& T,
   }
   else {
     result = 0;
-    deriv_wrt_T = MsqMatrix<3,3>(0.0);
-    second_wrt_T[0] = second_wrt_T[1] = second_wrt_T[2] = 
-    second_wrt_T[3] = second_wrt_T[4] = second_wrt_T[5] = MsqMatrix<3,3>(0.0);
+    deriv_wrt_T = MsqMatrix<DIM,DIM>(0.0);
+    set_scaled_I( second_wrt_T, 0.0 ); // zero everything
   }
   
   return true;
 }
+
+TMP_T_TEMPL_IMPL_COMMON(TUntangleMu)
 
 } // namespace MESQUITE_NS

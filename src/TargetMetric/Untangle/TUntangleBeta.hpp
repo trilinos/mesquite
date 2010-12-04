@@ -25,37 +25,36 @@
   ***************************************************************** */
 
 
-/** \file TRel2DUntangleAlt1.hpp
+/** \file TUntangleBeta.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TARGET_2D_UNTANGLE_ALT1_HPP
-#define MSQ_TARGET_2D_UNTANGLE_ALT1_HPP
+#ifndef MSQ_T_UNTANGLE_BETA_HPP
+#define MSQ_T_UNTANGLE_BETA_HPP
 
 #include "Mesquite.hpp"
-#include "TRel2DMetric.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
 /**\brief Untangle metric
  *
- * \f$ \mu_n(T) = \frac{1}{2} \left( - \tau + \sqrt{\tau^2 + \left(\epsilon \, \bar{\tau} \right)^2} \right)\f$
+ * \f$ \mu_n(T) = \frac{1}{8} {|\tau - \gamma| - (\tau - \gamma)}^3 \f$
  *
- * Section 3.2.8 of derivs.tex
+ * Section 3.2.7 of derivs.tex
  */
-class TRel2DUntangleAlt1 : public TRel2DMetric
+class TUntangleBeta : public TMetric
 {
 private:
-  double mFactor;
+  double mGamma;
 
 public:
 
-  TRel2DUntangleAlt1( double epsilon = 1e-6, double tau_bar = 1.0 ) 
-    : mFactor(epsilon*epsilon*tau_bar*tau_bar) {}
+  TUntangleBeta( double gamma = 0.0 ) : mGamma(gamma) {}
 
   MESQUITE_EXPORT virtual
-  ~TRel2DUntangleAlt1();
+  ~TUntangleBeta();
 
   MESQUITE_EXPORT virtual
   std::string get_name() const;
@@ -77,6 +76,14 @@ public:
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqMatrix<2,2> second_wrt_T[3],
                            MsqError& err );
+
+private:
+  template <unsigned D> inline
+  bool eval( const MsqMatrix<D,D>& T, double& result );
+  template <unsigned D> inline
+  bool grad( const MsqMatrix<D,D>& T, double& result, MsqMatrix<D,D>& first );
+  template <unsigned D> inline
+  bool hess( const MsqMatrix<D,D>& T, double& result, MsqMatrix<D,D>& first, MsqMatrix<D,D>* second );
 };
 
 

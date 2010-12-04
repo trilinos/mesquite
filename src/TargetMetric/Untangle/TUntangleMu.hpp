@@ -25,72 +25,80 @@
   ***************************************************************** */
 
 
-/** \file TRel3DUntangleMu.hpp
+/** \file TUntangleMu.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TARGET_3D_UNTANGLE_MU_HPP
-#define MSQ_TARGET_3D_UNTANGLE_MU_HPP
+#ifndef MSQ_T_UNTANGLE_MU_HPP
+#define MSQ_T_UNTANGLE_MU_HPP
 
 #include "Mesquite.hpp"
-#include "TRel3DMetric.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
 /**\brief Composite untangle metric
  *
- * This metric should be combined with TRel3DSize or TRel3DShapeSize
+ * This metric should be combined with TRel2DSize or TRel2DShapeSize
  * to produce a concrete untangle metric.
  *
  * \f$ \mu^\prime(T) = \frac{1}{8}(|d| - d)^3 \f$
  * \f$ d(T) = \sigma - \epsilon - \mu(T()) \f$
  *
  */
-class TRel3DUntangleMu : public TRel3DMetric
+class TUntangleMu : public TMetric
 {
 private:
-  TRel3DMetric* mBaseMetric;
+  TMetric* mBaseMetric;
   double mConstant;
 
 public:
 
-  TRel3DUntangleMu( TRel3DMetric* base, 
-                      double sigma = 1.0 ) 
+  TUntangleMu( TMetric* base, 
+               double sigma = 1.0 ) 
     : mBaseMetric(base),
       mConstant(0.99*sigma) /* default epsilon is 0.01*sigma */
     {}
 
-  TRel3DUntangleMu( TRel3DMetric* base, 
-                      double sigma,
-                      double epsilon ) 
+  TUntangleMu( TMetric* base, 
+               double sigma,
+               double epsilon ) 
     : mBaseMetric(base),
       mConstant(sigma-epsilon) 
     {}
 
   MESQUITE_EXPORT virtual
-  ~TRel3DUntangleMu();
+  ~TUntangleMu();
 
   MESQUITE_EXPORT virtual
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<3,3>& T, 
+  bool evaluate( const MsqMatrix<2,2>& T, 
                  double& result, 
                  MsqError& err );
    
- MESQUITE_EXPORT virtual
-  bool evaluate_with_grad( const MsqMatrix<3,3>& T,
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<2,2>& T,
                            double& result,
-                           MsqMatrix<3,3>& deriv_wrt_T,
+                           MsqMatrix<2,2>& deriv_wrt_T,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_hess( const MsqMatrix<3,3>& T,
+  bool evaluate_with_hess( const MsqMatrix<2,2>& T,
                            double& result,
-                           MsqMatrix<3,3>& deriv_wrt_T,
-                           MsqMatrix<3,3> second_wrt_T[6],
+                           MsqMatrix<2,2>& deriv_wrt_T,
+                           MsqMatrix<2,2> second_wrt_T[3],
                            MsqError& err );
+
+private:
+  template <unsigned D> inline
+  bool eval( const MsqMatrix<D,D>& T, double& result );
+  template <unsigned D> inline
+  bool grad( const MsqMatrix<D,D>& T, double& result, MsqMatrix<D,D>& first );
+  template <unsigned D> inline
+  bool hess( const MsqMatrix<D,D>& T, double& result, MsqMatrix<D,D>& first, MsqMatrix<D,D>* second );
 };
 
 
