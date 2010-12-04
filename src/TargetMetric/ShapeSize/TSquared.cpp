@@ -33,6 +33,8 @@
 #include "Mesquite.hpp"
 #include "TSquared.hpp"
 #include "MsqMatrix.hpp"
+#include "TMPCommon.hpp"
+#include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
@@ -65,7 +67,7 @@ bool hess( const MsqMatrix<DIM,DIM>& T, double& result,
   return true;
 }
 
-TMP_TEMPL_IMPL_COMMON(TSquared)
+TMP_T_TEMPL_IMPL_COMMON(TSquared)
 
 
 } // namespace Mesquite

@@ -34,6 +34,7 @@
 #include "TSize.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
+#include "TMPCommon.hpp"
 
 namespace MESQUITE_NS {
 
@@ -50,7 +51,9 @@ bool eval( const MsqMatrix<DIM,DIM>& T, double& result)
 }
 
 template <int DIM> static inline
-bool grad( const MsqMatrix<DIM,DIM>& T, double& result, MsqMatrix<DIM,DIM>& deriv )
+bool grad( const MsqMatrix<DIM,DIM>& T, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv )
 {
   double d1 = det(T) - 1;
   result = d1*d1;
@@ -59,8 +62,10 @@ bool grad( const MsqMatrix<DIM,DIM>& T, double& result, MsqMatrix<DIM,DIM>& deri
 }
 
 template <int DIM> static inline
-bool hess( const MsqMatrix<DIM,DIM>& T, double& result, 
-           MsqMatrix<DIM,DIM>& deriv, MsqMatrix<DIM,DIM>* second )
+bool hess( const MsqMatrix<DIM,DIM>& T, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv, 
+           MsqMatrix<DIM,DIM>* second )
 {
   double d1 = det(T) - 1;
   result = d1*d1;
@@ -71,6 +76,6 @@ bool hess( const MsqMatrix<DIM,DIM>& T, double& result,
   return true;  
 }
 
-TMP_TEMPL_IMPL_COMMON(TSizeNB)
+TMP_T_TEMPL_IMPL_COMMON(TSizeNB)
 
 } // namespace Mesquite

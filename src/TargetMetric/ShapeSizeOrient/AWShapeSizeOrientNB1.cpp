@@ -34,6 +34,7 @@
 #include "AWShapeSizeOrientNB1.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
+#include "TMPCommon.hpp"
 
 namespace MESQUITE_NS {
 

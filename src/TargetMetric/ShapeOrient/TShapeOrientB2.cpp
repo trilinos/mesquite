@@ -34,6 +34,7 @@
 #include "TShapeOrientB2.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
+#include "TMPCommon.hpp"
 
 namespace MESQUITE_NS {
 
@@ -122,7 +123,7 @@ bool hess( const MsqMatrix<DIM,DIM>& T,
   return true;
 }
 
-TMP_TEMPL_IMPL_COMMON(TShapeOrientB2)
+TMP_T_TEMPL_IMPL_COMMON(TShapeOrientB2)
 
 
 } // namespace Mesquite
