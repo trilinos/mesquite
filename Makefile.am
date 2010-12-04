@@ -68,8 +68,12 @@ include src/QualityMetric/Untangle/Makefile.am
 include src/QualityMetric/Volume/Makefile.am
 include src/TargetCalculator/Makefile.am
 include src/TargetMetric/Makefile.am
-include src/TargetMetric/Absolute/Makefile.am
-include src/TargetMetric/Relative/Makefile.am
+include src/TargetMetric/Misc/Makefile.am
+include src/TargetMetric/Shape/Makefile.am
+include src/TargetMetric/ShapeOrient/Makefile.am
+include src/TargetMetric/ShapeSize/Makefile.am
+include src/TargetMetric/ShapeSizeOrient/Makefile.am
+include src/TargetMetric/Untangle/Makefile.am
 
 libmesquite_la_includedir = $(includedir)
 libmesquite_la_SOURCES = $(MSQ_SRCS) 
