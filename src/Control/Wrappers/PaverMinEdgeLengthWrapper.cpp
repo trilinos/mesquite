@@ -41,10 +41,9 @@
 
 #include "PMeanPTemplate.hpp"
 #include "TrustRegion.hpp"
-#include "TRelQualityMetric.hpp"
+#include "TQualityMetric.hpp"
 #include "IdealShapeTarget.hpp"
-#include "TRel2DShapeSizeBarrier.hpp"
-#include "TRel3DShapeSizeBarrier.hpp"
+#include "TShapeSizeBarrier1.hpp"
 #include "RefMeshTargetCalculator.hpp"
 #include "ReferenceMesh.hpp"
 
@@ -77,9 +76,8 @@ void PaverMinEdgeLengthWrapper::run_wrapper( Mesh* mesh,
     // create objective function
   IdealShapeTarget W_i;
   LambdaConstant W( lambda, &W_i );
-  TRel2DShapeSizeBarrier tm2;
-  TRel3DShapeSizeBarrier tm3;
-  TRelQualityMetric mu( &W, &tm2, &tm3 );
+  TShapeSizeB1 tm;
+  TQualityMetric mu( &W, &tm );
   PMeanPTemplate of( 1.0, &mu );
   
     // create quality assessor

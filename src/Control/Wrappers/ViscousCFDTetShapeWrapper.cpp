@@ -40,17 +40,13 @@
 #include "TerminationCriterion.hpp"
 
 #include "PMeanPTemplate.hpp"
-#include "TRelQualityMetric.hpp"
+#include "TQualityMetric.hpp"
 #include "AddQualityMetric.hpp"
 
-#include "TRel3DShapeBarrier.hpp"
-#include "TRel2DShapeBarrier.hpp"
-#include "TRel3DShape.hpp"
-#include "TRel2DShape.hpp"
-#include "TRel3DShapeSizeOrientBarrier.hpp"
-#include "TRel2DShapeSizeOrientBarrier.hpp"
-#include "TRel3DShapeSizeOrient.hpp"
-#include "TRel2DShapeSizeOrient.hpp"
+#include "TShapeB1.hpp"
+#include "TShapeNB1.hpp"
+#include "TShapeSizeOrientB1.hpp"
+#include "TShapeSizeOrientNB1.hpp"
 
 #include "IdealShapeTarget.hpp"
 #include "RefMeshTargetCalculator.hpp"
@@ -70,10 +66,9 @@ void ViscousCFDTetShapeWrapper::run_wrapper( Mesh* mesh,
   InstructionQueue q;
   
   // Set up barrier metric to see if mesh contains inverted elements
-  TRel3DShapeBarrier mu3Db;
-  TRel2DShapeBarrier mu2Db;
+  TShapeB1 mu_b;
   IdealShapeTarget w_ideal;
-  TRelQualityMetric barrier( &w_ideal, &mu2Db, &mu3Db );
+  TQualityMetric barrier( &w_ideal, &mu_b );
   
   // Check for inverted elements in the mesh
   QualityAssessor inv_check( &barrier );
@@ -85,27 +80,19 @@ void ViscousCFDTetShapeWrapper::run_wrapper( Mesh* mesh,
   const bool use_barrier = (0 == inv_b->get_invalid_element_count());
   
   // Create remaining metric instances
-  TRel3DShape mu3D;
-  TRel2DShape mu2D;
-  TRel3DShapeSizeOrient mu3Do;
-  TRel2DShapeSizeOrient mu2Do;
-  TRel3DShapeSizeOrientBarrier mu3Dob;
-  TRel2DShapeSizeOrientBarrier mu2Dob;
+  TShapeNB1 mu;
+  TShapeSizeOrientNB1 mu_o;
+  TShapeSizeOrientB1 mu_ob;
   
   // Select which target metrics to use
-  TRel3DMetric *mu3Dp, *mu3Dop;
-  TRel2DMetric *mu2Dp, *mu2Dop;
+  TMetric *mu_p, *mu_op;
   if (use_barrier) {
-    mu3Dp = &mu3Db;
-    mu2Dp = &mu2Db;
-    mu3Dop = &mu3Dob;
-    mu2Dop = &mu2Dob;
+    mu_p = &mu_b;
+    mu_op = &mu_ob;
   }
   else {
-    mu3Dp = &mu3D;
-    mu2Dp = &mu2D;
-    mu3Dop = &mu3Do;
-    mu2Dop = &mu2Do;
+    mu_p = &mu;
+    mu_op = &mu_o;
   }
   
   // Set up target and weight calculators
@@ -116,8 +103,8 @@ void ViscousCFDTetShapeWrapper::run_wrapper( Mesh* mesh,
   RemainingWeight c_remaining( &c_dihedral );
   
   // Create objective function
-  TRelQualityMetric metric1( &w_ideal, &c_dihedral,  mu2Dp,  mu3Dp  );
-  TRelQualityMetric metric2( &w_init,  &c_remaining, mu2Dop, mu3Dop );
+  TQualityMetric metric1( &w_ideal, &c_dihedral,  mu_p  );
+  TQualityMetric metric2( &w_init,  &c_remaining, mu_op );
   AddQualityMetric of_metric( &metric1, &metric2, err );  MSQ_ERRRTN(err);
   PMeanPTemplate obj_func( 1.0, &of_metric );
   
