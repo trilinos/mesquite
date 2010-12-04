@@ -25,22 +25,22 @@
   ***************************************************************** */
 
 
-/** \file TRel2DShapeAlt1.hpp
+/** \file TShape2DNB2.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TREL_2D_SHAPE_ALT1_HPP
-#define MSQ_TREL_2D_SHAPE_ALT1_HPP
+#ifndef MSQ_T_SHAPE_2D_NB_2_HPP
+#define MSQ_T_SHAPE_2D_NB_2_HPP
 
 #include "Mesquite.hpp"
-#include "TRel2DMetric.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
 
 /** \f$ |T^t T - \tau I|^2  \f$ */
-class TRel2DShapeAlt1 : public TRel2DMetric
+class TShape2DNB2 : public TMetric2D
 {
   public:
   
@@ -64,7 +64,6 @@ class TRel2DShapeAlt1 : public TRel2DMetric
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqMatrix<2,2> second_wrt_T[3],
                            MsqError& err );
-
 };
 
 

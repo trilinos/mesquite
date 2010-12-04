@@ -218,5 +218,23 @@ bool TMetric::evaluate_with_hess( const MsqMatrix<3,3>& T,
   return do_numerical_hessian( this, T, result, deriv_wrt_T, hess_wrt_T, err );
 }
 
+TMetric2D::~TMetric2D() {}
+TMetric3D::~TMetric3D() {}
+
+bool TMetric2D::evaluate( const MSqMatrix<3,3>&, double&, MsqError& err )
+{
+  MSQ_SETERR(err)("2D target metric cannot be evaluated for volume elements",
+                  MsqError::UNSUPPORTED_ELEMENT);
+  return false;
+}
+
+bool TMetric3D::evaluate( const MSqMatrix<2,2>&, double&, MsqError& err )
+{
+  MSQ_SETERR(err)("2D target metric cannot be evaluated for volume elements",
+                  MsqError::UNSUPPORTED_ELEMENT);
+  return false;
+}
+
+
 } // namespace Mesquite
 

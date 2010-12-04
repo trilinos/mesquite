@@ -25,22 +25,27 @@
   ***************************************************************** */
 
 
-/** \file TRel2DShapeBarrier.hpp
+/** \file TShapeB1.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TREL_2D_SHAPE_BARRIER_HPP
-#define MSQ_TREL_2D_SHAPE_BARRIER_HPP
+#ifndef MSQ_T_SHAPE_B1_HPP
+#define MSQ_T_SHAPE_B1_HPP
 
 #include "Mesquite.hpp"
-#include "TRel2DMetric.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
 
-/** |T|^2 / (2 det(T)) - 1 */
-class TRel2DShapeBarrier : public TRel2DMetric
+/**\brief Metric sensitive to shape 
+ *
+ * For 2D: \f$ \frac{ |T|^2 }{ 2 det(T) } - 1 \f$
+ *
+ * For 3D: \f$ \frac{ |T|^3 }{ 3 \sqrt{3} det(T) } - 1 \f$
+ */
+class TShapeB1 : public TMetric
 {
   public:
 
@@ -63,6 +68,24 @@ class TRel2DShapeBarrier : public TRel2DMetric
                            double& result,
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqMatrix<2,2> second_wrt_T[3],
+                           MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate( const MsqMatrix<3,3>& T, 
+                 double& result, 
+                 MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<3,3>& T,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_T,
+                           MsqError& err );
+  
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_hess( const MsqMatrix<3,3>& T,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_T,
+                           MsqMatrix<3,3> second_wrt_T[6],
                            MsqError& err );
 };
 

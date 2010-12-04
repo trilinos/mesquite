@@ -25,22 +25,22 @@
   ***************************************************************** */
 
 
-/** \file InverseMeanRatio2D.hpp
+/** \file TInverseMeanRatio.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_INVERSE_MEAN_RATIO_2D_HPP
-#define MSQ_INVERSE_MEAN_RATIO_2D_HPP
+#ifndef MSQ_T_INVERSE_MEAN_RATIO_HPP
+#define MSQ_T_INVERSE_MEAN_RATIO_HPP
 
 #include "Mesquite.hpp"
-#include "TRel2DMetric.hpp"
+#include "TMetric.hpp"
 #include <limits>
 
 namespace MESQUITE_NS {
 
 /** \f$ \frac{|T|^2}{2 det(T)} - 1 \f$ */
-class InverseMeanRatio2D : public TRel2DMetric {
+class TInverseMeanRatio : public TMetric {
 public:
 
   MESQUITE_EXPORT virtual
@@ -63,6 +63,24 @@ public:
                            double& result,
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqMatrix<2,2> second_wrt_T[3],
+                           MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate( const MsqMatrix<3,3>& T, 
+                 double& result, 
+                 MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<3,3>& T,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_T,
+                           MsqError& err );
+  
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_hess( const MsqMatrix<3,3>& T,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_T,
+                           MsqMatrix<3,3> second_wrt_T[6],
                            MsqError& err );
 };
 

@@ -25,24 +25,24 @@
   ***************************************************************** */
 
 
-/** \file TRel2DShapeAlt1.cpp
+/** \file TShape2DNB2.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DShapeAlt1.hpp"
+#include "TShape2DNB2.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DShapeAlt1::get_name() const
-  { return "Shape1"; }
+std::string TShape2DNB2::get_name() const
+  { return "TShape2DNB2"; }
 
-bool TRel2DShapeAlt1::evaluate( const MsqMatrix<2,2>& T, 
-                                double& result, 
-                                MsqError&  )
+bool TShape2DNB2::evaluate( const MsqMatrix<2,2>& T, 
+                            double& result, 
+                            MsqError&  )
 {
   const double tau = det(T);
   MsqMatrix<2,2> TT = transpose(T) * T;
@@ -52,10 +52,10 @@ bool TRel2DShapeAlt1::evaluate( const MsqMatrix<2,2>& T,
   return true;  
 }
 
-bool TRel2DShapeAlt1::evaluate_with_grad( const MsqMatrix<2,2>& T,
-                                          double& result,
-                                          MsqMatrix<2,2>& deriv_wrt_T,
-                                          MsqError& err )
+bool TShape2DNB2::evaluate_with_grad( const MsqMatrix<2,2>& T,
+                                      double& result,
+                                      MsqMatrix<2,2>& deriv_wrt_T,
+                                      MsqError& err )
 {
   const MsqMatrix<2,2> TtT = transpose(T) * T;
   const double tau = det(T);
@@ -71,11 +71,11 @@ bool TRel2DShapeAlt1::evaluate_with_grad( const MsqMatrix<2,2>& T,
   return true;  
 }
 
-bool TRel2DShapeAlt1::evaluate_with_hess( const MsqMatrix<2,2>& T,
-                                          double& result,
-                                          MsqMatrix<2,2>& deriv_wrt_T,
-                                          MsqMatrix<2,2> second_wrt_T[3],
-                                          MsqError& err )
+bool TShape2DNB2::evaluate_with_hess( const MsqMatrix<2,2>& T,
+                                      double& result,
+                                      MsqMatrix<2,2>& deriv_wrt_T,
+                                      MsqMatrix<2,2> second_wrt_T[3],
+                                      MsqError& err )
 {
   const MsqMatrix<2,2> TtT = transpose(T) * T;
   const double tau = det(T);

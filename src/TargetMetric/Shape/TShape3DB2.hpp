@@ -25,16 +25,16 @@
   ***************************************************************** */
 
 
-/** \file TRel3DShapeBarrierAlt1.hpp
+/** \file TShape3DB2.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TARGET_3D_SHAPE_BARRIER_ALT1_HPP
-#define MSQ_TARGET_3D_SHAPE_BARRIER_ALT1_HPP
+#ifndef MSQ_T_SHAPE_3D_B_2_HPP
+#define MSQ_T_SHAPE_3D_B_2_HPP
 
 #include "Mesquite.hpp"
-#include "TRel3DMetric.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
@@ -44,12 +44,12 @@ namespace MESQUITE_NS {
  * A target metric for volume elements that optimizes
  * element shape
  */
-class TRel3DShapeBarrierAlt1 : public TRel3DMetric
+class TShape3DB2 : public TMetric2D
 {
 public:
 
   MESQUITE_EXPORT virtual
-  ~TRel3DShapeBarrierAlt1();
+  ~TShape3DB2();
 
   MESQUITE_EXPORT virtual
   std::string get_name() const;

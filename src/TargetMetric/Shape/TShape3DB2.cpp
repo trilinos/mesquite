@@ -25,27 +25,27 @@
   ***************************************************************** */
 
 
-/** \file TRel3DShapeBarrierAlt1.cpp
+/** \file TShape3DB2.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel3DShapeBarrierAlt1.hpp"
+#include "TShape3DB2.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-TRel3DShapeBarrierAlt1::~TRel3DShapeBarrierAlt1() {}
+TShape3DB2::~TShape3DB2() {}
 
-std::string TRel3DShapeBarrierAlt1::get_name() const
-  { return "ShapeBarrier1"; }
+std::string TShape3DB2::get_name() const
+  { return "TShape3DB2"; }
 
 // \mu_3(T) = \frac{ |T|^2 |adj(T)|^2 } {9 \tau^2} - 1
-bool TRel3DShapeBarrierAlt1::evaluate( const MsqMatrix<3,3>& T, 
-                                       double& result, 
-                                       MsqError& )
+bool TShape3DB2::evaluate( const MsqMatrix<3,3>& T, 
+                           double& result, 
+                           MsqError& )
 {
   double f = sqr_Frobenius(T);
   double g = sqr_Frobenius(adj(T));
@@ -59,10 +59,10 @@ bool TRel3DShapeBarrierAlt1::evaluate( const MsqMatrix<3,3>& T,
 }
 
 
-bool TRel3DShapeBarrierAlt1::evaluate_with_grad( const MsqMatrix<3,3>& T, 
-                                                 double& result, 
-                                                 MsqMatrix<3,3>& wrt_T,
-                                                 MsqError&  )
+bool TShape3DB2::evaluate_with_grad( const MsqMatrix<3,3>& T, 
+                                     double& result, 
+                                     MsqMatrix<3,3>& wrt_T,
+                                     MsqError&  )
 {
   double f = sqr_Frobenius(T);
   double g = sqr_Frobenius(adj(T));
@@ -83,11 +83,11 @@ bool TRel3DShapeBarrierAlt1::evaluate_with_grad( const MsqMatrix<3,3>& T,
 }
 
 
-bool TRel3DShapeBarrierAlt1::evaluate_with_hess( const MsqMatrix<3,3>& T,
-                                                 double& result,
-                                                 MsqMatrix<3,3>& wrt_T,
-                                                 MsqMatrix<3,3> second[6],
-                                                 MsqError& err )
+bool TShape3DB2::evaluate_with_hess( const MsqMatrix<3,3>& T,
+                                     double& result,
+                                     MsqMatrix<3,3>& wrt_T,
+                                     MsqMatrix<3,3> second[6],
+                                     MsqError& err )
 {
   double f = sqr_Frobenius(T);
   double g = sqr_Frobenius(adj(T));

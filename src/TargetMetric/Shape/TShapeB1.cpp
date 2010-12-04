@@ -25,24 +25,24 @@
   ***************************************************************** */
 
 
-/** \file TRel2DShapeBarrier.cpp
+/** \file TShapeB1.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DShapeBarrier.hpp"
+#include "TShapeB1.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DShapeBarrier::get_name() const
-  { return "ShapeBarrier"; }
+std::string TShapeB1::get_name() const
+  { return "TShapeB1"; }
 
-bool TRel2DShapeBarrier::evaluate( const MsqMatrix<2,2>& T, 
-                                   double& result, 
-                                   MsqError& )
+bool TShapeB1::evaluate( const MsqMatrix<2,2>& T, 
+                         double& result, 
+                         MsqError& )
 {
   const double d = det(T);
   if (invalid_determinant(d)) { // barrier
@@ -54,10 +54,10 @@ bool TRel2DShapeBarrier::evaluate( const MsqMatrix<2,2>& T,
   return true;
 }
 
-bool TRel2DShapeBarrier::evaluate_with_grad( const MsqMatrix<2,2>& T,
-                                             double& result,
-                                             MsqMatrix<2,2>& deriv_wrt_T,
-                                             MsqError& err )
+bool TShapeB1::evaluate_with_grad( const MsqMatrix<2,2>& T,
+                                   double& result,
+                                   MsqMatrix<2,2>& deriv_wrt_T,
+                                   MsqError& err )
 {
   const double d = det(T);
   if (invalid_determinant(d)) { // barrier
@@ -83,11 +83,11 @@ bool TRel2DShapeBarrier::evaluate_with_grad( const MsqMatrix<2,2>& T,
                                \frac{\partial \tau}{\partial T} \right) 
       - \frac{|T|^2}{2 \tau^3} \frac{\partial^2 \tau}{\partial T^2} \f$
   */
-bool TRel2DShapeBarrier::evaluate_with_hess( const MsqMatrix<2,2>& T,
-                                             double& result,
-                                             MsqMatrix<2,2>& deriv_wrt_T,
-                                             MsqMatrix<2,2> second_wrt_T[3],
-                                             MsqError& err )
+bool TShapeB1::evaluate_with_hess( const MsqMatrix<2,2>& T,
+                                   double& result,
+                                   MsqMatrix<2,2>& deriv_wrt_T,
+                                   MsqMatrix<2,2> second_wrt_T[3],
+                                   MsqError& err )
 {
   const double d = det(T);
   if (invalid_determinant(d)) { // barrier
@@ -109,6 +109,71 @@ bool TRel2DShapeBarrier::evaluate_with_hess( const MsqMatrix<2,2>& T,
   pluseq_scaled_2nd_deriv_of_det( second_wrt_T, -result * inv_d );
 
   result -= 1.0;
+  return true;
+}
+
+
+bool TShapeB1::evaluate( const MsqMatrix<3,3>& T, 
+                         double& result, 
+                         MsqError& )
+{
+  double f = Frobenius(T);
+  double d = det(T);
+  double den = 3 * MSQ_SQRT_THREE * d;
+  if (invalid_determinant(d)) {
+    result = 0.0;
+    return false;
+  }
+  result = (f*f*f)/den - 1.0;
+  return true;
+}
+
+
+bool TShapeB1::evaluate_with_grad( const MsqMatrix<3,3>& T, 
+                                   double& result, 
+                                   MsqMatrix<3,3>& wrt_T,
+                                   MsqError&  )
+{
+  double d = det(T);
+  if (d < 1e-12)
+    return false;
+    
+  double norm = Frobenius(T);
+  double den = 1.0/(3 * MSQ_SQRT_THREE * d);
+  double norm_cube = norm*norm*norm;
+  result = norm_cube * den - 1.0;
+  wrt_T = T;
+  wrt_T *= 3 * norm * den;
+  wrt_T -= norm_cube * den/d * transpose_adj(T);
+   return true;
+}
+
+bool TShapeB1::evaluate_with_hess( const MsqMatrix<3,3>& T,
+                                   double& result,
+                                   MsqMatrix<3,3>& deriv_wrt_T,
+                                   MsqMatrix<3,3> second_wrt_T[6],
+                                   MsqError& err )
+{
+  double d = det(T);
+  if (d < 1e-12)
+    return false;
+  
+  double id = 1.0/d;
+  double norm = Frobenius(T);
+  double den = 1.0/(3 * MSQ_SQRT_THREE * d);
+  double norm_cube = norm*norm*norm;
+  result = norm_cube * den - 1.0;
+  MsqMatrix<3,3> adjt = transpose_adj(T);
+  deriv_wrt_T = T;
+  deriv_wrt_T *= 3 * norm * den;
+  deriv_wrt_T -= norm_cube * den * id * transpose_adj(T);
+ 
+  set_scaled_outer_product( second_wrt_T, 3 * den / norm, T );
+  pluseq_scaled_I( second_wrt_T, 3 * norm * den );
+  pluseq_scaled_2nd_deriv_of_det( second_wrt_T, -den * norm_cube * id, T );
+  pluseq_scaled_outer_product( second_wrt_T, 2 * den * norm_cube * id * id , adjt );
+  pluseq_scaled_sum_outer_product( second_wrt_T, -3 * norm * den * id, T, adjt );
+
   return true;
 }
 

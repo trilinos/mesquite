@@ -242,6 +242,40 @@ public:
     { return d < 1e-12; }
 };
 
+class TMetric2D : public TMetric
+{
+public:
+
+  MESQUITE_EXPORT virtual
+  TMetric2D::~TMetric2D();
+
+    /**\brief Evaluate \f$\mu(T)\f$
+     *
+     * This method always returns an error for 2D-only metrics
+     */
+  MESQUITE_EXPORT virtual
+  bool evaluate( const MsqMatrix<3,3>& T, 
+                 double& result, 
+                 MsqError& err ) = 0;
+};
+
+class TMetric3D : public TMetric
+{
+public:
+
+  MESQUITE_EXPORT virtual
+  TMetric3D::~TMetric3D();
+
+    /**\brief Evaluate \f$\mu(T)\f$
+     *
+     * This method always returns an error for 3D-only metrics
+     */
+  MESQUITE_EXPORT virtual
+  bool evaluate( const MsqMatrix<2,2>& T, 
+                 double& result, 
+                 MsqError& err ) = 0;
+};
+
 
 } // namespace MESQUITE_NS
 

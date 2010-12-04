@@ -25,33 +25,33 @@
   ***************************************************************** */
 
 
-/** \file TRel2DShape.cpp
+/** \file TShapeNB1.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DShape.hpp"
+#include "TShapeNB1.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DShape::get_name() const
-  { return "Shape"; }
+std::string TShapeNB1::get_name() const
+  { return "TShapeNB1"; }
 
-bool TRel2DShape::evaluate( const MsqMatrix<2,2>& T, 
-                            double& result, 
-                            MsqError&  )
+bool TShapeNB1::evaluate( const MsqMatrix<2,2>& T, 
+                          double& result, 
+                          MsqError&  )
 {
   result = sqr_Frobenius(T) - 2.0*det(T);
   return true;  
 }
 
-bool TRel2DShape::evaluate_with_grad( const MsqMatrix<2,2>& T,
-                                      double& result,
-                                      MsqMatrix<2,2>& deriv_wrt_T,
-                                      MsqError& err )
+bool TShapeNB1::evaluate_with_grad( const MsqMatrix<2,2>& T,
+                                    double& result,
+                                    MsqMatrix<2,2>& deriv_wrt_T,
+                                    MsqError& err )
 {
   result = sqr_Frobenius(T) - 2.0*det(T);
   deriv_wrt_T = T;
@@ -61,11 +61,11 @@ bool TRel2DShape::evaluate_with_grad( const MsqMatrix<2,2>& T,
   
 }
 
-bool TRel2DShape::evaluate_with_hess( const MsqMatrix<2,2>& T,
-                                      double& result,
-                                      MsqMatrix<2,2>& deriv_wrt_T,
-                                      MsqMatrix<2,2> second_wrt_T[3],
-                                      MsqError& err )
+bool TShapeNB1::evaluate_with_hess( const MsqMatrix<2,2>& T,
+                                    double& result,
+                                    MsqMatrix<2,2>& deriv_wrt_T,
+                                    MsqMatrix<2,2> second_wrt_T[3],
+                                    MsqError& err )
 {
   result = sqr_Frobenius(T) - 2.0*det(T);
   deriv_wrt_T = T;
@@ -73,6 +73,55 @@ bool TRel2DShape::evaluate_with_hess( const MsqMatrix<2,2>& T,
   deriv_wrt_T *= 2;
   set_scaled_I( second_wrt_T, 2.0 );
   pluseq_scaled_2nd_deriv_of_det( second_wrt_T, -2.0 );
+  return true;
+}
+
+
+bool TShapeNB1::evaluate( const MsqMatrix<3,3>& T, 
+                          double& result, 
+                          MsqError& )
+{
+  double f = Frobenius(T);
+  double d = det(T);
+  result = f*f*f - 3*MSQ_SQRT_THREE*d;
+  return true;
+}
+
+
+bool TShapeNB1::evaluate_with_grad( const MsqMatrix<3,3>& T, 
+                                    double& result, 
+                                    MsqMatrix<3,3>& deriv_wrt_T,
+                                    MsqError& err )
+{
+  double f = Frobenius(T);
+  double d = det(T);
+  result = f*f*f - 3*MSQ_SQRT_THREE*d;
+
+  deriv_wrt_T = T;
+  deriv_wrt_T *= f;
+  deriv_wrt_T -= MSQ_SQRT_THREE*transpose_adj(T);
+  deriv_wrt_T *= 3;
+  return true;
+}
+
+bool TShapeNB1::evaluate_with_hess( const MsqMatrix<3,3>& T, 
+                                    double& result, 
+                                    MsqMatrix<3,3>& deriv_wrt_T,
+                                    MsqMatrix<3,3> second_wrt_T[6],
+                                    MsqError& err )
+{
+  double f = Frobenius(T);
+  double d = det(T);
+  result = f*f*f - 3*MSQ_SQRT_THREE*d;
+
+  deriv_wrt_T = T;
+  deriv_wrt_T *= f;
+  deriv_wrt_T -= MSQ_SQRT_THREE*transpose_adj(T);
+  deriv_wrt_T *= 3;
+  
+  set_scaled_2nd_deriv_of_det( second_wrt_T, -3 * MSQ_SQRT_THREE, T );
+  pluseq_scaled_outer_product( second_wrt_T, 3.0/f, T );
+  pluseq_scaled_I( second_wrt_T, 3.0*f );
   return true;
 }
 
