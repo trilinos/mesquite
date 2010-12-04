@@ -31,50 +31,51 @@
  */
 
 #include "Mesquite.hpp"
-#include "TAbs2DShapeSizeOrient.hpp"
+#include "AWShapeSizeOrientNB1.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TAbs2DShapeSizeOrient::get_name() const
-  { return "ShapeSizeOrient"; }
+std::string AWShapeSizeOrientNB1::get_name() const
+  { return "AWShapeSizeOrientNB1"; }
 
-bool TAbs2DShapeSizeOrient::evaluate( const MsqMatrix<2,2>& A, 
-                                      const MsqMatrix<2,2>& W, 
-                                      double& result, 
-                                      MsqError&  )
+
+template <int DIM> static inline
+bool eval( const MsqMatrix<DIM,DIM>& A, 
+           const MsqMatrix<DIM,DIM>& W, 
+           double& result)
 {
   result = sqr_Frobenius( A - W );
   return true;
 }
 
-bool TAbs2DShapeSizeOrient::evaluate_with_grad( const MsqMatrix<2,2>& A,
-                                                const MsqMatrix<2,2>& W,
-                                                double& result,
-                                                MsqMatrix<2,2>& deriv_wrt_A,
-                                                MsqError& err )
+template <int DIM> static inline
+bool grad( const MsqMatrix<DIM,DIM>& A, 
+           const MsqMatrix<DIM,DIM>& W, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv )
 {
-  MsqMatrix<2,2> diff = A - W;
-  result = sqr_Frobenius( diff );
-  deriv_wrt_A = diff;
-  deriv_wrt_A *= 2.0;
+  deriv = A - W;
+  result = sqr_Frobenius( deriv );
+  deriv *= 2.0;
   return true;
 }
 
-bool TAbs2DShapeSizeOrient::evaluate_with_hess( const MsqMatrix<2,2>& A,
-                                                const MsqMatrix<2,2>& W,
-                                                double& result,
-                                                MsqMatrix<2,2>& deriv_wrt_A,
-                                                MsqMatrix<2,2> second_wrt_A[3],
-                                                MsqError& err )
+template <int DIM> static inline
+bool hess( const MsqMatrix<DIM,DIM>& A, 
+           const MsqMatrix<DIM,DIM>& W, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv, 
+           MsqMatrix<DIM,DIM>* second )
 {
-  MsqMatrix<2,2> diff = A - W;
-  result = sqr_Frobenius( diff );
-  deriv_wrt_A = diff;
-  deriv_wrt_A *= 2.0;
-  set_scaled_I( second_wrt_A, 2.0 );
+  deriv = A - W;
+  result = sqr_Frobenius( deriv );
+  deriv *= 2.0;
+  set_scaled_I( second, 2.0 );
   return true;
 }
+
+TMP_AW_TEMPL_IMPL_COMMON(AWShapeSizeOrientNB1)
 
 } // namespace Mesquite

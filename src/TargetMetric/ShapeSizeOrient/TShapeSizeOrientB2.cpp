@@ -31,35 +31,45 @@
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DShapeSizeOrientBarrierAlt1.hpp"
+#include "TShapeSizeOrientB2.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DShapeSizeOrientBarrierAlt1::get_name() const
-  { return "ShapeSizeOrientBarrier1"; }
+std::string TShapeSizeOrientB2::get_name() const
+  { return "TShapeSizeOrientB2"; }
 
-bool TRel2DShapeSizeOrientBarrierAlt1::evaluate( 
-                                             const MsqMatrix<2,2>& T, 
-                                             double& result, 
-                                             MsqError& )
+template <int DIM> static inline
+bool eval( const MsqMatrix<DIM,DIM>& T, double& result)
 {
   double d = det(T);
-  if (invalid_determinant(d)) {
+  if (TMetric::invalid_determinant(d)) {
     result = 0.0;
     return false;
   }
-  MsqMatrix<2,2> T_inv = 1/d * adj(T);
-  T_inv(0,0) -= 1.0;
-  T_inv(1,1) -= 1.0;
+  MsqMatrix<DIM,DIM> T_inv = 1/d * adj(T);
+  pluseq_scaled_I( T_inv, -1.0 );
   result = sqr_Frobenius(T_inv);
   return true;
 }
 
+bool TShapeSizeOrientB2::evaluate( const MsqMatrix<2,2>& T, 
+                                   double& result, 
+                                   MsqError& )
+{
+  return eval( T, result );
+}
+
+bool TShapeSizeOrientB2::evaluate( const MsqMatrix<3,3>& T, 
+                                   double& result, 
+                                   MsqError& )
+{
+  return eval( T, result );
+}
+
 /** \f$ \frac{1}{\Tau^2}|T|^2 - \frac{2}{\Tau}tr(adj T) + 2 */
-bool TRel2DShapeSizeOrientBarrierAlt1::evaluate_with_grad( 
-                                             const MsqMatrix<2,2>& T,
+bool TShapeSizeOrientB2::evaluate_with_grad( const MsqMatrix<2,2>& T,
                                              double& result,
                                              MsqMatrix<2,2>& deriv_wrt_T,
                                              MsqError& err )
@@ -82,8 +92,41 @@ bool TRel2DShapeSizeOrientBarrierAlt1::evaluate_with_grad(
   return true;
 }
 
-bool TRel2DShapeSizeOrientBarrierAlt1::evaluate_with_hess( 
-                                             const MsqMatrix<2,2>& T,
+/** \f$ \frac{1}{\Tau^2}|adj T|^2 - \frac{2}{\Tau}tr(adj T) + 3 */
+bool TShapeSizeOrientB2::evaluate_with_grad( const MsqMatrix<3,3>& T,
+                                             double& result,
+                                             MsqMatrix<3,3>& deriv_wrt_T,
+                                             MsqError& err )
+{
+  const double tau = det(T);
+  if (invalid_determinant(tau)) {
+    result = 0.0;
+    return false;
+  }
+  
+  const MsqMatrix<3,3> adjt = adj(T);
+  const double it = 1.0/tau;
+  result = it*(it*sqr_Frobenius(adjt) - 2.0*trace(adjt)) + 3.0;
+  
+  deriv_wrt_T = T;
+  deriv_wrt_T *= sqr_Frobenius(T);
+  deriv_wrt_T -= T * transpose(T) * T;
+  deriv_wrt_T *= it*it;
+  
+  deriv_wrt_T += it*it*(trace(adjt)-it*sqr_Frobenius(adjt))*transpose(adjt);
+
+  double f = trace(T) * it;
+  deriv_wrt_T(0,0) -= f;
+  deriv_wrt_T(1,1) -= f;
+  deriv_wrt_T(2,2) -= f;
+  
+  deriv_wrt_T += it*transpose(T);
+
+  deriv_wrt_T *= 2.0;
+  return true;
+}
+
+bool TShapeSizeOrientB2::evaluate_with_hess( const MsqMatrix<2,2>& T,
                                              double& result,
                                              MsqMatrix<2,2>& deriv_wrt_T,
                                              MsqMatrix<2,2> second[3],
@@ -113,5 +156,63 @@ bool TRel2DShapeSizeOrientBarrierAlt1::evaluate_with_hess(
   
   return true;
 }
+
+bool TShapeSizeOrientB2::evaluate_with_hess( const MsqMatrix<3,3>& T,
+                                             double& result,
+                                             MsqMatrix<3,3>& deriv_wrt_T,
+                                             MsqMatrix<3,3> second[6],
+                                             MsqError& err )
+{
+  const double tau = det(T);
+  if (invalid_determinant(tau)) {
+    result = 0.0;
+    return false;
+  }
+  
+  const MsqMatrix<3,3> adjt = adj(T);
+  const double it = 1.0/tau;
+  const double nadjt = sqr_Frobenius(adjt);
+  const double nT = sqr_Frobenius(T);
+  const double tadjT = trace(adjt);
+  result = it*(it*nadjt - 2.0*tadjT) + 3.0;
+  
+  const MsqMatrix<3,3> TTtT = T * transpose(T) * T;
+  deriv_wrt_T = T;
+  deriv_wrt_T *= nT;
+  deriv_wrt_T -= TTtT;
+  deriv_wrt_T *= it*it;
+ 
+  deriv_wrt_T += it*it*(tadjT-it*nadjt)*transpose(adjt);
+
+  const double tT = trace(T);
+  double f = tT * it;
+  deriv_wrt_T(0,0) -= f;
+  deriv_wrt_T(1,1) -= f;
+  deriv_wrt_T(2,2) -= f;
+  
+  deriv_wrt_T += it*transpose(T);
+
+  deriv_wrt_T *= 2.0;
+  
+  set_scaled_2nd_deriv_norm_sqr_adj( second, it*it, T );
+
+  const double yf = -it*it*it*it;
+  const double sf = -2;
+  const double zf = -it*it*sf;
+
+  pluseq_scaled_2nd_deriv_of_det( second, yf*2*nadjt*tau + zf*tadjT, T );
+  pluseq_scaled_outer_product( second, yf*-6*nadjt - 2*zf*tadjT*it, transpose(adjt) );
+  MsqMatrix<3,3> dnadj_dT = 2 * (nT * T - TTtT);
+  pluseq_scaled_sum_outer_product( second, yf * 2 * tau, dnadj_dT, transpose(adjt) );
+  pluseq_scaled_2nd_deriv_tr_adj( second, sf * it );
+  MsqMatrix<3,3> dtradj_dT = -transpose(T);
+  dtradj_dT(0,0) += tT;
+  dtradj_dT(1,1) += tT;
+  dtradj_dT(2,2) += tT;
+  pluseq_scaled_sum_outer_product( second, zf, dtradj_dT, transpose(adjt) );
+
+  return true;
+}
+
 
 } // namespace Mesquite

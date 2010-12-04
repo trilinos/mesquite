@@ -31,86 +31,84 @@
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DShapeSizeOrientBarrier.hpp"
+#include "TShapeSizeOrientB1.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DShapeSizeOrientBarrier::get_name() const
-  { return "ShapeSizeOrientBarrier"; }
+std::string TShapeSizeOrientB1::get_name() const
+  { return "TShapeSizeOrientB1"; }
 
-bool TRel2DShapeSizeOrientBarrier::evaluate( const MsqMatrix<2,2>& T, 
-                                             double& result, 
-                                             MsqError& )
+
+template <int DIM> static inline
+bool eval( const MsqMatrix<DIM,DIM>& T, double& result)
 {
-  const double d = det(T);
-  if (invalid_determinant(d)) { // barrier
+  double tau = det(T);
+  if (TMetric::invalid_determinant(tau)) {
     result = 0.0;
     return false;
   }
   
-  MsqMatrix<2,2> T_I(T);
-  T_I(0,0) -= 1.0;
-  T_I(1,1) -= 1.0;
-  result = 0.5 * sqr_Frobenius(T_I) / d;
+  MsqMatrix<DIM,DIM> T_I(T);
+  pluseq_scaled_I( T_I, -1 );
+  result = sqr_Frobenius( T_I ) / (2*tau);
   return true;
 }
 
-bool TRel2DShapeSizeOrientBarrier::evaluate_with_grad( const MsqMatrix<2,2>& T,
-                                                       double& result,
-                                                       MsqMatrix<2,2>& deriv_wrt_T,
-                                                       MsqError& err )
+template <int DIM> static inline
+bool grad( const MsqMatrix<DIM,DIM>& T, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv )
 {
   const double d = det(T);
-  if (invalid_determinant(d)) { // barrier
+  if (TMetric::invalid_determinant(d)) { // barrier
     result = 0.0;
     return false;
   }
   
-  MsqMatrix<2,2> D(T);
-  D(0,0) -= 1.0;
-  D(1,1) -= 1.0;
+  deriv = T;
+  pluseq_scaled_I( T, -1 );
   double inv_d = 1.0/d;
-  result = 0.5 * sqr_Frobenius(D) * inv_d;
+  result = 0.5 * sqr_Frobenius(deriv) * inv_d;
   
-  deriv_wrt_T = D;
-  deriv_wrt_T -= result * transpose_adj(T);
-  deriv_wrt_T *= inv_d;
+  deriv -= result * transpose_adj(T);
+  deriv *= inv_d;
   
   return true;
 }
 
-bool TRel2DShapeSizeOrientBarrier::evaluate_with_hess( const MsqMatrix<2,2>& T,
-                                                       double& result,
-                                                       MsqMatrix<2,2>& deriv_wrt_T,
-                                                       MsqMatrix<2,2> second_wrt_T[3],
-                                                       MsqError& err )
+template <int DIM> static inline
+bool hess( const MsqMatrix<DIM,DIM>& T, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv, 
+           MsqMatrix<DIM,DIM>* second )
 {
   const double d = det(T);
-  if (invalid_determinant(d)) { // barrier
+  if (TMetric::invalid_determinant(d)) { // barrier
     result = 0.0;
     return false;
   }
   
-  MsqMatrix<2,2> D(T);
+  deriv = T;
+  pluseq_scaled_I( deriv, -1.0 );
   D(0,0) -= 1.0;
   D(1,1) -= 1.0;
   double inv_d = 1.0/d;
-  result = 0.5 * sqr_Frobenius(D) * inv_d;
+  result = 0.5 * sqr_Frobenius(deriv) * inv_d;
   
   MsqMatrix<2,2> adjt = transpose_adj(T);
-  deriv_wrt_T = D;
-  deriv_wrt_T -= result * adjt;
-  deriv_wrt_T *= inv_d;
+  set_scaled_outer_product( second, 2*result*inv_d*inv_d, adjt );
+  pluseq_scaled_sum_outer_product( second, -inv_d*inv_d, deriv, adjt );
+  pluseq_scaled_2nd_deriv_of_det( second, -result * inv_d, T );
+  pluseq_scaled_I( second, inv_d );
   
-  set_scaled_outer_product( second_wrt_T, 2*result*inv_d*inv_d, adjt );
-  pluseq_scaled_sum_outer_product( second_wrt_T, -inv_d*inv_d, D, adjt );
-  pluseq_scaled_2nd_deriv_of_det( second_wrt_T, -result * inv_d );
-  pluseq_scaled_I( second_wrt_T, inv_d );
-  
+  deriv -= result * adjt;
+  deriv *= inv_d;
+
   return true;
 }
 
+TMP_TEMPL_IMPL_COMMON(TShapeSizeOrientB1)
 
 } // namespace Mesquite

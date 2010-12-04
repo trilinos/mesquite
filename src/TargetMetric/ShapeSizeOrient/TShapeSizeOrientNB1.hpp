@@ -25,21 +25,21 @@
   ***************************************************************** */
 
 
-/** \file TRel2DShapeSizeOrient.hpp
+/** \file TShapeSizeOrientNB1.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TARGET2DSHAPE_SIZE_ORIENT_HPP
-#define MSQ_TARGET2DSHAPE_SIZE_ORIENT_HPP
+#ifndef MSQ_T_SHAPE_SIZE_ORIENT_NB_1_HPP
+#define MSQ_T_SHAPE_SIZE_ORIENT_NB_1_HPP
 
 #include "Mesquite.hpp"
-#include "TRel2DMetric.hpp"
+#include "TMetric.hpp"
 
 namespace MESQUITE_NS {
 
 /** |T-I|^2 */
-class TRel2DShapeSizeOrient : public TRel2DMetric
+class TShapeSizeOrientNB1 : public TMetric
 {
   public:
   
@@ -62,6 +62,25 @@ class TRel2DShapeSizeOrient : public TRel2DMetric
                            double& result,
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqMatrix<2,2> hess_wrt_T[3],
+                           MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate( const MsqMatrix<3,3>& T, 
+                 double& result, 
+                 MsqError& err );
+  
+  
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<3,3>& T, 
+                           double& result, 
+                           MsqMatrix<3,3>& wrt_T, 
+                           MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_hess( const MsqMatrix<3,3>& T,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_T,
+                           MsqMatrix<3,3> second_wrt_T[6],
                            MsqError& err );
 };
 

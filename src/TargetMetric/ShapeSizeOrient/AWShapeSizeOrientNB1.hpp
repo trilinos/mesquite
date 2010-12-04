@@ -25,22 +25,22 @@
   ***************************************************************** */
 
 
-/** \file TAbs2DShapeSizeOrient.hpp
+/** \file AWShapeSizeOrientNB1.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TABS_2D_SHAPE_SIZE_ORIENT_HPP
-#define MSQ_TABS_2D_SHAPE_SIZE_ORIENT_HPP
+#ifndef MSQ_AW_SHAPE_SIZE_ORIENT_NB_1_HPP
+#define MSQ_AW_SHAPE_SIZE_ORIENT_NB_1_HPP
 
 #include "Mesquite.hpp"
-#include "TAbs2DMetric.hpp"
+#include "AWMetric.hpp"
 
 namespace MESQUITE_NS {
 
 
 /** |A-W|^2 */
-class TAbs2DShapeSizeOrient : public TAbs2DMetric
+class AWShapeSizeOrientNB1 : public AWMetric
 {
   public:
   
@@ -65,6 +65,26 @@ class TAbs2DShapeSizeOrient : public TAbs2DMetric
                            double& result,
                            MsqMatrix<2,2>& deriv_wrt_A,
                            MsqMatrix<2,2> second_wrt_A[3],
+                           MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate( const MsqMatrix<3,3>& A, 
+                 const MsqMatrix<3,3>& W, 
+                 double& result, MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<3,3>& A,
+                           const MsqMatrix<3,3>& W,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_A,
+                           MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_hess( const MsqMatrix<3,3>& A,
+                           const MsqMatrix<3,3>& W,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_A,
+                           MsqMatrix<3,3> second_wrt_A[6],
                            MsqError& err );
 };
 

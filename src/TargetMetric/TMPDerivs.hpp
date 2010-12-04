@@ -44,7 +44,7 @@
 namespace MESQUITE_NS {
 
 #define TMP_TEMPL_IMPL_DIM(N,D) \
-bool N::evaluate( const MsqMatrix<D<D>& T, double& r, MsqError& ) \
+bool N::evaluate( const MsqMatrix<D,D>& T, double& r, MsqError& ) \
   { return eval( T, r ); } \
 bool N::evaluate_with_grad( const MsqMatrix<D,D>& T, double& r, MsqMatrix<D,D>& d1, MsqError& ) \
   { return grad( T, r, d1 ); } \
@@ -54,6 +54,18 @@ bool N::evaluate_with_Hess( const MsqMatrix<D,D>& T, double& r, MsqMatrix<D,D>& 
 #define TMP_TEMPL_IMPL_COMMON(N) \
   TMP_TEMPL_IMPL_DIM(N,2) \
   TMP_TEMPL_IMPL_DIM(N,3) 
+
+#define TMP_AW_TEMPL_IMPL_DIM(N,D) \
+bool N::evaluate( const MsqMatrix<D,D>& A, const MsqMatrix<D,D>& W, double& r, MsqError& ) \
+  { return eval( A, W, r ); } \
+bool N::evaluate_with_grad( const MsqMatrix<D,D>& A, const MsqMatrix<D,D>& W, double& r, MsqMatrix<D,D>& d1, MsqError& ) \
+  { return grad( A, W, r, d1 ); } \
+bool N::evaluate_with_Hess( const MsqMatrix<D,D>& A, const MsqMatrix<D,D>& W, double& r, MsqMatrix<D,D>& d1, MsqMatrix<D,D>* d2, MsqError& ) \
+  { return hess( A, W, r, d1, d2 ); }
+
+#define TMP_AW_TEMPL_IMPL_COMMON(N) \
+  TMP_AW_TEMPL_IMPL_DIM(N,2) \
+  TMP_AW_TEMPL_IMPL_DIM(N,3) 
 
 template <unsigned D> struct DimConst {};
 template <> struct DimConst<2> {

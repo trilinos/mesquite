@@ -31,56 +31,49 @@
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DShapeSizeOrient.hpp"
+#include "TShapeSizeOrientNB1.hpp"
 #include "MsqMatrix.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DShapeSizeOrient::get_name() const
-  { return "ShapeSizeOrient"; }
+std::string TShapeSizeOrientNB1::get_name() const
+  { return "TShapeSizeOrientNB1"; }
 
-bool TRel2DShapeSizeOrient::evaluate( const MsqMatrix<2,2>& T, 
-                                      double& result, 
-                                      MsqError&  )
+template <int DIM> static inline
+bool eval( const MsqMatrix<DIM,DIM>& T, double& result)
 {
-  MsqMatrix<2,2> T_I(T);
-  T_I(0,0) -= 1.0;
-  T_I(1,1) -= 1.0;
+  MsqMatrix<DIM,DIM> T_I(T);
+  pluseq_scaled_I( T_I, -1 );
   result = sqr_Frobenius( T_I );
   return true;
 }
 
-bool TRel2DShapeSizeOrient::evaluate_with_grad( const MsqMatrix<2,2>& T, 
-                                                double& result, 
-                                                MsqMatrix<2,2>& wrt_T,
-                                                MsqError&  )
+template <int DIM> static inline
+bool grad( const MsqMatrix<DIM,DIM>& T, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv )
 {
-  MsqMatrix<2,2> T_I(T);
-  T_I(0,0) -= 1.0;
-  T_I(1,1) -= 1.0;
-  result = sqr_Frobenius( T_I );
-  wrt_T = 2 * T_I;
+  deriv = T;
+  pluseq_scaled_I( deriv, -1 );
+  result = sqr_Frobenius( deriv );
+  deriv *= 2.0;
   return true;
 }
 
-bool TRel2DShapeSizeOrient::evaluate_with_hess( const MsqMatrix<2,2>& T,
-                                                double& result,
-                                                MsqMatrix<2,2>& deriv_wrt_T,
-                                                MsqMatrix<2,2> second_wrt_T[3],
-                                                MsqError& err )
+template <int DIM> static inline
+bool hess( const MsqMatrix<DIM,DIM>& T, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv, 
+           MsqMatrix<DIM,DIM>* second )
 {
-  MsqMatrix<2,2> T_I(T);
-  T_I(0,0) -= 1.0;
-  T_I(1,1) -= 1.0;
-  result = sqr_Frobenius( T_I );
-  deriv_wrt_T = 2 *T_I;
-    // diagonal blocks
-  second_wrt_T[0] = second_wrt_T[2] = MsqMatrix<2,2>(2.0);
-    // non-diagonal blocks are zero
-  second_wrt_T[1].zero();
+  deriv = T;
+  pluseq_scaled_I( deriv, -1 );
+  result = sqr_Frobenius( deriv );
+  deriv *= 2.0;
+  set_scaled_I( second, 2.0 );
   return true;
 }
 
-
+TMP_TEMPL_IMPL_COMMON(TShapeSizeOrientNB1)
 
 } // namespace Mesquite
