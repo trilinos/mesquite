@@ -50,41 +50,41 @@ using std::auto_ptr;
 #include "ReferenceMesh.hpp"
 #include "RefMeshTargetCalculator.hpp"
 
-#include "TRelQualityMetric.hpp"
+#include "TQualityMetric.hpp"
 #include "ElementPMeanP.hpp"
 #include "VertexPMeanP.hpp"
   
-#include "TSquared2D.hpp"
-#include "TRel2DShape.hpp"
-#include "TRel2DShapeBarrier.hpp"
-#include "TRel2DShapeOrient.hpp"
-#include "TRel2DShapeOrientAlt1.hpp"
-#include "TRel2DShapeOrientBarrier.hpp"
-#include "TRel2DShapeSize.hpp"
-#include "TRel2DShapeSizeBarrier.hpp"
-#include "TRel2DShapeSizeBarrierAlt1.hpp"
-#include "TRel2DShapeSizeBarrierAlt2.hpp"
-#include "TRel2DShapeSizeBarrierAlt1.hpp"
-#include "TRel2DShapeSizeOrient.hpp"
-#include "TRel2DShapeSizeOrientBarrier.hpp"
-#include "TRel2DShapeSizeOrientBarrierAlt1.hpp"
+#include "TSquared.hpp"
+#include "TShapeNB1.hpp"
+#include "TShapeB1.hpp"
+#include "TShapeOrientNB1.hpp"
+#include "TShapeOrientNB2.hpp"
+#include "TShapeOrientB1.hpp"
+#include "TShapeSize2DNB1.hpp"
+#include "TShapeSizeB1.hpp"
+#include "TShapeSize2DB2.hpp"
+#include "TShapeSizeB3.hpp"
+#include "TShapeSizeBarrierAlt1.hpp"
+#include "TShapeSizeOrientNB1.hpp"
+#include "TShapeSizeOrientB1.hpp"
+#include "TShapeSizeOrientB2.hpp"
 
 using namespace Mesquite;
 
-static const struct { TRel2DMetric* u; const char* n; }
-metrics[] = { { new TSquared2D,                     "TSquared"               },
-              { new TRel2DShape,                  "Shape"                  },
-              { new TRel2DShapeBarrier,           "ShapeBarrier"           },
-              { new TRel2DShapeOrient,            "ShapeOrient0"           },
-              { new TRel2DShapeOrientAlt1,        "ShapeOrient1"           },
-              { new TRel2DShapeOrientBarrier,     "ShapeOrientBarrier"     },
-              { new TRel2DShapeSize,              "ShapeSize"              },
-              { new TRel2DShapeSizeBarrier,       "ShapeSizeBarrier0"      },
-              { new TRel2DShapeSizeBarrierAlt1,   "ShapeSizeBarrier1"      },
-              { new TRel2DShapeSizeBarrierAlt2,   "ShapeSizeBarrier2"      },
-              { new TRel2DShapeSizeOrient,        "ShapeSizeOrient0"       },
-              { new TRel2DShapeSizeOrientBarrier, "ShapeSizeOrientBarrier0"},
-           { new TRel2DShapeSizeOrientBarrierAlt1,"ShapeSizeOrientBarrier1"},
+static const struct { TMetric* u; const char* n; }
+metrics[] = { { new TSquared,           "TSquared"               },
+              { new TShapeNB1,          "Shape"                  },
+              { new TShapeB1,           "ShapeBarrier"           },
+              { new TShapeOrientNB1,    "ShapeOrient1"           },
+              { new TShapeOrientNB2,    "ShapeOrient2"           },
+              { new TShapeOrientB1,     "ShapeOrientBarrier"     },
+              { new TShapeSize2DNB1,    "ShapeSize"              },
+              { new TShapeSizeB1,       "ShapeSizeBarrier1"      },
+              { new TShapeSize2DB2,     "ShapeSizeBarrier2"      },
+              { new TShapeSizeB3,       "ShapeSizeBarrier3"      },
+              { new TShapeSizeOrientB1, "ShapeSizeOrient1"       },
+              { new TShapeSizeOrientB1, "ShapeSizeOrientBarrier1"},
+              { new TShapeSizeOrientB2, "ShapeSizeOrientBarrier2"},
               { 0, 0 } };
 
 enum AveragingScheme { NONE = 0, ELEMENT, VERTEX, PATCH };
@@ -108,7 +108,7 @@ static int do_smoother( const char* input_file,
 {
   MsqPrintError err(cerr);
   
-  TRel2DMetric *const target_metric = metrics[metric_idx].u;
+  TMetric *const target_metric = metrics[metric_idx].u;
   cout << "Input file:  " << input_file << endl;
   cout << "Metric:      ";
   if (avg_scheme != NONE)
@@ -131,7 +131,7 @@ static int do_smoother( const char* input_file,
     tc.reset( new IdealShapeTarget( ) );
   }
     
-  TRelQualityMetric jacobian_metric( tc.get(), target_metric, 0 );
+  TQualityMetric jacobian_metric( tc.get(), target_metric );
   ElementPMeanP elem_avg( of_power, &jacobian_metric );
   VertexPMeanP vtx_avg( of_power, &jacobian_metric );
   QualityMetric* mmetrics[] = { &jacobian_metric, &elem_avg, &vtx_avg, &jacobian_metric };

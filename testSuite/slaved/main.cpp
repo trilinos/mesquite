@@ -36,8 +36,8 @@
 #include "TriLagrangeShape.hpp"
 #include "QuadLagrangeShape.hpp"
 #include "IdealShapeTarget.hpp"
-#include "TRel2DShape.hpp"
-#include "TRelQualityMetric.hpp"
+#include "TShapeNB1.hpp"
+#include "TQualityMetric.hpp"
 #include "SteepestDescent.hpp"
 #include "SlaveBoundaryVertices.hpp"
 #include "PMeanPTemplate.hpp"
@@ -102,9 +102,9 @@ int main( int argc, char* argv[] )
   
   MsqPrintError err(std::cerr);
   SlaveBoundaryVertices slaver(1);
-  TRel2DShape tmetric;
+  TShapeNB1 tmetric;
   IdealShapeTarget target;
-  TRelQualityMetric metric( &target, &tmetric, 0 );
+  TQualityMetric metric( &target, &tmetric );
   PMeanPTemplate of( 1.0, &metric );
   SteepestDescent improver( &of );
   TerminationCriterion inner;
