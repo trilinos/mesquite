@@ -25,36 +25,36 @@
   ***************************************************************** */
 
 
-/** \file TRel2DShapeOrient.cpp
+/** \file TShapeOrientNB1.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DShapeOrient.hpp"
+#include "TShapeOrientNB1.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DShapeOrient::get_name() const
-  { return "ShapeOrient"; }
+std::string TShapeOrientNB1::get_name() const
+  { return "TShapeOrientNB1"; }
 
-bool TRel2DShapeOrient::evaluate( const MsqMatrix<2,2>& T, 
-                                  double& result, 
-                                  MsqError&  )
+template <int DIM> static inline
+bool eval( const MsqMatrix<DIM,DIM>& T, double& result )
 {
-  result = Frobenius( T ) - trace(T)/MSQ_SQRT_TWO;
+  result = Frobenius( T ) - trace(T)/DimConst<DIM>::sqrt();
   return true;
 }
 
-bool TRel2DShapeOrient::evaluate_with_grad( const MsqMatrix<2,2>& T,
-                                            double& result,
-                                            MsqMatrix<2,2>& deriv,
-                                            MsqError& err )
+
+template <int DIM> static inline
+bool grad( const MsqMatrix<DIM,DIM>& T, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv )
 {
   const double norm = Frobenius(T);
-  const double invroot = 1.0/MSQ_SQRT_TWO;
+  const double invroot = 1.0/DimConst<DIM>::sqrt();
   result = norm - invroot * trace(T);
   
   if (norm < 1e-50) {
@@ -63,36 +63,35 @@ bool TRel2DShapeOrient::evaluate_with_grad( const MsqMatrix<2,2>& T,
   }
 
   deriv = 1.0/norm * T;
-  deriv(0,0) -= invroot;
-  deriv(1,1) -= invroot;
+  pluseq_scaled_I( deriv, -invroot );
   return true;
 }
 
-bool TRel2DShapeOrient::evaluate_with_hess( const MsqMatrix<2,2>& T,
-                                            double& result,
-                                            MsqMatrix<2,2>& deriv,
-                                            MsqMatrix<2,2> second[3],
-                                            MsqError& err )
+template <int DIM> static inline
+bool hess( const MsqMatrix<DIM,DIM>& T, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv, 
+           MsqMatrix<DIM,DIM>* second )
 {
   const double norm = Frobenius(T);
-  const double invroot = 1.0/MSQ_SQRT_TWO;
+  const double invroot = 1.0/DimConst<DIM>::sqrt();
   result = norm - invroot * trace(T);
   
   if (norm < 1e-50) {
-    deriv = second[1] = second[2] = second[4] = MsqMatrix<2,2>(0.0);
-    second[0] = second[3] = second[5] = MsqMatrix<2,2>(1.0);
+    deriv = MsqMatrix<DIM,DIM>(0.0);
+    set_scaled_I( second, 1.0 );
     return true;
   }
 
   const double invnorm = 1.0/norm;
   deriv = invnorm * T;
-  deriv(0,0) -= invroot;
-  deriv(1,1) -= invroot;
-  
+  pluseq_scaled_I( deriv, -invroot );
+
   set_scaled_outer_product( second, -invnorm*invnorm*invnorm, T );
   pluseq_scaled_I( second, invnorm );
   return true;
 }
 
+TMP_TEMPL_IMPL_COMMON(TShapeOrientNB1)
 
 } // namespace Mesquite

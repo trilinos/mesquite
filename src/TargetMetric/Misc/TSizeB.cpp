@@ -59,6 +59,13 @@ bool TSizeB::evaluate( const MsqMatrix<2,2>& T,
   return eval( T, result );
 }
 
+bool TSizeB::evaluate( const MsqMatrix<3,3>& T, 
+                       double& result, 
+                       MsqError&  )
+{
+  return eval( T, result );
+}
+
 template <int DIM> static inline
 bool grad( const MsqMatrix<DIM,DIM>& T, double& result, 
            MsqMatrix<DIM,DIM>& deriv_wrt_T )
@@ -77,6 +84,14 @@ bool grad( const MsqMatrix<DIM,DIM>& T, double& result,
 bool TSizeB::evaluate_with_grad( const MsqMatrix<2,2>& T,
                                  double& result,
                                  MsqMatrix<2,2>& deriv_wrt_T,
+                                 MsqError& )
+{
+  return grad( T, result, deriv_wrt_T );
+}
+
+bool TSizeB::evaluate_with_grad( const MsqMatrix<3,3>& T,
+                                 double& result,
+                                 MsqMatrix<3,3>& deriv_wrt_T,
                                  MsqError& )
 {
   return grad( T, result, deriv_wrt_T );

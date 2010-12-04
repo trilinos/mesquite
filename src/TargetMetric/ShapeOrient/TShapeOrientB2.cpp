@@ -25,56 +25,53 @@
   ***************************************************************** */
 
 
-/** \file TRel2DShapeOrientBarrierAlt1.cpp
+/** \file TShapeOrientB2.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DShapeOrientBarrierAlt1.hpp"
+#include "TShapeOrientB2.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DShapeOrientBarrierAlt1::get_name() const
-  { return "ShapeOrientBarrier"; }
+std::string TShapeOrientB2::get_name() const
+  { return "TShapeOrientB2"; }
 
-bool TRel2DShapeOrientBarrierAlt1::evaluate( const MsqMatrix<2,2>& T, 
-                                             double& result, 
-                                             MsqError&  )
+template <int DIM> static inline
+bool eval( const MsqMatrix<DIM,DIM>& T, double& result )
 {
   double tau = det(T);
-  if (invalid_determinant(tau)) {
+  if (TMetric::invalid_determinant(tau)) {
     result = 0.0;
     return false;
   }
   const double tr = trace(T);
-  result = (0.5/tau) * (sqr_Frobenius( T ) - 0.5 * tr * fabs(tr));
+  result = (0.5/tau) * (sqr_Frobenius( T ) - DimConst<DIM>::inv() * tr * fabs(tr));
   return true;
 }
 
-bool TRel2DShapeOrientBarrierAlt1::evaluate_with_grad( const MsqMatrix<2,2>& T, 
-                                                       double& result, 
-                                                       MsqMatrix<2,2>& deriv_wrt_T,
-                                                       MsqError& err )
+template <int DIM> static inline
+bool grad( const MsqMatrix<DIM,DIM>& T, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv_wrt_T )
 {
   double tau = det(T);
-  if (invalid_determinant(tau)) {
+  if (TMetric::invalid_determinant(tau)) {
     result = 0.0;
     return false;
   }
   const double b = 0.5/tau;
 
   const double tr = trace(T);
-  result = sqr_Frobenius( T ) - 0.5 * tr * fabs(tr);
+  const double f = DimConst<DIM>::inv() * fabs(tr);
+  result = sqr_Frobenius( T ) - f * tr;
   
   deriv_wrt_T = T;
-  deriv_wrt_T *= 2;
-  deriv_wrt_T(0,0) -= fabs(tr);
-  deriv_wrt_T(1,1) -= fabs(tr);
-  
-  deriv_wrt_T *= tau;
+  pluseq_scaled_I( deriv_wrt_T, -f );
+  deriv_wrt_T *= 2*tau;
   deriv_wrt_T -= result * transpose_adj(T);
   
   result *= b;
@@ -83,14 +80,14 @@ bool TRel2DShapeOrientBarrierAlt1::evaluate_with_grad( const MsqMatrix<2,2>& T,
   return true;
 }
 
-bool TRel2DShapeOrientBarrierAlt1::evaluate_with_Hess( const MsqMatrix<2,2>& T, 
-                                                       double& result, 
-                                                       MsqMatrix<2,2>& deriv_wrt_T,
-                                                       MsqMatrix<2,2> second_wrt_T[3],
-                                                       MsqError& err )
+template <int DIM> static inline
+bool hess( const MsqMatrix<DIM,DIM>& T, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv_wrt_T, 
+           MsqMatrix<DIM,DIM>* second_wrt_T )
 {
   double tau = det(T);
-  if (invalid_determinant(tau)) {
+  if (TMetric::invalid_determinant(tau)) {
     result = 0.0;
     return false;
   }
@@ -98,20 +95,19 @@ bool TRel2DShapeOrientBarrierAlt1::evaluate_with_Hess( const MsqMatrix<2,2>& T,
 
     // calculate non-barrier value (ShapeOrientAlt1)
   const double tr = trace(T);
-  const double f = 0.5 * fabs(tr);
+  const double f = DimConst<DIM>::inv() * fabs(tr);
   result = sqr_Frobenius( T ) - f * tr;
   
     // calculate non-barrier first derivatives
   deriv_wrt_T = T;
-  deriv_wrt_T(0,0) -= f;
-  deriv_wrt_T(1,1) -= f;
+  pluseq_scaled_I( deriv_wrt_T, -f );
   deriv_wrt_T *= 2;
   
     // calculate barrier second derivs
-  const MsqMatrix<2,2> adjt = transpose_adj(T);
+  const MsqMatrix<DIM,DIM> adjt = transpose_adj(T);
   set_scaled_sum_outer_product( second_wrt_T, -b/tau, deriv_wrt_T, adjt );
   pluseq_scaled_outer_product( second_wrt_T, result/(tau*tau*tau), adjt );
-  pluseq_scaled_2nd_deriv_of_det( second_wrt_T, -result * b / tau );
+  pluseq_scaled_2nd_deriv_of_det( second_wrt_T, -result * b / tau, T );
     // calculate non-barrier barrier portion of second derivs
   pluseq_scaled_I( second_wrt_T, 1/tau );
   pluseq_scaled_outer_product_I_I( second_wrt_T, MSQ_ONE_THIRD/tau * (tr < 0 ? 1 : -1) );
@@ -126,6 +122,7 @@ bool TRel2DShapeOrientBarrierAlt1::evaluate_with_Hess( const MsqMatrix<2,2>& T,
   return true;
 }
 
+TMP_TEMPL_IMPL_COMMON(TShapeOrientB2)
 
 
 } // namespace Mesquite

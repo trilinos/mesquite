@@ -25,61 +25,61 @@
   ***************************************************************** */
 
 
-/** \file TRel2DShapeOrientAlt1.cpp
+/** \file TShapeOrientNB2.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DShapeOrientAlt1.hpp"
+#include "TShapeOrientNB2.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DShapeOrientAlt1::get_name() const
-  { return "ShapeOrient"; }
+std::string TShapeOrientNB2::get_name() const
+  { return "TShapeOrientNB2"; }
 
-bool TRel2DShapeOrientAlt1::evaluate( const MsqMatrix<2,2>& T, 
-                                      double& result, 
-                                      MsqError&  )
+template <int DIM> static inline
+bool eval( const MsqMatrix<DIM,DIM>& T, double& result )
 {
   const double tr = trace(T);
-  result = sqr_Frobenius( T ) - 0.5 * tr * fabs(tr);
+  result = sqr_Frobenius( T ) - DimConst<DIM>::inv() * tr * fabs(tr);
   return true;
 }
 
-bool TRel2DShapeOrientAlt1::evaluate_with_grad( const MsqMatrix<2,2>& T, 
-                                                double& result, 
-                                                MsqMatrix<2,2>& deriv_wrt_T,
-                                                MsqError& err )
+
+template <int DIM> static inline
+bool grad( const MsqMatrix<DIM,DIM>& T, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv_wrt_T )
 {
   const double tr = trace(T);
-  result = sqr_Frobenius( T ) - 0.5 * tr * fabs(tr);
+  const double f = DimConst<DIM>::inv() * fabs(tr);
+  result = sqr_Frobenius( T ) - f * tr;
   deriv_wrt_T = T;
+  pluseq_scaled_I( deriv_wrt_T, -f );
   deriv_wrt_T *= 2;
-  deriv_wrt_T(0,0) -= fabs(tr);
-  deriv_wrt_T(1,1) -= fabs(tr);
   return true;
 }
 
-bool TRel2DShapeOrientAlt1::evaluate_with_Hess( const MsqMatrix<2,2>& T, 
-                                                double& result, 
-                                                MsqMatrix<2,2>& deriv_wrt_T,
-                                                MsqMatrix<2,2> second_wrt_T[3],
-                                                MsqError& err )
+template <int DIM> static inline
+bool hess( const MsqMatrix<DIM,DIM>& T, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv_wrt_T, 
+           MsqMatrix<DIM,DIM>* second_wrt_T )
 {
   const double tr = trace(T);
-  result = sqr_Frobenius( T ) - 0.5 * tr * fabs(tr);
+  const double f = DimConst<DIM>::inv() * fabs(tr);
+  result = sqr_Frobenius( T ) - f * tr;
   deriv_wrt_T = T;
+  pluseq_scaled_I( deriv_wrt_T, -f );
   deriv_wrt_T *= 2;
-  deriv_wrt_T(0,0) -= fabs(tr);
-  deriv_wrt_T(1,1) -= fabs(tr);
   set_scaled_I( second_wrt_T, 2.0 );
-  pluseq_scaled_outer_product_I_I( second_wrt_T, tr < 0 ? 1 : -1 );
+  pluseq_scaled_outer_product_I_I( second_wrt_T, MSQ_ONE_THIRD * (tr < 0 ? 2 : -2) );
   return true;
 }
 
-
+TMP_TEMPL_IMPL_COMMON(TShapeOrientNB2)
 
 } // namespace Mesquite

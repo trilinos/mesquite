@@ -21,47 +21,49 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
     (2006) kraftche@cae.wisc.edu
+    (2010) kraftche@cae.wisc.edu
    
   ***************************************************************** */
 
 
-/** \file TRel2DShapeOrientBarrier.cpp
+/** \file TShapeOrientB1.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DShapeOrientBarrier.hpp"
+#include "TShapeOrientB1.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TRel2DShapeOrientBarrier::get_name() const
-  { return "ShapeOrientBarrier"; }
+std::string TShapeOrientB1::get_name() const
+  { return "TShapeOrientB1"; }
 
-bool TRel2DShapeOrientBarrier::evaluate( const MsqMatrix<2,2>& T, 
-                                         double& result, 
-                                         MsqError&  )
+
+template <int DIM> static inline
+bool eval( const MsqMatrix<DIM,DIM>& T, double& result )
 {
   const double tau = det(T);
-  if (invalid_determinant(tau)) { // barrier
+  if (TMetric::invalid_determinant(tau)) { // barrier
     result = 0.0;
     return false;
   }
-  result = 0.5/tau * (Frobenius( T ) - trace(T)/MSQ_SQRT_TWO);
+  result = 0.5/tau * (Frobenius( T ) - trace(T)/DimConst<DIM>::sqrt());
   return true;
 }
 
-bool TRel2DShapeOrientBarrier::evaluate_with_grad( const MsqMatrix<2,2>& T,
-                                                   double& result,
-                                                   MsqMatrix<2,2>& deriv,
-                                                   MsqError& err )
+
+template <int DIM> static inline
+bool grad( const MsqMatrix<DIM,DIM>& T, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv )
 {
   const double norm = Frobenius(T);
-  const double invroot = 1.0/MSQ_SQRT_TWO;
+  const double invroot = 1.0/DimConst<DIM>::sqrt();
   const double tau = det(T);
-  if (invalid_determinant(tau)) { // barrier
+  if (TMetric::invalid_determinant(tau)) { // barrier
     result = 0.0;
     return false;
   }
@@ -71,25 +73,23 @@ bool TRel2DShapeOrientBarrier::evaluate_with_grad( const MsqMatrix<2,2>& T,
   result = 0.5*inv_tau*(norm - invroot * trace(T));
 
   deriv = invnorm * T;
-  deriv(0,0) -= invroot;
-  deriv(1,1) -= invroot;
+  pluseq_scaled_I( deriv, -invroot );
   deriv *= 0.5;
   deriv -= result * transpose_adj(T);
   deriv *= inv_tau;
   return true;
 }
 
-
-bool TRel2DShapeOrientBarrier::evaluate_with_hess( const MsqMatrix<2,2>& T,
-                                                   double& result,
-                                                   MsqMatrix<2,2>& deriv,
-                                                   MsqMatrix<2,2> second[3],
-                                                   MsqError& err )
+template <int DIM> static inline
+bool hess( const MsqMatrix<DIM,DIM>& T, 
+           double& result, 
+           MsqMatrix<DIM,DIM>& deriv, 
+           MsqMatrix<DIM,DIM>* second )
 {
   const double norm = Frobenius(T);
-  const double invroot = 1.0/MSQ_SQRT_TWO;
+  const double invroot = 1.0/DimConst<DIM>::sqrt();
   const double tau = det(T);
-  if (invalid_determinant(tau)) { // barrier
+  if (TMetric::invalid_determinant(tau)) { // barrier
     result = 0.0;
     return false;
   }
@@ -101,8 +101,7 @@ bool TRel2DShapeOrientBarrier::evaluate_with_hess( const MsqMatrix<2,2>& T,
 
   const MsqMatrix<2,2> adjt = transpose_adj(T);
   deriv = invnorm * T;
-  deriv(0,0) -= invroot;
-  deriv(1,1) -= invroot;
+  pluseq_scaled_I( deriv, -invroot );
   deriv *= 0.5;
   deriv -= result * adjt;
   deriv *= inv_tau;
@@ -111,11 +110,14 @@ bool TRel2DShapeOrientBarrier::evaluate_with_hess( const MsqMatrix<2,2>& T,
   set_scaled_outer_product( second, -a*invnorm*invnorm, T );
   pluseq_scaled_I( second, a );
   pluseq_scaled_outer_product( second, f*inv_tau*inv_tau*inv_tau, adjt );
-  pluseq_scaled_2nd_deriv_of_det( second, -0.5*f*inv_tau*inv_tau );
+  pluseq_scaled_2nd_deriv_of_det( second, -0.5*f*inv_tau*inv_tau, T );
   pluseq_scaled_sum_outer_product( second, -0.5*inv_tau*inv_tau*invnorm, T, adjt );
   pluseq_scaled_sum_outer_product_I( second, 0.5*inv_tau*inv_tau*invroot, adjt );
   return true;
 }
+
+
+TMP_TEMPL_IMPL_COMMON(TShapeOrientB1)
 
 
 } // namespace Mesquite

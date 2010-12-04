@@ -43,6 +43,28 @@
 
 namespace MESQUITE_NS {
 
+#define TMP_TEMPL_IMPL_DIM(N,D) \
+bool N::evaluate( const MsqMatrix<D<D>& T, double& r, MsqError& ) \
+  { return eval( T, r ); } \
+bool N::evaluate_with_grad( const MsqMatrix<D,D>& T, double& r, MsqMatrix<D,D>& d1, MsqError& ) \
+  { return grad( T, r, d1 ); } \
+bool N::evaluate_with_Hess( const MsqMatrix<D,D>& T, double& r, MsqMatrix<D,D>& d1, MsqMatrix<D,D>* d2, MsqError& ) \
+  { return hess( T, r, d1, d2 ); }
+
+#define TMP_TEMPL_IMPL_COMMON(N) \
+  TMP_TEMPL_IMPL_DIM(N,2) \
+  TMP_TEMPL_IMPL_DIM(N,3) 
+
+template <unsigned D> struct DimConst {};
+template <> struct DimConst<2> {
+  static inline double sqrt() { return MSQ_SQRT_TWO; }
+  static inline double inv()  { return 0.5; }
+};
+template <> struct DimConst<3> {
+  static inline double sqrt() { return MSQ_SQRT_THREE; }
+  static inline double inv()  { return MSQ_ONE_THIRD; }
+};
+
 /**\brief \f$ R *= s \f$ */
 template <unsigned D> inline
 void hess_scale_t( MsqMatrix<D,D> R[D*(D+1)/2], double alpha );
@@ -71,6 +93,14 @@ void set_scaled_I( MsqMatrix<3,3> R[6], double alpha );
 inline
 void pluseq_scaled_I( MsqMatrix<3,3> R[6], double alpha );
 
+/**\brief \f$ R += \alpha I_9 \f$
+ *
+ *\param R The 6 blocks of the upper triangular portion of a 9x9
+ *         symmetric matrix.
+ */
+inline
+void pluseq_scaled_I( MsqMatrix<3,3> R, double alpha );
+
 /**\brief \f$ R = \alpha I_4 \f$
  *
  *\param R The 3 blocks of the upper triangular portion of a 4x4
@@ -86,6 +116,14 @@ void set_scaled_I( MsqMatrix<2,2> R[3], double alpha );
  */
 inline
 void pluseq_scaled_I( MsqMatrix<2,2> R[3], double alpha );
+
+/**\brief \f$ R += \alpha I_4 \f$
+ *
+ *\param R The 3 blocks of the upper triangular portion of a 4x4
+ *         symmetric matrix.
+ */
+inline
+void pluseq_scaled_I( MsqMatrix<2,2> R, double alpha );
 
 /**\brief \f$ R += \alpha \frac{\partial}{\partial T}det(T) \f$
  *
@@ -342,17 +380,24 @@ void set_scaled_I( MsqMatrix<3,3> R[6], double alpha )
   R[1] = R[2] = R[4] = MsqMatrix<3,3>(0.0);
 }
 
+void pluseq_scaled_I( MsqMatrix<3,3> R, double alpha )
+{
+  R(0,0) += alpha;
+  R(1,1) += alpha;
+  R(2,2) += alpha;
+}
+
+void pluseq_scaled_I( MsqMatrix<2,2> R, double alpha )
+{
+  R(0,0) += alpha;
+  R(1,1) += alpha;
+}
+
 void pluseq_scaled_I( MsqMatrix<3,3> R[6], double alpha )
 {
-  R[0](0,0) += alpha;
-  R[0](1,1) += alpha;
-  R[0](2,2) += alpha;
-  R[3](0,0) += alpha;
-  R[3](1,1) += alpha;
-  R[3](2,2) += alpha;
-  R[5](0,0) += alpha;
-  R[5](1,1) += alpha;
-  R[5](2,2) += alpha;
+  pluseq_scaled_I( R[0], alpha );
+  pluseq_scaled_I( R[3], alpha );
+  pluseq_scaled_I( R[5], alpha );
 }
 
 void set_scaled_I( MsqMatrix<2,2> R[3], double alpha )
@@ -363,10 +408,8 @@ void set_scaled_I( MsqMatrix<2,2> R[3], double alpha )
 
 void pluseq_scaled_I( MsqMatrix<2,2> R[3], double alpha )
 {
-  R[0](0,0) += alpha;
-  R[0](1,1) += alpha;
-  R[2](0,0) += alpha;
-  R[2](1,1) += alpha;
+  pluseq_scaled_I( R[0], alpha );
+  pluseq_scaled_I( R[2], alpha );
 }
 
 void pluseq_scaled_2nd_deriv_of_det( MsqMatrix<3,3> R[6],
