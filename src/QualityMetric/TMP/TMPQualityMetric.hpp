@@ -110,10 +110,6 @@ public:
                                  MsqError& err );
   
 protected:
-
-  std::string make_name( const char* pfx, 
-                         const std::string& name_2d, 
-                         const std::string& name_3d ) const;
  
   MESQUITE_EXPORT virtual
   bool evaluate_internal( PatchData& pd,

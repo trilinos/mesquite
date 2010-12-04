@@ -25,7 +25,7 @@
   ***************************************************************** */
 
 
-/** \file TAbsQualityMetric.hpp
+/** \file AWQualityMetric.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
@@ -39,8 +39,7 @@
 
 namespace MESQUITE_NS {
 
-class TAbs2DMetric;
-class TAbs3DMetric;
+class AWMetric;
 
 /**\brief Compare targets to mapping function Jacobian matrices
  *
@@ -51,44 +50,33 @@ class TAbs3DMetric;
  * elements, A is rotated to align the normal with W, such that
  * both matrices can be reduced from 3x2 to 2x2.
  */
-class TAbsQualityMetric : public TMPQualityMetric
+class AWQualityMetric : public TMPQualityMetric
 {
 public:
   
   /** Used in tests and other templatized code */
-  typedef TAbs2DMetric Metric2DType;
-  typedef TAbs3DMetric Metric3DType;
+  typedef AWMetric MetricType;
 
   /**
    *\param tc   The target calculator 
    *\param wc   The weight calculator
-   *\param metric_2d Metric to use for surface elements - may be NULL
-   *            if mesh contains only volume elements.
-   *\param metric_3d Metric to use for volume elements - may be NULL
-   *            if mesh contains only surface elements.
+   *\param target_metric The target metric to use
    */
-  TAbsQualityMetric( TargetCalculator* tc,
-                     WeightCalculator* wc,
-                     TAbs2DMetric* metric_2d,
-                     TAbs3DMetric* metric_3d ) 
+  AWQualityMetric( TargetCalculator* tc,
+                   WeightCalculator* wc,
+                   AWMetric* target_metric ) 
     : TMPQualityMetric(tc,wc),
-      metric2D( metric_2d ),
-      metric3D( metric_3d )
+      targetMetric( target_metric )
    {}
 
   /**
    *\param tc   The target calculator 
-   *\param metric_2d Metric to use for surface elements - may be NULL
-   *            if mesh contains only volume elements.
-   *\param metric_3d Metric to use for volume elements - may be NULL
-   *            if mesh contains only surface elements.
+   *\param target_metric The target metric to use
    */
-  TAbsQualityMetric( TargetCalculator* tc,
-                     TAbs2DMetric* metric_2d,
-                     TAbs3DMetric* metric_3d ) 
+  AWQualityMetric( TargetCalculator* tc,
+                   AWMetric* target_metric ) 
     : TMPQualityMetric(tc,0),
-      metric2D( metric_2d ),
-      metric3D( metric_3d )
+      targetMetric( target_metric )
    {}
      
   MESQUITE_EXPORT virtual
@@ -120,10 +108,8 @@ public:
                               std::vector<Matrix3D>& Hessian,
                               MsqError& err );
   
-  TAbs2DMetric* get_2d_metric() const { return metric2D; }
-  TAbs3DMetric* get_3d_metric() const { return metric3D; }
-  void set_2d_metric( TAbs2DMetric* m ) { metric2D = m; }
-  void set_3d_metric( TAbs3DMetric* m ) { metric3D = m; }
+  AWMetric* get_target_metric() const { return target_metric; }
+  void set_target_metric( AWMetric* m ) { target_metric = m; }
 
 protected:
 
@@ -137,8 +123,7 @@ protected:
 
 private:
 
-  TAbs2DMetric* metric2D;
-  TAbs3DMetric* metric3D;
+  AWMetric* targetMetric;
 };
 
 } // namespace Mesquite

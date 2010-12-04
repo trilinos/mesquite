@@ -25,13 +25,13 @@
   ***************************************************************** */
 
 
-/** \file TRelQualityMetric.hpp
+/** \file TQualityMetric.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TREL_QUALITY_METRIC_HPP
-#define MSQ_TREL_QUALITY_METRIC_HPP
+#ifndef MSQ_T_QUALITY_METRIC_HPP
+#define MSQ_T_QUALITY_METRIC_HPP
 
 #include "Mesquite.hpp"
 #include "TMPQualityMetric.hpp"
@@ -39,8 +39,7 @@
 
 namespace MESQUITE_NS {
 
-class TRel2DMetric;
-class TRel3DMetric;
+class TMetric;
 
 /**\brief Compare targets to mapping function Jacobian matrices
  *
@@ -51,44 +50,32 @@ class TRel3DMetric;
  * elements, A is rotated to align the normal with W, such that
  * both matrices can be reduced from 3x2 to 2x2.
  */
-class TRelQualityMetric : public TMPQualityMetric
+class TQualityMetric : public TMPQualityMetric
 {
 public:
   
   /** Used in tests and other templatized code */
-  typedef TRel2DMetric Metric2DType;
-  typedef TRel3DMetric Metric3DType;
+  typedef TMetric MetricType;
 
   /**
    *\param tc   The target calculator 
    *\param wc   The weight calculator
-   *\param metric_2d Metric to use for surface elements - may be NULL
-   *            if mesh contains only volume elements.
-   *\param metric_3d Metric to use for volume elements - may be NULL
-   *            if mesh contains only surface elements.
+   *\param target_metric The target metric
    */
-  TRelQualityMetric( TargetCalculator* tc,
-                     WeightCalculator* wc,
-                     TRel2DMetric* metric_2d,
-                     TRel3DMetric* metric_3d ) 
+  TQualityMetric( TargetCalculator* tc,
+                  TMetric* target_metric ) 
     : TMPQualityMetric(tc,wc),
-      metric2D( metric_2d ),
-      metric3D( metric_3d )
+      targetMetric(target_metric)
    {}
 
   /**
    *\param tc   The target calculator 
-   *\param metric_2d Metric to use for surface elements - may be NULL
-   *            if mesh contains only volume elements.
-   *\param metric_3d Metric to use for volume elements - may be NULL
-   *            if mesh contains only surface elements.
+   *\param target_metric The target metric
    */
-  TRelQualityMetric( TargetCalculator* tc,
-                     TRel2DMetric* metric_2d,
-                     TRel3DMetric* metric_3d ) 
+  TQualityMetric( TargetCalculator* tc,
+                  TMetric* target_metric ) 
     : TMPQualityMetric(tc,0),
-      metric2D( metric_2d ),
-      metric3D( metric_3d )
+      targetMetric(target_metric)
    {}
      
   MESQUITE_EXPORT virtual
@@ -120,10 +107,8 @@ public:
                               std::vector<Matrix3D>& Hessian,
                               MsqError& err );
   
-  TRel2DMetric* get_2d_metric() const { return metric2D; }
-  TRel3DMetric* get_3d_metric() const { return metric3D; }
-  void set_2d_metric( TRel2DMetric* m ) { metric2D = m; }
-  void set_3d_metric( TRel3DMetric* m ) { metric3D = m; }
+  TMetric* get_target_metric() const { return targetMetric; }
+  void set_target_metric( TMetric* m ) { targetMetric = m; }
 
 protected:
 
@@ -137,8 +122,7 @@ protected:
 
 private:
 
-  TRel2DMetric* metric2D;
-  TRel3DMetric* metric3D;
+  TMetric* targetMetric;
 };
 
 } // namespace Mesquite

@@ -25,7 +25,7 @@
   ***************************************************************** */
 
 
-/** \file TAbsQualityMetric.cpp
+/** \file AWQualityMetric.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
@@ -33,7 +33,7 @@
 #undef PRINT_INFO
 
 #include "Mesquite.hpp"
-#include "TAbsQualityMetric.hpp"
+#include "AWQualityMetric.hpp"
 #include "MsqMatrix.hpp"
 #include "ElementQM.hpp"
 #include "MsqError.hpp"
@@ -42,8 +42,7 @@
 #include "MappingFunction.hpp"
 #include "WeightCalculator.hpp"
 #include "TargetCalculator.hpp"
-#include "TAbs2DMetric.hpp"
-#include "TAbs3DMetric.hpp"
+#include "AWMetric.hpp"
 #include "TargetMetricUtil.hpp"
 
 #ifdef PRINT_INFO
@@ -55,18 +54,17 @@
 
 namespace MESQUITE_NS {
 
-std::string TAbsQualityMetric::get_name() const
+std::string AWQualityMetric::get_name() const
 {
-  return make_name( "TAbs", metric2D ? metric2D->get_name() : std::string(),
-                            metric3D ? metric3D->get_name() : std::string() );
+  return targetMetric->get_mame();
 }
 
-bool TAbsQualityMetric::evaluate_internal( PatchData& pd,
-                                               size_t handle,
-                                               double& value,
-                                               size_t* indices,
-                                               size_t& num_indices,
-                                               MsqError& err )
+bool AWQualityMetric::evaluate_internal( PatchData& pd,
+                                         size_t handle,
+                                         double& value,
+                                         size_t* indices,
+                                         size_t& num_indices,
+                                         MsqError& err )
 {
   const Sample s = ElemSampleQM::sample( handle );
   const size_t e = ElemSampleQM::  elem( handle );
@@ -77,10 +75,6 @@ bool TAbsQualityMetric::evaluate_internal( PatchData& pd,
   
   bool rval;
   if (edim == 3) { // 3x3 or 3x2 targets ?
-    if (!metric3D) {
-      MSQ_SETERR(err)("No 3D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
     const MappingFunction3D* mf = pd.get_mapping_function_3D( type );
     if (!mf) {
       MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
@@ -91,7 +85,7 @@ bool TAbsQualityMetric::evaluate_internal( PatchData& pd,
     mf->jacobian( pd, e, bits, s, indices, mDerivs3D, num_indices, A, err );
     MSQ_ERRZERO(err);
     targetCalc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
-    rval = metric3D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
+    rval = targetMetric->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
 #ifdef PRINT_INFO
     print_info<3>( e, s, A, W, A * inverse(W) );
 #endif
@@ -103,7 +97,7 @@ bool TAbsQualityMetric::evaluate_internal( PatchData& pd,
                                  mDerivs2D, W, A, S_a_transpose_Theta, err ); 
     if (MSQ_CHKERR(err) || !rval)
       return false;
-    rval = metric2D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
+    rval = targetMetric->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
 #ifdef PRINT_INFO
     print_info<2>( e, s, J, Wp, A * inverse(W) );
 #endif
@@ -116,13 +110,12 @@ bool TAbsQualityMetric::evaluate_internal( PatchData& pd,
   return rval;
 }
 
-bool TAbsQualityMetric::evaluate_with_gradient( 
-                                           PatchData& pd,
-                                           size_t handle,
-                                           double& value,
-                                           std::vector<size_t>& indices,
-                                           std::vector<Vector3D>& grad,
-                                           MsqError& err )
+bool AWQualityMetric::evaluate_with_gradient( PatchData& pd,
+                                              size_t handle,
+                                              double& value,
+                                              std::vector<size_t>& indices,
+                                              std::vector<Vector3D>& grad,
+                                              MsqError& err )
 {
   const Sample s = ElemSampleQM::sample( handle );
   const size_t e = ElemSampleQM::  elem( handle );
@@ -134,10 +127,6 @@ bool TAbsQualityMetric::evaluate_with_gradient(
   
   bool rval;
   if (edim == 3) { // 3x3 or 3x2 targets ?
-    if (!metric3D) {
-      MSQ_SETERR(err)("No 3D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
     const MappingFunction3D* mf = pd.get_mapping_function_3D( type );
     if (!mf) {
       MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
@@ -148,25 +137,20 @@ bool TAbsQualityMetric::evaluate_with_gradient(
     mf->jacobian( pd, e, bits, s, mIndices, mDerivs3D, num_idx, A, err );
     MSQ_ERRZERO(err);
     targetCalc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
-    rval = metric3D->evaluate_with_grad( A, W, value, dmdA, err ); MSQ_ERRZERO(err);
+    rval = targetMetric->evaluate_with_grad( A, W, value, dmdA, err ); MSQ_ERRZERO(err);
     gradient<3>( num_idx, mDerivs3D, dmdA, grad );
 #ifdef PRINT_INFO
     print_info<3>( e, s, A, W, A * inverse(W) );
 #endif
   }
   else if (edim == 2) {
-     if (!metric2D) {
-      MSQ_SETERR(err)("No 2D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
-
-   MsqMatrix<2,2> W, A, dmdA;
+    MsqMatrix<2,2> W, A, dmdA;
     MsqMatrix<3,2> S_a_transpose_Theta;
     rval = evaluate_surface_common( pd, s, e, bits, mIndices, num_idx,
                              mDerivs2D, W, A, S_a_transpose_Theta, err ); 
     if (MSQ_CHKERR(err) || !rval)
       return false;
-    rval = metric2D->evaluate_with_grad( A, W, value, dmdA, err ); MSQ_ERRZERO(err);
+    rval = targetMetric->evaluate_with_grad( A, W, value, dmdA, err ); MSQ_ERRZERO(err);
     gradient<2>( num_idx, mDerivs2D, S_a_transpose_Theta*dmdA, grad );
 #ifdef PRINT_INFO
     print_info<2>( e, s, J, Wp, A * inverse(W) );
@@ -187,14 +171,13 @@ bool TAbsQualityMetric::evaluate_with_gradient(
 }
 
 
-bool TAbsQualityMetric::evaluate_with_Hessian( 
-                                           PatchData& pd,
-                                           size_t handle,
-                                           double& value,
-                                           std::vector<size_t>& indices,
-                                           std::vector<Vector3D>& grad,
-                                           std::vector<Matrix3D>& Hessian,
-                                           MsqError& err )
+bool AWQualityMetric::evaluate_with_Hessian( PatchData& pd,
+                                             size_t handle,
+                                             double& value,
+                                             std::vector<size_t>& indices,
+                                             std::vector<Vector3D>& grad,
+                                             std::vector<Matrix3D>& Hessian,
+                                             MsqError& err )
 {
   const Sample s = ElemSampleQM::sample( handle );
   const size_t e = ElemSampleQM::  elem( handle );
@@ -206,10 +189,6 @@ bool TAbsQualityMetric::evaluate_with_Hessian(
   
   bool rval;
   if (edim == 3) { // 3x3 or 3x2 targets ?
-    if (!metric3D) {
-      MSQ_SETERR(err)("No 3D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
     const MappingFunction3D* mf = pd.get_mapping_function_3D( type );
     if (!mf) {
       MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
@@ -220,7 +199,7 @@ bool TAbsQualityMetric::evaluate_with_Hessian(
     mf->jacobian( pd, e, bits, s, mIndices, mDerivs3D, num_idx, A, err );
     MSQ_ERRZERO(err);
     targetCalc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
-    rval = metric3D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
+    rval = targetMetric->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
     gradient<3>( num_idx, mDerivs3D, dmdA, grad );
     Hessian.resize( num_idx*(num_idx+1)/2 );
     if (num_idx)
@@ -231,11 +210,6 @@ bool TAbsQualityMetric::evaluate_with_Hessian(
 #endif
   }
   else if (edim == 2) {
-    if (!metric2D) {
-      MSQ_SETERR(err)("No 2D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
-
     // return finite difference approximation for now
 
     return QualityMetric::evaluate_with_Hessian( pd, handle,
@@ -248,7 +222,7 @@ bool TAbsQualityMetric::evaluate_with_Hessian(
                              mDerivs2D, W, A, SaT_Th, err ); 
     if (MSQ_CHKERR(err) || !rval)
       return false;
-    rval = metric2D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
+    rval = targetMetric->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
     gradient<2>( num_idx, mDerivs2D, SaT_Th * dmdA, grad );
     const size_t n = num_idx*(num_idx+1)/2;
       // calculate 2D hessian
@@ -283,7 +257,7 @@ bool TAbsQualityMetric::evaluate_with_Hessian(
 }
 
 
-bool TAbsQualityMetric::evaluate_with_Hessian_diagonal( 
+bool AWQualityMetric::evaluate_with_Hessian_diagonal( 
                                            PatchData& pd,
                                            size_t handle,
                                            double& value,
@@ -302,10 +276,6 @@ bool TAbsQualityMetric::evaluate_with_Hessian_diagonal(
   
   bool rval;
   if (edim == 3) { // 3x3 or 3x2 targets ?
-    if (!metric3D) {
-      MSQ_SETERR(err)("No 3D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
     const MappingFunction3D* mf = pd.get_mapping_function_3D( type );
     if (!mf) {
       MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
@@ -316,7 +286,7 @@ bool TAbsQualityMetric::evaluate_with_Hessian_diagonal(
     mf->jacobian( pd, e, bits, s, mIndices, mDerivs3D, num_idx, A, err );
     MSQ_ERRZERO(err);
     targetCalc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
-    rval = metric3D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
+    rval = targetMetric->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
     gradient<3>( num_idx, mDerivs3D, dmdA, grad );
     
     diagonal.resize( num_idx );
@@ -326,11 +296,6 @@ bool TAbsQualityMetric::evaluate_with_Hessian_diagonal(
 #endif
   }
   else if (edim == 2) {
-    if (!metric2D) {
-      MSQ_SETERR(err)("No 2D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
-
     // use finite diference approximation for now
     return QualityMetric::evaluate_with_Hessian_diagonal( pd, handle,
                                            value, indices, grad, diagonal,
@@ -342,7 +307,7 @@ bool TAbsQualityMetric::evaluate_with_Hessian_diagonal(
                              mDerivs2D, W, A, SaT_Th, err ); 
     if (MSQ_CHKERR(err) || !rval)
       return false;
-    rval = metric2D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
+    rval = targetMetric->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
     gradient<2>( num_idx, mDerivs2D, SaT_Th * dmdA, grad );
 
     diagonal.resize( num_idx );
