@@ -42,8 +42,6 @@
 #include "MappingFunction.hpp"
 #include "WeightCalculator.hpp"
 #include "TargetCalculator.hpp"
-#include "TRel2DMetric.hpp"
-#include "TRel3DMetric.hpp"
 #include "TargetMetricUtil.hpp"
 
 #ifdef PRINT_INFO

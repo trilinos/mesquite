@@ -86,6 +86,14 @@ public:
                            MsqMatrix<3,3>& deriv_wrt_T,
                            MsqMatrix<3,3> second_wrt_T[6],
                            MsqError& err );
+
+private:
+  template <unsigned D> inline
+  bool eval( const MsqMatrix<D,D>& T, double& result, MsqError& err );
+  template <unsigned D> inline
+  bool grad( const MsqMatrix<D,D>& T, double& result, MsqMatrix<D,D>& first, MsqError& err );
+  template <unsigned D> inline
+  bool hess( const MsqMatrix<D,D>& T, double& result, MsqMatrix<D,D>& first, MsqMatrix<D,D>* second, MsqError& err );
 };
 
 

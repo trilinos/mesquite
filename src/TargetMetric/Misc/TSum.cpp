@@ -34,18 +34,17 @@
 #include "TSum.hpp"
 #include "MsqMatrix.hpp"
 #include "MsqError.hpp"
+#include "TMPCommon.hpp"
 
 namespace MESQUITE_NS {
 
 std::string TSum::get_name() const
   { return mu1->get_name() + '+' + mu2->get_name(); }
 
-template <int DIM> static inline
-bool eval( TMetric* mu1,
-           TMetric* mu2,
-           const MsqMatrix<DIM,DIM>& T, 
-           double& result, 
-           MsqError& err )
+template <unsigned DIM> inline
+bool TSum::eval( const MsqMatrix<DIM,DIM>& T, 
+                 double& result, 
+                 MsqError& err )
 {
   double val2;
   bool rval = mu1->evaluate( T, result, err );  MSQ_ERRZERO(err);
@@ -54,23 +53,11 @@ bool eval( TMetric* mu1,
   return rval && rval2;
 }
 
-bool TSum::evaluate( const MsqMatrix<2,2>& T, double& result, MsqError& err )
-{
-  return eval( mu1, mu2, T, result, err );
-}
-
-bool TSum::evaluate( const MsqMatrix<3,3>& T, double& result, MsqError& err )
-{
-  return eval( mu1, mu2, T, result, err );
-}
-
-template <int DIM> static inline
-bool grad( TMetric* mu1,
-           TMetric* mu2,
-           const MsqMatrix<DIM,DIM>& T, 
-           double& result, 
-           MsqMatrix<DIM,DIM>& deriv, 
-           MsqError& err )
+template <unsigned DIM> inline
+bool TSum::grad( const MsqMatrix<DIM,DIM>& T, 
+                 double& result, 
+                 MsqMatrix<DIM,DIM>& deriv, 
+                 MsqError& err )
 {
   double val2;
   MsqMatrix<DIM,DIM> grad2;
@@ -81,30 +68,12 @@ bool grad( TMetric* mu1,
   return rval && rval2;
 }
 
-bool TSum::evaluate_with_grad( const MsqMatrix<2,2>& T,
-                               double& result,
-                               MsqMatrix<2,2>& deriv_wrt_T,
-                               MsqError& err )
-{
-  return grad( mu1, mu2, T, result, deriv_wrt_T, err );
-}
-
-bool TSum::evaluate_with_grad( const MsqMatrix<3,3>& T,
-                               double& result,
-                               MsqMatrix<3,3>& deriv_wrt_T,
-                               MsqError& err )
-{
-  return grad( mu1, mu2, T, result, deriv_wrt_T, err );
-}
-
-template <int DIM> static inline
-bool hess( TMetric* mu1,
-           TMetric* mu2,
-           const MsqMatrix<DIM,DIM>& T, 
-           double& result, 
-           MsqMatrix<DIM,DIM>& deriv, 
-           MsqMatrix<DIM,DIM>* hess,
-           MsqError& err )
+template <unsigned DIM> inline
+bool TSum::hess( const MsqMatrix<DIM,DIM>& T, 
+                 double& result, 
+                 MsqMatrix<DIM,DIM>& deriv_wrt_T, 
+                 MsqMatrix<DIM,DIM>* second_wrt_T,
+                 MsqError& err )
 {
   const int HL = (DIM*(DIM+1))/2;
   double val2;
@@ -118,23 +87,6 @@ bool hess( TMetric* mu1,
   return rval && rval2;
 }
 
-bool TSum::evaluate_with_hess( const MsqMatrix<2,2>& T,
-                               double& result,
-                               MsqMatrix<2,2>& deriv_wrt_T,
-                               MsqMatrix<2,2> second_wrt_T[3],
-                               MsqError& err )
-{
-  return grad( mu1, mu2, T, result, deriv_wrt_T, second_wrt_T, err );
-}
-
-bool TSum::evaluate_with_hess( const MsqMatrix<3,3>& T,
-                               double& result,
-                               MsqMatrix<3,3>& deriv_wrt_T,
-                               MsqMatrix<3,3> second_wrt_T[3],
-                               MsqError& err )
-{
-  return grad( mu1, mu2, T, result, deriv_wrt_T, second_wrt_T, err );
-}
-
+TMP_T_TEMPL_IMPL_COMMON_ERR(TSum)
 
 } // namespace MESQUITE_NS

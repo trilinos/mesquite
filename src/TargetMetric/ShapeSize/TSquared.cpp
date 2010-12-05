@@ -42,14 +42,14 @@ std::string TSquared::get_name() const
   { return "TSquared"; }
 
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool eval( const MsqMatrix<DIM,DIM>& T, double& result)
 {
   result = sqr_Frobenius( T );
   return true;  
 }
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool grad( const MsqMatrix<DIM,DIM>& T, double& result, MsqMatrix<DIM,DIM>& wrt_T )
 {
   result = sqr_Frobenius( T );
@@ -57,7 +57,7 @@ bool grad( const MsqMatrix<DIM,DIM>& T, double& result, MsqMatrix<DIM,DIM>& wrt_
   return true;
 }
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool hess( const MsqMatrix<DIM,DIM>& T, double& result, 
            MsqMatrix<DIM,DIM>& deriv_wrt_T, MsqMatrix<DIM,DIM>* second_wrt_T )
 {

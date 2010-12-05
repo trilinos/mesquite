@@ -38,9 +38,9 @@
 
 namespace MESQUITE_NS {
 
-template <typename TargetMetric, unsigned Dim>
+template <unsigned Dim>
 static inline double
-do_finite_difference( int r, int c, TargetMetric* metric, 
+do_finite_difference( int r, int c, TMetric* metric, 
                       MsqMatrix<Dim, Dim> A,
                       double value, MsqError& err )
 {
@@ -71,31 +71,31 @@ do_finite_difference( int r, int c, TargetMetric* metric,
 }
 
 
-template <typename TargetMetric, unsigned Dim>
+template <unsigned Dim>
 static inline bool
-do_numerical_gradient( TargetMetric* metric,
+do_numerical_gradient( TMetric* mu,
                        MsqMatrix<Dim, Dim> A,
-                       double& value,
-                       MsqMatrix<Dim,Dim>& grad,
+                       double& result,
+                       MsqMatrix<Dim,Dim>& wrt_A,
                        MsqError& err )
 {
-  bool valid = evaluate( A, result, err );
+  bool valid = mu->evaluate( A, result, err );
   if (MSQ_CHKERR(err) || !valid)
     return valid;
   
   switch (Dim) {
     case 3:
-  wrt_A(0,2) = do_finite_difference( 0, 2, this, A, result, err ); MSQ_ERRZERO(err);
-  wrt_A(1,2) = do_finite_difference( 1, 2, this, A, result, err ); MSQ_ERRZERO(err);
-  wrt_A(2,0) = do_finite_difference( 2, 0, this, A, result, err ); MSQ_ERRZERO(err);
-  wrt_A(2,1) = do_finite_difference( 2, 1, this, A, result, err ); MSQ_ERRZERO(err);
-  wrt_A(2,2) = do_finite_difference( 2, 2, this, A, result, err ); MSQ_ERRZERO(err);
+  wrt_A(0,2) = do_finite_difference( 0, 2, mu, A, result, err ); MSQ_ERRZERO(err);
+  wrt_A(1,2) = do_finite_difference( 1, 2, mu, A, result, err ); MSQ_ERRZERO(err);
+  wrt_A(2,0) = do_finite_difference( 2, 0, mu, A, result, err ); MSQ_ERRZERO(err);
+  wrt_A(2,1) = do_finite_difference( 2, 1, mu, A, result, err ); MSQ_ERRZERO(err);
+  wrt_A(2,2) = do_finite_difference( 2, 2, mu, A, result, err ); MSQ_ERRZERO(err);
     case 2:
-  wrt_A(0,1) = do_finite_difference( 0, 1, this, A, result, err ); MSQ_ERRZERO(err);
-  wrt_A(1,0) = do_finite_difference( 1, 0, this, A, result, err ); MSQ_ERRZERO(err);
-  wrt_A(1,1) = do_finite_difference( 1, 1, this, A, result, err ); MSQ_ERRZERO(err);
+  wrt_A(0,1) = do_finite_difference( 0, 1, mu, A, result, err ); MSQ_ERRZERO(err);
+  wrt_A(1,0) = do_finite_difference( 1, 0, mu, A, result, err ); MSQ_ERRZERO(err);
+  wrt_A(1,1) = do_finite_difference( 1, 1, mu, A, result, err ); MSQ_ERRZERO(err);
     case 1:
-  wrt_A(0,0) = do_finite_difference( 0, 0, this, A, result, err ); MSQ_ERRZERO(err);
+  wrt_A(0,0) = do_finite_difference( 0, 0, mu, A, result, err ); MSQ_ERRZERO(err);
     break;
     default:
      assert(false);
@@ -103,9 +103,9 @@ do_numerical_gradient( TargetMetric* metric,
   return true;
 }
 
-template <typename TargetMetric, unsigned Dim>
+template <unsigned Dim>
 static inline bool
-do_numerical_hessian( TargetMetric* metric, 
+do_numerical_hessian( TMetric* metric, 
                       MsqMatrix<Dim, Dim> A,
                       double& value,
                       MsqMatrix<Dim, Dim>& grad, 
@@ -192,10 +192,10 @@ bool TMetric::evaluate_with_grad( const MsqMatrix<2,2>& T,
   return do_numerical_gradient( this, T, result, wrt_T, err );
 }
 
-bool TDMetric::evaluate_with_grad( const MsqMatrix<3,3>& T,
-                                   double& result,
-                                   MsqMatrix<3,3>& wrt_T,
-                                   MsqError& err )
+bool TMetric::evaluate_with_grad( const MsqMatrix<3,3>& T,
+                                  double& result,
+                                  MsqMatrix<3,3>& wrt_T,
+                                  MsqError& err )
 {
   return do_numerical_gradient( this, T, result, wrt_T, err );
 }
@@ -221,14 +221,14 @@ bool TMetric::evaluate_with_hess( const MsqMatrix<3,3>& T,
 TMetric2D::~TMetric2D() {}
 TMetric3D::~TMetric3D() {}
 
-bool TMetric2D::evaluate( const MSqMatrix<3,3>&, double&, MsqError& err )
+bool TMetric2D::evaluate( const MsqMatrix<3,3>&, double&, MsqError& err )
 {
   MSQ_SETERR(err)("2D target metric cannot be evaluated for volume elements",
                   MsqError::UNSUPPORTED_ELEMENT);
   return false;
 }
 
-bool TMetric3D::evaluate( const MSqMatrix<2,2>&, double&, MsqError& err )
+bool TMetric3D::evaluate( const MsqMatrix<2,2>&, double&, MsqError& err )
 {
   MSQ_SETERR(err)("2D target metric cannot be evaluated for volume elements",
                   MsqError::UNSUPPORTED_ELEMENT);

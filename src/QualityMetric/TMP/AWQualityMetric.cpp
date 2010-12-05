@@ -56,7 +56,7 @@ namespace MESQUITE_NS {
 
 std::string AWQualityMetric::get_name() const
 {
-  return targetMetric->get_mame();
+  return targetMetric->get_name();
 }
 
 bool AWQualityMetric::evaluate_internal( PatchData& pd,

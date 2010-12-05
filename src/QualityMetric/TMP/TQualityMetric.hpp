@@ -63,6 +63,7 @@ public:
    *\param target_metric The target metric
    */
   TQualityMetric( TargetCalculator* tc,
+                  WeightCalculator* wc,
                   TMetric* target_metric ) 
     : TMPQualityMetric(tc,wc),
       targetMetric(target_metric)

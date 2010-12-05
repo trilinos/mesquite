@@ -43,7 +43,7 @@
 #include "TrustRegion.hpp"
 #include "TQualityMetric.hpp"
 #include "IdealShapeTarget.hpp"
-#include "TShapeSizeBarrier1.hpp"
+#include "TShapeSizeB1.hpp"
 #include "RefMeshTargetCalculator.hpp"
 #include "ReferenceMesh.hpp"
 

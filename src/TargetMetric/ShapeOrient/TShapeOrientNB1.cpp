@@ -41,7 +41,7 @@ namespace MESQUITE_NS {
 std::string TShapeOrientNB1::get_name() const
   { return "TShapeOrientNB1"; }
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool eval( const MsqMatrix<DIM,DIM>& T, double& result )
 {
   result = Frobenius( T ) - trace(T)/DimConst<DIM>::sqrt();
@@ -49,7 +49,7 @@ bool eval( const MsqMatrix<DIM,DIM>& T, double& result )
 }
 
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool grad( const MsqMatrix<DIM,DIM>& T, 
            double& result, 
            MsqMatrix<DIM,DIM>& deriv )
@@ -59,7 +59,7 @@ bool grad( const MsqMatrix<DIM,DIM>& T,
   result = norm - invroot * trace(T);
   
   if (norm < 1e-50) {
-    deriv = MsqMatrix<2,2>(0.0);
+    deriv = MsqMatrix<DIM,DIM>(0.0);
     return true;
   }
 
@@ -68,7 +68,7 @@ bool grad( const MsqMatrix<DIM,DIM>& T,
   return true;
 }
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool hess( const MsqMatrix<DIM,DIM>& T, 
            double& result, 
            MsqMatrix<DIM,DIM>& deriv, 

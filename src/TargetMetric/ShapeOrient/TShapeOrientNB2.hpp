@@ -57,7 +57,7 @@ class TShapeOrientNB2 : public TMetric
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_Hess( const MsqMatrix<2,2>& T, 
+  bool evaluate_with_hess( const MsqMatrix<2,2>& T, 
                            double& result, 
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqMatrix<2,2> second_wrt_T[3],

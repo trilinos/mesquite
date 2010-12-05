@@ -108,8 +108,8 @@ public:
                               std::vector<Matrix3D>& Hessian,
                               MsqError& err );
   
-  AWMetric* get_target_metric() const { return target_metric; }
-  void set_target_metric( AWMetric* m ) { target_metric = m; }
+  AWMetric* get_target_metric() const { return targetMetric; }
+  void set_target_metric( AWMetric* m ) { targetMetric = m; }
 
 protected:
 

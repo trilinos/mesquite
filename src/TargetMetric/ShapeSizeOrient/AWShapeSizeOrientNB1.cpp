@@ -42,7 +42,7 @@ std::string AWShapeSizeOrientNB1::get_name() const
   { return "AWShapeSizeOrientNB1"; }
 
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool eval( const MsqMatrix<DIM,DIM>& A, 
            const MsqMatrix<DIM,DIM>& W, 
            double& result)
@@ -51,7 +51,7 @@ bool eval( const MsqMatrix<DIM,DIM>& A,
   return true;
 }
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool grad( const MsqMatrix<DIM,DIM>& A, 
            const MsqMatrix<DIM,DIM>& W, 
            double& result, 
@@ -63,7 +63,7 @@ bool grad( const MsqMatrix<DIM,DIM>& A,
   return true;
 }
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool hess( const MsqMatrix<DIM,DIM>& A, 
            const MsqMatrix<DIM,DIM>& W, 
            double& result, 

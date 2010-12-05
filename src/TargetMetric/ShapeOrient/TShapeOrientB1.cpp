@@ -43,7 +43,7 @@ std::string TShapeOrientB1::get_name() const
   { return "TShapeOrientB1"; }
 
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool eval( const MsqMatrix<DIM,DIM>& T, double& result )
 {
   const double tau = det(T);
@@ -56,7 +56,7 @@ bool eval( const MsqMatrix<DIM,DIM>& T, double& result )
 }
 
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool grad( const MsqMatrix<DIM,DIM>& T, 
            double& result, 
            MsqMatrix<DIM,DIM>& deriv )
@@ -81,7 +81,7 @@ bool grad( const MsqMatrix<DIM,DIM>& T,
   return true;
 }
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool hess( const MsqMatrix<DIM,DIM>& T, 
            double& result, 
            MsqMatrix<DIM,DIM>& deriv, 
@@ -100,7 +100,7 @@ bool hess( const MsqMatrix<DIM,DIM>& T,
   const double f = norm - invroot * trace(T);
   result = 0.5 * inv_tau * f;
 
-  const MsqMatrix<2,2> adjt = transpose_adj(T);
+  const MsqMatrix<DIM,DIM> adjt = transpose_adj(T);
   deriv = invnorm * T;
   pluseq_scaled_I( deriv, -invroot );
   deriv *= 0.5;

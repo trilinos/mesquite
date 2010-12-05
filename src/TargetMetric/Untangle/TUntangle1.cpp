@@ -33,6 +33,7 @@
 #include "Mesquite.hpp"
 #include "TUntangle1.hpp"
 #include "TMPDerivs.hpp"
+#include "TMPCommon.hpp"
 
 namespace MESQUITE_NS {
 
@@ -44,7 +45,7 @@ std::string TUntangle1::get_name() const
   { return "Untangle1"; }
 
 
-template <unsigned DIM> static inline
+template <unsigned DIM> inline
 bool TUntangle1::eval( const MsqMatrix<DIM,DIM>& T, 
                        double& result )
 {
@@ -53,7 +54,7 @@ bool TUntangle1::eval( const MsqMatrix<DIM,DIM>& T,
   return true;
 }
 
-template <unsigned DIM> static inline
+template <unsigned DIM> inline
 bool TUntangle1::grad( const MsqMatrix<DIM,DIM>& T, 
                        double& result, 
                        MsqMatrix<DIM,DIM>& deriv_wrt_T )
@@ -67,7 +68,7 @@ bool TUntangle1::grad( const MsqMatrix<DIM,DIM>& T,
   return true;
 }
 
-template <unsigned DIM> static inline
+template <unsigned DIM> inline
 bool TUntangle1::hess( const MsqMatrix<DIM,DIM>& T, 
                        double& result, 
                        MsqMatrix<DIM,DIM>& deriv_wrt_T, 
@@ -89,7 +90,7 @@ bool TUntangle1::hess( const MsqMatrix<DIM,DIM>& T,
 }
 
 
-MSQ_T_TEMPL_IMPL_COMMON(TUntangle1)
+TMP_T_TEMPL_IMPL_COMMON(TUntangle1)
 
 
 } // namespace MESQUITE_NS

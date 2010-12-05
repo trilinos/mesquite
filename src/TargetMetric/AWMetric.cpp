@@ -37,9 +37,9 @@
 
 namespace MESQUITE_NS {
 
-template <typename TargetMetric, unsigned Dim>
+template <unsigned Dim>
 static inline double
-do_finite_difference( int r, int c, TargetMetric* metric, 
+do_finite_difference( int r, int c, AWMetric* metric, 
                       MsqMatrix<Dim, Dim> A, 
                       const MsqMatrix<Dim, Dim>& W,
                       double value, MsqError& err )
@@ -70,32 +70,32 @@ do_finite_difference( int r, int c, TargetMetric* metric,
   return 0.0;
 }
 
-template <typename TargetMetric, unsigned Dim>
+template <unsigned Dim>
 static inline bool
-do_numerical_gradient( TargetMetric* metric,
+do_numerical_gradient( AWMetric* mu,
                        MsqMatrix<Dim, Dim> A,
                        const MsqMatrix<Dim, Dim>& W,
-                       double& value,
-                       MsqMatrix<Dim,Dim>& grad,
+                       double& result,
+                       MsqMatrix<Dim,Dim>& wrt_A,
                        MsqError& err )
 {
-  bool valid = evaluate( A, W, result, err );
+  bool valid = mu->evaluate( A, W, result, err );
   if (MSQ_CHKERR(err) || !valid)
     return valid;
   
   switch (Dim) {
     case 3:
-  wrt_A(0,2) = do_finite_difference( 0, 2, this, A, W, result, err ); MSQ_ERRZERO(err);
-  wrt_A(1,2) = do_finite_difference( 1, 2, this, A, W, result, err ); MSQ_ERRZERO(err);
-  wrt_A(2,0) = do_finite_difference( 2, 0, this, A, W, result, err ); MSQ_ERRZERO(err);
-  wrt_A(2,1) = do_finite_difference( 2, 1, this, A, W, result, err ); MSQ_ERRZERO(err);
-  wrt_A(2,2) = do_finite_difference( 2, 2, this, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(0,2) = do_finite_difference( 0, 2, mu, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(1,2) = do_finite_difference( 1, 2, mu, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(2,0) = do_finite_difference( 2, 0, mu, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(2,1) = do_finite_difference( 2, 1, mu, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(2,2) = do_finite_difference( 2, 2, mu, A, W, result, err ); MSQ_ERRZERO(err);
     case 2:
-  wrt_A(0,1) = do_finite_difference( 0, 1, this, A, W, result, err ); MSQ_ERRZERO(err);
-  wrt_A(1,0) = do_finite_difference( 1, 0, this, A, W, result, err ); MSQ_ERRZERO(err);
-  wrt_A(1,1) = do_finite_difference( 1, 1, this, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(0,1) = do_finite_difference( 0, 1, mu, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(1,0) = do_finite_difference( 1, 0, mu, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(1,1) = do_finite_difference( 1, 1, mu, A, W, result, err ); MSQ_ERRZERO(err);
     case 1:
-  wrt_A(0,0) = do_finite_difference( 0, 0, this, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(0,0) = do_finite_difference( 0, 0, mu, A, W, result, err ); MSQ_ERRZERO(err);
     break;
     default:
      assert(false);
@@ -104,9 +104,9 @@ do_numerical_gradient( TargetMetric* metric,
 }
 
 
-template <typename TargetMetric, unsigned Dim>
+template <unsigned Dim>
 static inline bool
-do_numerical_hessian( TargetMetric* metric, 
+do_numerical_hessian( AWMetric* metric, 
                       MsqMatrix<Dim, Dim> A,
                       const MsqMatrix<Dim, Dim>& W,
                       double& value,
@@ -191,7 +191,7 @@ bool AWMetric::evaluate_with_grad( const MsqMatrix<2,2>& A,
                                    MsqMatrix<2,2>& wrt_A,
                                    MsqError& err )
 {
-  return do_numerical_gradient( this, A, W, result, deriv_wrt_A, err );
+  return do_numerical_gradient( this, A, W, result, wrt_A, err );
 }
 
 bool AWMetric::evaluate_with_grad( const MsqMatrix<3,3>& A,
@@ -200,7 +200,7 @@ bool AWMetric::evaluate_with_grad( const MsqMatrix<3,3>& A,
                                    MsqMatrix<3,3>& wrt_A,
                                    MsqError& err )
 {
-  return do_numerical_gradient( this, A, W, result, deriv_wrt_A, err );
+  return do_numerical_gradient( this, A, W, result, wrt_A, err );
 }
 
 

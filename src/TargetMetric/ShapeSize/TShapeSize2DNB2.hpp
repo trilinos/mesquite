@@ -25,7 +25,7 @@
   ***************************************************************** */
 
 
-/** \file TSpaheSize2DNB2.hpp
+/** \file TShapeSize2DNB2.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
@@ -39,7 +39,7 @@
 namespace MESQUITE_NS {
 
 /** 3.2.4: \f$ \frac{|T|^2+2}{2\psi(T)} - 1 \f$ */
-class TSpaheSize2DNB2 : public TMetric2D
+class TShapeSize2DNB2 : public TMetric2D
 {
   public:
 

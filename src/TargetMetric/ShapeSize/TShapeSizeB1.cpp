@@ -55,10 +55,27 @@ bool TShapeSizeB1::evaluate( const MsqMatrix<2,2>& T,
   return true;
 }
 
+bool TShapeSizeB1::evaluate( const MsqMatrix<3,3>& T, 
+                             double& result, 
+                             MsqError&  )
+{
+  const double tau = det(T);
+  if (invalid_determinant(tau)) { // barrier
+    result = 0.0;
+    return false;
+  }
+  
+  const double nT = sqr_Frobenius(T);
+  const double nadj = sqr_Frobenius(transpose_adj(T));
+  const double f = 1/(tau*tau);
+  result = nT + f*nadj - 6;
+  return true;
+}
+
 bool TShapeSizeB1::evaluate_with_grad( const MsqMatrix<2,2>& T,
                                        double& result,
                                        MsqMatrix<2,2>& deriv_wrt_T,
-                                       MsqError& err )
+                                       MsqError& )
 {
   const double tau = det(T);
   if (invalid_determinant(tau)) { // barrier
@@ -75,6 +92,32 @@ bool TShapeSizeB1::evaluate_with_grad( const MsqMatrix<2,2>& T,
   deriv_wrt_T *= 2 + 2*f;
   deriv_wrt_T -= 2 * f/tau * nT * adjt;
   
+  return true;
+}
+
+bool TShapeSizeB1::evaluate_with_grad( const MsqMatrix<3,3>& T,
+                                       double& result,
+                                       MsqMatrix<3,3>& deriv_wrt_T,
+                                       MsqError& )
+{
+  const double tau = det(T);
+  if (invalid_determinant(tau)) { // barrier
+    result = 0.0;
+    return false;
+  }
+  
+  const MsqMatrix<3,3> adjt = transpose_adj(T);
+  const double nT = sqr_Frobenius(T);
+  const double nadj = sqr_Frobenius(adjt);
+  const double f = 1/(tau*tau);
+  result = nT + f*nadj - 6;
+  
+  deriv_wrt_T = T;
+  deriv_wrt_T *= (1+f*nT);
+  deriv_wrt_T -= f * T * transpose(T) * T;
+  deriv_wrt_T -= f/tau * nadj * adjt;
+  deriv_wrt_T *= 2;
+
   return true;
 }
 
@@ -103,6 +146,41 @@ bool TShapeSizeB1::evaluate_with_hess( const MsqMatrix<2,2>& T,
   pluseq_scaled_I( second_wrt_T, 2 + 2*f );
   pluseq_scaled_outer_product( second_wrt_T, 6*nT*f*f, adjt );
   pluseq_scaled_2nd_deriv_of_det( second_wrt_T, -2*nT*f/tau );
+
+  return true;
+}
+bool TShapeSizeB1::evaluate_with_hess( const MsqMatrix<3,3>& T,
+                                       double& result,
+                                       MsqMatrix<3,3>& deriv_wrt_T,
+                                       MsqMatrix<3,3> second_wrt_T[6],
+                                       MsqError& err )
+{
+  const double tau = det(T);
+  if (invalid_determinant(tau)) { // barrier
+    result = 0.0;
+    return false;
+  }
+  
+  const MsqMatrix<3,3> adjt = transpose_adj(T);
+  const double nT = sqr_Frobenius(T);
+  const double nadj = sqr_Frobenius(adjt);
+  const double f = 1/(tau*tau);
+  result = nT + f*nadj - 6;
+  
+  //! \f$ \frac{\partial}{\partial T} |adj T|^2 \f$
+  const MsqMatrix<3,3> dNadj_dT = 2 * (nT * T - T * transpose(T) * T);
+  deriv_wrt_T = T;
+  deriv_wrt_T -= f/tau * nadj * adjt;
+  deriv_wrt_T *= 2;
+  deriv_wrt_T += f * dNadj_dT;
+ 
+    // calculate negative of 2nd wrt T of (|adj T|^2 / tau^2) (sec 3.2.2)
+  set_scaled_2nd_deriv_norm_sqr_adj( second_wrt_T,    f,            T );
+  pluseq_scaled_2nd_deriv_of_det(    second_wrt_T, -2*f*f*nadj*tau, T );
+  pluseq_scaled_outer_product(       second_wrt_T,  6*f*f*nadj,     adjt );
+  pluseq_scaled_sum_outer_product(   second_wrt_T, -2*f*f     *tau, adjt, dNadj_dT );
+    // calculate 2nd wrt T of this metric
+  pluseq_scaled_I( second_wrt_T, 2.0 );
 
   return true;
 }

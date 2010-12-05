@@ -42,7 +42,7 @@ std::string TShapeSizeOrientB1::get_name() const
   { return "TShapeSizeOrientB1"; }
 
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool eval( const MsqMatrix<DIM,DIM>& T, double& result)
 {
   double tau = det(T);
@@ -57,7 +57,7 @@ bool eval( const MsqMatrix<DIM,DIM>& T, double& result)
   return true;
 }
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool grad( const MsqMatrix<DIM,DIM>& T, 
            double& result, 
            MsqMatrix<DIM,DIM>& deriv )
@@ -79,7 +79,7 @@ bool grad( const MsqMatrix<DIM,DIM>& T,
   return true;
 }
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool hess( const MsqMatrix<DIM,DIM>& T, 
            double& result, 
            MsqMatrix<DIM,DIM>& deriv, 
@@ -93,12 +93,10 @@ bool hess( const MsqMatrix<DIM,DIM>& T,
   
   deriv = T;
   pluseq_scaled_I( deriv, -1.0 );
-  D(0,0) -= 1.0;
-  D(1,1) -= 1.0;
   double inv_d = 1.0/d;
   result = 0.5 * sqr_Frobenius(deriv) * inv_d;
   
-  MsqMatrix<2,2> adjt = transpose_adj(T);
+  MsqMatrix<DIM,DIM> adjt = transpose_adj(T);
   set_scaled_outer_product( second, 2*result*inv_d*inv_d, adjt );
   pluseq_scaled_sum_outer_product( second, -inv_d*inv_d, deriv, adjt );
   pluseq_scaled_2nd_deriv_of_det( second, -result * inv_d, T );

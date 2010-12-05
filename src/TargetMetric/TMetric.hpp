@@ -34,15 +34,19 @@
 #define MSQ_T_METRIC_HPP
 
 #include "Mesquite.hpp"
+#include <string>
 
 namespace MESQUITE_NS {
 
+class MsqError;
+template <unsigned R, unsigned C> class MsqMatrix;
+  
 class TMetric 
 {
 public:
 
   MESQUITE_EXPORT virtual
-  TMetric::~TMetric();
+  ~TMetric();
 
   MESQUITE_EXPORT virtual
   std::string get_name() const = 0;
@@ -247,7 +251,7 @@ class TMetric2D : public TMetric
 public:
 
   MESQUITE_EXPORT virtual
-  TMetric2D::~TMetric2D();
+  ~TMetric2D();
 
     /**\brief Evaluate \f$\mu(T)\f$
      *
@@ -256,7 +260,7 @@ public:
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& T, 
                  double& result, 
-                 MsqError& err ) = 0;
+                 MsqError& err );
 };
 
 class TMetric3D : public TMetric
@@ -264,7 +268,7 @@ class TMetric3D : public TMetric
 public:
 
   MESQUITE_EXPORT virtual
-  TMetric3D::~TMetric3D();
+  ~TMetric3D();
 
     /**\brief Evaluate \f$\mu(T)\f$
      *
@@ -273,7 +277,7 @@ public:
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<2,2>& T, 
                  double& result, 
-                 MsqError& err ) = 0;
+                 MsqError& err );
 };
 
 

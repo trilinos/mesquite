@@ -37,43 +37,83 @@
 
 namespace MESQUITE_NS {
 
+/**\def TMP_T_TEMPL_IMPL_COMMON(N)
+ * \brief A macro that declares virtual evaluation functions for a \c TMetric subclass \c N
+ * 
+ * IF a \c TMetric class provides template functions named \c eval, \c grad, 
+ * and \c hess, then this macro can be used to provide the trivial implementations
+ * of the 2D and 3D \c evaluate, \c evaluate_with_grad, and \c evaluate_with_hess virtual
+ * member functions in terms of those macros.
+ */
 
 #define TMP_T_TEMPL_IMPL_DIM(N,D) \
 bool N::evaluate( const MsqMatrix<D,D>& T, double& r, MsqError& ) \
   { return eval( T, r ); } \
 bool N::evaluate_with_grad( const MsqMatrix<D,D>& T, double& r, MsqMatrix<D,D>& d1, MsqError& ) \
   { return grad( T, r, d1 ); } \
-bool N::evaluate_with_Hess( const MsqMatrix<D,D>& T, double& r, MsqMatrix<D,D>& d1, MsqMatrix<D,D>* d2, MsqError& ) \
+bool N::evaluate_with_hess( const MsqMatrix<D,D>& T, double& r, MsqMatrix<D,D>& d1, MsqMatrix<D,D>* d2, MsqError& ) \
   { return hess( T, r, d1, d2 ); }
 
 #define TMP_T_TEMPL_IMPL_COMMON(N) \
   TMP_T_TEMPL_IMPL_DIM(N,2) \
   TMP_T_TEMPL_IMPL_DIM(N,3) 
 
-#define TMP_T_COMP1_TEMPL_IMPL_DIM(N,D) \
-bool N::evaluate( const MsqMatrix<D,D>& T, double& r, MsqError& ) \
-  { return eval( mMetric, T, r ); } \
-bool N::evaluate_with_grad( const MsqMatrix<D,D>& T, double& r, MsqMatrix<D,D>& d1, MsqError& ) \
-  { return grad( mMetric, T, r, d1 ); } \
-bool N::evaluate_with_Hess( const MsqMatrix<D,D>& T, double& r, MsqMatrix<D,D>& d1, MsqMatrix<D,D>* d2, MsqError& ) \
-  { return hess( mMetric, T, r, d1, d2 ); }
 
-#define TMP_T_COMP1_TEMPL_IMPL_COMMON(N) \
-  TMP_T_COMP1_TEMPL_IMPL_DIM(N,2) \
-  TMP_T_COMP1_TEMPL_IMPL_DIM(N,3) 
+/**\def TMP_T_TEMPL_IMPL_COMMON_ERR(N)
+ * \brief A macro that declares virtual evaluation functions for a \c TMetric subclass \c N
+ * 
+ * IF a \c TMetric class provides template functions named \c eval, \c grad, 
+ * and \c hess, then this macro can be used to provide the trivial implementations
+ * of the 2D and 3D \c evaluate, \c evaluate_with_grad, and \c evaluate_with_hess virtual
+ * member functions in terms of those macros.
+ * 
+ * The difference between this macro and \c TMP_AW_TEMPL_IMPL_COMMON is that this
+ * variation expects the \c eval, \c grad, and \c hess to accept an \c MsqError
+ * as their last argument.  This variation is typically used for metrics that are
+ * a function of some other metric.
+ */
+
+#define TMP_T_TEMPL_IMPL_ERR_DIM(N,D) \
+bool N::evaluate( const MsqMatrix<D,D>& T, double& r, MsqError& err ) \
+  { return eval( T, r, err ); } \
+bool N::evaluate_with_grad( const MsqMatrix<D,D>& T, double& r, MsqMatrix<D,D>& d1, MsqError& err ) \
+  { return grad( T, r, d1, err ); } \
+bool N::evaluate_with_hess( const MsqMatrix<D,D>& T, double& r, MsqMatrix<D,D>& d1, MsqMatrix<D,D>* d2, MsqError& err ) \
+  { return hess( T, r, d1, d2, err ); }
+
+#define TMP_T_TEMPL_IMPL_COMMON_ERR(N) \
+  TMP_T_TEMPL_IMPL_ERR_DIM(N,2) \
+  TMP_T_TEMPL_IMPL_ERR_DIM(N,3) 
+
+/**\def TMP_AW_TEMPL_IMPL_COMMON(N)
+ * \brief A macro that declares virtual evaluation functions for a \c AWMetric subclass \c N
+ * 
+ * IF a \c AWMetric class provides template functions named \c eval, \c grad, 
+ * and \c hess, then this macro can be used to provide the trivial implementations
+ * of the 2D and 3D \c evaluate, \c evaluate_with_grad, and \c evaluate_with_hess virtual
+ * member functions in terms of those macros.
+ */
 
 #define TMP_AW_TEMPL_IMPL_DIM(N,D) \
 bool N::evaluate( const MsqMatrix<D,D>& A, const MsqMatrix<D,D>& W, double& r, MsqError& ) \
   { return eval( A, W, r ); } \
 bool N::evaluate_with_grad( const MsqMatrix<D,D>& A, const MsqMatrix<D,D>& W, double& r, MsqMatrix<D,D>& d1, MsqError& ) \
   { return grad( A, W, r, d1 ); } \
-bool N::evaluate_with_Hess( const MsqMatrix<D,D>& A, const MsqMatrix<D,D>& W, double& r, MsqMatrix<D,D>& d1, MsqMatrix<D,D>* d2, MsqError& ) \
+bool N::evaluate_with_hess( const MsqMatrix<D,D>& A, const MsqMatrix<D,D>& W, double& r, MsqMatrix<D,D>& d1, MsqMatrix<D,D>* d2, MsqError& ) \
   { return hess( A, W, r, d1, d2 ); }
 
 #define TMP_AW_TEMPL_IMPL_COMMON(N) \
   TMP_AW_TEMPL_IMPL_DIM(N,2) \
   TMP_AW_TEMPL_IMPL_DIM(N,3) 
 
+/**\brief Dimension-specific constants
+ * 
+ * Provide constants that depend on a template dimension parameter.
+ * For use in implementing targe metrics for which the target metric
+ * implementation is templatized on the dimension of of the matrix.
+ * 
+ * In optimized code these should reduce to literal constants.
+ */
 template <unsigned D> struct DimConst {};
 template <> struct DimConst<2> {
   static inline double sqrt() { return MSQ_SQRT_TWO; }

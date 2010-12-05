@@ -31,17 +31,17 @@
  */
 
 #include "Mesquite.hpp"
-#include "TSizeBarrier.hpp"
+#include "TSizeB.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 #include "TMPCommon.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TSizeBarrier::get_name() const
-  { return "Size"; }
+std::string TSizeB::get_name() const
+  { return "SizeB"; }
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool eval( const MsqMatrix<DIM,DIM>& T, double& result )
 {
   double d = det(T);
@@ -53,7 +53,7 @@ bool eval( const MsqMatrix<DIM,DIM>& T, double& result )
   return true;  
 }
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool grad( const MsqMatrix<DIM,DIM>& T, 
            double& result, 
            MsqMatrix<DIM,DIM>& deriv_wrt_T )
@@ -68,7 +68,7 @@ bool grad( const MsqMatrix<DIM,DIM>& T,
   return true;  
 }
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool hess( const MsqMatrix<DIM,DIM>& T, 
            double& result, 
            MsqMatrix<DIM,DIM>& deriv_wrt_T, 

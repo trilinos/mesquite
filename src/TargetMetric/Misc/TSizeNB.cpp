@@ -31,7 +31,7 @@
  */
 
 #include "Mesquite.hpp"
-#include "TSize.hpp"
+#include "TSizeNB.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 #include "TMPCommon.hpp"
@@ -42,7 +42,7 @@ std::string TSizeNB::get_name() const
   { return "SizeNB"; }
 
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool eval( const MsqMatrix<DIM,DIM>& T, double& result)
 {
   double d1 = det(T) - 1;
@@ -50,18 +50,18 @@ bool eval( const MsqMatrix<DIM,DIM>& T, double& result)
   return true;  
 }
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool grad( const MsqMatrix<DIM,DIM>& T, 
            double& result, 
            MsqMatrix<DIM,DIM>& deriv )
 {
   double d1 = det(T) - 1;
   result = d1*d1;
-  deriv_wrt_T = 2 * d1 * transpose_adj(T);
+  deriv = 2 * d1 * transpose_adj(T);
   return true;  
 }
 
-template <int DIM> static inline
+template <unsigned DIM> static inline
 bool hess( const MsqMatrix<DIM,DIM>& T, 
            double& result, 
            MsqMatrix<DIM,DIM>& deriv, 
