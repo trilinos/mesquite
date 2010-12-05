@@ -165,7 +165,7 @@ const exp_func experiment[] = { &run_exp_1, &run_exp_2, &run_exp_3, &run_exp_4, 
 
 TShapeSizeOrientNB1 nb1;
 TShapeOrientNB1 nb2;
-TShapeSize2dNB1 nb3;
+TShapeSize2DNB1 nb3;
 TShapeNB1 nb4;
 TSquared nb5;
 TShapeOrientNB2 nb6;
@@ -177,7 +177,7 @@ TShapeSize2DB2 b3;
 TShapeB1 b4;
 TShapeSizeOrientB2 b5;
 TShapeSizeB1 b6;
-TShapeSizeBarrierB3 b7;
+TShapeSizeB3 b7;
 TMetric* b[] = { &b1, &b2, &b3, &b4, &b5, &b6, &b7 };
 
 bool run_exp_1( int n )
@@ -282,13 +282,13 @@ bool run_exp_5( int n )
         break;
       case 6: case 7: case 8: case 9: case 10:
       {
-        InvTransBarrier2D metric( nb[i-6] );
+        InvTransBarrier metric( nb[i-6] );
         tmpr = run_smoother( &exp_5_init, &reference, 5, i+1, &metric );
       }
       break;
       case 11:
       {
-        InvTransBarrier2D metric( nb[0] );
+        InvTransBarrier metric( nb[0] );
         tmpr = run_smoother( &exp_5_init, 0, 5, 12, &metric );
       }
       break;

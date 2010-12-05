@@ -177,7 +177,7 @@ int main( int argc, char* argv[] )
   ReferenceMesh rmesh( &refmesh );
   RefMeshTargetCalculator tc( &rmesh );
   TShapeB1 tm;
-  TQualityMetric qm( &tc, &tm, 0 );
+  TQualityMetric qm( &tc, &tm );
   
   PMeanPTemplate of( 1.0, &qm );
   ConjugateGradient cg( &of );

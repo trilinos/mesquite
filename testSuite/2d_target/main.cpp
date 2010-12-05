@@ -64,7 +64,6 @@ using std::auto_ptr;
 #include "TShapeSizeB1.hpp"
 #include "TShapeSize2DB2.hpp"
 #include "TShapeSizeB3.hpp"
-#include "TShapeSizeBarrierAlt1.hpp"
 #include "TShapeSizeOrientNB1.hpp"
 #include "TShapeSizeOrientB1.hpp"
 #include "TShapeSizeOrientB2.hpp"

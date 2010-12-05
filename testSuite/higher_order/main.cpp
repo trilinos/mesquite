@@ -214,7 +214,7 @@ InstructionQueue* create_instruction_queue(MsqError& err)
   // creates a mean ratio quality metric ...
   //IdealWeightInverseMeanRatio* mean = new IdealWeightInverseMeanRatio(err); MSQ_ERRZERO(err);
   TargetCalculator* tc = new IdealShapeTarget;
-  TQualityMetric* mean = new TQualityMetric( tc, 0, new TInverseMeanRatio, 0 );
+  TQualityMetric* mean = new TQualityMetric( tc, 0, new TInverseMeanRatio );
   
   LPtoPTemplate* obj_func = new LPtoPTemplate(mean, 1, err); MSQ_ERRZERO(err);
   
