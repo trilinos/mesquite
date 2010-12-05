@@ -31,17 +31,14 @@
  */
 
 #include "Mesquite.hpp"
-#include "TAbs2DMetric.hpp"
-#include "TAbs3DMetric.hpp"
-#include "TAbsQualityMetric.hpp"
+#include "AWQualityMetric.hpp"
 #include "TMPQualityMetricTest.hpp"
-#include "TRel2DShape.hpp"
-#include "TRel3DShape.hpp"
+#include "TShapeNB1.hpp"
 
 using namespace Mesquite;
 
-class FauxAbsShapeMetric2D : public TAbs2DMetric {
-  TRel2DShape mMetric;
+class FauxAbsShapeMetric : public AWMetric {
+  TShapeNB1 mMetric;
 public:
   std::string get_name() const { return mMetric.get_name(); }
   bool evaluate( const MsqMatrix<2,2>& A,
@@ -49,11 +46,6 @@ public:
                  double& result,
                  MsqError& err )
     { return mMetric.evaluate( A * inverse(W), result, err ); }
-};
-class FauxAbsShapeMetric3D : public TAbs3DMetric {
-  TRel3DShape mMetric;
-public:
-  std::string get_name() const { return mMetric.get_name(); }
   bool evaluate( const MsqMatrix<3,3>& A,
                  const MsqMatrix<3,3>& W,
                  double& result,
@@ -61,17 +53,15 @@ public:
     { return mMetric.evaluate( A * inverse(W), result, err ); }
 };
 
-template <> class TMPTypes<TAbsQualityMetric> {
+template <> class TMPTypes<AWQualityMetric> {
 public:
-  typedef TAbs3DMetric Metric3DType;
-  typedef TAbs2DMetric Metric2DType;
-  typedef FauxAbsShapeMetric2D Test2DType;
-  typedef FauxAbsShapeMetric3D Test3DType;
+  typedef AWMetric MetricType;
+  typedef FauxAbsShapeMetric TestType;
 };
 
-class TAbsQualityMetricTest : public TMPQualityMetricTest<TAbsQualityMetric>
+class AWQualityMetricTest : public TMPQualityMetricTest<AWQualityMetric>
 {
-  CPPUNIT_TEST_SUITE(TAbsQualityMetricTest);
+  CPPUNIT_TEST_SUITE(AWQualityMetricTest);
   
   REGISTER_TMP_TESTS
   
@@ -79,5 +69,5 @@ class TAbsQualityMetricTest : public TMPQualityMetricTest<TAbsQualityMetric>
 };
 
 
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TAbsQualityMetricTest, "TAbsQualityMetricTest");
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TAbsQualityMetricTest, "Unit");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(AWQualityMetricTest, "AWQualityMetricTest");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(AWQualityMetricTest, "Unit");

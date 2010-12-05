@@ -25,42 +25,58 @@
   ***************************************************************** */
 
 
-/** \file TAbs3DMetricTest.cpp
- *  \brief Unit tests TAbs3DMetric base class functionality
+/** \file AWMetricTest.cpp
+ *  \brief Unit tests AWMetric base class functionality
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TAbs3DMetric.hpp"
+#include "AWMetric.hpp"
 #include "UnitUtil.hpp"
 #include "MsqError.hpp"
 
 using namespace Mesquite;
 
-// Test functions implemented in class TAbs3DMetric
-class TAbs3DMetricTest : public CppUnit::TestFixture
+// Test functions implemented in class AWMetric
+class AWMetricTest : public CppUnit::TestFixture
 {
-  CPPUNIT_TEST_SUITE( TAbs3DMetricTest );
-  CPPUNIT_TEST (test_numerical_gradient);
-  CPPUNIT_TEST (test_numerical_hessian);
+  CPPUNIT_TEST_SUITE( TAbs2DMetricTest );
+  CPPUNIT_TEST (test_numerical_gradient_2D);
+  CPPUNIT_TEST (test_numerical_hessian_2D);
+  CPPUNIT_TEST (test_numerical_gradient_3D);
+  CPPUNIT_TEST (test_numerical_hessian_3D);
   CPPUNIT_TEST_SUITE_END(); 
   public:
-  void test_numerical_gradient();
-  void test_numerical_hessian();
+  void test_numerical_gradient_2D();
+  void test_numerical_hessian_2D();
+  void test_numerical_gradient_3D();
+  void test_numerical_hessian_3D();
 };
 
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TAbs3DMetricTest, "Unit" );
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TAbs3DMetricTest, "TAbs3DMetricTest" );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TAbs2DMetricTest, "Unit" );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TAbs2DMetricTest, "AWMetricTest" );
 
 // implement metric such that the expected derivatives
 // at each location r,c in dm/dA are 3r+c+1
-class GradTestMetricAbs3D : public TAbs3DMetric
+class GradTestMetricAbs : public AWMetric
 {
   public:
     std::string get_name() const { return "GradTest"; }
   
     static double grad(int r, int c)
       { return 3*r + c + 1; }
+  
+    bool evaluate( const MsqMatrix<2,2>& A,
+                   const MsqMatrix<2,2>& W,
+                   double& result,
+                   MsqError&  )
+    {
+      result = 0;
+      for (int r = 0; r < 2; ++r) 
+        for (int c = 0; c < 2; ++c)
+          result += grad(r,c) * (A(r,c) - W(r,c));
+      return true;
+    }
   
     bool evaluate( const MsqMatrix<3,3>& A,
                    const MsqMatrix<3,3>& W,
@@ -75,8 +91,13 @@ class GradTestMetricAbs3D : public TAbs3DMetric
     }
 };
 
-// implement metric: |2A - A^T - W|^2
+// implement metric that is the |2A - A^T - W|^2
 // such that the Hessian is the constant:
+//  _          _
+// | 2  0  0  0 |
+// | 0 10 -8  0 |
+// | 0 -8 10  0 |
+// |_0  0  0  2_|
 //  _                         _
 // | 2  0  0  0  0  0  0  0  0 |
 // | 0 10  0 -8  0  0  0  0  0 |
@@ -87,11 +108,29 @@ class GradTestMetricAbs3D : public TAbs3DMetric
 // | 0  0 -8  0  0  0 10  0  0 |
 // | 0  0  0  0  0 -8  0 10  0 |
 // |_0  0  0  0  0  0  0  0  2_|
-
-class HessTestMetricAbs3D : public TAbs3DMetric
+class HessTestMetricAbs : public AWMetric
 {
   public:
     std::string get_name() const { return "HessTest"; }
+
+    bool evaluate( const MsqMatrix<2,2>& A,
+                   const MsqMatrix<2,2>& W,
+                   double& result,
+                   MsqError&  )
+    {
+      result = sqr_Frobenius(2*A - transpose(A) - W);
+      return true;
+    }
+    bool evaluate_with_grad( const MsqMatrix<2,2>& A,
+                             const MsqMatrix<2,2>& W,
+                             double& result,
+                             MsqMatrix<2,2>& wrt_A,
+                             MsqError&  )
+    {
+      result = sqr_Frobenius(2*A - transpose(A) - W);
+      wrt_A = 10*A - 8*transpose(A) - 4*W + 2*transpose(W);
+      return true;
+    }
 
     bool evaluate( const MsqMatrix<3,3>& A,
                    const MsqMatrix<3,3>& W,
@@ -108,7 +147,7 @@ class HessTestMetricAbs3D : public TAbs3DMetric
                              MsqError&  )
     {
       result = sqr_Frobenius(2*A - transpose(A) - W);
-      wrt_A = 10*A - 8*transpose(A);
+      wrt_A = 10*A - 8*transpose(A) - 4*W + 2*transpose(W);
       return true;
     }
 };
@@ -125,10 +164,43 @@ class HessTestMetricAbs3D : public TAbs3DMetric
  *  \f$\frac{\partial^{2}\mu}{\partial a_{i,i}^2} = \frac{1}{|A|} - \frac{a_{i,i}^2}{|A|^3}\f$
  *  \f$\frac{\partial^{2}\mu}{\partial a_{i,j} \partial a_{k,l} (i \ne k or j \ne l)} = -\frac{a_{i,j} a_{k,l}}{|A|^3}\f$
  */
-class HessTestMetricAbs3D_2 : public TAbs3DMetric
+class HessTestMetricAbs_2 : public AWMetric
 {
   public:
     std::string get_name() const { return "HessTest2"; }
+  
+    bool evaluate( const MsqMatrix<2,2>& A, const MsqMatrix<2,2>&, double& result, MsqError& err )
+      { result = Frobenius(A); return true; }
+    
+    bool evaluate_with_grad( const MsqMatrix<2,2>& A, 
+                             const MsqMatrix<2,2>&,
+                             double& result,
+                             MsqMatrix<2,2>& d,
+                             MsqError& err )
+    {
+      result = Frobenius(A);
+      d = A / result;
+      return true;
+    }
+    
+    bool evaluate_with_hess( const MsqMatrix<2,2>& A, 
+                             const MsqMatrix<2,2>&,
+                             double& result,
+                             MsqMatrix<2,2>& d,
+                             MsqMatrix<2,2> d2[3],
+                             MsqError& err )
+    {
+      result = Frobenius(A);
+      d = A / result;
+      int h = 0;
+      for (int r = 0; r < 2; ++r) {
+        int i = h;
+        for (int c = r; c < 2; ++c)
+          d2[h++] = transpose(A.row(r)) * A.row(c) / -(result*result*result);
+        d2[i] += MsqMatrix<2,2>(1.0/result);
+      }    
+      return true;
+    }
   
     bool evaluate( const MsqMatrix<3,3>& A, const MsqMatrix<3,3>&, double& result, MsqError& err )
       { result = Frobenius(A); return true; }
@@ -164,10 +236,103 @@ class HessTestMetricAbs3D_2 : public TAbs3DMetric
     }
 };
 
-void TAbs3DMetricTest::test_numerical_gradient()
+void AWMetricTest::test_numerical_gradient_2D()
 {
-  GradTestMetricAbs3D metric;
-  HessTestMetricAbs3D_2 metric2;
+  GradTestMetricAbs metric;
+  HessTestMetricAbs_2 metric2;
+  const double Avals[] = { 1, 2, 2, 5 };
+  const double Bvals[] = { -0.1, -0.15, -0.25, -0.8 };
+  const MsqMatrix<2,2> I( 1.0 );
+  const MsqMatrix<2,2> A( Avals );
+  const MsqMatrix<2,2> B( Bvals );
+  
+  MsqError err;
+  MsqMatrix<2,2> d;
+  bool valid;
+  double val, gval;
+  
+  MsqMatrix<2,2> expected;
+  for (int r = 0; r < 2; ++r)
+    for (int c = 0; c < 2; ++c)
+      expected(r,c) = metric.grad(r,c);
+  
+  valid = metric.evaluate( I, A, val, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_grad( I, A, gval, d, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val, gval, 1e-6 );
+  ASSERT_MATRICES_EQUAL( expected, d, 1e-6 );
+  
+  valid = metric.evaluate( A, I, val, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_grad( A, I, gval, d, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val, gval, 1e-6 );
+  ASSERT_MATRICES_EQUAL( expected, d, 1e-6 );
+  
+  valid = metric.evaluate( I, B, val, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_grad( I, B, gval, d, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val, gval, 1e-6 );
+  ASSERT_MATRICES_EQUAL( expected, d, 1e-6 );
+  
+  valid = metric.evaluate( B, I, val, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_grad( B, I, gval, d, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val, gval, 1e-6 );
+  ASSERT_MATRICES_EQUAL( expected, d, 1e-6 );
+   
+  valid = metric.evaluate( A, B, val, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_grad( A, B, gval, d, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val, gval, 1e-6 );
+  ASSERT_MATRICES_EQUAL( expected, d, 1e-6 );
+  
+  valid = metric.evaluate( B, A, val, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_grad( B, A, gval, d, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  ASSERT_MATRICES_EQUAL( expected, d, 1e-6 );
+  
+  MsqMatrix<2,2> da;
+  valid = metric2.evaluate_with_grad( A, I, val, da, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric2.AWMetric::evaluate_with_grad( A, I, gval, d, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val, gval, 1e-6 );
+  ASSERT_MATRICES_EQUAL( da, d, 1e-6 );
+  
+  valid = metric2.evaluate_with_grad( B, I, val, da, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric2.AWMetric::evaluate_with_grad( B, I, gval, d, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val, gval, 1e-6 );
+  ASSERT_MATRICES_EQUAL( da, d, 1e-6 );
+}
+
+void AWMetricTest::test_numerical_gradient_3D()
+{
+  GradTestMetricAbs metric;
+  HessTestMetricAbs_2 metric2;
   const double Avals[] = { 1, 2, 3, 4, 1, 4, 3, 2, 1 };
   const double Bvals[] = { 0.1, 0.15, 0.05, 0.2, -0.1, -0.15, -0.05, -0.2, 2 };
   const MsqMatrix<3,3> I( 1.0 );
@@ -241,7 +406,7 @@ void TAbs3DMetricTest::test_numerical_gradient()
   valid = metric2.evaluate_with_grad( A, I, val, da, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric2.TAbs3DMetric::evaluate_with_grad( A, I, gval, d, err );
+  valid = metric2.AWMetric::evaluate_with_grad( A, I, gval, d, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val, gval, 1e-6 );
@@ -250,7 +415,7 @@ void TAbs3DMetricTest::test_numerical_gradient()
   valid = metric2.evaluate_with_grad( B, I, val, da, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric2.TAbs3DMetric::evaluate_with_grad( B, I, gval, d, err );
+  valid = metric2.AWMetric::evaluate_with_grad( B, I, gval, d, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val, gval, 1e-6 );
@@ -258,10 +423,129 @@ void TAbs3DMetricTest::test_numerical_gradient()
 }
 
 
-void TAbs3DMetricTest::test_numerical_hessian()
+void TAbs2DMetricTest::test_numerical_hessian_2d()
 {
-  HessTestMetricAbs3D metric;
-  HessTestMetricAbs3D_2 metric2;
+  HessTestMetricAbs2D metric;
+  HessTestMetricAbs2D_2 metric2;
+  const double Avals[] = { 1, 2, 2, 5 };
+  const double Bvals[] = { -0.1, -0.15, -0.25, -0.8 };
+  const MsqMatrix<2,2> I( 1.0 );
+  const MsqMatrix<2,2> A( Avals );
+  const MsqMatrix<2,2> B( Bvals );
+  
+  MsqError err;
+  MsqMatrix<2,2> g, gh;
+  MsqMatrix<2,2> h[6];
+  bool valid;
+  double val, hval;
+  
+  const double h_00[] = { 2, 0, 0, 10 };
+  const double h_01[] = { 0, 0, -8, 0 };
+  const double h_11[] = { 10, 0, 0, 2 };
+  MsqMatrix<2,2> h00(h_00), h01(h_01), h11(h_11);
+  
+  valid = metric.evaluate_with_grad( I, A, val, g, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_hess( I, A, hval, gh, h, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val, hval, 1e-6 );
+  ASSERT_MATRICES_EQUAL( g, gh, 1e-6 );
+  ASSERT_MATRICES_EQUAL( h00, h[0], 1e-6 );
+  ASSERT_MATRICES_EQUAL( h01, h[1], 1e-6 );
+  ASSERT_MATRICES_EQUAL( h11, h[2], 1e-6 );
+  
+  valid = metric.evaluate_with_grad( A, I, val, g, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_hess( A, I, hval, gh, h, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val, hval, 1e-6 );
+  ASSERT_MATRICES_EQUAL( g, gh, 1e-6 );
+  ASSERT_MATRICES_EQUAL( h00, h[0], 1e-6 );
+  ASSERT_MATRICES_EQUAL( h01, h[1], 1e-6 );
+  ASSERT_MATRICES_EQUAL( h11, h[2], 1e-6 );
+  
+  valid = metric.evaluate_with_grad( I, B, val, g, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_hess( I, B, hval, gh, h, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val, hval, 1e-6 );
+  ASSERT_MATRICES_EQUAL( g, gh, 1e-6 );
+  ASSERT_MATRICES_EQUAL( h00, h[0], 1e-6 );
+  ASSERT_MATRICES_EQUAL( h01, h[1], 1e-6 );
+  ASSERT_MATRICES_EQUAL( h11, h[2], 1e-6 );
+  
+  valid = metric.evaluate_with_grad( B, I, val, g, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_hess( B, I, hval, gh, h, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val, hval, 1e-6 );
+  ASSERT_MATRICES_EQUAL( g, gh, 1e-6 );
+  ASSERT_MATRICES_EQUAL( h00, h[0], 1e-6 );
+  ASSERT_MATRICES_EQUAL( h01, h[1], 1e-6 );
+  ASSERT_MATRICES_EQUAL( h11, h[2], 1e-6 );
+  
+  valid = metric.evaluate_with_grad( A, B, val, g, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_hess( A, B, hval, gh, h, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val, hval, 1e-6 );
+  ASSERT_MATRICES_EQUAL( g, gh, 1e-6 );
+  ASSERT_MATRICES_EQUAL( h00, h[0], 1e-6 );
+  ASSERT_MATRICES_EQUAL( h01, h[1], 1e-6 );
+  ASSERT_MATRICES_EQUAL( h11, h[2], 1e-6 );
+  
+  valid = metric.evaluate_with_grad( B, A, val, g, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_hess( B, A, hval, gh, h, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val, hval, 1e-6 );
+  ASSERT_MATRICES_EQUAL( g, gh, 1e-6 );
+  ASSERT_MATRICES_EQUAL( h00, h[0], 1e-6 );
+  ASSERT_MATRICES_EQUAL( h01, h[1], 1e-6 );
+  ASSERT_MATRICES_EQUAL( h11, h[2], 1e-6 );
+  
+  MsqMatrix<2,2> ah[6];
+  valid = metric2.evaluate_with_hess( A, I, val, g, ah, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric2.AWMetric::evaluate_with_hess( A, I, hval, gh, h, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val, hval, 1e-6 );
+  ASSERT_MATRICES_EQUAL( g, gh, 1e-6 );
+  ASSERT_MATRICES_EQUAL( ah[0], h[0], 1e-6 );
+  ASSERT_MATRICES_EQUAL( ah[1], h[1], 1e-6 );
+  ASSERT_MATRICES_EQUAL( ah[2], h[2], 1e-6 );
+
+  valid = metric2.evaluate_with_hess( B, I, val, g, ah, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric2.AWMetric::evaluate_with_hess( B, I, hval, gh, h, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val, hval, 1e-6 );
+  ASSERT_MATRICES_EQUAL( g, gh, 1e-6 );
+  ASSERT_MATRICES_EQUAL( ah[0], h[0], 1e-6 );
+  ASSERT_MATRICES_EQUAL( ah[1], h[1], 1e-6 );
+  ASSERT_MATRICES_EQUAL( ah[2], h[2], 1e-6 );
+}
+
+void AWMetricTest::test_numerical_hessian_3D()
+{
+  HessTestMetricAbs metric;
+  HessTestMetricAbs_2 metric2;
   const double Avals[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
   const double Bvals[] = { 0.1, 0.15, 0.05, 0.2, -0.1, -0.15, -0.05, -0.2, 2 };
   const MsqMatrix<3,3> I( 1.0 );
@@ -388,7 +672,7 @@ void TAbs3DMetricTest::test_numerical_hessian()
   valid = metric2.evaluate_with_hess( A, I, val, g, ah, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric2.TAbs3DMetric::evaluate_with_hess( A, I, hval, gh, h, err );
+  valid = metric2.AWMetric::evaluate_with_hess( A, I, hval, gh, h, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val, hval, 1e-6 );
@@ -403,7 +687,7 @@ void TAbs3DMetricTest::test_numerical_hessian()
   valid = metric2.evaluate_with_hess( B, I, val, g, ah, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric2.TAbs3DMetric::evaluate_with_hess( B, I, hval, gh, h, err );
+  valid = metric2.AWMetric::evaluate_with_hess( B, I, hval, gh, h, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val, hval, 1e-6 );

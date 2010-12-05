@@ -87,6 +87,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	MeshInterfaceTest.cpp \
 	MeshImplTest.cpp \
 	MeshUtilTest.cpp \
+	MiscTargetMetricTests.cpp \
 	MsqFreeVertexIndexIteratorTest.cpp \
 	MsqHessianTest.cpp \
 	MsqMatrixTest.cpp \
@@ -104,6 +105,10 @@ msq_test_SOURCES = msq_test_main.cpp \
 	QuadLagrangeShapeTest.cpp \
 	QualityAssessorTest.cpp \
 	QualityMetricTest.cpp \
+	ShapeOrientTargetMetricTests.cpp \
+	ShapeSizeOrientTargetMetricTests.cpp \
+	ShapeSizeTargetMetricTests.cpp \
+	ShapeTargetMetricTests.cpp \
 	SlaveBoundaryVerticesTest.cpp \
 	SphericalDomainTest.cpp \
 	SphericalGeometryTest.cpp \
@@ -117,17 +122,12 @@ msq_test_SOURCES = msq_test_main.cpp \
 	TriLagrangeShapeTest.cpp \
 	TopologyInfoTest.cpp \
         TMPDerivsTest.cpp \
-	TAbs2DMetricTest.cpp \
-        TAbs3DMetricTest.cpp \
-        TRel2DMetricTest.cpp \
-        TRel3DMetricTest.cpp \
-        TAbsQualityMetricTest.cpp \
-        TRelQualityMetricTest.cpp \
-        TestTAbs2DMetrics.cpp \
-        TestTAbs3DMetrics.cpp \
-        TestTRel2DMetrics.cpp \
-        TestTRel3DMetrics.cpp \
+        AWQualityMetricTest.cpp \
+        TQualityMetricTest.cpp \
+        TestAWMetrics.cpp \
+        TestTMetrics.cpp \
 	UntangleBetaTest.cpp \
+	UntangleTargetMetricTest.cpp \
 	Vector3DTest.cpp \
 	VertexConditionNumberTest.cpp \
 	VertexCullingRegressionTest.cpp \

@@ -25,33 +25,27 @@
   ***************************************************************** */
 
 
-/** \file TRelQualityMetricTest.cpp
+/** \file TQualityMetricTest.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TRel2DMetric.hpp"
-#include "TRel3DMetric.hpp"
-#include "TRelQualityMetric.hpp"
-#include "InverseMeanRatio2D.hpp"
-#include "InverseMeanRatio3D.hpp"
+#include "TQualityMetric.hpp"
+#include "TInverseMeanRatio.hpp"
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "TMPQualityMetricTest.hpp"
-#include "TRel2DShape.hpp"
-#include "TRel3DShape.hpp"
+#include "TShapeNB1.hpp"
 
-template <> class TMPTypes<TRelQualityMetric> {
+template <> class TMPTypes<TQualityMetric> {
 public:
-  typedef TRel3DMetric Metric3DType;
-  typedef TRel2DMetric Metric2DType;
-  typedef TRel3DShape Test3DType;
-  typedef TRel2DShape Test2DType;
+  typedef TMetric MetricType;
+  typedef TShapeNB1 TestType;
 };
 
-class TRelQualityMetricTest : public TMPQualityMetricTest<TRelQualityMetric>
+class TQualityMetricTest : public TMPQualityMetricTest<TQualityMetric>
 {
-  CPPUNIT_TEST_SUITE(TRelQualityMetricTest);
+  CPPUNIT_TEST_SUITE(TQualityMetricTest);
   
   REGISTER_TMP_TESTS
   
@@ -74,16 +68,15 @@ public:
 };
 
 
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TRelQualityMetricTest, "TRelQualityMetricTest");
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TRelQualityMetricTest, "Unit");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TQualityMetricTest, "TQualityMetricTest");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TQualityMetricTest, "Unit");
 
   
-void TRelQualityMetricTest::test_inverse_mean_ratio_grad()
+void TQualityMetricTest::test_inverse_mean_ratio_grad()
 {
-  InverseMeanRatio2D tm_2d;
-  InverseMeanRatio3D tm_3d;
+  TInverseMeanRatio2D tm;
   IdealShapeTarget target;
-  TRelQualityMetric metric( &target, &tm_2d, &tm_3d );
+  TQualityMetric metric( &target, &tm );
   ElementPMeanP avg( 1.0, &metric );
   
   tester.test_gradient_reflects_quality( &metric );
@@ -92,12 +85,11 @@ void TRelQualityMetricTest::test_inverse_mean_ratio_grad()
 }
 
 
-void TRelQualityMetricTest::test_inverse_mean_ratio_hess()
+void TQualityMetricTest::test_inverse_mean_ratio_hess()
 {
-  InverseMeanRatio2D tm_2d;
-  InverseMeanRatio3D tm_3d;
+  TInverseMeanRatio2D tm;
   IdealShapeTarget target;
-  TRelQualityMetric metric( &target, &tm_2d, &tm_3d );
+  TQualityMetric metric( &target, &tm );
   ElementPMeanP avg( 1.0, &metric );
  
   compare_analytical_and_numerical_hessians( &metric );
@@ -105,23 +97,22 @@ void TRelQualityMetricTest::test_inverse_mean_ratio_hess()
   tester.test_hessian_with_fixed_vertex( &avg );
 }
 
-void TRelQualityMetricTest::test_inverse_mean_ratio_hess_diag()
+void TQualityMetricTest::test_inverse_mean_ratio_hess_diag()
 {
-  InverseMeanRatio2D tm_2d;
-  InverseMeanRatio3D tm_3d;
+  TInverseMeanRatio2D tm;
   IdealShapeTarget target;
-  TRelQualityMetric metric( &target, &tm_2d, &tm_3d );
+  TQualityMetric metric( &target, &tm );
   
   compare_analytical_and_numerical_diagonals( &metric );
   tester.compare_eval_with_diag_and_eval_with_hessian( &metric );
 }
   
-void TRelQualityMetricTest::regression_inverse_mean_ratio_grad()
+void TQualityMetricTest::regression_inverse_mean_ratio_grad()
 {
   MsqError err;
-  InverseMeanRatio2D tm_2d;
+  TInverseMeanRatio2D tm;
   IdealShapeTarget target;
-  TRelQualityMetric metric( &target, &tm_2d, 0 );
+  TQualityMetric metric( &target, &tm );
   const double coords[] = { -0.80000000000000004, -0.80000000000000004, 0,
                              0.00000000000000000,  2.00000000000000000, 0,
                             -1.73205079999999990,  1.00000000000000000, 0 };
@@ -181,12 +172,12 @@ void TRelQualityMetricTest::regression_inverse_mean_ratio_grad()
 }
 
   
-void TRelQualityMetricTest::regression_inverse_mean_ratio_hess()
+void TQualityMetricTest::regression_inverse_mean_ratio_hess()
 {
   MsqError err;
-  InverseMeanRatio2D tm_2d;
+  TInverseMeanRatio2D tm;
   IdealShapeTarget target;
-  TRelQualityMetric metric( &target, &tm_2d, 0 );
+  TQualityMetric metric( &target, &tm );
   const double coords[] = { 4.158984727, 4.6570859130000004, 5,
                             4.51742825, 4.51742825, 5,
                             4.3103448279999999, 5, 5 };

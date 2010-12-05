@@ -35,10 +35,8 @@
 #include "MsqError.hpp"
 #include "MsqMatrix.hpp"
 
-#include "TRel2DMetric.hpp"
-#include "TRel3DMetric.hpp"
-#include "TAbs2DMetric.hpp"
-#include "TAbs3DMetric.hpp"
+#include "TMetric.hpp"
+#include "AWMetric.hpp"
 
 // NOTE: Caller must define TARGET_TEST_GROUP to be a quoted string,
 //       typically the base file name of the file containing the 
@@ -69,10 +67,10 @@
   CPPUNIT_TEST (compare_eval_with_grad_and_eval_with_hess); \
   CPPUNIT_TEST (compare_anaytic_and_numeric_hess) 
 
-#define BEGIN_TEST_DECL( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
-class METRIC ## Test : public TMetricTest< METRIC > { public: \
-  METRIC ## Test () : TMetricTest< METRIC >( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER) ) {} \
-  CPPUNIT_TEST_SUITE( METRIC ## Test )
+#define BEGIN_TEST_DECL( METRIC, DIM, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
+class METRIC ## DIM ## DTest : public TMetricTest< METRIC, DIM > { public: \
+  METRIC ## DIM ## DTest () : TMetricTest< METRIC, DIM >( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER) ) {} \
+  CPPUNIT_TEST_SUITE( METRIC ## DIM ## DTest )
 
 #define END_TEST_DECL(SUITE, METRIC) \
   CPPUNIT_TEST_SUITE_END(); \
@@ -83,23 +81,55 @@ CPPUNIT_NS::AutoRegisterSuite< SUITE ## Test > SUITE ## _BaseRegister ( #METRIC 
 
 
 /** Register tests for metric with no derivative implementations */
-#define TEST_METRIC_NO_DERIVS( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
-  BEGIN_TEST_DECL( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
+#define TEST_METRIC_NO_DERIVS_2D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
+  BEGIN_TEST_DECL( METRIC, 2, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
   REGISTER_BASE_TESTS; \
+  END_TEST_DECL(METRIC,METRIC)
+
+/** Register tests for metric with no derivative implementations */
+#define TEST_METRIC_NO_DERIVS_3D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
+  BEGIN_TEST_DECL( METRIC, 3, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
+  REGISTER_BASE_TESTS; \
+  END_TEST_DECL(METRIC,METRIC)
+
+/** Register tests for metric with no derivative implementations */
+#define TEST_METRIC_NO_DERIVS( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
+  TEST_METRIC_NO_DERIVS_2D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
+  TEST_METRIC_NO_DERIVS_3D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER )
+
+/** Register tests for metric with implementation of analytic gradient */
+#define TEST_METRIC_WITH_GRAD_2D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
+  BEGIN_TEST_DECL( METRIC, 2, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
+  REGISTER_GRAD_TESTS; \
+  END_TEST_DECL(METRIC,METRIC)
+
+/** Register tests for metric with implementation of analytic gradient */
+#define TEST_METRIC_WITH_GRAD_3D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
+  BEGIN_TEST_DECL( METRIC, 3, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
+  REGISTER_GRAD_TESTS; \
   END_TEST_DECL(METRIC,METRIC)
 
 /** Register tests for metric with implementation of analytic gradient */
 #define TEST_METRIC_WITH_GRAD( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
-class METRIC ## Test : public TMetricTest< METRIC > { public: \
-  BEGIN_TEST_DECL( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
-  REGISTER_GRAD_TESTS; \
-  END_TEST_DECL(METRIC,METRIC)
-  
+  TEST_METRIC_WITH_GRAD_2D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
+  TEST_METRIC_WITH_GRAD_3D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER )
+
 /** Register tests for metric with implementation of analytic gradient and Hessian */
-#define TEST_METRIC_WITH_HESS( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
-  BEGIN_TEST_DECL( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
+#define TEST_METRIC_WITH_HESS_2D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
+  BEGIN_TEST_DECL( METRIC, 2, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
   REGISTER_HESS_TESTS; \
   END_TEST_DECL(METRIC,METRIC)
+
+/** Register tests for metric with implementation of analytic gradient and Hessian */
+#define TEST_METRIC_WITH_HESS_3D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
+  BEGIN_TEST_DECL( METRIC, 3, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
+  REGISTER_HESS_TESTS; \
+  END_TEST_DECL(METRIC,METRIC)
+
+/** Register tests for metric with implementation of analytic gradient and Hessian */
+#define TEST_METRIC_WITH_HESS( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
+  TEST_METRIC_WITH_HESS_3D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
+  TEST_METRIC_WITH_HESS_3D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER )
 
 /** Register tests for composite metric with implementation of analytic gradient and Hessian */
 #define TEST_COMPOSITE_WITH_HESS( METRIC, BASE, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
@@ -107,9 +137,12 @@ class METRIC ## _ ## BASE : public METRIC { \
 static BASE mMetric; \
 public: METRIC ## _ ## BASE() : METRIC(&mMetric) {} }; \
 BASE METRIC ## _ ## BASE ::mMetric; \
-BEGIN_TEST_DECL( METRIC ## _ ## BASE, (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER) ); \
+BEGIN_TEST_DECL( METRIC ## _ ## BASE, 2, (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER) ); \
 REGISTER_HESS_TESTS; \
-END_TEST_DECL( METRIC ## _ ## BASE, METRIC)
+END_TEST_DECL( METRIC ## _ ## BASE, METRIC) \
+BEGIN_TEST_DECL( METRIC ## _ ## BASE, 3, (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER) ); \
+REGISTER_HESS_TESTS; \
+END_TEST_DECL( METRIC ## _ ## BASE, METRIC) 
 
 using namespace Mesquite;
 
@@ -141,9 +174,9 @@ const double Cvals[][9] = { {0},
 /**\brief Common tests for all target metric types
  *
  * Commont test framework for implementations of the following types:
- * \c TRel2DMetric , \c TRel3DMetric , \c TAbs2Dmetric , \c TAbs3DMetric
+ * \c TMetric , \c AWMetric
  */    
-template <class Metric> class TMetricTest : public CppUnit::TestFixture 
+template <class Metric,unsigned DIM> class TMetricTest : public CppUnit::TestFixture 
 {
 
   private:
@@ -153,9 +186,6 @@ template <class Metric> class TMetricTest : public CppUnit::TestFixture
     const bool shapeInvariant, sizeInvariant, orientInvariant, Barrier;
 
   public:
-    
-      // Use DIM as an alias for Metric::MATRIX_DIM
-    enum { DIM = Metric::MATRIX_DIM };
     
     typedef MsqMatrix<DIM,DIM> Matrix;
     
@@ -199,101 +229,59 @@ template <class Metric> class TMetricTest : public CppUnit::TestFixture
      * passed as the first argument
      */
     void test_non_ideal( bool sensitive, Matrix A, Matrix W );
-};
-
-#define TMETRIC_FUNC template <class Metric> void TMetricTest<Metric>
-#define MAT_DIM TMetricTest<Metric>::DIM
-#define MAT_TYPE TMetricTest<Metric>::Matrix
+    
 
 /*************************************************************************
  *               Use overloaded function names to do the stuff
  *               that is different for different base metric types
  *************************************************************************/
  
- // TRel2DMetric
-inline bool eval( TRel2DMetric& metric, MsqMatrix<2,2> A, MsqMatrix<2,2> W, 
-                  double& value, MsqError& err )
-  { return metric.evaluate( A*inverse(W), value, err ); }
-inline bool grad( TRel2DMetric& metric, MsqMatrix<2,2> A, MsqMatrix<2,2> W, 
-                  double& value, MsqMatrix<2,2>& dmdA, MsqError& err )
-  { bool rval = metric.evaluate_with_grad( A*inverse(W), value, dmdA, err );
-    dmdA = dmdA * transpose(inverse(W)); return rval; }
-inline bool num_grad( TRel2DMetric& metric, MsqMatrix<2,2> A, MsqMatrix<2,2> W, 
-                      double& value, MsqMatrix<2,2>& dmdA, MsqError& err )
-  { bool rval = metric.TRel2DMetric::evaluate_with_grad( A*inverse(W), value, dmdA, err );
-    dmdA = dmdA * transpose(inverse(W)); return rval; }
-inline bool hess( TRel2DMetric& metric, MsqMatrix<2,2> A, MsqMatrix<2,2> W, 
-                  double& value, MsqMatrix<2,2>& dmdA, MsqMatrix<2,2> d2mdA2[3], MsqError& err )
-  { bool rval = metric.evaluate_with_hess( A*inverse(W), value, dmdA, d2mdA2, err );
-    dmdA = dmdA * transpose(inverse(W)); 
-    for (int i = 0; i < 3; ++i) d2mdA2[i] = inverse(W) * d2mdA2[i] * transpose(inverse(W));
-    return rval; }
-inline bool num_hess( TRel2DMetric& metric, MsqMatrix<2,2> A, MsqMatrix<2,2> W, 
-                      double& value, MsqMatrix<2,2>& dmdA, MsqMatrix<2,2> d2mdA2[3], MsqError& err )
-  { bool rval = metric.TRel2DMetric::evaluate_with_hess( A*inverse(W), value, dmdA, d2mdA2, err );
-    dmdA = dmdA * transpose(inverse(W)); 
-    for (int i = 0; i < 3; ++i) d2mdA2[i] = inverse(W) * d2mdA2[i] * transpose(inverse(W));
-    return rval; }
+   // TMetric
+  inline bool eval( TMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
+                    double& value, MsqError& err )
+    { return metric.evaluate( A*inverse(W), value, err ); }
+  inline bool grad( TMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
+                    double& value, MsqMatrix<DIM,DIM>& dmdA, MsqError& err )
+    { bool rval = metric.evaluate_with_grad( A*inverse(W), value, dmdA, err );
+      dmdA = dmdA * transpose(inverse(W)); return rval; }
+  inline bool num_grad( TMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
+                        double& value, MsqMatrix<DIM,DIM>& dmdA, MsqError& err )
+    { bool rval = metric.TMetric::evaluate_with_grad( A*inverse(W), value, dmdA, err );
+      dmdA = dmdA * transpose(inverse(W)); return rval; }
+  inline bool hess( Tetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
+                    double& value, MsqMatrix<DIM,DIM>& dmdA, MsqMatrix<DIM,DIM> d2mdA2[3], MsqError& err )
+    { bool rval = metric.evaluate_with_hess( A*inverse(W), value, dmdA, d2mdA2, err );
+      dmdA = dmdA * transpose(inverse(W)); 
+      for (int i = 0; i < DIM*(DIM+1)/2; ++i) d2mdA2[i] = inverse(W) * d2mdA2[i] * transpose(inverse(W));
+      return rval; }
+  inline bool num_hess( TMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
+                        double& value, MsqMatrix<DIM,DIM>& dmdA, MsqMatrix<DIM,DIM> d2mdA2[3], MsqError& err )
+    { bool rval = metric.TMetric::evaluate_with_hess( A*inverse(W), value, dmdA, d2mdA2, err );
+      dmdA = dmdA * transpose(inverse(W)); 
+      for (int i = 0; i < DIM*(DIM+1)/2; ++i) d2mdA2[i] = inverse(W) * d2mdA2[i] * transpose(inverse(W));
+      return rval; }
 
- // TRel3DMetric
-inline bool eval( TRel3DMetric& metric, MsqMatrix<3,3> A, MsqMatrix<3,3> W, 
-                  double& value, MsqError& err )
-  { return metric.evaluate( A*inverse(W), value, err ); }
-inline bool grad( TRel3DMetric& metric, MsqMatrix<3,3> A, MsqMatrix<3,3> W, 
-                  double& value, MsqMatrix<3,3>& dmdA, MsqError& err )
-  { bool rval = metric.evaluate_with_grad( A*inverse(W), value, dmdA, err );
-    dmdA = dmdA * transpose(inverse(W)); return rval; }
-inline bool num_grad( TRel3DMetric& metric, MsqMatrix<3,3> A, MsqMatrix<3,3> W, 
-                      double& value, MsqMatrix<3,3>& dmdA, MsqError& err )
-  { bool rval = metric.TRel3DMetric::evaluate_with_grad( A*inverse(W), value, dmdA, err );
-    dmdA = dmdA * transpose(inverse(W)); return rval; }
-inline bool hess( TRel3DMetric& metric, MsqMatrix<3,3> A, MsqMatrix<3,3> W, 
-                  double& value, MsqMatrix<3,3>& dmdA, MsqMatrix<3,3> d2mdA2[6], MsqError& err )
-  { bool rval = metric.evaluate_with_hess( A*inverse(W), value, dmdA, d2mdA2, err );
-    dmdA = dmdA * transpose(inverse(W)); 
-    for (int i = 0; i < 6; ++i) d2mdA2[i] = inverse(W) * d2mdA2[i] * transpose(inverse(W));
-    return rval; }
-inline bool num_hess( TRel3DMetric& metric, MsqMatrix<3,3> A, MsqMatrix<3,3> W, 
-                      double& value, MsqMatrix<3,3>& dmdA, MsqMatrix<3,3> d2mdA2[6], MsqError& err )
-  { bool rval = metric.TRel3DMetric::evaluate_with_hess( A*inverse(W), value, dmdA, d2mdA2, err );
-    dmdA = dmdA * transpose(inverse(W)); 
-    for (int i = 0; i < 6; ++i) d2mdA2[i] = inverse(W) * d2mdA2[i] * transpose(inverse(W));
-    return rval; }
+   // AWMetric
+  inline bool eval( AWMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
+                    double& value, MsqError& err )
+    { return metric.evaluate( A, W, value, err ); }
+  inline bool grad( AWMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
+                    double& value, MsqMatrix<DIM,DIM>& dmdA, MsqError& err )
+    { return metric.evaluate_with_grad( A, W, value, dmdA, err ); }
+  inline bool num_grad( AWMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
+                    double& value, MsqMatrix<DIM,DIM>& dmdA, MsqError& err )
+    { return metric.AWMetric::evaluate_with_grad( A, W, value, dmdA, err ); }
+  inline bool hess( AWMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
+                    double& value, MsqMatrix<DIM,DIM>& dmdA, MsqMatrix<DIM,DIM> d2mdA2[3], MsqError& err )
+    { return metric.evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); }
+  inline bool num_hess( AWMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
+                    double& value, MsqMatrix<DIM,DIM>& dmdA, MsqMatrix<DIM,DIM> d2mdA2[3], MsqError& err )
+    { return metric.AWMetric::evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); }
+};
 
- // TAbs2DMetric
-inline bool eval( TAbs2DMetric& metric, MsqMatrix<2,2> A, MsqMatrix<2,2> W, 
-                  double& value, MsqError& err )
-  { return metric.evaluate( A, W, value, err ); }
-inline bool grad( TAbs2DMetric& metric, MsqMatrix<2,2> A, MsqMatrix<2,2> W, 
-                  double& value, MsqMatrix<2,2>& dmdA, MsqError& err )
-  { return metric.evaluate_with_grad( A, W, value, dmdA, err ); }
-inline bool num_grad( TAbs2DMetric& metric, MsqMatrix<2,2> A, MsqMatrix<2,2> W, 
-                  double& value, MsqMatrix<2,2>& dmdA, MsqError& err )
-  { return metric.TAbs2DMetric::evaluate_with_grad( A, W, value, dmdA, err ); }
-inline bool hess( TAbs2DMetric& metric, MsqMatrix<2,2> A, MsqMatrix<2,2> W, 
-                  double& value, MsqMatrix<2,2>& dmdA, MsqMatrix<2,2> d2mdA2[3], MsqError& err )
-  { return metric.evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); }
-inline bool num_hess( TAbs2DMetric& metric, MsqMatrix<2,2> A, MsqMatrix<2,2> W, 
-                  double& value, MsqMatrix<2,2>& dmdA, MsqMatrix<2,2> d2mdA2[3], MsqError& err )
-  { return metric.TAbs2DMetric::evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); }
-
- // TAbs3DMetric
-inline bool eval( TAbs3DMetric& metric, MsqMatrix<3,3> A, MsqMatrix<3,3> W, 
-                  double& value, MsqError& err )
-  { return metric.evaluate( A, W, value, err ); }
-inline bool grad( TAbs3DMetric& metric, MsqMatrix<3,3> A, MsqMatrix<3,3> W, 
-                  double& value, MsqMatrix<3,3>& dmdA, MsqError& err )
-  { return metric.evaluate_with_grad( A, W, value, dmdA, err ); }
-inline bool num_grad( TAbs3DMetric& metric, MsqMatrix<3,3> A, MsqMatrix<3,3> W, 
-                  double& value, MsqMatrix<3,3>& dmdA, MsqError& err )
-  { return metric.TAbs3DMetric::evaluate_with_grad( A, W, value, dmdA, err ); }
-inline bool hess( TAbs3DMetric& metric, MsqMatrix<3,3> A, MsqMatrix<3,3> W, 
-                  double& value, MsqMatrix<3,3>& dmdA, MsqMatrix<3,3> d2mdA2[3], MsqError& err )
-  { return metric.evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); }
-inline bool num_hess( TAbs3DMetric& metric, MsqMatrix<3,3> A, MsqMatrix<3,3> W, 
-                  double& value, MsqMatrix<3,3>& dmdA, MsqMatrix<3,3> d2mdA2[3], MsqError& err )
-  { return metric.TAbs3DMetric::evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); }
-
+#define TMETRIC_FUNC template <class Metric> void TMetricTest<Metric>
+#define MAT_DIM TMetricTest<Metric>::DIM
+#define MAT_TYPE TMetricTest<Metric>::Matrix
 
 /*************************************************************************
  *          Implement actual (templatized) test code
