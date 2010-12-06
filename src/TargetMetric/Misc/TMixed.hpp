@@ -30,8 +30,8 @@
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_T_SCALE_HPP
-#define MSQ_T_SCALE_HPP
+#ifndef MSQ_T_MIXED_HPP
+#define MSQ_T_MIXED_HPP
 
 #include "Mesquite.hpp"
 #include "TMetric.hpp"

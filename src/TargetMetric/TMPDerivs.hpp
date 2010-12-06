@@ -77,7 +77,7 @@ void pluseq_scaled_I( MsqMatrix<3,3> R[6], double alpha );
  *         symmetric matrix.
  */
 inline
-void pluseq_scaled_I( MsqMatrix<3,3> R, double alpha );
+void pluseq_scaled_I( MsqMatrix<3,3>& R, double alpha );
 
 /**\brief \f$ R = \alpha I_4 \f$
  *
@@ -101,7 +101,7 @@ void pluseq_scaled_I( MsqMatrix<2,2> R[3], double alpha );
  *         symmetric matrix.
  */
 inline
-void pluseq_scaled_I( MsqMatrix<2,2> R, double alpha );
+void pluseq_scaled_I( MsqMatrix<2,2>& R, double alpha );
 
 /**\brief \f$ R += \alpha \frac{\partial}{\partial T}det(T) \f$
  *
@@ -358,14 +358,14 @@ void set_scaled_I( MsqMatrix<3,3> R[6], double alpha )
   R[1] = R[2] = R[4] = MsqMatrix<3,3>(0.0);
 }
 
-void pluseq_scaled_I( MsqMatrix<3,3> R, double alpha )
+void pluseq_scaled_I( MsqMatrix<3,3>& R, double alpha )
 {
   R(0,0) += alpha;
   R(1,1) += alpha;
   R(2,2) += alpha;
 }
 
-void pluseq_scaled_I( MsqMatrix<2,2> R, double alpha )
+void pluseq_scaled_I( MsqMatrix<2,2>& R, double alpha )
 {
   R(0,0) += alpha;
   R(1,1) += alpha;

@@ -70,7 +70,7 @@ bool grad( const MsqMatrix<DIM,DIM>& T,
   }
   
   deriv = T;
-  pluseq_scaled_I( T, -1 );
+  pluseq_scaled_I( deriv, -1 );
   double inv_d = 1.0/d;
   result = 0.5 * sqr_Frobenius(deriv) * inv_d;
   

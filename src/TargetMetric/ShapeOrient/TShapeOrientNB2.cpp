@@ -79,7 +79,7 @@ bool hess( const MsqMatrix<DIM,DIM>& T,
   pluseq_scaled_I( deriv_wrt_T, -f );
   deriv_wrt_T *= 2;
   set_scaled_I( second_wrt_T, 2.0 );
-  pluseq_scaled_outer_product_I_I( second_wrt_T, MSQ_ONE_THIRD * (tr < 0 ? 2 : -2) );
+  pluseq_scaled_outer_product_I_I( second_wrt_T, DimConst<DIM>::inv() * (tr < 0 ? 2 : -2) );
   return true;
 }
 

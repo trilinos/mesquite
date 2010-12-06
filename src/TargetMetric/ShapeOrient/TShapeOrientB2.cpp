@@ -113,7 +113,7 @@ bool hess( const MsqMatrix<DIM,DIM>& T,
   pluseq_scaled_2nd_deriv_of_det( second_wrt_T, -result * b / tau, T );
     // calculate non-barrier barrier portion of second derivs
   pluseq_scaled_I( second_wrt_T, 1/tau );
-  pluseq_scaled_outer_product_I_I( second_wrt_T, MSQ_ONE_THIRD/tau * (tr < 0 ? 1 : -1) );
+  pluseq_scaled_outer_product_I_I( second_wrt_T, DimConst<DIM>::inv()/tau * (tr < 0 ? 1 : -1) );
   
     // calculate barrier derivs from non-barrier
   deriv_wrt_T *= tau;
