@@ -2364,47 +2364,97 @@ metric and its derivatives.  Section numbers in parantheses indicate
 metrics that are not yet implemented.  Entries with question marks indicate
 implementations for which there is no corresponding section in this document.\newline
 
-\begin{tabular}{|c|c|c||c|c|}
+%\begin{tabular}{|c|c|c||c|c|}
+%\hline
+%Name & Rel 2D & Rel 3D & Abs 2D & Abs 3D \\
+%\hline
+%Shape & \ref{2ds} & \ref{shape3d} & \ref{abs-shape} & \\
+%ShapeAlt1 & \ref{shape2d} &  & \ref{abs-shape-alt1} & \\
+%\hline
+%ShapeBarrier & \ref{shape+2d} & \ref{shape+3d} & \ref{abs-shape-barrier} & \\
+%ShapeBarrierAlt1 &  & \ref{s+1} & & \\
+%InverseMeanRatio & \ref{imr} & \ref{imr} & & \\ \hline
+%\hline
+%ShapeOrient & \ref{sho} & \ref{sho} & & \\
+%ShapeOrientAlt1 & \ref{si+} & \ref{si+} & & \\
+%ShapeOrientAlt2 & & & \ref{abs-ShapeOr-alt2} & \ref{abs-ShapeOr-alt2} \\
+%\hline
+%ShapeOrientBarrier & \ref{sho_b} & \ref{sho_b} & & \\
+%ShapeOrientBarrierAlt1 & \ref{nu-over-tau} & \ref{nu-over-tau} & & \\ \hline
+%\hline
+%ShapeSize & \ref{magic} &  & & \\
+%ShapeSizeAlt1 & \ref{magic2} & & & \\
+%ShapeSizeAlt2 & \ref{ss2d} & \ref{ss3d} & & \\
+%\hline
+%ShapeSizeBarrier & \ref{ss+1} & \ref{ss+1} & \ref{abs-ss-barrier} & \\
+%ShapeSizeBarrierAlt1 & \ref{ss+32d} & \ref{ss+3d} & & \\
+%ShapeSizeBarrierAlt2 & \ref{ss+22d} & \ref{ss+23d} & & \\ \hline
+%\hline
+%ShapeSizeOrient & \ref{tmi} & \ref{tmi} &  \ref{diff} & \ref{diff} \\
+%\hline
+%ShapeSizeOrientBarrier & \ref{sso+} & \ref{sso+} & & \\
+%ShapeSizeOrientBarrierAlt1 & \ref{sso+2} & \ref{sso+2} & \ref{abs-SSO-barrier} %& \ref{abs-SSO-barrier} \\ \hline
+%\hline
+%Size & \ref{tausqr} & \ref{tausqr} & \ref{abs-size} & \ref{abs-size} \\
+%Tau & \ref{tau} & \ref{tau} & & \\
+%\hline
+%SizeBarrier & \ref{z+1} & \ref{z+1} & \ref{abs-size-barrier} & \ref{abs-size-barrier} \\ 
+%\hline
+%Squared & \ref{tsquared} & \ref{tsquared} & &  \\ \hline
+%\hline
+%UntangleAlt1 & \ref{untangle2} & \ref{untangle2} & & \\
+%UntangleBeta & \ref{untangle1} & \ref{untangle1} & \ref{abs-unt} & \ref{abs-unt} \\
+%UntangleMu & \ref{franks} & \ref{franks} & & \\
+%\hline
+%\end{tabular}
+
+\begin{tabular}{|c|c|c|}
 \hline
-Name & Rel 2D & Rel 3D & Abs 2D & Abs 3D \\
+Name & T & A,W \\
 \hline
-Shape & \ref{2ds} & \ref{shape3d} & \ref{abs-shape} & \\
-ShapeAlt1 & \ref{shape2d} &  & \ref{abs-shape-alt1} & \\
+ShapeNB1 & \ref{2ds}, \ref{shape3d} & \\
+Shape2DNB2 & \ref{shape2d} & \ref{abs-shape} \\
+Shape3DNB2 & & \ref{abs-shape-alt1} \\
 \hline
-ShapeBarrier & \ref{shape+2d} & \ref{shape+3d} & \ref{abs-shape-barrier} & \\
-ShapeBarrierAlt1 &  & \ref{s+1} & & \\
-InverseMeanRatio & \ref{imr} & \ref{imr} & & \\ \hline
+ShapeB1 & \ref{shape+2d}, \ref{shape+3d} & \\
+Shape2DB1 & & \ref{abs-shape-barrier} \\
+Shape3DB2 &  \ref{s+1} & \\
+InverseMeanRatio & \ref{imr} & \\ \hline
 \hline
-ShapeOrient & \ref{sho} & \ref{sho} & & \\
-ShapeOrientAlt1 & \ref{si+} & \ref{si+} & & \\
-ShapeOrientAlt2 & & & \ref{abs-ShapeOr-alt2} & \ref{abs-ShapeOr-alt2} \\
+ShapeOrientNB1 & \ref{sho} & \ref{abs-ShapeOr-alt2} \\
+ShapeOrientNB2 & \ref{si+}  & \\
 \hline
-ShapeOrientBarrier & \ref{sho_b} & \ref{sho_b} & & \\
-ShapeOrientBarrierAlt1 & \ref{nu-over-tau} & \ref{nu-over-tau} & & \\ \hline
+ShapeOrientB1 & \ref{sho_b} & \\
+ShapeOrientB2 & \ref{nu-over-tau} & \\ \hline
 \hline
-ShapeSize & \ref{magic} &  & & \\
-ShapeSizeAlt1 & \ref{magic2} & & & \\
-ShapeSizeAlt2 & \ref{ss2d} & \ref{ss3d} & & \\
+ShapeSize2DNB1 & \ref{magic} & \\
+ShapeSize3DNB1 & ? & \\
+ShapeSize2DNB2 & \ref{magic2} & \\
+ShapeSizeNB3 & \ref{ss2d}, \ref{ss3d} & \\
 \hline
-ShapeSizeBarrier & \ref{ss+1} & \ref{ss+1} & \ref{abs-ss-barrier} & \\
-ShapeSizeBarrierAlt1 & \ref{ss+32d} & \ref{ss+3d} & & \\
-ShapeSizeBarrierAlt2 & \ref{ss+22d} & \ref{ss+23d} & & \\ \hline
+ShapeSizeB1 & \ref{ss+1} & \ref{abs-ss-barrier} \\
+ShapeSize2DB2 & \ref{ss+32d} & \\
+ShapeSize3DB2 &  \ref{ss+3d} & \\
+ShapeSizeB3 & \ref{ss+22d}, \ref{ss+23d} & \\ 
+ShapeSize3DB4 & ? & \\
 \hline
-ShapeSizeOrient & \ref{tmi} & \ref{tmi} &  \ref{diff} & \ref{diff} \\
 \hline
-ShapeSizeOrientBarrier & \ref{sso+} & \ref{sso+} & & \\
-ShapeSizeOrientBarrierAlt1 & \ref{sso+2} & \ref{sso+2} & \ref{abs-SSO-barrier} & \ref{abs-SSO-barrier} \\ \hline
+ShapeSizeOrientNB1 & \ref{tmi} & \ref{diff} \\
 \hline
-Size & \ref{tausqr} & \ref{tausqr} & \ref{abs-size} & \ref{abs-size} \\
-Tau & \ref{tau} & \ref{tau} & & \\
+ShapeSizeOrientB1 & \ref{sso+} & \\
+ShapeSizeOrientB2 & \ref{sso+2} & \ref{abs-SSO-barrier} \\ 
 \hline
-SizeBarrier & \ref{z+1} & \ref{z+1} & \ref{abs-size-barrier} & \ref{abs-size-barrier} \\ 
 \hline
-Squared & \ref{tsquared} & \ref{tsquared} & &  \\ \hline
+SizeNB1 & \ref{tausqr} & \ref{abs-size} \\
+Tau & \ref{tau} & \\
 \hline
-UntangleAlt1 & \ref{untangle2} & \ref{untangle2} & & \\
-UntangleBeta & \ref{untangle1} & \ref{untangle1} & \ref{abs-unt} & \ref{abs-unt} \\
-UntangleMu & \ref{franks} & \ref{franks} & & \\
+SizeB1 & \ref{z+1} & \ref{abs-size-barrier} \\ 
+\hline
+Squared & \ref{tsquared}  &  \\ \hline
+\hline
+Untangle1 & \ref{untangle2}  & \\
+UntangleBeta & \ref{untangle1} &  \ref{abs-unt} \\
+UntangleMu & \ref{franks}  & \\
 \hline
 \end{tabular}
 
