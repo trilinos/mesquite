@@ -48,7 +48,9 @@
 #include "TUntangleBeta.hpp"
 #include "TUntangleMu.hpp"
 #include "TSizeNB1.hpp"
-#include "TShapeSizeNB3.hpp"
+#include "TShapeSize2DNB1.hpp"
+#include "TShapeSize3DNB1.hpp"
+#include "TMixed.hpp"
 
 #include <memory>
 
@@ -109,7 +111,9 @@ void UntangleWrapper::run_wrapper( Mesh* mesh,
   
     // get target metrics from user perferences
   TSizeNB1 mu_size;
-  TShapeSizeNB3 mu_shape;
+  TShapeSize2DNB1 mu_shape_2d;
+  TShapeSize3DNB1 mu_shape_3d;
+  TMixed mu_shape( &mu_shape_2d, &mu_shape_3d );
   std::auto_ptr<TMetric> mu;
   if (qualityMetric == BETA) {
     double beta = metricConstant;
