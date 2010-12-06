@@ -25,7 +25,7 @@
   ***************************************************************** */
 
 
-/** \file TAbs2DShapeSizeOrient.cpp
+/** \file AWShapeSizeOrientNB1.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
