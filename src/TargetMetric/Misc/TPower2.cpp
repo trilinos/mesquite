@@ -42,6 +42,7 @@ namespace MESQUITE_NS {
 std::string TPower2::get_name() const
   { return "sqr(" + mMetric->get_name() + ')'; }
 
+TPower2::~TPower2() {}
 
 template <unsigned DIM> inline
 bool TPower2::eval( const MsqMatrix<DIM,DIM>& T, 

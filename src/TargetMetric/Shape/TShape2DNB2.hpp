@@ -43,6 +43,9 @@ namespace MESQUITE_NS {
 class TShape2DNB2 : public TMetric2D
 {
   public:
+
+  MESQUITE_EXPORT virtual
+  ~TShape2DNB2();
   
   MESQUITE_EXPORT virtual
   std::string get_name() const;

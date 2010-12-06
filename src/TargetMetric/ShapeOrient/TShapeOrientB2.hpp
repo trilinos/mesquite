@@ -51,6 +51,9 @@ class TShapeOrientB2 : public TMetric
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual
+  ~TShapeOrientB2();
+
+  MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<2,2>& T, double& result, MsqError& err );
 
   MESQUITE_EXPORT virtual

@@ -42,7 +42,10 @@ namespace MESQUITE_NS {
 class TShapeSize2DB2 : public TMetric2D
 {
   public:
-  
+
+  MESQUITE_EXPORT virtual
+  ~TShapeSize2DB2();
+
   MESQUITE_EXPORT virtual
   std::string get_name() const;
 

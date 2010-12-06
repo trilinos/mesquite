@@ -48,7 +48,10 @@ public:
 
   TOffset( double alpha, TMetric* metric ) 
     : mAlpha(alpha), mMetric(metric) {}
-  
+
+  MESQUITE_EXPORT virtual
+  ~TOffset();
+
   MESQUITE_EXPORT virtual
   std::string get_name() const;
 

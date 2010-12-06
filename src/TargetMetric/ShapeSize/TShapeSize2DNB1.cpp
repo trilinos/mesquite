@@ -40,6 +40,8 @@ namespace MESQUITE_NS {
 std::string TShapeSize2DNB1::get_name() const
   { return "TShapeSize2DNB1"; }
 
+TShapeSize2DNB1::~TShapeSize2DNB1() {}
+
 /** \f$ \mu(T) = |T|^2 - 2 \psi(T) + 2 \f$
  *  \f$ \psi(T) = \sqrt{|T|^2 + 2 \tau} \f$
  *  \f$ \tau = det(T) \f$

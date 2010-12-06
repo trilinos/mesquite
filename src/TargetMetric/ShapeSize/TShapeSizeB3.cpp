@@ -39,6 +39,8 @@ namespace MESQUITE_NS {
 std::string TShapeSizeB3::get_name() const
   { return "TShapeSizeB3"; }
 
+TShapeSizeB3::~TShapeSizeB3() {}
+
 bool TShapeSizeB3::evaluate( const MsqMatrix<2,2>& T, 
                                            double& result, 
                                            MsqError& )

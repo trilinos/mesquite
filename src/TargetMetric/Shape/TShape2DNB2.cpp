@@ -40,6 +40,8 @@ namespace MESQUITE_NS {
 std::string TShape2DNB2::get_name() const
   { return "TShape2DNB2"; }
 
+TShape2DNB2::~TShape2DNB2() {}
+
 bool TShape2DNB2::evaluate( const MsqMatrix<2,2>& T, 
                             double& result, 
                             MsqError&  )

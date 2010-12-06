@@ -39,6 +39,8 @@ namespace MESQUITE_NS {
 std::string TOffset::get_name() const
   { return "offset(" + mMetric->get_name() + ')'; }
 
+TOffset::~TOffset() {}
+
 bool TOffset::evaluate( const MsqMatrix<2,2>& T, 
                         double& result, 
                         MsqError& err )

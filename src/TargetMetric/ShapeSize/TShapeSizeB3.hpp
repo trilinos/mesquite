@@ -42,7 +42,10 @@ namespace MESQUITE_NS {
 class TShapeSizeB3 : public TMetric
 {
   public:
-  
+
+  MESQUITE_EXPORT virtual
+  ~TShapeSizeB3();
+
   MESQUITE_EXPORT virtual
   std::string get_name() const;
 

@@ -39,6 +39,8 @@ namespace MESQUITE_NS {
 std::string TShapeSize3DB2::get_name() const
   { return "TShapeSize3DB2"; }
 
+TShapeSize3DB2::~TShapeSize3DB2() {}
+
 bool TShapeSize3DB2::evaluate( const MsqMatrix<3,3>& T, 
                                double& result, 
                                MsqError&  )

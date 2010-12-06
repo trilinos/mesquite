@@ -49,7 +49,10 @@ class TShapeSize3DB4 : public TMetric3D
   MESQUITE_EXPORT
   TShapeSize3DB4( double gamma = 2.0 )
     : mGamma(gamma) {}
-  
+
+  MESQUITE_EXPORT virtual
+  ~TShapeSize3DB4();
+
   MESQUITE_EXPORT virtual
   std::string get_name() const;
 

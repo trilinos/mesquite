@@ -44,6 +44,9 @@ class TShapeSize2DNB1 : public TMetric2D
   public:
 
   MESQUITE_EXPORT virtual
+  ~TShapeSize2DNB1();
+
+  MESQUITE_EXPORT virtual
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual

@@ -39,6 +39,8 @@ namespace MESQUITE_NS {
 std::string TScale::get_name() const
   { return "scale(" + mMetric->get_name() + ')'; }
 
+TScale::~TScale() {}
+
 bool TScale::evaluate( const MsqMatrix<2,2>& T, 
                        double& result, 
                        MsqError& err )

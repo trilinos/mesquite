@@ -41,6 +41,8 @@ namespace MESQUITE_NS {
 std::string TSum::get_name() const
   { return mu1->get_name() + '+' + mu2->get_name(); }
 
+TSum::~TSum() {}
+
 template <unsigned DIM> inline
 bool TSum::eval( const MsqMatrix<DIM,DIM>& T, 
                  double& result, 

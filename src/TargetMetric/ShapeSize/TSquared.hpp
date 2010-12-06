@@ -44,6 +44,9 @@ class TSquared : public TMetric
   public:
 
   MESQUITE_EXPORT virtual
+  ~TSquared();
+
+  MESQUITE_EXPORT virtual
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual

@@ -47,6 +47,9 @@ class TShapeSize3DB2 : public TMetric3D
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual
+  ~TShapeSize3DB2();
+
+  MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& T, 
                  double& result, 
                  MsqError& err );

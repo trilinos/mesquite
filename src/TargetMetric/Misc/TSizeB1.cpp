@@ -41,6 +41,8 @@ namespace MESQUITE_NS {
 std::string TSizeB1::get_name() const
   { return "TSizeB1"; }
 
+TSizeB1::~TSizeB1() {}
+
 template <unsigned DIM> static inline
 bool eval( const MsqMatrix<DIM,DIM>& T, double& result )
 {

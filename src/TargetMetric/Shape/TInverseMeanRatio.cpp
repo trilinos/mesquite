@@ -39,6 +39,8 @@ namespace MESQUITE_NS {
 std::string TInverseMeanRatio::get_name() const
   { return "TInverseMeanRatio"; }
 
+TInverseMeanRatio::~TInverseMeanRatio() {}
+
 bool TInverseMeanRatio::evaluate( const MsqMatrix<2,2>& T, 
                                    double& result, 
                                    MsqError& err )

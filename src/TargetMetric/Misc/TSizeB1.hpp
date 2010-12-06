@@ -43,6 +43,8 @@ namespace MESQUITE_NS {
 class TSizeB1 : public TMetric
 {
 public:
+  MESQUITE_EXPORT virtual
+  ~TSizeB1();
   
   MESQUITE_EXPORT virtual
   std::string get_name() const;

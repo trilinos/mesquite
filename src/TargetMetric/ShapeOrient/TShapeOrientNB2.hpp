@@ -45,6 +45,9 @@ class TShapeOrientNB2 : public TMetric
   public:
 
   MESQUITE_EXPORT virtual
+  ~TShapeOrientNB2();
+
+  MESQUITE_EXPORT virtual
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual

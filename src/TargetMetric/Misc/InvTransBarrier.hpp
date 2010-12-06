@@ -45,6 +45,9 @@ class InvTransBarrier : public TMetric
   InvTransBarrier( TMetric* metric ) : metricPtr(metric) {}
 
   MESQUITE_EXPORT virtual
+  ~InvTransBarrier();
+
+  MESQUITE_EXPORT virtual
   std::string get_name() const;
   
   MESQUITE_EXPORT virtual

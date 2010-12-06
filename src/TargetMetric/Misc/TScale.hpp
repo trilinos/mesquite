@@ -48,6 +48,9 @@ public:
 
   TScale( double alpha, TMetric* metric ) 
     : mAlpha(alpha), mMetric(metric) {}
+
+  MESQUITE_EXPORT virtual
+  ~TScale();
   
   MESQUITE_EXPORT virtual
   std::string get_name() const;

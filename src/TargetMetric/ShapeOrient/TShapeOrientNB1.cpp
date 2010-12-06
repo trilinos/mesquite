@@ -41,6 +41,8 @@ namespace MESQUITE_NS {
 std::string TShapeOrientNB1::get_name() const
   { return "TShapeOrientNB1"; }
 
+TShapeOrientNB1::~TShapeOrientNB1() {}
+
 template <unsigned DIM> static inline
 bool eval( const MsqMatrix<DIM,DIM>& T, double& result )
 {

@@ -47,6 +47,9 @@ public:
 
   TPower2( TMetric* metric ) 
     : mMetric(metric) {}
+
+  MESQUITE_EXPORT virtual
+  ~TPower2();
   
   MESQUITE_EXPORT virtual
   std::string get_name() const;

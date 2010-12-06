@@ -46,6 +46,9 @@ class TShapeSizeNB3 : public TMetric
   TShapeSizeNB3( double gamma = 2.0 ) : mGamma(gamma) {}
 
   MESQUITE_EXPORT virtual
+  ~TShapeSizeNB3();
+
+  MESQUITE_EXPORT virtual
   std::string get_name() const;
 
   MESQUITE_EXPORT virtual

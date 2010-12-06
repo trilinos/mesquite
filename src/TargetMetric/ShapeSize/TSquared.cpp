@@ -41,6 +41,7 @@ namespace MESQUITE_NS {
 std::string TSquared::get_name() const
   { return "TSquared"; }
 
+TSquared::~TSquared() {}
 
 template <unsigned DIM> static inline
 bool eval( const MsqMatrix<DIM,DIM>& T, double& result)

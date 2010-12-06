@@ -43,7 +43,10 @@ namespace MESQUITE_NS {
 class TShapeOrientNB1 : public TMetric
 {
   public:
-  
+
+  MESQUITE_EXPORT virtual
+  ~TShapeOrientNB1();
+
   MESQUITE_EXPORT virtual
   std::string get_name() const;
 

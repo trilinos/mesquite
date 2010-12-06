@@ -41,6 +41,7 @@ namespace MESQUITE_NS {
 std::string AWShapeSizeOrientNB1::get_name() const
   { return "AWShapeSizeOrientNB1"; }
 
+AWShapeSizeOrientNB1::~AWShapeSizeOrientNB1() {}
 
 template <unsigned DIM> static inline
 bool eval( const MsqMatrix<DIM,DIM>& A, 

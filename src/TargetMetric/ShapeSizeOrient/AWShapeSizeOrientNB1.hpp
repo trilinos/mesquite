@@ -43,7 +43,10 @@ namespace MESQUITE_NS {
 class AWShapeSizeOrientNB1 : public AWMetric
 {
   public:
-  
+
+  MESQUITE_EXPORT virtual
+  ~AWShapeSizeOrientNB1();
+
   MESQUITE_EXPORT virtual
   std::string get_name() const;
 

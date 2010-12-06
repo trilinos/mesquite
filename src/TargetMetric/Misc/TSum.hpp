@@ -47,6 +47,9 @@ public:
 
   TSum( TMetric* metric1, TMetric* metric2 ) 
     : mu1(metric1), mu2(metric2) {}
+
+  MESQUITE_EXPORT virtual
+  ~TSum();
   
   MESQUITE_EXPORT virtual
   std::string get_name() const;
