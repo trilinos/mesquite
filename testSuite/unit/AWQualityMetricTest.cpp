@@ -34,6 +34,7 @@
 #include "AWQualityMetric.hpp"
 #include "TMPQualityMetricTest.hpp"
 #include "TShapeNB1.hpp"
+#include "AWMetric.hpp"
 
 using namespace Mesquite;
 

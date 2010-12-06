@@ -44,7 +44,7 @@ namespace MESQUITE_NS {
  * A target metric for volume elements that optimizes
  * element shape
  */
-class TShape3DB2 : public TMetric2D
+class TShape3DB2 : public TMetric3D
 {
 public:
 

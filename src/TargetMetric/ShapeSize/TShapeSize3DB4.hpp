@@ -30,8 +30,8 @@
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_T_SHAPE_SIZE_3D_B_2_HPP
-#define MSQ_T_SHAPE_SIZE_3D_B_2_HPP
+#ifndef MSQ_T_SHAPE_SIZE_3D_B_4_HPP
+#define MSQ_T_SHAPE_SIZE_3D_B_4_HPP
 
 #include "Mesquite.hpp"
 #include "TMetric.hpp"

@@ -68,29 +68,29 @@
   CPPUNIT_TEST (compare_anaytic_and_numeric_hess) 
 
 #define BEGIN_TEST_DECL( METRIC, DIM, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
-class METRIC ## DIM ## DTest : public TMetricTest< METRIC, DIM > { public: \
-  METRIC ## DIM ## DTest () : TMetricTest< METRIC, DIM >( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER) ) {} \
-  CPPUNIT_TEST_SUITE( METRIC ## DIM ## DTest )
+class METRIC ## _ ## DIM ## DTest : public TMetricTest< METRIC, DIM > { public: \
+  METRIC ## _ ## DIM ## DTest () : TMetricTest< METRIC, DIM >( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER) ) {} \
+  CPPUNIT_TEST_SUITE( METRIC ## _ ## DIM ## DTest )
 
-#define END_TEST_DECL(SUITE, METRIC) \
+#define END_TEST_DECL(SUITE, DIM, METRIC) \
   CPPUNIT_TEST_SUITE_END(); \
 }; \
-CPPUNIT_NS::AutoRegisterSuite< SUITE ## Test > SUITE ## _UnitRegister ("Unit"); \
-CPPUNIT_NS::AutoRegisterSuite< SUITE ## Test > SUITE ## _FileRegister (TARGET_TEST_GROUP); \
-CPPUNIT_NS::AutoRegisterSuite< SUITE ## Test > SUITE ## _BaseRegister ( #METRIC "Test" )
+CPPUNIT_NS::AutoRegisterSuite< SUITE ## _ ## DIM ## DTest > SUITE ## _ ## DIM ## D_UnitRegister ("Unit"); \
+CPPUNIT_NS::AutoRegisterSuite< SUITE ## _ ## DIM ## DTest > SUITE ## _ ## DIM ## D_FileRegister (TARGET_TEST_GROUP); \
+CPPUNIT_NS::AutoRegisterSuite< SUITE ## _ ## DIM ## DTest > SUITE ## _ ## DIM ## D_BaseRegister ( #METRIC "Test" )
 
 
 /** Register tests for metric with no derivative implementations */
 #define TEST_METRIC_NO_DERIVS_2D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
   BEGIN_TEST_DECL( METRIC, 2, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
   REGISTER_BASE_TESTS; \
-  END_TEST_DECL(METRIC,METRIC)
+  END_TEST_DECL(METRIC,2,METRIC)
 
 /** Register tests for metric with no derivative implementations */
 #define TEST_METRIC_NO_DERIVS_3D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
   BEGIN_TEST_DECL( METRIC, 3, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
   REGISTER_BASE_TESTS; \
-  END_TEST_DECL(METRIC,METRIC)
+  END_TEST_DECL(METRIC,3,METRIC)
 
 /** Register tests for metric with no derivative implementations */
 #define TEST_METRIC_NO_DERIVS( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
@@ -101,13 +101,13 @@ CPPUNIT_NS::AutoRegisterSuite< SUITE ## Test > SUITE ## _BaseRegister ( #METRIC 
 #define TEST_METRIC_WITH_GRAD_2D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
   BEGIN_TEST_DECL( METRIC, 2, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
   REGISTER_GRAD_TESTS; \
-  END_TEST_DECL(METRIC,METRIC)
+  END_TEST_DECL(METRIC,2,METRIC)
 
 /** Register tests for metric with implementation of analytic gradient */
 #define TEST_METRIC_WITH_GRAD_3D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
   BEGIN_TEST_DECL( METRIC, 3, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
   REGISTER_GRAD_TESTS; \
-  END_TEST_DECL(METRIC,METRIC)
+  END_TEST_DECL(METRIC,3,METRIC)
 
 /** Register tests for metric with implementation of analytic gradient */
 #define TEST_METRIC_WITH_GRAD( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
@@ -118,17 +118,17 @@ CPPUNIT_NS::AutoRegisterSuite< SUITE ## Test > SUITE ## _BaseRegister ( #METRIC 
 #define TEST_METRIC_WITH_HESS_2D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
   BEGIN_TEST_DECL( METRIC, 2, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
   REGISTER_HESS_TESTS; \
-  END_TEST_DECL(METRIC,METRIC)
+  END_TEST_DECL(METRIC,2,METRIC)
 
 /** Register tests for metric with implementation of analytic gradient and Hessian */
 #define TEST_METRIC_WITH_HESS_3D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
   BEGIN_TEST_DECL( METRIC, 3, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
   REGISTER_HESS_TESTS; \
-  END_TEST_DECL(METRIC,METRIC)
+  END_TEST_DECL(METRIC,3,METRIC)
 
 /** Register tests for metric with implementation of analytic gradient and Hessian */
 #define TEST_METRIC_WITH_HESS( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ) \
-  TEST_METRIC_WITH_HESS_3D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
+  TEST_METRIC_WITH_HESS_2D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER ); \
   TEST_METRIC_WITH_HESS_3D( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER )
 
 /** Register tests for composite metric with implementation of analytic gradient and Hessian */
@@ -248,17 +248,17 @@ template <class Metric,unsigned DIM> class TMetricTest : public CppUnit::TestFix
                         double& value, MsqMatrix<DIM,DIM>& dmdA, MsqError& err )
     { bool rval = metric.TMetric::evaluate_with_grad( A*inverse(W), value, dmdA, err );
       dmdA = dmdA * transpose(inverse(W)); return rval; }
-  inline bool hess( Tetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
+  inline bool hess( TMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
                     double& value, MsqMatrix<DIM,DIM>& dmdA, MsqMatrix<DIM,DIM> d2mdA2[3], MsqError& err )
     { bool rval = metric.evaluate_with_hess( A*inverse(W), value, dmdA, d2mdA2, err );
       dmdA = dmdA * transpose(inverse(W)); 
-      for (int i = 0; i < DIM*(DIM+1)/2; ++i) d2mdA2[i] = inverse(W) * d2mdA2[i] * transpose(inverse(W));
+      for (unsigned i = 0; i < DIM*(DIM+1)/2; ++i) d2mdA2[i] = inverse(W) * d2mdA2[i] * transpose(inverse(W));
       return rval; }
   inline bool num_hess( TMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
                         double& value, MsqMatrix<DIM,DIM>& dmdA, MsqMatrix<DIM,DIM> d2mdA2[3], MsqError& err )
     { bool rval = metric.TMetric::evaluate_with_hess( A*inverse(W), value, dmdA, d2mdA2, err );
       dmdA = dmdA * transpose(inverse(W)); 
-      for (int i = 0; i < DIM*(DIM+1)/2; ++i) d2mdA2[i] = inverse(W) * d2mdA2[i] * transpose(inverse(W));
+      for (unsigned i = 0; i < DIM*(DIM+1)/2; ++i) d2mdA2[i] = inverse(W) * d2mdA2[i] * transpose(inverse(W));
       return rval; }
 
    // AWMetric
@@ -279,9 +279,8 @@ template <class Metric,unsigned DIM> class TMetricTest : public CppUnit::TestFix
     { return metric.AWMetric::evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); }
 };
 
-#define TMETRIC_FUNC template <class Metric> void TMetricTest<Metric>
-#define MAT_DIM TMetricTest<Metric>::DIM
-#define MAT_TYPE TMetricTest<Metric>::Matrix
+#define TMETRIC_FUNC template <class Metric, unsigned DIM> void TMetricTest<Metric,DIM>
+#define MAT_TYPE TMetricTest<Metric,DIM>::Matrix
 
 /*************************************************************************
  *          Implement actual (templatized) test code

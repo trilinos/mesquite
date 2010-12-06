@@ -124,10 +124,8 @@ msq_test_SOURCES = msq_test_main.cpp \
         TMPDerivsTest.cpp \
         AWQualityMetricTest.cpp \
         TQualityMetricTest.cpp \
-        TestAWMetrics.cpp \
-        TestTMetrics.cpp \
 	UntangleBetaTest.cpp \
-	UntangleTargetMetricTest.cpp \
+	UntangleTargetMetricTests.cpp \
 	Vector3DTest.cpp \
 	VertexConditionNumberTest.cpp \
 	VertexCullingRegressionTest.cpp \

@@ -72,7 +72,7 @@ public:
                  const MsqMatrix<2,2>& W, 
                  double& result, MsqError&  )
   {
-    last_A = A;
+    last_A_2D = A;
     result = value;
     ++count;
     return rval;
@@ -82,7 +82,7 @@ public:
                  const MsqMatrix<3,3>& W, 
                  double& result, MsqError&  )
   {
-    last_A = A;
+    last_A_3D = A;
     result = value;
     ++count;
     return rval;
@@ -91,7 +91,7 @@ public:
   bool evaluate( const MsqMatrix<2,2>& T, 
                  double& result, MsqError&  )
   {
-    last_A = T;
+    last_A_2D = T;
     result = value;
     ++count;
     return rval;
@@ -100,7 +100,7 @@ public:
   bool evaluate( const MsqMatrix<3,3>& T, 
                  double& result, MsqError&  )
   {
-    last_A = T;
+    last_A_3D = T;
     result = value;
     ++count;
     return rval;
@@ -167,18 +167,18 @@ class TestGradTargetMetric : public Base
     
     std::string get_name() const { return "TestGrad"; }
   
-    bool evaluate( const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& T, 
+    bool evaluate( const MsqMatrix<2,2>& T, 
                    double& result, MsqError& err )
       { result = sqr_Frobenius(T); return true; }
   
-    bool evaluate( const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& A, 
-                   const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>&, 
+    bool evaluate( const MsqMatrix<2,2>& A, 
+                   const MsqMatrix<2,2>&, 
                    double& result, MsqError& err )
       { return evaluate( A, result, err ); }
     
-    bool evaluate_with_grad( const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& T,
+    bool evaluate_with_grad( const MsqMatrix<2,2>& T,
                              double& result,
-                             MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& d,
+                             MsqMatrix<2,2>& d,
                              MsqError& err )
     {
       result = sqr_Frobenius(T);
@@ -186,10 +186,36 @@ class TestGradTargetMetric : public Base
       return true;
     }
     
-    bool evaluate_with_grad( const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& A, 
-                             const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>&,
+    bool evaluate_with_grad( const MsqMatrix<2,2>& A, 
+                             const MsqMatrix<2,2>&,
                              double& result,
-                             MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& d,
+                             MsqMatrix<2,2>& d,
+                             MsqError& err )
+    { return evaluate_with_grad( A, result, d, err ); }
+  
+    bool evaluate( const MsqMatrix<3,3>& T, 
+                   double& result, MsqError& err )
+      { result = sqr_Frobenius(T); return true; }
+  
+    bool evaluate( const MsqMatrix<3,3>& A, 
+                   const MsqMatrix<3,3>&, 
+                   double& result, MsqError& err )
+      { return evaluate( A, result, err ); }
+    
+    bool evaluate_with_grad( const MsqMatrix<3,3>& T,
+                             double& result,
+                             MsqMatrix<3,3>& d,
+                             MsqError& err )
+    {
+      result = sqr_Frobenius(T);
+      d = 2*T;
+      return true;
+    }
+    
+    bool evaluate_with_grad( const MsqMatrix<3,3>& A, 
+                             const MsqMatrix<3,3>&,
+                             double& result,
+                             MsqMatrix<3,3>& d,
                              MsqError& err )
     { return evaluate_with_grad( A, result, d, err ); }
 };
@@ -417,14 +443,14 @@ public:
       double value;
 
       QMType m( &ideal, &faux_zero );
-      faux_zero.count = faux_3d_zero.count = 0;
+      faux_zero.count = 0;
 
       tester.get_ideal_element( QUADRILATERAL, true, pd );
       rval = m.evaluate( pd, 0, value, err );
       CPPUNIT_ASSERT(!MSQ_CHKERR(err));
       CPPUNIT_ASSERT(rval);
       CPPUNIT_ASSERT_EQUAL( 1, faux_zero.count );
-      CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_2d_zero.last_A_2D), DBL_EPSILON );
+      CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_zero.last_A_2D), DBL_EPSILON );
     }  
   
   void test_surf_eval_ortho_quad()
@@ -580,7 +606,7 @@ void TMPQualityMetricTest<QMType>::test_evaluate_2D()
   bool rval;
   double value;
   
-  QMType m( &ideal, &faux_2d_pi, &faux_3d_zero );
+  QMType m( &ideal, &faux_pi );
   
     // test with aligned elements
   faux_pi.count = 0;
@@ -633,7 +659,7 @@ void TMPQualityMetricTest<QMType>::test_evaluate_surface()
   bool rval;
   double value;
   
-  QMType m( &surf_target, &faux_p );
+  QMType m( &surf_target, &faux_pi );
   
     // test with aligned elements
   faux_pi.count = 0;
@@ -759,9 +785,9 @@ void TMPQualityMetricTest<QMType>::test_gradient_common(TargetCalculator* tc)
   
     // construct metric
   pd.attach_settings( &settings );
-  TestGradTargetMetric< typename TMPTypes<QMType>::Metric2DType > tm;
+  TestGradTargetMetric< typename TMPTypes<QMType>::MetricType > tm;
   //IdealShapeTarget tc;
-  QMType m( tc, &tm, 0 );
+  QMType m( tc, &tm );
   PlanarDomain plane( PlanarDomain::XY );
   pd.set_domain( &plane );
   
@@ -837,7 +863,7 @@ void TMPQualityMetricTest<QMType>::test_gradient_3D()
   
     // construct metric
   pd.attach_settings( &settings );
-  TestGradTargetMetric< typename TMPTypes<QMType>::Metric3DType > tm;
+  TestGradTargetMetric< typename TMPTypes<QMType>::MetricType > tm;
   IdealShapeTarget tc;
   QMType m( &tc, 0, &tm );
   

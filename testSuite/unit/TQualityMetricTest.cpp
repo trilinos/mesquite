@@ -74,7 +74,7 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TQualityMetricTest, "Unit");
   
 void TQualityMetricTest::test_inverse_mean_ratio_grad()
 {
-  TInverseMeanRatio2D tm;
+  TInverseMeanRatio tm;
   IdealShapeTarget target;
   TQualityMetric metric( &target, &tm );
   ElementPMeanP avg( 1.0, &metric );
@@ -87,7 +87,7 @@ void TQualityMetricTest::test_inverse_mean_ratio_grad()
 
 void TQualityMetricTest::test_inverse_mean_ratio_hess()
 {
-  TInverseMeanRatio2D tm;
+  TInverseMeanRatio tm;
   IdealShapeTarget target;
   TQualityMetric metric( &target, &tm );
   ElementPMeanP avg( 1.0, &metric );
@@ -99,7 +99,7 @@ void TQualityMetricTest::test_inverse_mean_ratio_hess()
 
 void TQualityMetricTest::test_inverse_mean_ratio_hess_diag()
 {
-  TInverseMeanRatio2D tm;
+  TInverseMeanRatio tm;
   IdealShapeTarget target;
   TQualityMetric metric( &target, &tm );
   
@@ -110,7 +110,7 @@ void TQualityMetricTest::test_inverse_mean_ratio_hess_diag()
 void TQualityMetricTest::regression_inverse_mean_ratio_grad()
 {
   MsqError err;
-  TInverseMeanRatio2D tm;
+  TInverseMeanRatio tm;
   IdealShapeTarget target;
   TQualityMetric metric( &target, &tm );
   const double coords[] = { -0.80000000000000004, -0.80000000000000004, 0,
@@ -175,7 +175,7 @@ void TQualityMetricTest::regression_inverse_mean_ratio_grad()
 void TQualityMetricTest::regression_inverse_mean_ratio_hess()
 {
   MsqError err;
-  TInverseMeanRatio2D tm;
+  TInverseMeanRatio tm;
   IdealShapeTarget target;
   TQualityMetric metric( &target, &tm );
   const double coords[] = { 4.158984727, 4.6570859130000004, 5,
