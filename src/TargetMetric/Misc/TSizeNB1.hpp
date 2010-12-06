@@ -25,13 +25,13 @@
   ***************************************************************** */
 
 
-/** \file TSizeBarrier.hpp
+/** \file TSizeNB1.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_T_SIZE_B_HPP
-#define MSQ_T_SIZE_B_HPP
+#ifndef MSQ_T_SIZE_NB_1_HPP
+#define MSQ_T_SIZE_NB_1_HPP
 
 #include "Mesquite.hpp"
 #include "TMetric.hpp"
@@ -39,10 +39,10 @@
 namespace MESQUITE_NS {
 
 
-/** det(T) + 1/det(T) -2 */
-class TSizeB : public TMetric
+/** (det(T)-1)^2 */
+class TSizeNB1 : public TMetric
 {
-public:
+  public:
   
   MESQUITE_EXPORT virtual
   std::string get_name() const;

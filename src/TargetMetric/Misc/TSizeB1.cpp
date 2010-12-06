@@ -25,21 +25,21 @@
   ***************************************************************** */
 
 
-/** \file TSizeBarrier.cpp
+/** \file TSizeB1.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "TSizeB.hpp"
+#include "TSizeB1.hpp"
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 #include "TMPCommon.hpp"
 
 namespace MESQUITE_NS {
 
-std::string TSizeB::get_name() const
-  { return "SizeB"; }
+std::string TSizeB1::get_name() const
+  { return "TSizeB1"; }
 
 template <unsigned DIM> static inline
 bool eval( const MsqMatrix<DIM,DIM>& T, double& result )
@@ -89,6 +89,6 @@ bool hess( const MsqMatrix<DIM,DIM>& T,
   return true;  
 }
 
-TMP_T_TEMPL_IMPL_COMMON(TSizeB)
+TMP_T_TEMPL_IMPL_COMMON(TSizeB1)
 
 } // namespace Mesquite

@@ -643,8 +643,8 @@ APPEND_SET(HEADERS
   TargetMetric/Misc/TOffset.hpp
   TargetMetric/Misc/TPower2.hpp
   TargetMetric/Misc/TScale.hpp
-  TargetMetric/Misc/TSizeB.hpp
-  TargetMetric/Misc/TSizeNB.hpp
+  TargetMetric/Misc/TSizeB1.hpp
+  TargetMetric/Misc/TSizeNB1.hpp
   TargetMetric/Misc/TSum.hpp
   TargetMetric/Misc/TTau.hpp
   )
@@ -654,8 +654,8 @@ APPEND_SET(SOURCES
   TargetMetric/Misc/TOffset.cpp
   TargetMetric/Misc/TPower2.cpp
   TargetMetric/Misc/TScale.cpp
-  TargetMetric/Misc/TSizeB.cpp
-  TargetMetric/Misc/TSizeNB.cpp
+  TargetMetric/Misc/TSizeB1.cpp
+  TargetMetric/Misc/TSizeNB1.cpp
   TargetMetric/Misc/TSum.cpp
   TargetMetric/Misc/TTau.cpp
   )

@@ -47,7 +47,7 @@
 
 #include "TUntangleBeta.hpp"
 #include "TUntangleMu.hpp"
-#include "TSizeNB.hpp"
+#include "TSizeNB1.hpp"
 #include "TShapeSizeNB3.hpp"
 
 #include <memory>
@@ -108,7 +108,7 @@ void UntangleWrapper::run_wrapper( Mesh* mesh,
   tool.reset(0);
   
     // get target metrics from user perferences
-  TSizeNB mu_size;
+  TSizeNB1 mu_size;
   TShapeSizeNB3 mu_shape;
   std::auto_ptr<TMetric> mu;
   if (qualityMetric == BETA) {
