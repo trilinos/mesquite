@@ -39,7 +39,7 @@
 namespace MESQUITE_NS {
 
 
-/** (|T|^2 - 1/2 trace(T) abs(trace(T)))/(2tau)
+/** (|T|^2 - 1/n trace(T) abs(trace(T)))/(2tau)
  *
  * Section 3.3.3 of derivs.tex (7/2009)
  */

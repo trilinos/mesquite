@@ -39,7 +39,7 @@
 namespace MESQUITE_NS {
 
 
-/** |T|^2 - 1/2 trace(T) abs(trace(T)) */
+/** |T|^2 - 1/n trace(T) abs(trace(T)) */
 class TShapeOrientNB2 : public TMetric
 {
   public:

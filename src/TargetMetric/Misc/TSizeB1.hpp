@@ -39,7 +39,7 @@
 namespace MESQUITE_NS {
 
 
-/** det(T) + 1/det(T) -2 */
+/** det(T) + 1/det(T) - 2 */
 class TSizeB1 : public TMetric
 {
 public:

@@ -38,7 +38,7 @@
 
 namespace MESQUITE_NS {
 
-/** (|T|^2 - 2*sqrt(|T|^2 + 2*det(T))+2) / (2 det(T)) */
+/** \f$ \frac{ (|T|^2 - 2 sqrt(|T|^2 + 2 \tau) + 2) }{ (2 \tau) } \f$ */
 class TShapeSize2DB2 : public TMetric2D
 {
   public:

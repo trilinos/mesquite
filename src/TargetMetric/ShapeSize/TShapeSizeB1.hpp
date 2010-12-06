@@ -38,7 +38,7 @@
 
 namespace MESQUITE_NS {
 
-/** |T - T-inverse-transpose|^2 */
+/** |T - T^-t|^2 */
 class TShapeSizeB1 : public TMetric
 {
   public:

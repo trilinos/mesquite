@@ -38,7 +38,8 @@
 
 namespace MESQUITE_NS {
 
-/** |T|^2 - 2 * ln(det(T)) - 2 */
+/** 2D: |T|^2 - 2 * ln(tau) - 2
+ *  3D: |T|^3 - 3 sqrt(3) ln(tau) - 3 sqrt(3) */
 class TShapeSizeB3 : public TMetric
 {
   public:

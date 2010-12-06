@@ -38,7 +38,9 @@
 
 namespace MESQUITE_NS {
 
-/** \f$ |T - adj T^t|^2 + \gamma (\tau - 1)^2 \f$ */
+/** 2D: \f$ |T - adj T^t|^2 + \gamma (\tau - 1)^2 = 2 |T|^2 - 4 \tau + \gamma (\tau - 1)^2 \f$
+ *  3D: \f$ 2 |T|^3 - 3 \root{3} \tau + \gamma (\tau - 1)^2 \f$
+ */
 class TShapeSizeNB3 : public TMetric
 {
   public:
