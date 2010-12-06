@@ -640,6 +640,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/TargetMetric/Misc)
 
 APPEND_SET(HEADERS
   TargetMetric/Misc/InvTransBarrier.hpp
+  TargetMetric/Misc/TMixed.hpp
   TargetMetric/Misc/TOffset.hpp
   TargetMetric/Misc/TPower2.hpp
   TargetMetric/Misc/TScale.hpp
@@ -651,6 +652,7 @@ APPEND_SET(HEADERS
 
 APPEND_SET(SOURCES
   TargetMetric/Misc/InvTransBarrier.cpp
+  TargetMetric/Misc/TMixed.cpp
   TargetMetric/Misc/TOffset.cpp
   TargetMetric/Misc/TPower2.cpp
   TargetMetric/Misc/TScale.cpp
