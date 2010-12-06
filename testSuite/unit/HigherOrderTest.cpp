@@ -43,14 +43,10 @@
 #include "MeshDomain1D.hpp"
 
 #include "IdealShapeTarget.hpp"
-#include "InverseMeanRatio2D.hpp"
-#include "TRel2DShape.hpp"
-#include "InverseMeanRatio3D.hpp"
-#include "TRel2DShapeSizeOrient.hpp"
-#include "TRel3DShapeSizeOrient.hpp"
-#include "TRel2DShapeSize.hpp"
-#include "TRel3DShapeSize.hpp"
-#include "TRelQualityMetric.hpp"
+#include "TInverseMeanRatio.hpp"
+#include "TShapeSizeOrientNB1.hpp"
+#include "TShapeSizeNB3.hpp"
+#include "TQualityMetric.hpp"
 #include "PMeanPTemplate.hpp"
 #include "LPtoPTemplate.hpp"
 #include "SteepestDescent.hpp"
@@ -117,17 +113,16 @@ private:
   HexLagrangeShape hex_shape;
 #endif
   InstructionQueue q;
-  TRel2DShapeSize tm2;
-  TRel3DShapeSize tm3;
+  TShapeSizeNB3 tm;
   IdealShapeTarget tc;
-  TRelQualityMetric metric;
+  TQualityMetric metric;
   PMeanPTemplate func;
   SteepestDescent solver;
   TerminationCriterion crit, outer;
 
 public:
 
-  HigherOrderTest() : metric( &tc, &tm2, &tm3 ), 
+  HigherOrderTest() : metric( &tc, &tm ), 
                       func( 1, &metric ),
                       solver( &func )
   {

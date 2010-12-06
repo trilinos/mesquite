@@ -44,11 +44,10 @@ using std::endl;
 
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "ElementPMeanP.hpp"
-#include "InverseMeanRatio3D.hpp"
-#include "InverseMeanRatio2D.hpp"
-#include "TRelQualityMetric.hpp"
-#include "TRel3DOffset.hpp"
-#include "TRel2DOffset.hpp"
+#include "TInverseMeanRatio.hpp"
+#include "TQualityMetric.hpp"
+#include "TOffset.hpp"
+#include "TOffset.hpp"
 
 #include "IdealShapeTarget.hpp"
 #include "PMeanPTemplate.hpp"
@@ -286,11 +285,9 @@ int main( int argc, char* argv[] )
   
   IdealWeightInverseMeanRatio non_target_metric;
   IdealShapeTarget new_target;
-  InverseMeanRatio3D tmp_3d;
-  InverseMeanRatio2D tmp_2d;
-  TRel2DOffset tmp_2d_off( 1.0, &tmp_2d ); // target metrics are zero-based
-  TRel3DOffset tmp_3d_off( 1.0, &tmp_3d ); // target metrics are zero-based
-  TRelQualityMetric new_target_metric( &new_target, &tmp_2d_off, &tmp_3d_off );
+  TInverseMeanRatio tmp;
+  TOffset tmp_off( 1.0, &tmp ); // target metrics are zero-based
+  TQualityMetric new_target_metric( &new_target, &tmp_off );
   ElementPMeanP new_target_average( 1.0, &new_target_metric );
   NumericQM new_target_numeric( &new_target_metric );
   CompareMetric comp_metric( &non_target_metric, &new_target_average, true );
@@ -303,7 +300,7 @@ int main( int argc, char* argv[] )
   }
   if (do_new_target_metric) {
     qual = run( &new_target_metric, solver, input_file, secs, count );
-    os << "TRelQualityMetric           : " << qual << " after " << count << " iterations in " << secs << " seconds" << endl;
+    os << "TQualityMetric              : " << qual << " after " << count << " iterations in " << secs << " seconds" << endl;
   }
   if (do_new_target_average) {
     qual = run( &new_target_average, solver, input_file, secs, count );
@@ -311,7 +308,7 @@ int main( int argc, char* argv[] )
   }
   if (do_new_target_numeric) {
     qual = run( &new_target_numeric, solver, input_file, secs, count );
-    os << "TRelQualityMetric (FD)      : " << qual << " after " << count << " iterations in " << secs << " seconds" << endl;
+    os << "TQualityMetric (FD)         : " << qual << " after " << count << " iterations in " << secs << " seconds" << endl;
   }
   if (do_compare_metric) {
     qual = run( &comp_metric, solver, input_file, secs, count );

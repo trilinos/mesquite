@@ -37,8 +37,8 @@
 
 #include "ReferenceMesh.hpp"
 #include "RefMeshTargetCalculator.hpp"
-#include "TRel2DShapeBarrier.hpp"
-#include "TRelQualityMetric.hpp"
+#include "TShapeB1.hpp"
+#include "TQualityMetric.hpp"
 
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
@@ -176,8 +176,8 @@ int main( int argc, char* argv[] )
 
   ReferenceMesh rmesh( &refmesh );
   RefMeshTargetCalculator tc( &rmesh );
-  TRel2DShapeBarrier tm;
-  TRelQualityMetric qm( &tc, &tm, 0 );
+  TShapeB1 tm;
+  TQualityMetric qm( &tc, &tm );
   
   PMeanPTemplate of( 1.0, &qm );
   ConjugateGradient cg( &of );

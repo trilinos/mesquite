@@ -34,18 +34,15 @@
 #include "ShapeImprover.hpp"
 #include "MsqTimer.hpp"
 #include "MsqDebug.hpp"
-#include "UntangleBetaQualityMetric.hpp"
 #include "PMeanPTemplate.hpp"
 #include "ConjugateGradient.hpp"
 #include "TerminationCriterion.hpp"
 #include "InstructionQueue.hpp"
 #include "QualityAssessor.hpp"
 
-#include "TRel2DShapeBarrier.hpp"
-#include "TRel2DShape.hpp"
-#include "TRel3DShapeBarrier.hpp"
-#include "TRel3DShape.hpp"
-#include "TRelQualityMetric.hpp"
+#include "TShapeB1.hpp"
+#include "TShapeNB1.hpp"
+#include "TQualityMetric.hpp"
 #include "IdealShapeTarget.hpp"
 
 namespace MESQUITE_NS {
@@ -91,13 +88,11 @@ void ShapeImprover::run_wrapper( Mesh* mesh,
     // Quality Metrics
   IdealShapeTarget target;
     // No-barrier phase
-  TRel2DShape mu_2_no;
-  TRel3DShape mu_3_no;
-  TRelQualityMetric metric_no( &target, &mu_2_no, &mu_3_no );
+  TShapeNB1 mu_no;
+  TQualityMetric metric_no( &target, &mu_no );
     // Barrier phase
-  TRel2DShapeBarrier mu_2_b;
-  TRel3DShapeBarrier mu_3_b;
-  TRelQualityMetric metric_b( &target, &mu_2_b, &mu_3_b );
+  TShapeB1 mu_b;
+  TQualityMetric metric_b( &target, &mu_b );
     // QualityAssessor
   qa->add_quality_assessment( &metric_no );
   qa->add_quality_assessment( &metric_b );

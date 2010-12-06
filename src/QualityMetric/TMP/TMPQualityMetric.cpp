@@ -42,8 +42,6 @@
 #include "MappingFunction.hpp"
 #include "WeightCalculator.hpp"
 #include "TargetCalculator.hpp"
-#include "TRel2DMetric.hpp"
-#include "TRel3DMetric.hpp"
 #include "TargetMetricUtil.hpp"
 
 #ifdef PRINT_INFO
@@ -56,32 +54,6 @@
 namespace MESQUITE_NS {
 
 int TMPQualityMetric::get_negate_flag( ) const { return 1; }
-
-std::string TMPQualityMetric::make_name( const char* type,
-                                         const std::string& name2d,
-                                         const std::string& name3d) const
-{
-  std::string result( type );
-  result += "(";
-  std::string pfx;
-  if (weightCalc) {
-    pfx = "c_k ";
-  }
-  
-  if (!name3d.empty()) {
-    if (name2d.empty() || name2d == name3d)
-      result += pfx + name3d;
-    else
-      result += std::string("2D:") + pfx + name2d + ",3D:" + pfx + name3d;
-  }
-  else if (!name2d.empty())
-    result += pfx + name2d;
-  else
-    result += "NULL";
-  
-  result += ')';
-  return result;
-}
 
 
 void TMPQualityMetric::get_evaluations( PatchData& pd,

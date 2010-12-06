@@ -38,21 +38,19 @@
 
 #include "LambdaConstant.hpp"
 #include "IdealShapeTarget.hpp"
-#include "TRelQualityMetric.hpp"
+#include "TQualityMetric.hpp"
 #include "PMeanPTemplate.hpp"
 #include "TerminationCriterion.hpp"
 #include "SteepestDescent.hpp"
 #include "QualityAssessor.hpp"
 #include "InstructionQueue.hpp"
 
-#include "TRel2DUntangleBeta.hpp"
-#include "TRel2DUntangleMu.hpp"
-#include "TRel2DSize.hpp"
-#include "TRel2DShapeSize.hpp"
-#include "TRel3DUntangleBeta.hpp"
-#include "TRel3DUntangleMu.hpp"
-#include "TRel3DSize.hpp"
-#include "TRel3DShapeSize.hpp"
+#include "TUntangleBeta.hpp"
+#include "TUntangleMu.hpp"
+#include "TSizeNB1.hpp"
+#include "TShapeSize2DNB1.hpp"
+#include "TShapeSize3DNB1.hpp"
+#include "TMixed.hpp"
 
 #include <memory>
 
@@ -112,44 +110,33 @@ void UntangleWrapper::run_wrapper( Mesh* mesh,
   tool.reset(0);
   
     // get target metrics from user perferences
-  TRel2DSize size2d;
-  TRel3DSize size3d;
-  TRel2DShapeSize shape2d;
-  TRel3DShapeSize shape3d;
-  std::auto_ptr<TRel2DMetric> mu2d;
-  std::auto_ptr<TRel3DMetric> mu3d;
+  TSizeNB1 mu_size;
+  TShapeSize2DNB1 mu_shape_2d;
+  TShapeSize3DNB1 mu_shape_3d;
+  TMixed mu_shape( &mu_shape_2d, &mu_shape_3d );
+  std::auto_ptr<TMetric> mu;
   if (qualityMetric == BETA) {
     double beta = metricConstant;
     if (beta < 0) 
       beta = (lambda.average()*lambda.average())/20;
-    mu2d.reset(new TRel2DUntangleBeta( beta ));
-    mu3d.reset(new TRel3DUntangleBeta( beta ));
+    mu.reset(new TUntangleBeta( beta ));
   }
   else {
-    TRel2DMetric* sub2d = 0;
-    TRel3DMetric* sub3d = 0;
-    if (qualityMetric == SIZE) {
-      sub2d = &size2d;
-      sub3d = &size3d;
-    }
-    else {
-      sub2d = &shape2d;
-      sub3d = &shape3d;
-    }
-    if (metricConstant >= 0) {
-      mu2d.reset(new TRel2DUntangleMu( sub2d, metricConstant ));
-      mu3d.reset(new TRel3DUntangleMu( sub3d, metricConstant ));
-    }
-    else {
-      mu2d.reset(new TRel2DUntangleMu( sub2d ));
-      mu3d.reset(new TRel3DUntangleMu( sub3d ));
-    }
+    TMetric* sub = 0;
+    if (qualityMetric == SIZE)
+      sub = &mu_size;
+    else 
+      sub = &mu_shape;
+    if (metricConstant >= 0) 
+      mu.reset(new TUntangleMu( sub, metricConstant ));
+    else 
+      mu.reset(new TUntangleMu( sub ));
   }
     
     // define objective function
   IdealShapeTarget base_target;
   LambdaConstant target( lambda.average(), &base_target );
-  TRelQualityMetric metric(&target, mu2d.get(), mu3d.get());
+  TQualityMetric metric(&target, mu.get());
   PMeanPTemplate objfunc( 1.0, &metric );
   
     // define termination criterion

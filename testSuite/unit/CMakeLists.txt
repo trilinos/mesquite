@@ -4,6 +4,8 @@ SET( unit_tests
      ArrayMeshTest 
      AspectRatioGammaTest 
      AveragingQMTest
+     AWMetricTest
+     AWQualityMetricTest
      BCDTest
      BoundedCylinderDomainTest
      CachingTargetTest
@@ -32,6 +34,7 @@ SET( unit_tests
      Matrix3DTest
      MeshInterfaceTest
      MeshImplTest
+     MiscTargetMetricTests
      MsqFreeVertexIndexIteratorTest
      MsqHessianTest
      MsqMatrixTest
@@ -49,6 +52,10 @@ SET( unit_tests
      QuadLagrangeShapeTest
      QualityAssessorTest
      QualityMetricTest
+     ShapeOrientTargetMetricTests
+     ShapeSizeOrientTargetMetricTests
+     ShapeSizeTargetMetricTests
+     ShapeTargetMetricTests
      SlaveBoundaryVerticesTest
      SphericalDomainTest
      SphericalGeometryTest
@@ -62,17 +69,10 @@ SET( unit_tests
      TriLagrangeShapeTest
      TopologyInfoTest
      TMPDerivsTest
-     TAbs2DMetricTest
-     TAbs3DMetricTest
-     TRel2DMetricTest
-     TRel3DMetricTest
-     TAbsQualityMetricTest
-     TRelQualityMetricTest
-     TestTAbs2DMetrics
-     TestTAbs3DMetrics
-     TestTRel2DMetrics
-     TestTRel3DMetrics
+     TMetricTest
+     TQualityMetricTest
      UntangleBetaTest
+     UntangleTargetMetricTests
      Vector3DTest
      VertexConditionNumberTest
      VertexCullingRegressionTest
@@ -100,7 +100,7 @@ SET( unit_srcs
      PatchDataInstances.hpp 
      QualityMetricTester.hpp 
      UnitUtil.hpp 
-     TMetricTest.hpp
+     TargetMetricTest.hpp
      TMPQualityMetricTest.hpp )
 
 FOREACH( test ${unit_tests} )

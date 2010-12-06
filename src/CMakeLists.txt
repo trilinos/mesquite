@@ -548,8 +548,8 @@ APPEND_SET(SOURCES
 APPEND_SET(HEADERS
   QualityMetric/TMP/AffineMapMetric.hpp
   QualityMetric/TMP/TMPQualityMetric.hpp
-  QualityMetric/TMP/TAbsQualityMetric.hpp 
-  QualityMetric/TMP/TRelQualityMetric.hpp 
+  QualityMetric/TMP/AWQualityMetric.hpp 
+  QualityMetric/TMP/TQualityMetric.hpp 
   )
 
 APPEND_SET(SOURCES
@@ -557,165 +557,8 @@ APPEND_SET(SOURCES
   QualityMetric/TMP/TargetMetricUtil.cpp
   QualityMetric/TMP/TargetMetricUtil.hpp
   QualityMetric/TMP/TMPQualityMetric.cpp 
-  QualityMetric/TMP/TAbsQualityMetric.cpp 
-  QualityMetric/TMP/TRelQualityMetric.cpp 
-  )
-
-#
-# src/TargetMetric
-#
-
-#APPEND_SET(HEADERS
-#  )
-
-APPEND_SET(SOURCES
-  TargetMetric/TargetMetricDimIndep.hpp
-  TargetMetric/TMPDerivs.hpp
-  )
-
-
-#
-# src/TargetMetric/Absolute
-#
-
-APPEND_SET(HEADERS
-  TargetMetric/Absolute/TAbs2DMetric.hpp
-  TargetMetric/Absolute/TAbs3DMetric.hpp
-  TargetMetric/Absolute/TAbs2DShapeSizeOrient.hpp
-  TargetMetric/Absolute/TAbs3DShapeSizeOrient.hpp
-  )
-
-APPEND_SET(SOURCES
-  TargetMetric/Absolute/TAbs2DMetric.cpp
-  TargetMetric/Absolute/TAbs3DMetric.cpp
-  TargetMetric/Absolute/TAbs2DShapeSizeOrient.cpp
-  TargetMetric/Absolute/TAbs3DShapeSizeOrient.cpp
-  )
-
-#
-# src/TargetMetric/Relative
-#
-
-APPEND_SET(HEADERS
-  TargetMetric/Relative/TRel2DMetric.hpp
-  TargetMetric/Relative/InvTransBarrier2D.hpp
-  TargetMetric/Relative/TSquared2D.hpp
-  TargetMetric/Relative/TRel2DScale.hpp
-  TargetMetric/Relative/TRel2DShape.hpp
-  TargetMetric/Relative/TRel2DShapeAlt1.hpp
-  TargetMetric/Relative/TRel2DShapeBarrier.hpp
-  TargetMetric/Relative/TRel2DShapeOrient.hpp
-  TargetMetric/Relative/TRel2DShapeOrientAlt1.hpp
-  TargetMetric/Relative/TRel2DShapeOrientBarrier.hpp
-  TargetMetric/Relative/TRel2DShapeOrientBarrierAlt1.hpp
-  TargetMetric/Relative/TRel2DShapeSize.hpp
-  TargetMetric/Relative/TRel2DShapeSizeAlt1.hpp
-  TargetMetric/Relative/TRel2DShapeSizeAlt2.hpp
-  TargetMetric/Relative/TRel2DShapeSizeBarrier.hpp
-  TargetMetric/Relative/TRel2DShapeSizeBarrierAlt1.hpp
-  TargetMetric/Relative/TRel2DShapeSizeBarrierAlt2.hpp
-  TargetMetric/Relative/TRel2DShapeSizeOrient.hpp
-  TargetMetric/Relative/TRel2DShapeSizeOrientBarrier.hpp
-  TargetMetric/Relative/TRel2DShapeSizeOrientBarrierAlt1.hpp
-  TargetMetric/Relative/TRel2DSize.hpp
-  TargetMetric/Relative/TRel2DSizeBarrier.hpp
-  TargetMetric/Relative/TRel2DSquared.hpp
-  TargetMetric/Relative/TRel2DSum.hpp
-  TargetMetric/Relative/TRel2DOffset.hpp
-  TargetMetric/Relative/TRel2DTau.hpp
-  TargetMetric/Relative/TRel2DUntangleAlt1.hpp
-  TargetMetric/Relative/TRel2DUntangleBeta.hpp
-  TargetMetric/Relative/TRel2DUntangleMu.hpp
-  TargetMetric/Relative/InverseMeanRatio2D.hpp 
-  TargetMetric/Relative/InverseMeanRatio3D.hpp
-  TargetMetric/Relative/TRel3DMetric.hpp
-  TargetMetric/Relative/TSquared3D.hpp
-  TargetMetric/Relative/TRel3DScale.hpp
-  TargetMetric/Relative/TRel3DShape.hpp
-  TargetMetric/Relative/TRel3DShapeBarrier.hpp
-  TargetMetric/Relative/TRel3DShapeBarrierAlt1.hpp
-  TargetMetric/Relative/TRel3DShapeOrient.hpp
-  TargetMetric/Relative/TRel3DShapeOrientAlt1.hpp
-  TargetMetric/Relative/TRel3DShapeOrientBarrier.hpp
-  TargetMetric/Relative/TRel3DShapeOrientBarrierAlt1.hpp
-  TargetMetric/Relative/TRel3DShapeSize.hpp
-  TargetMetric/Relative/TRel3DShapeSizeBarrier.hpp
-  TargetMetric/Relative/TRel3DShapeSizeBarrierAlt1.hpp
-  TargetMetric/Relative/TRel3DShapeSizeBarrierAlt2.hpp
-  TargetMetric/Relative/TRel3DShapeSizeBarrierAlt3.hpp
-  TargetMetric/Relative/TRel3DShapeSizeOrient.hpp
-  TargetMetric/Relative/TRel3DShapeSizeOrientBarrier.hpp
-  TargetMetric/Relative/TRel3DShapeSizeOrientBarrierAlt1.hpp
-  TargetMetric/Relative/TRel3DSize.hpp
-  TargetMetric/Relative/TRel3DSizeBarrier.hpp
-  TargetMetric/Relative/TRel3DSquared.hpp
-  TargetMetric/Relative/TRel3DSum.hpp
-  TargetMetric/Relative/TRel3DOffset.hpp
-  TargetMetric/Relative/TRel3DTau.hpp
-  TargetMetric/Relative/TRel3DUntangleAlt1.hpp 
-  TargetMetric/Relative/TRel3DUntangleBeta.hpp 
-  TargetMetric/Relative/TRel3DUntangleMu.hpp 
-  )
-
-APPEND_SET(SOURCES
-  TargetMetric/Relative/TRel2DMetric.cpp
-  TargetMetric/Relative/InvTransBarrier2D.cpp
-  TargetMetric/Relative/TSquared2D.cpp
-  TargetMetric/Relative/TRel2DScale.cpp
-  TargetMetric/Relative/TRel2DShape.cpp
-  TargetMetric/Relative/TRel2DShapeAlt1.cpp
-  TargetMetric/Relative/TRel2DShapeBarrier.cpp
-  TargetMetric/Relative/TRel2DShapeOrient.cpp
-  TargetMetric/Relative/TRel2DShapeOrientAlt1.cpp
-  TargetMetric/Relative/TRel2DShapeOrientBarrier.cpp
-  TargetMetric/Relative/TRel2DShapeOrientBarrierAlt1.cpp
-  TargetMetric/Relative/TRel2DShapeSize.cpp
-  TargetMetric/Relative/TRel2DShapeSizeAlt1.cpp
-  TargetMetric/Relative/TRel2DShapeSizeAlt2.cpp
-  TargetMetric/Relative/TRel2DShapeSizeBarrier.cpp
-  TargetMetric/Relative/TRel2DShapeSizeBarrierAlt1.cpp
-  TargetMetric/Relative/TRel2DShapeSizeBarrierAlt2.cpp
-  TargetMetric/Relative/TRel2DShapeSizeOrient.cpp
-  TargetMetric/Relative/TRel2DShapeSizeOrientBarrier.cpp
-  TargetMetric/Relative/TRel2DShapeSizeOrientBarrierAlt1.cpp
-  TargetMetric/Relative/TRel2DSize.cpp
-  TargetMetric/Relative/TRel2DSizeBarrier.cpp
-  TargetMetric/Relative/TRel2DSquared.cpp
-  TargetMetric/Relative/TRel2DSum.cpp
-  TargetMetric/Relative/TRel2DOffset.cpp
-  TargetMetric/Relative/TRel2DTau.cpp
-  TargetMetric/Relative/TRel2DUntangleAlt1.cpp
-  TargetMetric/Relative/TRel2DUntangleBeta.cpp
-  TargetMetric/Relative/TRel2DUntangleMu.cpp
-  TargetMetric/Relative/InverseMeanRatio2D.cpp 
-  TargetMetric/Relative/InverseMeanRatio3D.cpp
-  TargetMetric/Relative/TRel3DMetric.cpp
-  TargetMetric/Relative/TSquared3D.cpp
-  TargetMetric/Relative/TRel3DScale.cpp
-  TargetMetric/Relative/TRel3DShape.cpp
-  TargetMetric/Relative/TRel3DShapeBarrier.cpp
-  TargetMetric/Relative/TRel3DShapeBarrierAlt1.cpp
-  TargetMetric/Relative/TRel3DShapeOrient.cpp
-  TargetMetric/Relative/TRel3DShapeOrientAlt1.cpp
-  TargetMetric/Relative/TRel3DShapeOrientBarrier.cpp
-  TargetMetric/Relative/TRel3DShapeOrientBarrierAlt1.cpp
-  TargetMetric/Relative/TRel3DShapeSize.cpp
-  TargetMetric/Relative/TRel3DShapeSizeBarrier.cpp
-  TargetMetric/Relative/TRel3DShapeSizeBarrierAlt1.cpp
-  TargetMetric/Relative/TRel3DShapeSizeBarrierAlt2.cpp
-  TargetMetric/Relative/TRel3DShapeSizeBarrierAlt3.cpp
-  TargetMetric/Relative/TRel3DShapeSizeOrient.cpp
-  TargetMetric/Relative/TRel3DShapeSizeOrientBarrier.cpp
-  TargetMetric/Relative/TRel3DShapeSizeOrientBarrierAlt1.cpp
-  TargetMetric/Relative/TRel3DSize.cpp
-  TargetMetric/Relative/TRel3DSizeBarrier.cpp
-  TargetMetric/Relative/TRel3DSquared.cpp
-  TargetMetric/Relative/TRel3DSum.cpp
-  TargetMetric/Relative/TRel3DOffset.cpp
-  TargetMetric/Relative/TRel3DTau.cpp
-  TargetMetric/Relative/TRel3DUntangleAlt1.cpp 
-  TargetMetric/Relative/TRel3DUntangleBeta.cpp 
-  TargetMetric/Relative/TRel3DUntangleMu.cpp 
+  QualityMetric/TMP/AWQualityMetric.cpp 
+  QualityMetric/TMP/TQualityMetric.cpp 
   )
 
 #
@@ -746,8 +589,158 @@ APPEND_SET(SOURCES
   QualityMetric/Volume/SizeMetric.cpp
   )
 
+
 #
-# src/QualityMetric/TargetCalculator
+# src/TargetMetric
+#
+
+APPEND_SET(HEADERS
+  TargetMetric/AWMetric.hpp
+  TargetMetric/TMetric.hpp
+  )
+
+APPEND_SET(SOURCES
+  TargetMetric/TMPCommon.hpp
+  TargetMetric/TMPDerivs.hpp
+  TargetMetric/AWMetric.cpp
+  TargetMetric/TMetric.cpp
+  )
+
+
+#
+# src/TargetMetric/Misc
+#
+
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/TargetMetric/Misc)
+
+APPEND_SET(HEADERS
+  TargetMetric/Misc/InvTransBarrier.hpp
+  TargetMetric/Misc/TMixed.hpp
+  TargetMetric/Misc/TOffset.hpp
+  TargetMetric/Misc/TPower2.hpp
+  TargetMetric/Misc/TScale.hpp
+  TargetMetric/Misc/TSizeB1.hpp
+  TargetMetric/Misc/TSizeNB1.hpp
+  TargetMetric/Misc/TSum.hpp
+  TargetMetric/Misc/TTau.hpp
+  )
+
+APPEND_SET(SOURCES
+  TargetMetric/Misc/InvTransBarrier.cpp
+  TargetMetric/Misc/TMixed.cpp
+  TargetMetric/Misc/TOffset.cpp
+  TargetMetric/Misc/TPower2.cpp
+  TargetMetric/Misc/TScale.cpp
+  TargetMetric/Misc/TSizeB1.cpp
+  TargetMetric/Misc/TSizeNB1.cpp
+  TargetMetric/Misc/TSum.cpp
+  TargetMetric/Misc/TTau.cpp
+  )
+
+#
+# src/TargetMetric/Shape
+#
+
+APPEND_SET(HEADERS
+  TargetMetric/Shape/TInverseMeanRatio.hpp
+  TargetMetric/Shape/TShape2DNB2.hpp
+  TargetMetric/Shape/TShape3DB2.hpp
+  TargetMetric/Shape/TShapeB1.hpp
+  TargetMetric/Shape/TShapeNB1.hpp 
+  )
+
+APPEND_SET(SOURCES
+  TargetMetric/Shape/TInverseMeanRatio.cpp
+  TargetMetric/Shape/TShape2DNB2.cpp
+  TargetMetric/Shape/TShape3DB2.cpp
+  TargetMetric/Shape/TShapeB1.cpp
+  TargetMetric/Shape/TShapeNB1.cpp 
+  )
+
+#
+# src/TargetMetric/ShapeOrient
+#
+
+APPEND_SET(HEADERS
+  TargetMetric/ShapeOrient/TShapeOrientB1.hpp 
+  TargetMetric/ShapeOrient/TShapeOrientB2.hpp 
+  TargetMetric/ShapeOrient/TShapeOrientNB1.hpp
+  TargetMetric/ShapeOrient/TShapeOrientNB2.hpp
+  )
+
+APPEND_SET(SOURCES
+  TargetMetric/ShapeOrient/TShapeOrientB1.cpp 
+  TargetMetric/ShapeOrient/TShapeOrientB2.cpp 
+  TargetMetric/ShapeOrient/TShapeOrientNB1.cpp
+  TargetMetric/ShapeOrient/TShapeOrientNB2.cpp
+  )
+
+#
+# src/TargetMetric/ShapeSize
+#
+
+APPEND_SET(HEADERS
+  TargetMetric/ShapeSize/TShapeSize2DB2.hpp
+  TargetMetric/ShapeSize/TShapeSize2DNB1.hpp
+  TargetMetric/ShapeSize/TShapeSize2DNB2.hpp
+  TargetMetric/ShapeSize/TShapeSize3DB2.hpp
+  TargetMetric/ShapeSize/TShapeSize3DB4.hpp
+  TargetMetric/ShapeSize/TShapeSize3DNB1.hpp
+  TargetMetric/ShapeSize/TShapeSizeB1.hpp
+  TargetMetric/ShapeSize/TShapeSizeB3.hpp
+  TargetMetric/ShapeSize/TShapeSizeNB3.hpp
+  TargetMetric/ShapeSize/TSquared.hpp 
+  )
+
+APPEND_SET(SOURCES
+  TargetMetric/ShapeSize/TShapeSize2DB2.cpp
+  TargetMetric/ShapeSize/TShapeSize2DNB1.cpp
+  TargetMetric/ShapeSize/TShapeSize2DNB2.cpp
+  TargetMetric/ShapeSize/TShapeSize3DB2.cpp
+  TargetMetric/ShapeSize/TShapeSize3DB4.cpp
+  TargetMetric/ShapeSize/TShapeSize3DNB1.cpp
+  TargetMetric/ShapeSize/TShapeSizeB1.cpp
+  TargetMetric/ShapeSize/TShapeSizeB3.cpp
+  TargetMetric/ShapeSize/TShapeSizeNB3.cpp
+  TargetMetric/ShapeSize/TSquared.cpp 
+  )
+
+#
+# src/TargetMetric/ShapeSizeOrient
+#
+
+APPEND_SET(HEADERS
+  TargetMetric/ShapeSizeOrient/AWShapeSizeOrientNB1.hpp
+  TargetMetric/ShapeSizeOrient/TShapeSizeOrientB1.hpp
+  TargetMetric/ShapeSizeOrient/TShapeSizeOrientB2.hpp
+  TargetMetric/ShapeSizeOrient/TShapeSizeOrientNB1.hpp
+  )
+
+APPEND_SET(SOURCES
+  TargetMetric/ShapeSizeOrient/AWShapeSizeOrientNB1.cpp
+  TargetMetric/ShapeSizeOrient/TShapeSizeOrientB1.cpp
+  TargetMetric/ShapeSizeOrient/TShapeSizeOrientB2.cpp
+  TargetMetric/ShapeSizeOrient/TShapeSizeOrientNB1.cpp
+  )
+
+#
+# src/TargetMetric/Untangle
+#
+
+APPEND_SET(HEADERS
+  TargetMetric/Untangle/TUntangle1.hpp
+  TargetMetric/Untangle/TUntangleBeta.hpp
+  TargetMetric/Untangle/TUntangleMu.hpp
+  )
+
+APPEND_SET(SOURCES
+  TargetMetric/Untangle/TUntangle1.cpp
+  TargetMetric/Untangle/TUntangleBeta.cpp
+  TargetMetric/Untangle/TUntangleMu.cpp
+  )
+
+#
+# src/TargetCalculator
 #
 
 APPEND_SET(HEADERS

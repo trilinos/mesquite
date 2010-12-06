@@ -30,8 +30,8 @@
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TMPDERIVS_HPP
-#define MSQ_TMPDERIVS_HPP
+#ifndef MSQ_TMP_DERIVS_HPP
+#define MSQ_TMP_DERIVS_HPP
 
 #include "Mesquite.hpp"
 #include "MsqMatrix.hpp"
@@ -71,6 +71,14 @@ void set_scaled_I( MsqMatrix<3,3> R[6], double alpha );
 inline
 void pluseq_scaled_I( MsqMatrix<3,3> R[6], double alpha );
 
+/**\brief \f$ R += \alpha I_9 \f$
+ *
+ *\param R The 6 blocks of the upper triangular portion of a 9x9
+ *         symmetric matrix.
+ */
+inline
+void pluseq_scaled_I( MsqMatrix<3,3>& R, double alpha );
+
 /**\brief \f$ R = \alpha I_4 \f$
  *
  *\param R The 3 blocks of the upper triangular portion of a 4x4
@@ -86,6 +94,14 @@ void set_scaled_I( MsqMatrix<2,2> R[3], double alpha );
  */
 inline
 void pluseq_scaled_I( MsqMatrix<2,2> R[3], double alpha );
+
+/**\brief \f$ R += \alpha I_4 \f$
+ *
+ *\param R The 3 blocks of the upper triangular portion of a 4x4
+ *         symmetric matrix.
+ */
+inline
+void pluseq_scaled_I( MsqMatrix<2,2>& R, double alpha );
 
 /**\brief \f$ R += \alpha \frac{\partial}{\partial T}det(T) \f$
  *
@@ -104,6 +120,9 @@ void pluseq_scaled_2nd_deriv_of_det( MsqMatrix<3,3> R[6],
  */
 inline
 void pluseq_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[3], double alpha );
+inline
+void pluseq_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[3], double alpha, const MsqMatrix<2,2>& )
+  { pluseq_scaled_2nd_deriv_of_det( R, alpha ); }
 
 /**\brief \f$ R = \alpha \frac{\partial}{\partial T}det(T) \f$
  *
@@ -122,6 +141,9 @@ void set_scaled_2nd_deriv_of_det( MsqMatrix<3,3> R[6],
  */
 inline
 void set_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[3], double alpha );
+inline
+void set_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[3], double alpha, const MsqMatrix<2,2>& )
+  { set_scaled_2nd_deriv_of_det( R, alpha ); }
 
 /**\brief \f$ R += \alpha \frac{\partial^2}{\partial T^2}tr(adj T) \f$
  *
@@ -336,17 +358,24 @@ void set_scaled_I( MsqMatrix<3,3> R[6], double alpha )
   R[1] = R[2] = R[4] = MsqMatrix<3,3>(0.0);
 }
 
+void pluseq_scaled_I( MsqMatrix<3,3>& R, double alpha )
+{
+  R(0,0) += alpha;
+  R(1,1) += alpha;
+  R(2,2) += alpha;
+}
+
+void pluseq_scaled_I( MsqMatrix<2,2>& R, double alpha )
+{
+  R(0,0) += alpha;
+  R(1,1) += alpha;
+}
+
 void pluseq_scaled_I( MsqMatrix<3,3> R[6], double alpha )
 {
-  R[0](0,0) += alpha;
-  R[0](1,1) += alpha;
-  R[0](2,2) += alpha;
-  R[3](0,0) += alpha;
-  R[3](1,1) += alpha;
-  R[3](2,2) += alpha;
-  R[5](0,0) += alpha;
-  R[5](1,1) += alpha;
-  R[5](2,2) += alpha;
+  pluseq_scaled_I( R[0], alpha );
+  pluseq_scaled_I( R[3], alpha );
+  pluseq_scaled_I( R[5], alpha );
 }
 
 void set_scaled_I( MsqMatrix<2,2> R[3], double alpha )
@@ -357,10 +386,8 @@ void set_scaled_I( MsqMatrix<2,2> R[3], double alpha )
 
 void pluseq_scaled_I( MsqMatrix<2,2> R[3], double alpha )
 {
-  R[0](0,0) += alpha;
-  R[0](1,1) += alpha;
-  R[2](0,0) += alpha;
-  R[2](1,1) += alpha;
+  pluseq_scaled_I( R[0], alpha );
+  pluseq_scaled_I( R[2], alpha );
 }
 
 void pluseq_scaled_2nd_deriv_of_det( MsqMatrix<3,3> R[6],

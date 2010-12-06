@@ -60,8 +60,8 @@ using std::endl;
 
 // algorithms
 #include "IdealShapeTarget.hpp"
-#include "TRelQualityMetric.hpp"
-#include "InverseMeanRatio2D.hpp"
+#include "TQualityMetric.hpp"
+#include "TInverseMeanRatio.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "LPtoPTemplate.hpp"
 #include "LInfTemplate.hpp"
@@ -214,7 +214,7 @@ InstructionQueue* create_instruction_queue(MsqError& err)
   // creates a mean ratio quality metric ...
   //IdealWeightInverseMeanRatio* mean = new IdealWeightInverseMeanRatio(err); MSQ_ERRZERO(err);
   TargetCalculator* tc = new IdealShapeTarget;
-  TRelQualityMetric* mean = new TRelQualityMetric( tc, 0, new InverseMeanRatio2D, 0 );
+  TQualityMetric* mean = new TQualityMetric( tc, 0, new TInverseMeanRatio );
   
   LPtoPTemplate* obj_func = new LPtoPTemplate(mean, 1, err); MSQ_ERRZERO(err);
   

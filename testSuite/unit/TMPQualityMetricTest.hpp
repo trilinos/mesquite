@@ -55,32 +55,52 @@ using std::endl;
  *  'evaluate' method records input values and returns a constant.
  */
 template <typename B>
-class FauxTarget : public B
+class FauxMetric : public B
 {
 public:
   int count;
   double value;
   bool rval;
-  MsqMatrix<B::MATRIX_DIM,B::MATRIX_DIM> last_A;
+  MsqMatrix<2,2> last_A_2D;
+  MsqMatrix<3,3> last_A_3D;
 
-  FauxTarget(double v) : count(0), value(v), rval(true) {}
+  FauxMetric(double v) : count(0), value(v), rval(true) {}
   
   std::string get_name() const { return "Faux"; }
   
-  bool evaluate( const MsqMatrix<B::MATRIX_DIM,B::MATRIX_DIM>& A, 
-                 const MsqMatrix<B::MATRIX_DIM,B::MATRIX_DIM>& W, 
+  bool evaluate( const MsqMatrix<2,2>& A, 
+                 const MsqMatrix<2,2>& W, 
                  double& result, MsqError&  )
   {
-    last_A = A;
+    last_A_2D = A;
     result = value;
     ++count;
     return rval;
   }
   
-  bool evaluate( const MsqMatrix<B::MATRIX_DIM,B::MATRIX_DIM>& T, 
+  bool evaluate( const MsqMatrix<3,3>& A, 
+                 const MsqMatrix<3,3>& W, 
                  double& result, MsqError&  )
   {
-    last_A = T;
+    last_A_3D = A;
+    result = value;
+    ++count;
+    return rval;
+  }
+  
+  bool evaluate( const MsqMatrix<2,2>& T, 
+                 double& result, MsqError&  )
+  {
+    last_A_2D = T;
+    result = value;
+    ++count;
+    return rval;
+  }
+  
+  bool evaluate( const MsqMatrix<3,3>& T, 
+                 double& result, MsqError&  )
+  {
+    last_A_3D = T;
     result = value;
     ++count;
     return rval;
@@ -99,24 +119,35 @@ class ScaleWeight : public WeightCalculator
 
 /** wrapper class to force numeric approximation of derivatives */
 template <class Base>
-class NumericalTarget : public Base
+class NumericalMetric : public Base
 {
 public:
   
-  NumericalTarget( Base* real_metric ) : mMetric(real_metric) {}
+  NumericalMetric( Base* real_metric ) : mMetric(real_metric) {}
 
-  ~NumericalTarget() {}
+  ~NumericalMetric() {}
 
   std::string get_name() const 
     { return "Numerical " + mMetric->get_name(); }
 
-  bool evaluate( const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& A, 
-                 const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& W, 
+  bool evaluate( const MsqMatrix<2,2>& A, 
+                 const MsqMatrix<2,2>& W, 
                  double& result, 
                  MsqError& err )
   { return mMetric->evaluate( A, W, result, err ); }
 
-  bool evaluate( const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& T, 
+  bool evaluate( const MsqMatrix<3,3>& A, 
+                 const MsqMatrix<3,3>& W, 
+                 double& result, 
+                 MsqError& err )
+  { return mMetric->evaluate( A, W, result, err ); }
+
+  bool evaluate( const MsqMatrix<2,2>& T, 
+                 double& result, 
+                 MsqError& err )
+  { return mMetric->evaluate( T, result, err ); }
+
+  bool evaluate( const MsqMatrix<3,3>& T, 
                  double& result, 
                  MsqError& err )
   { return mMetric->evaluate( T, result, err ); }
@@ -136,18 +167,18 @@ class TestGradTargetMetric : public Base
     
     std::string get_name() const { return "TestGrad"; }
   
-    bool evaluate( const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& T, 
+    bool evaluate( const MsqMatrix<2,2>& T, 
                    double& result, MsqError& err )
       { result = sqr_Frobenius(T); return true; }
   
-    bool evaluate( const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& A, 
-                   const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>&, 
+    bool evaluate( const MsqMatrix<2,2>& A, 
+                   const MsqMatrix<2,2>&, 
                    double& result, MsqError& err )
       { return evaluate( A, result, err ); }
     
-    bool evaluate_with_grad( const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& T,
+    bool evaluate_with_grad( const MsqMatrix<2,2>& T,
                              double& result,
-                             MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& d,
+                             MsqMatrix<2,2>& d,
                              MsqError& err )
     {
       result = sqr_Frobenius(T);
@@ -155,10 +186,36 @@ class TestGradTargetMetric : public Base
       return true;
     }
     
-    bool evaluate_with_grad( const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& A, 
-                             const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>&,
+    bool evaluate_with_grad( const MsqMatrix<2,2>& A, 
+                             const MsqMatrix<2,2>&,
                              double& result,
-                             MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& d,
+                             MsqMatrix<2,2>& d,
+                             MsqError& err )
+    { return evaluate_with_grad( A, result, d, err ); }
+  
+    bool evaluate( const MsqMatrix<3,3>& T, 
+                   double& result, MsqError& err )
+      { result = sqr_Frobenius(T); return true; }
+  
+    bool evaluate( const MsqMatrix<3,3>& A, 
+                   const MsqMatrix<3,3>&, 
+                   double& result, MsqError& err )
+      { return evaluate( A, result, err ); }
+    
+    bool evaluate_with_grad( const MsqMatrix<3,3>& T,
+                             double& result,
+                             MsqMatrix<3,3>& d,
+                             MsqError& err )
+    {
+      result = sqr_Frobenius(T);
+      d = 2*T;
+      return true;
+    }
+    
+    bool evaluate_with_grad( const MsqMatrix<3,3>& A, 
+                             const MsqMatrix<3,3>&,
+                             double& result,
+                             MsqMatrix<3,3>& d,
                              MsqError& err )
     { return evaluate_with_grad( A, result, d, err ); }
 };
@@ -275,12 +332,9 @@ protected:
   IdealShapeXY surf_target;
   ScaleWeight e_weight;
 
-  FauxTarget< typename TMPTypes<QMType>::Metric2DType > faux_2d_pi, faux_2d_zero;
-  FauxTarget< typename TMPTypes<QMType>::Metric3DType > faux_3d_zero, faux_3d_two;
-  typename TMPTypes<QMType>::Test3DType test_metric_3D;
-  typename TMPTypes<QMType>::Test2DType test_metric_2D;
-  NumericalTarget< typename QMType::Metric3DType > num_metric_3D;
-  NumericalTarget< typename QMType::Metric2DType > num_metric_2D;
+  FauxMetric< typename TMPTypes<QMType>::MetricType > faux_pi, faux_zero, faux_two;
+  typename TMPTypes<QMType>::TestType test_metric;
+  NumericalMetric< typename QMType::MetricType > num_metric;
   QMType test_qm, test_qm_surf, zero_qm, weight_qm, center_qm;
   Settings centerOnly;
   CenterMF2D triCenter, quadCenter;
@@ -290,15 +344,13 @@ public:
   TMPQualityMetricTest() : 
     tester( QualityMetricTester::ALL_FE_EXCEPT_SEPTAHEDRON, &settings ),
     e_weight( 2.7182818284590451 ),
-    faux_2d_pi(3.14159), faux_2d_zero(0.0),
-    faux_3d_zero(0.0), faux_3d_two(2.0),
-    num_metric_3D( &test_metric_3D ),
-    num_metric_2D( &test_metric_2D ),
-    test_qm( &ideal, &num_metric_2D, &num_metric_3D ),
-    test_qm_surf( &surf_target, &num_metric_2D, &num_metric_3D ),
-    zero_qm( &ideal, &faux_2d_zero, &faux_3d_zero ),
-    weight_qm( &ideal, &e_weight, &test_metric_2D, &test_metric_3D ),
-    center_qm( &ideal, &test_metric_2D, &test_metric_3D ),
+    faux_pi(3.14159), faux_zero(0.0), faux_two(2.0),
+    num_metric( &test_metric ),
+    test_qm( &ideal, &num_metric ),
+    test_qm_surf( &surf_target, &num_metric ),
+    zero_qm( &ideal, &faux_zero ),
+    weight_qm( &ideal, &e_weight, &test_metric ),
+    center_qm( &ideal, &test_metric ),
     triCenter( centerOnly.get_mapping_function_2D(TRIANGLE) ),
     quadCenter( centerOnly.get_mapping_function_2D(QUADRILATERAL) ),
     tetCenter( centerOnly.get_mapping_function_3D(TETRAHEDRON) ),
@@ -321,13 +373,13 @@ public:
     { tester.test_supported_element_types( &zero_qm ); }
   void test_get_evaluations()
     {
-      QMType edge_metric( &ideal, &faux_2d_zero, &faux_3d_zero );
+      QMType edge_metric( &ideal, &faux_zero );
       tester.test_get_sample_evaluations( &zero_qm );
       tester.test_get_sample_evaluations( &edge_metric );
     }
   void test_get_element_evaluations()
     {
-      QMType edge_metric( &ideal, &faux_2d_zero, &faux_3d_zero );
+      QMType edge_metric( &ideal, &faux_zero );
       tester.test_get_in_element_evaluations( &zero_qm );
       tester.test_get_in_element_evaluations( &edge_metric );
     }
@@ -343,12 +395,12 @@ public:
       bool rval;
       double value;
 
-      QMType m( &ideal, &e_weight, &faux_2d_pi, &faux_3d_zero );
+      QMType m( &ideal, &e_weight, &faux_pi );
       tester.get_ideal_element( TRIANGLE, true, pd );
       rval = m.evaluate( pd, 0, value, err );
       CPPUNIT_ASSERT(!MSQ_CHKERR(err));
       CPPUNIT_ASSERT(rval);
-      CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value*e_weight.value, value, DBL_EPSILON );
+      CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_pi.value*e_weight.value, value, DBL_EPSILON );
     }
 
   void test_evaluate_surface_weight()
@@ -358,13 +410,13 @@ public:
       bool rval;
       double value;
 
-      QMType m( &surf_target, &e_weight, &faux_2d_pi, &faux_3d_zero );
+      QMType m( &surf_target, &e_weight, &faux_pi );
 
       tester.get_ideal_element( TRIANGLE, true, pd );
       rval = m.evaluate( pd, 0, value, err );
       CPPUNIT_ASSERT(!MSQ_CHKERR(err));
       CPPUNIT_ASSERT(rval);
-      CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value*e_weight.value, value, DBL_EPSILON );
+      CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_pi.value*e_weight.value, value, DBL_EPSILON );
     }
   
   void test_evaluate_3D_weight()
@@ -374,13 +426,13 @@ public:
       bool rval;
       double value;
 
-      QMType m( &ideal, &e_weight, &faux_2d_zero, &faux_3d_two );
+      QMType m( &ideal, &e_weight, &faux_two );
 
       tester.get_ideal_element( PRISM, true, pd );
       rval = m.evaluate( pd, 0, value, err );
       CPPUNIT_ASSERT(!MSQ_CHKERR(err));
       CPPUNIT_ASSERT(rval);
-      CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_3d_two.value*e_weight.value, value, DBL_EPSILON );
+      CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_two.value*e_weight.value, value, DBL_EPSILON );
     }
   
   void test_2d_eval_ortho_quad()
@@ -390,15 +442,15 @@ public:
       bool rval;
       double value;
 
-      QMType m( &ideal, &faux_2d_zero, &faux_3d_zero );
-      faux_2d_zero.count = faux_3d_zero.count = 0;
+      QMType m( &ideal, &faux_zero );
+      faux_zero.count = 0;
 
       tester.get_ideal_element( QUADRILATERAL, true, pd );
       rval = m.evaluate( pd, 0, value, err );
       CPPUNIT_ASSERT(!MSQ_CHKERR(err));
       CPPUNIT_ASSERT(rval);
-      CPPUNIT_ASSERT_EQUAL( 1, faux_2d_zero.count );
-      CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_2d_zero.last_A), DBL_EPSILON );
+      CPPUNIT_ASSERT_EQUAL( 1, faux_zero.count );
+      CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_zero.last_A_2D), DBL_EPSILON );
     }  
   
   void test_surf_eval_ortho_quad()
@@ -408,15 +460,15 @@ public:
       bool rval;
       double value;
 
-      QMType m( &surf_target, &faux_2d_zero, &faux_3d_zero );
-      faux_2d_zero.count = faux_3d_zero.count = 0;
+      QMType m( &surf_target, &faux_zero );
+      faux_zero.count = 0;
 
       tester.get_ideal_element( QUADRILATERAL, true, pd );
       rval = m.evaluate( pd, 0, value, err );
       CPPUNIT_ASSERT(!MSQ_CHKERR(err));
       CPPUNIT_ASSERT(rval);
-      CPPUNIT_ASSERT_EQUAL( 1, faux_2d_zero.count );
-      CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_2d_zero.last_A), DBL_EPSILON );
+      CPPUNIT_ASSERT_EQUAL( 1, faux_zero.count );
+      CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_zero.last_A_2D), DBL_EPSILON );
     }  
   
   void test_3d_eval_ortho_hex()
@@ -426,17 +478,17 @@ public:
       bool rval;
       double value;
 
-      QMType m( &ideal, &faux_2d_zero, &faux_3d_zero );
-      faux_2d_zero.count = faux_3d_zero.count = 0;
+      QMType m( &ideal, &faux_zero );
+      faux_zero.count = 0;
 
       tester.get_ideal_element( HEXAHEDRON, true, pd );
       rval = m.evaluate( pd, 0, value, err );
       CPPUNIT_ASSERT(!MSQ_CHKERR(err));
       CPPUNIT_ASSERT(rval);
-      CPPUNIT_ASSERT_EQUAL( 1, faux_3d_zero.count );
+      CPPUNIT_ASSERT_EQUAL( 1, faux_zero.count );
 
         // test that columns are orthogonal for ideal hex element
-      MsqMatrix<3,3> A = faux_3d_zero.last_A;
+      MsqMatrix<3,3> A = faux_zero.last_A_3D;
       CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(0) % A.column(1), 1e-6 );
       CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(0) % A.column(2), 1e-6 );
       CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(1) % A.column(2), 1e-6 );
@@ -554,23 +606,22 @@ void TMPQualityMetricTest<QMType>::test_evaluate_2D()
   bool rval;
   double value;
   
-  QMType m( &ideal, &faux_2d_pi, &faux_3d_zero );
+  QMType m( &ideal, &faux_pi );
   
     // test with aligned elements
-  faux_2d_pi.count = faux_3d_zero.count = 0;
+  faux_pi.count = 0;
   tester.get_ideal_element( QUADRILATERAL, true, pd );
   rval = m.evaluate( pd, 0, value, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value, value, DBL_EPSILON );
-  CPPUNIT_ASSERT_EQUAL( 1, faux_2d_pi.count );
-  CPPUNIT_ASSERT_EQUAL( 0, faux_3d_zero.count );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_pi.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_pi.count );
   
     // test that columns are orthogonal for ideal quad element
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_2d_pi.last_A), 1e-6 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_pi.last_A_2D), 1e-6 );
   
     // test with an element rotated about X-axis
-  faux_2d_pi.count = faux_3d_zero.count = 0;
+  faux_pi.count = 0;
   tester.get_ideal_element( QUADRILATERAL, true, pd );
   // rotate by 90 degrees about X axis
   for (size_t i = 0; i < pd.num_nodes(); ++i) {
@@ -581,12 +632,11 @@ void TMPQualityMetricTest<QMType>::test_evaluate_2D()
   rval = m.evaluate( pd, 0, value, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value, value, DBL_EPSILON );
-  CPPUNIT_ASSERT_EQUAL( 1, faux_2d_pi.count );
-  CPPUNIT_ASSERT_EQUAL( 0, faux_3d_zero.count );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_pi.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_pi.count );
   
     // test with an element rotated about Y-axis
-  faux_2d_pi.count = faux_3d_zero.count = 0;
+  faux_pi.count = 0;
   tester.get_ideal_element( TRIANGLE, true, pd );
   // rotate by -90 degrees about Y axis
   for (size_t i = 0; i < pd.num_nodes(); ++i) {
@@ -597,9 +647,8 @@ void TMPQualityMetricTest<QMType>::test_evaluate_2D()
   rval = m.evaluate( pd, 0, value, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value, value, DBL_EPSILON );
-  CPPUNIT_ASSERT_EQUAL( 1, faux_2d_pi.count );
-  CPPUNIT_ASSERT_EQUAL( 0, faux_3d_zero.count );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_pi.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_pi.count );
 }  
  
 template <class QMType> inline
@@ -610,23 +659,22 @@ void TMPQualityMetricTest<QMType>::test_evaluate_surface()
   bool rval;
   double value;
   
-  QMType m( &surf_target, &faux_2d_pi, &faux_3d_zero );
+  QMType m( &surf_target, &faux_pi );
   
     // test with aligned elements
-  faux_2d_pi.count = faux_3d_zero.count = 0;
+  faux_pi.count = 0;
   tester.get_ideal_element( QUADRILATERAL, true, pd );
   rval = m.evaluate( pd, 0, value, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value, value, DBL_EPSILON );
-  CPPUNIT_ASSERT_EQUAL( 1, faux_2d_pi.count );
-  CPPUNIT_ASSERT_EQUAL( 0, faux_3d_zero.count );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_pi.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_pi.count );
   
     // test that columns are orthogonal for ideal quad element
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_2d_pi.last_A), 1e-6 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_pi.last_A_2D), 1e-6 );
   
     // test with an element rotated about X-axis
-  faux_2d_pi.count = faux_3d_zero.count = 0;
+  faux_pi.count = 0;
   tester.get_ideal_element( QUADRILATERAL, true, pd );
   // rotate by 90 degrees about X axis
   for (size_t i = 0; i < pd.num_nodes(); ++i) {
@@ -637,12 +685,11 @@ void TMPQualityMetricTest<QMType>::test_evaluate_surface()
   rval = m.evaluate( pd, 0, value, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value, value, DBL_EPSILON );
-  CPPUNIT_ASSERT_EQUAL( 1, faux_2d_pi.count );
-  CPPUNIT_ASSERT_EQUAL( 0, faux_3d_zero.count );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_pi.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_pi.count );
   
     // test with an element rotated about Y-axis
-  faux_2d_pi.count = faux_3d_zero.count = 0;
+  faux_pi.count = 0;
   tester.get_ideal_element( TRIANGLE, true, pd );
   // rotate by -90 degrees about Y axis
   for (size_t i = 0; i < pd.num_nodes(); ++i) {
@@ -653,9 +700,8 @@ void TMPQualityMetricTest<QMType>::test_evaluate_surface()
   rval = m.evaluate( pd, 0, value, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value, value, DBL_EPSILON );
-  CPPUNIT_ASSERT_EQUAL( 1, faux_2d_pi.count );
-  CPPUNIT_ASSERT_EQUAL( 0, faux_3d_zero.count );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_pi.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_pi.count );
 }  
 
   
@@ -667,26 +713,25 @@ void TMPQualityMetricTest<QMType>::test_evaluate_3D()
   bool rval;
   double value;
   
-  QMType m( &ideal, &faux_2d_zero, &faux_3d_two );
+  QMType m( &ideal, &faux_two );
   
     // test with aligned elements
-  faux_2d_zero.count = faux_3d_two.count = 0;
+  faux_two.count = 0;
   tester.get_ideal_element( HEXAHEDRON, true, pd );
   rval = m.evaluate( pd, 0, value, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_3d_two.value, value, DBL_EPSILON );
-  CPPUNIT_ASSERT_EQUAL( 0, faux_2d_zero.count );
-  CPPUNIT_ASSERT_EQUAL( 1, faux_3d_two.count );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_two.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_two.count );
   
     // test that columns are orthogonal for ideal hex element
-  MsqMatrix<3,3> A = faux_3d_two.last_A;
+  MsqMatrix<3,3> A = faux_two.last_A_3D;
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(0) % A.column(1), 1e-6 );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(0) % A.column(2), 1e-6 );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(1) % A.column(2), 1e-6 );
   
     // test with rotated element
-  faux_2d_zero.count = faux_3d_two.count = 0;
+  faux_two.count = 0;
   tester.get_ideal_element( TETRAHEDRON, true, pd );
   // rotate by 90-degrees about X axis
   for (size_t i = 0; i < pd.num_nodes(); ++i) {
@@ -697,9 +742,8 @@ void TMPQualityMetricTest<QMType>::test_evaluate_3D()
   rval = m.evaluate( pd, 0, value, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_3d_two.value, value, DBL_EPSILON );
-  CPPUNIT_ASSERT_EQUAL( 0, faux_2d_zero.count );
-  CPPUNIT_ASSERT_EQUAL( 1, faux_3d_two.count );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_two.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_two.count );
 }
 
 
@@ -741,9 +785,9 @@ void TMPQualityMetricTest<QMType>::test_gradient_common(TargetCalculator* tc)
   
     // construct metric
   pd.attach_settings( &settings );
-  TestGradTargetMetric< typename TMPTypes<QMType>::Metric2DType > tm;
+  TestGradTargetMetric< typename TMPTypes<QMType>::MetricType > tm;
   //IdealShapeTarget tc;
-  QMType m( tc, &tm, 0 );
+  QMType m( tc, &tm );
   PlanarDomain plane( PlanarDomain::XY );
   pd.set_domain( &plane );
   
@@ -819,7 +863,7 @@ void TMPQualityMetricTest<QMType>::test_gradient_3D()
   
     // construct metric
   pd.attach_settings( &settings );
-  TestGradTargetMetric< typename TMPTypes<QMType>::Metric3DType > tm;
+  TestGradTargetMetric< typename TMPTypes<QMType>::MetricType > tm;
   IdealShapeTarget tc;
   QMType m( &tc, 0, &tm );
   

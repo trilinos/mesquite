@@ -41,7 +41,7 @@
 #include "TerminationCriterion.hpp"
 #include "ElementPMeanP.hpp"
 #include "MsqError.hpp"
-#include "TSquared2D.hpp"
+#include "TSquared.hpp"
 #include "MeshImpl.hpp"
 #include "PlanarDomain.hpp"
 #include "InstructionQueue.hpp"
@@ -99,8 +99,8 @@ void run_test( Grouping grouping, int of_power, Weight w, const string filename 
   MsqError err;
   
   IdentityTarget target;
-  TSquared2D target_metric;
-  AffineMapMetric qual_metric( &target, &target_metric, NULL );
+  TSquared target_metric;
+  AffineMapMetric qual_metric( &target, &target_metric );
   ElementPMeanP elem_metric( of_power, &qual_metric );
   QualityMetric* qm_ptr = (grouping == ELEMENT) ? (QualityMetric*)&elem_metric : (QualityMetric*)&qual_metric;
 

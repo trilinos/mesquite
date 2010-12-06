@@ -40,8 +40,7 @@
 #include "MappingFunction.hpp"
 #include "WeightCalculator.hpp"
 #include "TargetCalculator.hpp"
-#include "TRel2DMetric.hpp"
-#include "TRel3DMetric.hpp"
+#include "TMetric.hpp"
 #include "TargetMetricUtil.hpp"
 
 #include <functional>
@@ -59,28 +58,24 @@ MsqMatrix<3,3> TET_XFORM( TET_XFORM_VALS );
  
 AffineMapMetric::AffineMapMetric( TargetCalculator* tc,
                                   WeightCalculator* wc,
-                                  TRel2DMetric* metric_2d,
-                                  TRel3DMetric* metric_3d ) 
+                                  TMetric* target_metric ) 
   : targetCalc(tc),
     weightCalc(wc),
-    metric2D( metric_2d ),
-    metric3D( metric_3d )
+    targetMetric( target_metric )
 { }
  
 AffineMapMetric::AffineMapMetric( TargetCalculator* tc,
-                                  TRel2DMetric* metric_2d,
-                                  TRel3DMetric* metric_3d ) 
+                                  TMetric* target_metric ) 
   : targetCalc(tc),
     weightCalc(0),
-    metric2D( metric_2d ),
-    metric3D( metric_3d )
+    targetMetric( target_metric )
 { }
      
 
 int AffineMapMetric::get_negate_flag( ) const { return 1; }
 
 std::string AffineMapMetric::get_name() const
-  { return std::string("AffineMap"); }
+  { return std::string("AffineMap(") + targetMetric->get_name() + ')'; }
 
 void AffineMapMetric::get_evaluations( PatchData& pd,
                                        std::vector<size_t>& handles,
@@ -122,11 +117,6 @@ bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, Msq
   
   bool rval;
   if (edim == 3) { // 3x3 or 3x2 targets ?
-    if (!metric3D) {
-      MSQ_SETERR(err)("No 3D metric for affine-map-based metric.\n", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
-  
     Vector3D c[3] = { Vector3D(0,0,0), Vector3D(0,0,0), Vector3D(0,0,0) };
     unsigned n;
     const unsigned* adj = TopologyInfo::adjacent_vertices( type, s.number, n );
@@ -142,14 +132,9 @@ bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, Msq
 
     MsqMatrix<3,3> W;
     targetCalc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
-    rval = metric3D->evaluate( A * inverse(W), value, err ); MSQ_ERRZERO(err);
+    rval = targetMetric->evaluate( A * inverse(W), value, err ); MSQ_ERRZERO(err);
   }
   else {
-    if (!metric2D) {
-      MSQ_SETERR(err)("No 2D metric for Jacobian-based metric.\n", MsqError::UNSUPPORTED_ELEMENT );
-      return false;
-    }
-  
     Vector3D c[2] = { Vector3D(0,0,0), Vector3D(0,0,0) };
     unsigned n;
     const unsigned* adj = TopologyInfo::adjacent_vertices( type, s.number, n );
@@ -169,7 +154,7 @@ bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, Msq
     if (type == TRIANGLE)
       A = A * TRI_XFORM;
     
-    rval = metric2D->evaluate( A*inverse(W), value, err ); MSQ_ERRZERO(err);
+    rval = targetMetric->evaluate( A*inverse(W), value, err ); MSQ_ERRZERO(err);
   }
   
     // apply target weight to value

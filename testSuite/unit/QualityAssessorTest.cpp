@@ -35,9 +35,9 @@
 #include "AspectRatioGammaQualityMetric.hpp"
 #include "LocalSizeQualityMetric.hpp"
 #include "ConditionNumberQualityMetric.hpp"
-#include "TRel2DShape.hpp"
+#include "TShapeNB1.hpp"
 #include "IdealShapeTarget.hpp"
-#include "TRelQualityMetric.hpp"
+#include "TQualityMetric.hpp"
 #include "PlanarDomain.hpp"
 #include "Settings.hpp"
 #include "MeshImpl.hpp"
@@ -363,9 +363,9 @@ void QualityAssessorTest::test_basic_stats_vertex()
 
 void QualityAssessorTest::test_basic_stats_sample()
 {
-  TRel2DShape tm;
+  TShapeNB1 tm;
   IdealShapeTarget tc;
-  TRelQualityMetric metric( &tc, &tm, 0 );
+  TQualityMetric metric( &tc, &tm );
   MetricLogger logger(&metric);
   QualityAssessor qa(&logger);
   qa.disable_printing_results();
