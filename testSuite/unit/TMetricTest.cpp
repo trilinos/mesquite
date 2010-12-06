@@ -57,7 +57,7 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TMetricTest, "TMetricTest" );
 
 // implement metric such that the expected derivatives
 // at each location r,c in dm/dT are 3r+c+1
-class GradTestMetricRel2D : public TMetric
+class GradTestMetricRel : public TMetric
 {
   public:
     std::string get_name() const { return "GradTest"; }

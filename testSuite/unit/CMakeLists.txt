@@ -4,6 +4,8 @@ SET( unit_tests
      ArrayMeshTest 
      AspectRatioGammaTest 
      AveragingQMTest
+     AWMetricTest
+     AWQualityMetricTest
      BCDTest
      BoundedCylinderDomainTest
      CachingTargetTest
@@ -67,9 +69,7 @@ SET( unit_tests
      TriLagrangeShapeTest
      TopologyInfoTest
      TMPDerivsTest
-     AWMetricTest
      TMetricTest
-     AWQualityMetricTest
      TQualityMetricTest
      UntangleBetaTest
      UntangleTargetMetricTests
@@ -100,7 +100,7 @@ SET( unit_srcs
      PatchDataInstances.hpp 
      QualityMetricTester.hpp 
      UnitUtil.hpp 
-     TMetricTest.hpp
+     TargetMetricTest.hpp
      TMPQualityMetricTest.hpp )
 
 FOREACH( test ${unit_tests} )

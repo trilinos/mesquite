@@ -53,11 +53,13 @@ msq_test_SOURCES = msq_test_main.cpp \
 	QualityMetricTester.hpp \
 	QualityMetricTester.cpp \
 	UnitUtil.hpp \
-        TMetricTest.hpp \
+        TargetMetricTest.hpp \
 	TMPQualityMetricTest.hpp \
 	ArrayMeshTest.cpp \
 	AspectRatioGammaTest.cpp \
 	AveragingQMTest.cpp \
+	AWMetricTest.cpp \
+        AWQualityMetricTest.cpp \
 	BCDTest.cpp \
 	BoundedCylinderDomainTest.cpp \
 	CachingTargetTest.cpp \
@@ -121,8 +123,8 @@ msq_test_SOURCES = msq_test_main.cpp \
 	TetLagrangeShapeTest.cpp \
 	TriLagrangeShapeTest.cpp \
 	TopologyInfoTest.cpp \
+	TMetricTest.cpp \
         TMPDerivsTest.cpp \
-        AWQualityMetricTest.cpp \
         TQualityMetricTest.cpp \
 	UntangleBetaTest.cpp \
 	UntangleTargetMetricTests.cpp \

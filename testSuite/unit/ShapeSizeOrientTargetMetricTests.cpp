@@ -1,5 +1,5 @@
 #define TARGET_TEST_GROUP "ShapeSizeOrientTargetMetricTests"
-#include "TMetricTest.hpp"
+#include "TargetMetricTest.hpp"
 
 using namespace Mesquite;
 

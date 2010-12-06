@@ -40,7 +40,7 @@ using namespace Mesquite;
 // Test functions implemented in class AWMetric
 class AWMetricTest : public CppUnit::TestFixture
 {
-  CPPUNIT_TEST_SUITE( TAbs2DMetricTest );
+  CPPUNIT_TEST_SUITE( AWMetricTest );
   CPPUNIT_TEST (test_numerical_gradient_2D);
   CPPUNIT_TEST (test_numerical_hessian_2D);
   CPPUNIT_TEST (test_numerical_gradient_3D);
@@ -53,8 +53,8 @@ class AWMetricTest : public CppUnit::TestFixture
   void test_numerical_hessian_3D();
 };
 
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TAbs2DMetricTest, "Unit" );
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TAbs2DMetricTest, "AWMetricTest" );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( AWMetricTest, "Unit" );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( AWMetricTest, "AWMetricTest" );
 
 // implement metric such that the expected derivatives
 // at each location r,c in dm/dA are 3r+c+1
@@ -423,10 +423,10 @@ void AWMetricTest::test_numerical_gradient_3D()
 }
 
 
-void TAbs2DMetricTest::test_numerical_hessian_2d()
+void AWMetricTest::test_numerical_hessian_2D()
 {
-  HessTestMetricAbs2D metric;
-  HessTestMetricAbs2D_2 metric2;
+  HessTestMetricAbs metric;
+  HessTestMetricAbs_2 metric2;
   const double Avals[] = { 1, 2, 2, 5 };
   const double Bvals[] = { -0.1, -0.15, -0.25, -0.8 };
   const MsqMatrix<2,2> I( 1.0 );

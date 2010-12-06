@@ -25,7 +25,7 @@
   ***************************************************************** */
 
 
-/** \file TMetricTest.cpp
+/** \file TargetMetricTest.hpp
  *  \brief Templatized common code for testing various target metric
  *         implementation types.
  *  \author Jason Kraftcheck 
