@@ -771,21 +771,13 @@ template <unsigned C> inline
 double length( const MsqMatrix<1,C>& v )
   { return Frobenius(v); }
 
-template <unsigned L> inline
-double inner_product( const MsqMatrix<L,1>& v1, const MsqMatrix<L,1>& v2 )
+template <unsigned R, unsigned C> inline
+double inner_product( const MsqMatrix<R,C>& m1, const MsqMatrix<R,C>& m2 )
 {
-  double result = v1(0,0) * v2(0,0);
-  for (unsigned i = 1; i < L; ++i)
-    result += v1(i,0) * v2(i,0);
-  return result;
-}
-
-template <unsigned L> inline
-double inner_product( const MsqMatrix<1,L>& v1, const MsqMatrix<1,L>& v2 )
-{
-  double result = v1(0,0) * v2(0,0);
-  for (unsigned i = 1; i < L; ++i)
-    result += v1(0,i) * v2(0,i);
+  double result = 0.0;
+  for (unsigned r = 0; r < R; ++r)
+    for (unsigned c = 0; c < C; ++c)
+      result += m1(r,c) * m2(r,c);
   return result;
 }
 
@@ -837,12 +829,8 @@ MsqMatrix<1,3> vector_product( const MsqMatrix<1,3>& a, const MsqMatrix<1,3>& b 
   return result;
 }
 
-template <unsigned L> inline
-double operator%( const MsqMatrix<L,1>& v1, const MsqMatrix<L,1>& v2 )
-  { return inner_product( v1, v2 ); }
-
-template <unsigned L> inline
-double operator%( const MsqMatrix<1,L>& v1, const MsqMatrix<1,L>& v2 )
+template <unsigned R, unsigned C> inline
+double operator%( const MsqMatrix<R,C>& v1, const MsqMatrix<R,C>& v2 )
   { return inner_product( v1, v2 ); }
 
 inline

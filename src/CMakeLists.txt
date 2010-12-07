@@ -672,6 +672,7 @@ APPEND_SET(SOURCES
 #
 
 APPEND_SET(HEADERS
+  TargetMetric/ShapeOrient/AWShapeOrientNB1.hpp 
   TargetMetric/ShapeOrient/TShapeOrientB1.hpp 
   TargetMetric/ShapeOrient/TShapeOrientB2.hpp 
   TargetMetric/ShapeOrient/TShapeOrientNB1.hpp
@@ -679,6 +680,7 @@ APPEND_SET(HEADERS
   )
 
 APPEND_SET(SOURCES
+  TargetMetric/ShapeOrient/AWShapeOrientNB2.hpp 
   TargetMetric/ShapeOrient/TShapeOrientB1.cpp 
   TargetMetric/ShapeOrient/TShapeOrientB2.cpp 
   TargetMetric/ShapeOrient/TShapeOrientNB1.cpp
