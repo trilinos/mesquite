@@ -39,7 +39,7 @@
 namespace MESQUITE_NS {
 
 
-/** \f$ (\alpha - \omega)^2 */
+/** \f$ (\alpha - \omega)^2 \f$ */
 class AWSizeNB1 : public AWMetric
 {
   public:
