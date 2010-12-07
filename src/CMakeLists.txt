@@ -692,6 +692,7 @@ APPEND_SET(SOURCES
 #
 
 APPEND_SET(HEADERS
+  TargetMetric/ShapeSize/AWShapeSizeB1.hpp
   TargetMetric/ShapeSize/TShapeSize2DB2.hpp
   TargetMetric/ShapeSize/TShapeSize2DNB1.hpp
   TargetMetric/ShapeSize/TShapeSize2DNB2.hpp
@@ -705,6 +706,7 @@ APPEND_SET(HEADERS
   )
 
 APPEND_SET(SOURCES
+  TargetMetric/ShapeSize/AWShapeSizeB1.cpp
   TargetMetric/ShapeSize/TShapeSize2DB2.cpp
   TargetMetric/ShapeSize/TShapeSize2DNB1.cpp
   TargetMetric/ShapeSize/TShapeSize2DNB2.cpp

@@ -3,6 +3,7 @@
 
 using namespace Mesquite;
 
+#include "AWShapeSizeB1.hpp"
 #include "TShapeSize2DB2.hpp"
 #include "TShapeSize2DNB1.hpp"
 #include "TShapeSize2DNB2.hpp"
@@ -15,6 +16,7 @@ using namespace Mesquite;
 #include "TSquared.hpp"
 
 //                            NAME     !SHAPE !SIZE !ORIENT BARRIER
+TEST_METRIC_WITH_GRAD   ( AWShapeSizeB1,  false,false, true,true  );
 TEST_METRIC_WITH_HESS_2D( TShapeSize2DB2, false,false, true,true  );
 TEST_METRIC_WITH_HESS_2D( TShapeSize2DNB1,false,false, true,false );
 TEST_METRIC_WITH_HESS_2D( TShapeSize2DNB2,false,false, true,false  );
