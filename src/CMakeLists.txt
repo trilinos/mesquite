@@ -646,6 +646,9 @@ APPEND_SET(SOURCES
 #
 
 APPEND_SET(HEADERS
+  TargetMetric/Shape/AWShape2DB1.hpp
+  TargetMetric/Shape/AWShape2DNB1.hpp
+  TargetMetric/Shape/AWShape2DNB2.hpp
   TargetMetric/Shape/TInverseMeanRatio.hpp
   TargetMetric/Shape/TShape2DNB2.hpp
   TargetMetric/Shape/TShape3DB2.hpp
@@ -654,6 +657,9 @@ APPEND_SET(HEADERS
   )
 
 APPEND_SET(SOURCES
+  TargetMetric/Shape/AWShape2DB1.cpp
+  TargetMetric/Shape/AWShape2DNB1.cpp
+  TargetMetric/Shape/AWShape2DNB2.cpp
   TargetMetric/Shape/TInverseMeanRatio.cpp
   TargetMetric/Shape/TShape2DNB2.cpp
   TargetMetric/Shape/TShape3DB2.cpp

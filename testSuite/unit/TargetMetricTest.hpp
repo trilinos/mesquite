@@ -289,7 +289,7 @@ template <class Metric,unsigned DIM> class TMetricTest : public CppUnit::TestFix
 TMETRIC_FUNC::test_ideal_eval()
 {
   MsqPrintError err(std::cerr);
-  double val, eps = 1e-6;;
+  double val, eps = 5e-5;
   bool valid;
   
   valid = eval( testMetric, I, I, val, err );
@@ -372,7 +372,7 @@ TMETRIC_FUNC::test_non_ideal( bool sensitive,
 {
   MsqPrintError err(std::cerr);
   MsqMatrix<DIM,DIM> g;
-  double val, eps = 1e-6;
+  double val, eps = 1e-5;
   bool valid;
   if (!sensitive) {
     valid = eval( testMetric, J, W, val, err );
