@@ -623,6 +623,7 @@ APPEND_SET(HEADERS
   TargetMetric/Misc/TScale.hpp
   TargetMetric/Misc/TSizeB1.hpp
   TargetMetric/Misc/TSizeNB1.hpp
+  TargetMetric/Misc/TSquared.hpp 
   TargetMetric/Misc/TSum.hpp
   TargetMetric/Misc/TTau.hpp
   )
@@ -637,6 +638,7 @@ APPEND_SET(SOURCES
   TargetMetric/Misc/TScale.cpp
   TargetMetric/Misc/TSizeB1.cpp
   TargetMetric/Misc/TSizeNB1.cpp
+  TargetMetric/Misc/TSquared.cpp 
   TargetMetric/Misc/TSum.cpp
   TargetMetric/Misc/TTau.cpp
   )
@@ -680,7 +682,7 @@ APPEND_SET(HEADERS
   )
 
 APPEND_SET(SOURCES
-  TargetMetric/ShapeOrient/AWShapeOrientNB2.hpp 
+  TargetMetric/ShapeOrient/AWShapeOrientNB1.cpp 
   TargetMetric/ShapeOrient/TShapeOrientB1.cpp 
   TargetMetric/ShapeOrient/TShapeOrientB2.cpp 
   TargetMetric/ShapeOrient/TShapeOrientNB1.cpp
@@ -702,7 +704,6 @@ APPEND_SET(HEADERS
   TargetMetric/ShapeSize/TShapeSizeB1.hpp
   TargetMetric/ShapeSize/TShapeSizeB3.hpp
   TargetMetric/ShapeSize/TShapeSizeNB3.hpp
-  TargetMetric/ShapeSize/TSquared.hpp 
   )
 
 APPEND_SET(SOURCES
@@ -716,7 +717,6 @@ APPEND_SET(SOURCES
   TargetMetric/ShapeSize/TShapeSizeB1.cpp
   TargetMetric/ShapeSize/TShapeSizeB3.cpp
   TargetMetric/ShapeSize/TShapeSizeNB3.cpp
-  TargetMetric/ShapeSize/TSquared.cpp 
   )
 
 #
