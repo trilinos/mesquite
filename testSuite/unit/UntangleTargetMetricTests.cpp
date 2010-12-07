@@ -3,6 +3,7 @@
 
 using namespace Mesquite;
 
+#include "AWUntangleBeta.hpp"
 #include "TSizeNB1.hpp"
 #include "TShapeSize2DNB1.hpp"
 #include "TShapeSize3DNB1.hpp"
@@ -22,6 +23,7 @@ public:
 };
 
 //                               NAME                !SHAPE !SIZE !ORIENT BARRIER
+TEST_METRIC_WITH_GRAD   ( AWUntangleBeta,             true,  true,  true, false );
 TEST_METRIC_WITH_HESS   ( TUntangleBeta,              true,  true,  true, false );
 TEST_METRIC_WITH_HESS   ( TUntangle1,                 true,  true,  true, false );
 TEST_COMPOSITE_WITH_HESS( TUntangleMu, TSizeNB1,      true,  false, true, false );

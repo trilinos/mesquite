@@ -742,12 +742,14 @@ APPEND_SET(SOURCES
 #
 
 APPEND_SET(HEADERS
+  TargetMetric/Untangle/AWUntangleBeta.hpp
   TargetMetric/Untangle/TUntangle1.hpp
   TargetMetric/Untangle/TUntangleBeta.hpp
   TargetMetric/Untangle/TUntangleMu.hpp
   )
 
 APPEND_SET(SOURCES
+  TargetMetric/Untangle/AWUntangleBeta.cpp
   TargetMetric/Untangle/TUntangle1.cpp
   TargetMetric/Untangle/TUntangleBeta.cpp
   TargetMetric/Untangle/TUntangleMu.cpp
