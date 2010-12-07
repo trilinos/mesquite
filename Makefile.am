@@ -73,6 +73,7 @@ include src/TargetMetric/Shape/Makefile.am
 include src/TargetMetric/ShapeOrient/Makefile.am
 include src/TargetMetric/ShapeSize/Makefile.am
 include src/TargetMetric/ShapeSizeOrient/Makefile.am
+include src/TargetMetric/Size/Makefile.am
 include src/TargetMetric/Untangle/Makefile.am
 
 libmesquite_la_includedir = $(includedir)

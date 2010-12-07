@@ -3,8 +3,6 @@
 
 using namespace Mesquite;
 
-#include "AWSizeNB1.hpp"
-#include "AWSizeB1.hpp"
 #include "TSizeNB1.hpp"
 #include "TSizeB1.hpp"
 #include "TSquared.hpp"
@@ -13,7 +11,6 @@ using namespace Mesquite;
 #include "TPower2.hpp"
 #include "TScale.hpp"
 #include "TSum.hpp"
-#include "TTau.hpp"
 
 class TOffset_TSizeNB1_2 : public TOffset
 {
@@ -45,15 +42,6 @@ class TSum_TSize_TSize : public TSum
 };
 
 
-
-//                     NAME       !SHAPE !SIZE !ORIENT BARRIER
-TEST_METRIC_WITH_HESS( AWSizeNB1,  true, false,  true, false, 0.0 );
-TEST_METRIC_WITH_GRAD( AWSizeB1,   true, false,  true,  true, 0.0 );
-TEST_METRIC_WITH_HESS( TSizeNB1,   true, false,  true, false, 0.0 );
-TEST_METRIC_WITH_HESS( TSizeB1,    true, false,  true,  true, 0.0 );
-
-
-TEST_NON_QUALITY_METRIC_WITH_HESS( TTau );
 TEST_NON_QUALITY_METRIC_WITH_HESS( TSquared );
 
 //                           METRIC                NAME    !SHAPE !SIZE !ORIENT BARRIER

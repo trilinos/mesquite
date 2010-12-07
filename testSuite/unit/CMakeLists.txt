@@ -56,6 +56,7 @@ SET( unit_tests
      ShapeSizeOrientTargetMetricTests
      ShapeSizeTargetMetricTests
      ShapeTargetMetricTests
+     SizeTargetMetricTests
      SlaveBoundaryVerticesTest
      SphericalDomainTest
      SphericalGeometryTest

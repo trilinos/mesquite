@@ -611,36 +611,24 @@ APPEND_SET(SOURCES
 # src/TargetMetric/Misc
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/TargetMetric/Misc)
-
 APPEND_SET(HEADERS
-  TargetMetric/Misc/AWSizeB1.hpp
-  TargetMetric/Misc/AWSizeNB1.hpp
   TargetMetric/Misc/InvTransBarrier.hpp
   TargetMetric/Misc/TMixed.hpp
   TargetMetric/Misc/TOffset.hpp
   TargetMetric/Misc/TPower2.hpp
   TargetMetric/Misc/TScale.hpp
-  TargetMetric/Misc/TSizeB1.hpp
-  TargetMetric/Misc/TSizeNB1.hpp
   TargetMetric/Misc/TSquared.hpp 
   TargetMetric/Misc/TSum.hpp
-  TargetMetric/Misc/TTau.hpp
   )
 
 APPEND_SET(SOURCES
-  TargetMetric/Misc/AWSizeB1.cpp
-  TargetMetric/Misc/AWSizeNB1.cpp
   TargetMetric/Misc/InvTransBarrier.cpp
   TargetMetric/Misc/TMixed.cpp
   TargetMetric/Misc/TOffset.cpp
   TargetMetric/Misc/TPower2.cpp
   TargetMetric/Misc/TScale.cpp
-  TargetMetric/Misc/TSizeB1.cpp
-  TargetMetric/Misc/TSizeNB1.cpp
   TargetMetric/Misc/TSquared.cpp 
   TargetMetric/Misc/TSum.cpp
-  TargetMetric/Misc/TTau.cpp
   )
 
 #
@@ -735,6 +723,26 @@ APPEND_SET(SOURCES
   TargetMetric/ShapeSizeOrient/TShapeSizeOrientB1.cpp
   TargetMetric/ShapeSizeOrient/TShapeSizeOrientB2.cpp
   TargetMetric/ShapeSizeOrient/TShapeSizeOrientNB1.cpp
+  )
+
+#
+# src/TargetMetric/Size
+#
+
+APPEND_SET(HEADERS
+  TargetMetric/Size/AWSizeB1.hpp
+  TargetMetric/Size/AWSizeNB1.hpp
+  TargetMetric/Size/TSizeB1.hpp
+  TargetMetric/Size/TSizeNB1.hpp
+  TargetMetric/Size/TTau.hpp
+  )
+
+APPEND_SET(SOURCES
+  TargetMetric/Size/AWSizeB1.cpp
+  TargetMetric/Size/AWSizeNB1.cpp
+  TargetMetric/Size/TSizeB1.cpp
+  TargetMetric/Size/TSizeNB1.cpp
+  TargetMetric/Size/TTau.cpp
   )
 
 #

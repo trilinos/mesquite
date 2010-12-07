@@ -111,6 +111,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	ShapeSizeOrientTargetMetricTests.cpp \
 	ShapeSizeTargetMetricTests.cpp \
 	ShapeTargetMetricTests.cpp \
+	SizeTargetMetricTests.cpp \
 	SlaveBoundaryVerticesTest.cpp \
 	SphericalDomainTest.cpp \
 	SphericalGeometryTest.cpp \
