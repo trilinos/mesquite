@@ -85,7 +85,7 @@ bool TSum::hess( const MsqMatrix<DIM,DIM>& T,
   result += val2;
   deriv_wrt_T += grad2;
   for (int i = 0; i < HL; ++i)
-    second_wrt_T[i] + hess2[i];
+    second_wrt_T[i] += hess2[i];
   return rval && rval2;
 }
 
