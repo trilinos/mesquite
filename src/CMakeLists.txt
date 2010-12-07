@@ -614,6 +614,8 @@ APPEND_SET(SOURCES
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/TargetMetric/Misc)
 
 APPEND_SET(HEADERS
+  TargetMetric/Misc/AWSizeB1.hpp
+  TargetMetric/Misc/AWSizeNB1.hpp
   TargetMetric/Misc/InvTransBarrier.hpp
   TargetMetric/Misc/TMixed.hpp
   TargetMetric/Misc/TOffset.hpp
@@ -626,6 +628,8 @@ APPEND_SET(HEADERS
   )
 
 APPEND_SET(SOURCES
+  TargetMetric/Misc/AWSizeB1.cpp
+  TargetMetric/Misc/AWSizeNB1.cpp
   TargetMetric/Misc/InvTransBarrier.cpp
   TargetMetric/Misc/TMixed.cpp
   TargetMetric/Misc/TOffset.cpp

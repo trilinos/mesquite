@@ -106,6 +106,20 @@ bool N::evaluate_with_hess( const MsqMatrix<D,D>& A, const MsqMatrix<D,D>& W, do
   TMP_AW_TEMPL_IMPL_DIM(N,2) \
   TMP_AW_TEMPL_IMPL_DIM(N,3) 
 
+/**\def TMP_AW_TEMPL_IMPL_COMMON(N)
+ * \brief Like TMP_AW_TEMPL_IMPL_COMMON, except no implementation of 2nd derivs
+ */
+
+#define TMP_AW_TEMPL_IMPL_NO2ND_DIM(N,D) \
+bool N::evaluate( const MsqMatrix<D,D>& A, const MsqMatrix<D,D>& W, double& r, MsqError& ) \
+  { return eval( A, W, r ); } \
+bool N::evaluate_with_grad( const MsqMatrix<D,D>& A, const MsqMatrix<D,D>& W, double& r, MsqMatrix<D,D>& d1, MsqError& ) \
+  { return grad( A, W, r, d1 ); } 
+
+#define TMP_AW_TEMPL_IMPL_COMMON_NO2ND(N) \
+  TMP_AW_TEMPL_IMPL_NO2ND_DIM(N,2) \
+  TMP_AW_TEMPL_IMPL_NO2ND_DIM(N,3) 
+
 /**\brief Dimension-specific constants
  * 
  * Provide constants that depend on a template dimension parameter.

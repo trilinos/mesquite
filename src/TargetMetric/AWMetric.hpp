@@ -256,9 +256,44 @@ public:
                            MsqMatrix<3,3> second_wrt_A[6],
                            MsqError& err );
                            
-protected:
   static inline bool invalid_determinant( double d )
     { return d < 1e-12; }
+};
+
+class AWMetric2D : public AWMetric
+{
+public:
+
+  MESQUITE_EXPORT virtual
+  ~AWMetric2D();
+
+    /**\brief Evaluate \f$\mu(A,W)\f$
+     *
+     * This method always returns an error for 2D-only metrics
+     */
+  MESQUITE_EXPORT virtual
+  bool evaluate( const MsqMatrix<3,3>& A, 
+                 const MsqMatrix<3,3>& W, 
+                 double& result, 
+                 MsqError& err );
+};
+
+class AWMetric3D : public AWMetric
+{
+public:
+
+  MESQUITE_EXPORT virtual
+  ~AWMetric3D();
+
+    /**\brief Evaluate \f$\mu(A,W)\f$
+     *
+     * This method always returns an error for 3D-only metrics
+     */
+  MESQUITE_EXPORT virtual
+  bool evaluate( const MsqMatrix<2,2>& A, 
+                 const MsqMatrix<2,2>& W, 
+                 double& result, 
+                 MsqError& err );
 };
 
 } // namespace Mesquite
