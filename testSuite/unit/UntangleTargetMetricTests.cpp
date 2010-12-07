@@ -13,18 +13,27 @@ using namespace Mesquite;
 #include "TUntangle1.hpp"
 #include "TUntangleMu.hpp"
 
-class TUntangleShSz : public TMixed
+class TUntangleShSz : public TUntangleMu
 {
 public:
   TShapeSize2DNB1 SS2D;
   TShapeSize3DNB1 SS3D;
   TScale SS2DS; // scale 2D value so that it is sensitive to shape deformation
-  TUntangleShSz() : TMixed(&SS2DS,&SS3D), SS2DS(10,&SS2D) {}
+  TMixed mBase;
+  TUntangleShSz() : TUntangleMu(&mBase), SS2DS(10,&SS2D), mBase(&SS2DS,&SS3D) {}
 };
 
-//                               NAME                !SHAPE !SIZE !ORIENT BARRIER
-TEST_METRIC_WITH_GRAD   ( AWUntangleBeta,             true,  true,  true, false );
-TEST_METRIC_WITH_HESS   ( TUntangleBeta,              true,  true,  true, false );
-TEST_METRIC_WITH_HESS   ( TUntangle1,                 true,  true,  true, false );
-TEST_COMPOSITE_WITH_HESS( TUntangleMu, TSizeNB1,      true,  false, true, false );
-TEST_COMPOSITE_WITH_HESS( TUntangleMu, TUntangleShSz, false, false, true, false );
+class TUntangleSz : public TUntangleMu
+{
+public:
+  TSizeNB1 mBase;
+  TUntangleSz() : TUntangleMu(&mBase) {}
+};
+  
+
+//                               NAME                   !SHAPE !SIZE !ORIENT BARRIER
+TEST_METRIC_WITH_GRAD   ( AWUntangleBeta,                 true,  true,  true, false, 0.0 );
+TEST_METRIC_WITH_HESS   ( TUntangleBeta,                  true,  true,  true, false, 0.0 );
+TEST_METRIC_WITH_HESS   ( TUntangle1,                     true,  true,  true, false, 0.0 );
+TEST_NAMED_METRIC_WITH_HESS( TUntangleSz,   TUntangleMu,  true,  false, true, false, 0.0 );
+TEST_NAMED_METRIC_WITH_HESS( TUntangleShSz, TUntangleMu, false, false, true, false, 0.0 );

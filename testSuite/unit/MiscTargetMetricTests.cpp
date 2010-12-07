@@ -9,34 +9,55 @@ using namespace Mesquite;
 #include "TSizeB1.hpp"
 #include "TSquared.hpp"
 
-//                     NAME       !SHAPE !SIZE !ORIENT BARRIER
-TEST_METRIC_WITH_HESS( AWSizeNB1,  true, false,  true, false );
-TEST_METRIC_WITH_HESS( AWSizeB1,   true, false,  true,  true );
-TEST_METRIC_WITH_HESS( TSizeNB1,  true, false,  true, false );
-TEST_METRIC_WITH_GRAD( TSizeB1,   true, false,  true,  true );
+#include "TOffset.hpp"
+#include "TPower2.hpp"
+#include "TScale.hpp"
+#include "TSum.hpp"
+#include "TTau.hpp"
 
-TSquared test_TSquared;
-class TSquared2DTest : public TMetricTest<TSquared,2> {
-  public: 
-    TSquared2DTest() : TMetricTest<TSquared,2>(false,false,false,false) {}
-    CPPUNIT_TEST_SUITE( TSquared2DTest );
-    CPPUNIT_TEST( compare_anaytic_and_numeric_grads );
-    CPPUNIT_TEST( compare_eval_with_grad_and_eval_with_hess );
-    CPPUNIT_TEST( compare_anaytic_and_numeric_hess );
-    CPPUNIT_TEST_SUITE_END();
+class TOffset_TSizeNB1_2 : public TOffset
+{
+  public:
+  TSizeNB1 mBase;
+  TOffset_TSizeNB1_2() : TOffset( 2.0, &mBase ) {}
 };
-class TSquared3DTest : public TMetricTest<TSquared,3> {
-  public: 
-    TSquared3DTest() : TMetricTest<TSquared,3>(false,false,false,false) {}
-    CPPUNIT_TEST_SUITE( TSquared3DTest );
-    CPPUNIT_TEST( compare_anaytic_and_numeric_grads );
-    CPPUNIT_TEST( compare_eval_with_grad_and_eval_with_hess );
-    CPPUNIT_TEST( compare_anaytic_and_numeric_hess );
-    CPPUNIT_TEST_SUITE_END();
+
+class TPower2_TSizeNB1 : public TPower2
+{
+  public:
+  TSizeNB1 mBase;
+  TPower2_TSizeNB1() : TPower2( &mBase ) {}
 };
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TSquared2DTest, "Unit" );
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TSquared3DTest, "Unit" );
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TSquared2DTest, TARGET_TEST_GROUP );
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TSquared3DTest, TARGET_TEST_GROUP );
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TSquared2DTest, "TSquaredTest" );
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TSquared3DTest, "TSquaredTest" );
+
+class TScale_TSizeNB1_half : public TScale
+{
+  public:
+  TSizeNB1 mBase;
+  TScale_TSizeNB1_half() : TScale( 0.5, &mBase ) {}
+};
+
+class TSum_TSize_TSize : public TSum
+{
+  public:
+  TSizeNB1 mu1;
+  TSizeB1 mu2;
+  TSum_TSize_TSize() : TSum(&mu1,&mu2) {}
+};
+
+
+
+//                     NAME       !SHAPE !SIZE !ORIENT BARRIER
+TEST_METRIC_WITH_HESS( AWSizeNB1,  true, false,  true, false, 0.0 );
+TEST_METRIC_WITH_GRAD( AWSizeB1,   true, false,  true,  true, 0.0 );
+TEST_METRIC_WITH_HESS( TSizeNB1,   true, false,  true, false, 0.0 );
+TEST_METRIC_WITH_HESS( TSizeB1,    true, false,  true,  true, 0.0 );
+
+
+TEST_NON_QUALITY_METRIC_WITH_HESS( TTau );
+TEST_NON_QUALITY_METRIC_WITH_HESS( TSquared );
+
+//                           METRIC                NAME    !SHAPE !SIZE !ORIENT BARRIER
+TEST_NAMED_METRIC_WITH_HESS( TOffset_TSizeNB1_2,   TOffset, true, false,  true, false, 2.0 );
+TEST_NAMED_METRIC_WITH_HESS( TPower2_TSizeNB1,     TPower2, true, false,  true, false, 0.0 );
+TEST_NAMED_METRIC_WITH_HESS( TScale_TSizeNB1_half, TScale,  true, false,  true, false, 0.0 );
+TEST_NAMED_METRIC_WITH_HESS( TSum_TSize_TSize,     TSum,    true, false,  true,  true, 0.0 );

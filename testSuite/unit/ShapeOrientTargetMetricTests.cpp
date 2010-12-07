@@ -10,8 +10,8 @@ using namespace Mesquite;
 #include "TShapeOrientNB2.hpp"
 
 //                            NAME     !SHAPE !SIZE !ORIENT BARRIER
-TEST_METRIC_WITH_GRAD( AWShapeOrientNB1,false, true,false,false );
-TEST_METRIC_WITH_HESS( TShapeOrientB1,  false, true,false,true  );
-TEST_METRIC_WITH_HESS( TShapeOrientB2,  false, true,false,true  );
-TEST_METRIC_WITH_HESS( TShapeOrientNB1, false, true,false,false );
-TEST_METRIC_WITH_HESS( TShapeOrientNB2, false, true,false,false );
+TEST_METRIC_WITH_GRAD( AWShapeOrientNB1,false, true,false,false, 0.0 );
+TEST_METRIC_WITH_HESS( TShapeOrientB1,  false, true,false,true , 0.0 );
+TEST_METRIC_WITH_HESS( TShapeOrientB2,  false, true,false,true , 0.0 );
+TEST_METRIC_WITH_HESS( TShapeOrientNB1, false, true,false,false, 0.0 );
+TEST_METRIC_WITH_HESS( TShapeOrientNB2, false, true,false,false, 0.0 );
