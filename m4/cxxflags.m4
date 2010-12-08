@@ -95,7 +95,7 @@ case "$cxx_compiler:$host_cpu" in
     SNL_CXX_64BIT=-m64
     SNL_CXX_SPECIAL="-Wall -pipe"
     SNL_CXX_DEBUG=-g
-    SNL_CXX_OPTIMIZE="-O3 -march=pentium3"
+    SNL_CXX_OPTIMIZE="-O3 -mtune=generic -march=pentium3"
     SNL_CXX_FAST='-O3 -ffast-math -march=native -mfpmath=sse'
     ;;
   GNU:x86_64)
@@ -162,10 +162,11 @@ AC_MSG_RESULT([$cxx_compiler:$host_cpu])
 #######################################################################################
 AC_DEFUN([SNL_ADD_CXX_FLAG], [
   AC_REQUIRE([AC_PROG_CXX])
+  AC_MSG_CHECKING([if compiler accepts flag: $1])
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
   OLD_CXXFLAGS="$CXXFLAGS"
-  AC_MSG_CHECKING([if compiler accepts flag: $1])
+  CXXFLAGS="$CXXFLAGS $1"
   AC_TRY_COMPILE( [], [], [snl_tmp_success=yes], [snl_tmp_success=no] )
   CXXFLAGS="$OLD_CXXFLAGS"
   AC_LANG_RESTORE
