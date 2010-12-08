@@ -3,7 +3,7 @@
 \usepackage{amssymb}
 \usepackage{hyperref}
 \usepackage{listings}
-\usepackage{alltt}
+\usepackage{color}
 
 \input{config.tex}
 
@@ -32,6 +32,14 @@ Madison, WI 53706 USA}
 \date{Last Updated: 4 November, 2009}
 
 \begin{document}
+
+\lstset{language=C++}
+
+% Define a special delimiters \< and \> such that any source
+% code in a listing that is between such delimiters will be 
+% epmhasized.  These delimiters are then used to emphasize
+% differences between versions of source code.
+\lstset{moredelim=[is][\color{blue}]{\\<}{\\>}}
 
 \maketitle
 

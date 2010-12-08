@@ -84,7 +84,7 @@ defined as follows:
 
 The following is a simple example of using the ArrayMesh object to pass
 Mesquite a mesh containing four quadrilateral elements.
-\begin{verbatim}
+\begin{lstlisting}
 /** define some mesh **/
     /* vertex coordinates */
   double coords[] = { 0, 0, 0,
@@ -120,7 +120,7 @@ Mesquite a mesh containing four quadrilateral elements.
 /** smooth the mesh **/
   
     /* Need surface to constrain 2D elements to */
-    PlanarDomain domain( PlanarDomain::XY );
+  PlanarDomain domain( PlanarDomain::XY );
 
   MsqError err;
   ShapeImprover shape_wrapper;
@@ -140,7 +140,7 @@ Mesquite a mesh containing four quadrilateral elements.
             << coords[12] << ", " 
             << coords[13] << ", " 
             << coords[14] << " )" << std::endl;
-\end{verbatim}
+\end{lstlisting}
 
 NOTE:  When using the \texttt{ArrayMesh} interface, the application is responsible for managing the storage of the mesh data.  The \texttt{ArrayMesh}
  does NOT copy the input mesh.  
@@ -216,7 +216,7 @@ An implementation should provide complete implementations of all of these method
 
 The following example demonstrates the use of the \texttt{ShapeImprover} wrapper to improve the shape of mesh volume elements by moving only vertices that are in the interior of the mesh.  The input to the example function is the \texttt{iMesh\_Instance} handle and an \texttt{iBase\_EntitySetHandle} specifying both the elements for which to improve the quality and the free vertices.  The example code marks all vertices that are adjacent to input elements but not contained in the passed set as fixed.
 
-\begin{alltt}
+\begin{lstlisting}
 
 #include <MsqError.hpp>
 #include <ShapeImprover.hpp>
@@ -227,211 +227,211 @@ The following example demonstrates the use of the \texttt{ShapeImprover} wrapper
 
 using namespace Mesquite;
 
-/**\textbackslash{}brief Call Mesquite ShapeImprovement wrapper for volume mesh
+/**\brief Call Mesquite ShapeImprovement wrapper for volume mesh
  *
  * Smooth mesh accessed through ITAPS APIs using Mesquite
  * ShapeImprover.
  *
- *\textbackslash{}param mesh\_instance iMesh API instance
- *\textbackslash{}param mesh A set defined in 'mesh\_instance' that contains
+ *\param mesh_instance iMesh API instance
+ *\param mesh A set defined in 'mesh_instance' that contains
  *            *both* the set of elements to smooth *and* the
  *            set of interior vertices that are to be moved
  *            to improve the quality of the mesh.  This set
  *            must *not* contain vertices on the boundary of
  *            the volume mesh.
- *\textbackslash{}return mesquite error code or imesh error code
+ *\return mesquite error code or imesh error code
  *        (0 for success in all cases.)
  */
-int shape\_improve\_volume( iMesh\_Instance mesh\_instance,
-                          iBase\_EntitySetHandle mesh )
+int shape_improve_volume( iMesh_Instance mesh_instance,
+                          iBase_EntitySetHandle mesh )
 {
   MsqPrintError err(std::cerr);
   int ierr;
-  iBase\_EntityHandle *junk1, *junk2;
+  iBase_EntityHandle *junk1, *junk2;
   int *junk3, *junk4;
   int junk5, junk6, junk7, junk8, junk9, junk10, junk11;
-  const int elem\_dim = 3;
-  const int max\_vtx\_per\_elem = 8;
+  \<const int elem_dim = 3;\>
+  \<const int max_vtx_per_elem = 8;\>
   
     // create adapter (should also create fixed tag)
-  MsqIMesh mesh\_adapter( mesh\_instance, mesh, elem\_dim, err );
-  if (err) return err.error\_code();
+  MsqIMesh mesh_adapter( mesh_instance, mesh, elem_dim, err );
+  if (err) return err.error_code();
 
     // get tag for marking vertices as fixed
     // Note: we assume here that the tag has already been created.
-  iBase\_TagHandle fixed\_tag = 0;
-  iMesh\_getTagHandle( mesh\_instance,
+  iBase_TagHandle fixed_tag = 0;
+  iMesh_getTagHandle( mesh_instance,
                       "fixed",
-                      \&fixed\_tag,
-                      \&ierr,
+                      &fixed_tag,
+                      &ierr,
                       strlen("fixed") );
-  if (iBase\_SUCCESS != ierr) return ierr;
+  if (iBase_SUCCESS != ierr) return ierr;
 
     // get all vertices in mesh
-  int count, num\_vtx;
-  iMesh\_getNumOfType( mesh\_instance, mesh, elem\_dim, \&count, \&ierr );
-  if (iBase\_SUCCESS != ierr) return ierr;
-  std::vector<iBase\_EntityHandle> elems(count), verts(max\_vtx\_per\_elem*count);
-  std::vector<int> indices(max\_vtx\_per\_elem*count), offsets(count+1);
-  junk1 = \&elems[0];
-  junk2 = \&verts[0];
-  junk3 = \&indices[0];
-  junk4 = \&offsets[0];
+  int count, num_vtx;
+  iMesh_getNumOfType( mesh_instance, mesh, elem_dim, &count, &ierr );
+  if (iBase_SUCCESS != ierr) return ierr;
+  std::vector<iBase_EntityHandle> elems(count), verts(max_vtx_per_elem*count);
+  std::vector<int> indices(max_vtx_per_elem*count), offsets(count+1);
+  junk1 = &elems[0];
+  junk2 = &verts[0];
+  junk3 = &indices[0];
+  junk4 = &offsets[0];
   junk5 = elems.size();
   junk7 = verts.size();
   junk8 = indices.size();
   junk10 = offsets.size();
-  iMesh\_getAdjEntIndices( mesh\_instance, mesh, 
-                          elem\_dim, iMesh\_ALL\_TOPOLOGIES, iBase\_VERTEX,
-                          \&junk1, \&junk5, \&junk6,
-                          \&junk2, \&junk7, \&num\_vtx,
-                          \&junk3, \&junk8, \&junk9,
-                          \&junk4, \&junk10, \&junk11, \&ierr );
-  if (iBase\_SUCCESS != ierr) return ierr;
-  verts.resize( num\_vtx );
+  iMesh_getAdjEntIndices( mesh_instance, mesh, 
+                          elem_dim, iMesh_ALL_TOPOLOGIES, iBase_VERTEX,
+                          &junk1, &junk5, &junk6,
+                          &junk2, &junk7, &num_vtx,
+                          &junk3, &junk8, &junk9,
+                          &junk4, &junk10, &junk11, &ierr );
+  if (iBase_SUCCESS != ierr) return ierr;
+  verts.resize( num_vtx );
 
     // set fixed flag on all vertices
-  std::vector<int> tag\_data(num\_vtx, 1);
-  iMesh\_setIntArrData( mesh\_instance, \&verts[0], verts.size(), 
-                       fixed\_tag, \&tag\_data[0], tag\_data.size(), \&ierr );
-  if (iBase\_SUCCESS != ierr) return ierr;
+  std::vector<int> tag_data(num_vtx, 1);
+  iMesh_setIntArrData( mesh_instance, &verts[0], verts.size(), 
+                       fixed_tag, &tag_data[0], tag_data.size(), &ierr );
+  if (iBase_SUCCESS != ierr) return ierr;
 
     // clear fixed flag for vertices contained directly in set
-  iMesh\_getNumOfType( mesh\_instance, mesh, iBase\_VERTEX, \&count, \&ierr );
-  if (iBase\_SUCCESS != ierr) return ierr;
+  iMesh_getNumOfType( mesh_instance, mesh, iBase_VERTEX, &count, &ierr );
+  if (iBase_SUCCESS != ierr) return ierr;
   verts.resize( count );
-  junk1 = \&verts[0];
+  junk1 = &verts[0];
   junk5 = verts.size();
-  iMesh\_getEntities( mesh\_instance, mesh, iBase\_VERTEX, iMesh\_ALL\_TOPOLOGIES,
-                     \&junk1, \&junk5, \&junk6, \&ierr );
-  if (iBase\_SUCCESS != ierr) return ierr;
-  tag\_data.clear();
-  tag\_data.resize( verts.size(), 0 );
-  iMesh\_setIntArrData( mesh\_instance, \&verts[0], verts.size(), 
-                       fixed\_tag, \&tag\_data[0], tag\_data.size(), \&ierr );
-  if (iBase\_SUCCESS != ierr) return ierr;
+  iMesh_getEntities( mesh_instance, mesh, iBase_VERTEX, iMesh_ALL_TOPOLOGIES,
+                     &junk1, &junk5, &junk6, &ierr );
+  if (iBase_SUCCESS != ierr) return ierr;
+  tag_data.clear();
+  tag_data.resize( verts.size(), 0 );
+  iMesh_setIntArrData( mesh_instance, &verts[0], verts.size(), 
+                       fixed_tag, &tag_data[0], tag_data.size(), &ierr );
+  if (iBase_SUCCESS != ierr) return ierr;
 
     // Finally, smooth the mesh
   ShapeImprover smoother(err);
-  if (err) return err.error\_code();
+  if (err) return err.error_code();
 
-  smoother.run\_instructions( \&mesh\_adapter, err );
-  if (err) return err.error\_code();
+  \<smoother.run_instructions( &mesh_adapter, err );\>
+  if (err) return err.error_code();
 
   return 0;
 }
-\end{alltt}
+\end{lstlisting}
 
 \subsection{Two-dimensional Example}
 
 This section presents an example of how to use Mesquite to optimize a 2D mesh.  It is a modification of the example from the previous section with changes shown in a bold type face.  As Mesquite operates only on 3D meshes (either volume or surface), a 2D mesh is optimized by treating it as a surface mesh constrained to the XY plane.
 
 
-\begin{alltt}
+\begin{lstlisting}
 
 #include <MsqError.hpp>
 #include <ShapeImprover.hpp>
 #include <MsqIMesh.hpp>
-{\bf{}#include "PlanarDomain.hpp"}
+\<#include <PlanarDomain.hpp>\>
 #include <vector>
 #include <iostream>
 #include <iMesh.h>
 
 using namespace Mesquite;
 
-/**\textbackslash{}brief Call Mesquite ShapeImprovement wrapper for 2D mesh
+/**\brief Call Mesquite ShapeImprovement wrapper for 2D mesh
  *
  * Smooth mesh accessed through ITAPS APIs using Mesquite
  * ShapeImprover.
  *
- *\textbackslash{}param mesh\_instance iMesh API instance
- *\textbackslash{}param mesh A set defined in 'mesh\_instance' that contains
+ *\param mesh_instance iMesh API instance
+ *\param mesh A set defined in 'mesh_instance' that contains
  *            *both* the set of elements to smooth *and* the
  *            set of interior vertices that are to be moved
  *            to improve the quality of the mesh.  This set
  *            must *not* contain vertices on the boundary of
  *            the mesh.
- *\textbackslash{}return mesquite error code or imesh error code
+ *\return mesquite error code or imesh error code
  *        (0 for success in all cases.)
  */
-int shape\_improve\_2D( iMesh\_Instance mesh\_instance,
-                      iBase\_EntitySetHandle mesh )
+int shape_improve_2D( iMesh_Instance mesh_instance,
+                      iBase_EntitySetHandle mesh )
 {
   MsqPrintError err(std::cerr);
   int ierr;
-  iBase\_EntityHandle *junk1, *junk2;
+  iBase_EntityHandle *junk1, *junk2;
   int *junk3, *junk4;
   int junk5, junk6, junk7, junk8, junk9, junk10, junk11;
-  {\bf{}const int elem\_dim = 2;}
-  {\bf{}const int max\_vertex\_per\_elem = 4;}
+  \<const int elem_dim = 2;\>
+  \<const int max_vertex_per_elem = 4;\>
   
     // create adapter (should also create fixed tag)
-  MsqIMesh mesh\_adapter( mesh\_instance, mesh, elem\_dim, err );
-  if (err) return err.error\_code();
+  MsqIMesh mesh_adapter( mesh_instance, mesh, elem_dim, err );
+  if (err) return err.error_code();
 
     // get tag for marking vertices as fixed
     // Note: we assume here that the tag has already been created.
-  iBase\_TagHandle fixed\_tag = 0;
-  iMesh\_getTagHandle( mesh\_instance,
+  iBase_TagHandle fixed_tag = 0;
+  iMesh_getTagHandle( mesh_instance,
                       "fixed",
-                      \&fixed\_tag,
-                      \&ierr,
+                      &fixed_tag,
+                      &ierr,
                       strlen("fixed") );
-  if (iBase\_SUCCESS != ierr) return ierr;
+  if (iBase_SUCCESS != ierr) return ierr;
 
     // get all vertices in mesh
-  int count, num\_vtx;
-  iMesh\_getNumOfType( mesh\_instance, mesh, elem\_dim, \&count, \&ierr );
-  if (iBase\_SUCCESS != ierr) return ierr;
-  std::vector<iBase\_EntityHandle> elems(count), verts(max\_vtx\_per\_elem*count);
-  std::vector<int> indices(max\_vtx\_per\_elem*count), offsets(count+1);
-  junk1 = \&elems[0];
-  junk2 = \&verts[0];
-  junk3 = \&indices[0];
-  junk4 = \&offsets[0];
+  int count, num_vtx;
+  iMesh_getNumOfType( mesh_instance, mesh, elem_dim, &count, &ierr );
+  if (iBase_SUCCESS != ierr) return ierr;
+  std::vector<iBase_EntityHandle> elems(count), verts(max_vtx_per_elem*count);
+  std::vector<int> indices(max_vtx_per_elem*count), offsets(count+1);
+  junk1 = &elems[0];
+  junk2 = &verts[0];
+  junk3 = &indices[0];
+  junk4 = &offsets[0];
   junk5 = elems.size();
   junk7 = verts.size();
   junk8 = indices.size();
   junk10 = offsets.size();
-  iMesh\_getAdjEntIndices( mesh\_instance, mesh, 
-                          elem\_dim, iMesh\_ALL\_TOPOLOGIES, iBase\_VERTEX,
-                          \&junk1, \&junk5, \&junk6,
-                          \&junk2, \&junk7, \&num\_vtx,
-                          \&junk3, \&junk8, \&junk9,
-                          \&junk4, \&junk10, \&junk11, \&ierr );
-  if (iBase\_SUCCESS != ierr) return ierr;
-  verts.resize( num\_vtx );
+  iMesh_getAdjEntIndices( mesh_instance, mesh, 
+                          elem_dim, iMesh_ALL_TOPOLOGIES, iBase_VERTEX,
+                          &junk1, &junk5, &junk6,
+                          &junk2, &junk7, &num_vtx,
+                          &junk3, &junk8, &junk9,
+                          &junk4, &junk10, &junk11, &ierr );
+  if (iBase_SUCCESS != ierr) return ierr;
+  verts.resize( num_vtx );
 
     // set fixed flag on all vertices
-  std::vector<int> tag\_data(num\_vtx, 1);
-  iMesh\_setIntArrData( mesh\_instance, \&verts[0], verts.size(), 
-                       fixed\_tag, \&tag\_data[0], tag\_data.size(), \&ierr );
-  if (iBase\_SUCCESS != ierr) return ierr;
+  std::vector<int> tag_data(num_vtx, 1);
+  iMesh_setIntArrData( mesh_instance, &verts[0], verts.size(), 
+                       fixed_tag, &tag_data[0], tag_data.size(), &ierr );
+  if (iBase_SUCCESS != ierr) return ierr;
 
     // clear fixed flag for vertices contained directly in set
-  iMesh\_getNumOfType( mesh\_instance, mesh, iBase\_VERTEX, \&count, \&ierr );
-  if (iBase\_SUCCESS != ierr) return ierr;
+  iMesh_getNumOfType( mesh_instance, mesh, iBase_VERTEX, &count, &ierr );
+  if (iBase_SUCCESS != ierr) return ierr;
   verts.resize( count );
-  junk1 = \&verts[0];
+  junk1 = &verts[0];
   junk5 = verts.size();
-  iMesh\_getEntities( mesh\_instance, mesh, iBase\_VERTEX, iMesh\_ALL\_TOPOLOGIES,
-                     \&junk1, \&junk5, \&junk6, \&ierr );
-  if (iBase\_SUCCESS != ierr) return ierr;
-  tag\_data.clear();
-  tag\_data.resize( verts.size(), 0 );
-  iMesh\_setIntArrData( mesh\_instance, \&verts[0], verts.size(), 
-                       fixed\_tag, \&tag\_data[0], tag\_data.size(), \&ierr );
-  if (iBase\_SUCCESS != ierr) return ierr;
+  iMesh_getEntities( mesh_instance, mesh, iBase_VERTEX, iMesh_ALL_TOPOLOGIES,
+                     &junk1, &junk5, &junk6, &ierr );
+  if (iBase_SUCCESS != ierr) return ierr;
+  tag_data.clear();
+  tag_data.resize( verts.size(), 0 );
+  iMesh_setIntArrData( mesh_instance, &verts[0], verts.size(), 
+                       fixed_tag, &tag_data[0], tag_data.size(), &ierr );
+  if (iBase_SUCCESS != ierr) return ierr;
 
     // Finally, smooth the mesh
   ShapeImprover smoother(err);
-  if (err) return err.error\_code();
+  if (err) return err.error_code();
 
-  {\bf{}PlanarDomain xyplane(PlanarDomain::XY);}
-  {\bf{}smoother.run\_instructions( \&mesh\_adapter, \&xyplane, err );}
-  if (err) return err.error\_code();
+  \<PlanarDomain xyplane(PlanarDomain::XY);\>
+  \<smoother.run_instructions( &mesh_adapter, &xyplane, err );\>
+  if (err) return err.error_code();
 
   return 0;
 }
-\end{alltt}
+\end{lstlisting}
 
