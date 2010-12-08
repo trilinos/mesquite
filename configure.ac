@@ -67,6 +67,10 @@ AC_ARG_ENABLE( [compile-optimized],
   [AC_HELP_STRING([--enable-compile-optimized],[Compile optimized (-O2)])],
   [MSQ_DO_OPTIMIZE="$enableval"], [MSQ_DO_OPTIMIZE=""] )
 
+AC_ARG_ENABLE( [fast-native],
+  [AC_HELP_STRING([--enable-fast-native],[Compile with fast math options, target build CPU, etc.])],
+  [MSQ_DO_FAST="$enableval"], [MSQ_DO_FAST=""] )
+
 AC_ARG_ENABLE( [debug-symbols], 
   [AC_HELP_STRING([--enable-debug-symbols],[Compile with debug symbols (-g)])],
   [MSQ_DEBUG_SYMBOLS="$enableval"], [MSQ_DEBUG_SYMBOLS=""] )
@@ -179,7 +183,9 @@ if test "x$have_user_CXXFLAGS" = "xno"; then
 fi
 SNL_DETECT_CXX
 SNL_REQUIRED_CXX_FLAGS
-if test "$MSQ_DO_OPTIMIZE" = "yes"; then
+if test "$MSQ_DO_FAST" = "yes"; then
+  SNL_CXX_COMPILE_FAST
+elif test "$MSQ_DO_OPTIMIZE" = "yes"; then
   SNL_CXX_COMPILE_OPTIMIZED
 fi
 if test "$MSQ_DEBUG_SYMBOLS" = "yes"; then

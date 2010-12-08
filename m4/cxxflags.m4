@@ -79,7 +79,7 @@ case "$cxx_compiler:$host_cpu" in
     SNL_CXX_64BIT=-m64
     SNL_CXX_SPECIAL="-Wall -pipe"
     SNL_CXX_DEBUG=-g
-    SNL_CXX_OPTIMIZE=-O2
+    SNL_CXX_OPTIMIZE=-O3
     SNL_CXX_FAST='-O3 -ffast-math'
     ;;
   GNU:powerpc*)
@@ -87,23 +87,31 @@ case "$cxx_compiler:$host_cpu" in
     SNL_CXX_64BIT=-m64
     SNL_CXX_SPECIAL="-Wall -pipe"
     SNL_CXX_DEBUG=-g
-    SNL_CXX_OPTIMIZE=-O2
+    SNL_CXX_OPTIMIZE=-O3
     SNL_CXX_FAST='-O3 -ffast-math'
     ;;
-  GNU:i?86|GNU:x86_64)
+  GNU:i?86)
     SNL_CXX_32BIT=-m32
     SNL_CXX_64BIT=-m64
     SNL_CXX_SPECIAL="-Wall -pipe"
     SNL_CXX_DEBUG=-g
-    SNL_CXX_OPTIMIZE=-O2
-    SNL_CXX_FAST='-O3 -ffast-math'
+    SNL_CXX_OPTIMIZE="-O3 -march=pentium3"
+    SNL_CXX_FAST='-O3 -ffast-math -march=native -mfpmath=sse'
+    ;;
+  GNU:x86_64)
+    SNL_CXX_32BIT=-m32
+    SNL_CXX_64BIT=-m64
+    SNL_CXX_SPECIAL="-Wall -pipe"
+    SNL_CXX_DEBUG=-g
+    SNL_CXX_OPTIMIZE="-O3 -mtune=generic"
+    SNL_CXX_FAST='-O3 -ffast-math -march=native -mfpmath=sse'
     ;;
   GNU:mips*)
     SNL_CXX_32BIT="-mips32 -mabi=32"
     SNL_CXX_64BIT="-mips64 -mabi=64"
     SNL_CXX_SPECIAL="-Wall -pipe"
     SNL_CXX_DEBUG=-g
-    SNL_CXX_OPTIMIZE=-O2
+    SNL_CXX_OPTIMIZE=-O3
     SNL_CXX_FAST='-O3 -ffast-math'
     ;;
   VisualAge:*)
