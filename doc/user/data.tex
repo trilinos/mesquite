@@ -312,9 +312,7 @@ int shape_improve_volume( iMesh_Instance mesh_instance,
   if (iBase_SUCCESS != ierr) return ierr;
 
     // Finally, smooth the mesh
-  ShapeImprover smoother(err);
-  if (err) return err.error_code();
-
+  ShapeImprover smoother;
   \<smoother.run_instructions( &mesh_adapter, err );\>
   if (err) return err.error_code();
 
@@ -424,9 +422,7 @@ int shape_improve_2D( iMesh_Instance mesh_instance,
   if (iBase_SUCCESS != ierr) return ierr;
 
     // Finally, smooth the mesh
-  ShapeImprover smoother(err);
-  if (err) return err.error_code();
-
+  ShapeImprover smoother;
   \<PlanarDomain xyplane(PlanarDomain::XY);\>
   \<smoother.run_instructions( &mesh_adapter, &xyplane, err );\>
   if (err) return err.error_code();
