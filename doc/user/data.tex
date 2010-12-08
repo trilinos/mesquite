@@ -9,12 +9,12 @@ fundamental classes of information Mesquite requires are:
 \end{itemize}
 In this chapter we will assume that the only constraint available for vertex movement is to flag the vertices as fixed.  More advanced constraints such as vertices following geometric curves or surfaces are discussed in the following chapter.  
 
-The mesh data expected as input to Mesquite is a set of vertices and elements.  Each vertex has associated with it a fixed flag, a ``byte'', and x, y, and z coordinate values.  The fixed flag is used as input only.  It indicates whether or not the corresponding vertex position should be fixed (i.e., coordinates not allowed to change) during the optimization.  The ``byte'' is one byte of Mesquite-specific working data assocaited with each vertex (currently only used for vertex culling.)   The coordinate values for each vertex serve as both input and output: as input they are the initial positions of the vertices and as output they are the optimized positions.  
+The mesh data expected as input to Mesquite is a set of vertices and elements.  Each vertex has associated with it a fixed flag, a ``byte'', and x, y, and z coordinate values.  The fixed flag is used as input only.  It indicates whether or not the corresponding vertex position should be fixed (i.e., coordinates not allowed to change) during the optimization.  The ``byte'' is one byte of Mesquite-specific working data associated with each vertex (currently only used for vertex culling.)   The coordinate values for each vertex serve as both input and output: as input they are the initial positions of the vertices and as output they are the optimized positions.  
 
-Each element of the input mesh has associated with it a type and a list of vertices.  The type is one of the values defined in \texttt{Mesquite::EntityTopology} (\texttt{Mesquite.hpp}).  It specifes the topology (type of shape) of the element. Currently supported element types are triangles, quadrilaterals, 
-tetrahdra, hexahedra, triangular wedges, and pyramids.  The list of vertices (commonly referred to as the ``connectivity'') define the geometry (location and variation of shape) for the element.  The vertices are expected to be occur in a pre-defined order specific to the element topology. Mesquite uses the canonical ordering defined in the ExodusII specification\cite{exodus}.
+Each element of the input mesh has associated with it a type and a list of vertices.  The type is one of the values defined in \texttt{Mesquite::EntityTopology} (\texttt{Mesquite.hpp}).  It species the topology (type of shape) of the element. Currently supported element types are triangles, quadrilaterals, 
+tetrahedra, hexahedra, triangular wedges, and pyramids.  The list of vertices (commonly referred to as the ``connectivity'') define the geometry (location and variation of shape) for the element.  The vertices are expected to be occur in a pre-defined order specific to the element topology. Mesquite uses the canonical ordering defined in the ExodusII specification\cite{exodus}.
 
-For some more advanced capabilities, Mesquite may require the ability to attach arbitrary peices of data (called ``tags'') to mesh elements or vertices.
+For some more advanced capabilities, Mesquite may require the ability to attach arbitrary pieces of data (called ``tags'') to mesh elements or vertices.
 
 \section{The \texttt{Mesquite::Mesh} Interface} \label{sec:MeshData}
 
@@ -31,7 +31,7 @@ The \texttt{Mesquite::Mesh} interface defines functions for operations such as:
 \end{itemize}
 It also defines other operations that are only used for certain optimization algorithms:
 \begin{itemize}
-\item Get the list of elements for which a specific vertex occurs in the connetivity list.
+\item Get the list of elements for which a specific vertex occurs in the connectivity list.
 \item Define a ``tag'' and use it to associate data with vertices or elements.
 \end{itemize}
 
@@ -57,11 +57,6 @@ example, if a mesh of two geometric volumes is to be optimized and all mesh
 vertices lying on geometric surfaces are constrained to be fixed (such vertices
 will not be moved during the optimization) then optimizing each volume separately
 will produce the same result as optimizing both together.  
-
-
-\section{ITAPS iMesh Interface}
-
-The ITAPS Working Group has defined a standard API for exchange of mesh data between applications.  The iMesh interface\cite{imesh} defines a superset of the functionality required for the \texttt{Mesquite::Mesh} interface.  Mesquite can access mesh through an iMesh interface using the \texttt{Mesquite::MsqIMesh} class declared in \texttt{MsqIMesh.hpp}.  This class is an ``adaptor'':  it presents the iMesh interface as the \texttt{Mesquite::Mesh} interface.  
 
 
 \section{Accessing Mesh In Arrays} \label{sec::ArrayMesh}
@@ -101,7 +96,7 @@ Mesquite a mesh containing four quadrilateral elements.
                       0, 2, 0,
                       1, 2, 0,
                       2, 2, 0 };
-    /* quadrileratal element connectivity (vertices) */
+    /* quadrilateral element connectivity (vertices) */
   long quads[] = { 0, 1, 4, 3,
                    1, 2, 5, 4,
                    3, 4, 7, 6,
@@ -167,4 +162,276 @@ of reading and storing tag data
 using VTK attributes and
 field data.  The current implementation writes version 3.0 of the VTK file format
 and is capable of reading any version of the file format up to 3.0.  
+
+
+
+\section{ITAPS iMesh Interface}
+
+\subsection{Introduction}
+
+The ITAPS Working Group has defined a standard API for exchange of mesh data between applications.  The iMesh interface\cite{imesh} defines a superset of the functionality required for the \texttt{Mesquite::Mesh} interface.  Mesquite can access mesh through an iMesh interface using the \texttt{Mesquite::MsqIMesh} class declared in \texttt{MsqIMesh.hpp}.  This class is an ``adaptor'':  it presents the iMesh interface as the \texttt{Mesquite::Mesh} interface.  
+
+The primary advantage of using the iMesh Interface over mechanisms in other sections of this chapter to provide Mesquite with access to application-owned mesh data is that the same interface implementation can be used to allow other tools access to the same mesh data.  It may also be easier for Fortran developers to implement.
+
+\subsection{Overview}
+
+A \texttt{Mesquite::MsqIMesh} instance must be provided with at least two pieces of information: The \texttt{iMesh\_Instance} handle and an \texttt{iBase\_EntitySetHandle}.  The optional \texttt{iBase\_TagHandle} for the ``fixed tag'' must frequently be provided as well.  The \texttt{iMesh\_Instance} specifies the instance of the database containing the mesh.  The \texttt{iBase\_EntitySetHandle} handle specifies the subset of that mesh that is to be optimized by Mesquite.  If the entire mesh is to be optimized then the ``root set'' should be specified for this argument.  The quality of all elements in this set will be used to drive the mesh optimization.  All vertices adjacent to any elements in the set will be moved as a part of the optimization unless they are explicitly designated as fixed.  The ``fixed tag'' is used to indicate such vertices.  Every vertex adjacent to the input elements should be tagged with a single integer value of either zero or one for the ``fixed tag''.  A value of one indicates that the vertex is fixed while a value of zero indicates that the vertex location is to be optimized by Mesquite.
+
+The boundary of the mesh must always be constrained in some way for the mesh optimization to produce valid results.  For a volume mesh this can be accomplished by either designating the vertices on the mesh boundary as fixed or by specifying a geometric domain (e.g. surfaces, curves, etc) that the boundary vertices are constrained to lie on.  For a surface mesh some geometric domain must always be specified (e.g. a surface) and it is still necessary to specify which vertices are fixed unless the geometric domain also includes the bounding geometric curves constraining the movement of the boundary mesh vertices\footnote{A surface mesh that forms a topological sphere has no boundary and therefore need not have vertices designated as fixed or otherwise constrained as long as the entire geometric domain is continuous.}.  Geometric domains are the topic of Chapter \ref{sec:geom}.  Further discussion and examples in this section will be limited to volume meshes and true 2D meshes, both with the boundary vertices designated as fixed via the ``fixed tag''. 
+
+Designating vertices as fixed is the responsibility of the application using Mesquite.  This responsibility is left to the application (as opposed to providing some utility in Mesquite to find the ``skin'' of a mesh) for several reasons.  An application can often obtain the set of vertices bounding a region of mesh directly through data not available to Mesquite.  For example if the application has a B-rep solid model for which the mesh is a discretization then it typically can obtain the bounding vertices as the set of vertices associated with the bounding geometric entities.  Further, there exist cases where the fixed vertices are more than just those on the topological boundary of the mesh.  For example, consider the mesh of a conic surface that includes a vertex at the apex of the cone.  Such a vertex must be designated as fixed because the lack of a valid surface normal at that point will interfere with the correct functioning of Mesquite.  Such a vertex cannot be reliably identified given only the mesh.  However, identifying such vertices typically happens naturally when obtaining the set of fixed vertices from the association with bounding geometric entities.  Finally, the optimal implementation of a ``skinning'' operation depends greatly on details of the mesh representation that Mesquite is not aware of and is not otherwise concerned with.
+
+\subsection{Practical Details}
+
+The \texttt{Mesquite::MsqIMesh} class caches data related to the input \texttt{iBase\_EntitySetHandle} upon construction.  If the contents of the referenced entity set change, or the vertices associated with elements contained in that set change, then the application should either re-create the \texttt{Mesquite::MsqIMesh} instance or notify an existing instance of the change by calling the \texttt{set\_active\_set} member function.  Similarly, while the implementation does not at the time of this writing cache data related to the ``fixed tag'', it may do so in the future.  For forward compatibility the application should consider calling the \texttt{set\_fixed\_tag} method of \texttt{Mesquite::MsqIMesh} to notify the instance that the value of the tag may have changed for some mesh vertices.
+
+The current version of Mesquite uses the following functions from the iMesh interface:
+\begin{itemize}
+\item \texttt{iMesh\_getRootSet}
+\item \texttt{iMesh\_getGeometricDimension}
+\item \texttt{iMesh\_getEntities}
+\item \texttt{iMesh\_getNumOfType}
+\item \texttt{iMesh\_isEntContained}
+\item \texttt{iMesh\_getEntArrTopo}
+\item \texttt{iMesh\_getEntArrAdj}
+\item \texttt{iMesh\_getVtxArrCoords}
+\item \texttt{iMesh\_setVtxCoord}
+\item \texttt{iMesh\_createTag}
+\item \texttt{iMesh\_destroyTag}
+\item \texttt{iMesh\_getTagName}
+\item \texttt{iMesh\_getTagSizeBytes}
+\item \texttt{iMesh\_getTagType}
+\item \texttt{iMesh\_getTagHandle}
+\item \texttt{iMesh\_getIntArrData}
+\item \texttt{iMesh\_getIntData}
+\item \texttt{iMesh\_getArrData}
+\item \texttt{iMesh\_setArrData}
+\item \texttt{iMesh\_setIntData}
+\item \texttt{iMesh\_setIntArrData}
+\end{itemize}
+
+An implementation should provide complete implementations of all of these methods to guarantee compatibility with all possible Mesquite algorithms. 
+
+\subsection{Volume Example}
+
+The following example demonstrates the use of the \texttt{ShapeImprover} wrapper to improve the shape of mesh volume elements by moving only vertices that are in the interior of the mesh.  The input to the example function is the \texttt{iMesh\_Instance} handle and an \texttt{iBase\_EntitySetHandle} specifying both the elements for which to improve the quality and the free vertices.  The example code marks all vertices that are adjacent to input elements but not contained in the passed set as fixed.
+
+\begin{alltt}
+
+#include <MsqError.hpp>
+#include <ShapeImprover.hpp>
+#include <MsqIMesh.hpp>
+#include <vector>
+#include <iostream>
+#include <iMesh.h>
+
+using namespace Mesquite;
+
+/**\textbackslash{}brief Call Mesquite ShapeImprovement wrapper for volume mesh
+ *
+ * Smooth mesh accessed through ITAPS APIs using Mesquite
+ * ShapeImprover.
+ *
+ *\textbackslash{}param mesh\_instance iMesh API instance
+ *\textbackslash{}param mesh A set defined in 'mesh\_instance' that contains
+ *            *both* the set of elements to smooth *and* the
+ *            set of interior vertices that are to be moved
+ *            to improve the quality of the mesh.  This set
+ *            must *not* contain vertices on the boundary of
+ *            the volume mesh.
+ *\textbackslash{}return mesquite error code or imesh error code
+ *        (0 for success in all cases.)
+ */
+int shape\_improve\_volume( iMesh\_Instance mesh\_instance,
+                          iBase\_EntitySetHandle mesh )
+{
+  MsqPrintError err(std::cerr);
+  int ierr;
+  iBase\_EntityHandle *junk1, *junk2;
+  int *junk3, *junk4;
+  int junk5, junk6, junk7, junk8, junk9, junk10, junk11;
+  const int elem\_dim = 3;
+  const int max\_vtx\_per\_elem = 8;
+  
+    // create adapter (should also create fixed tag)
+  MsqIMesh mesh\_adapter( mesh\_instance, mesh, elem\_dim, err );
+  if (err) return err.error\_code();
+
+    // get tag for marking vertices as fixed
+    // Note: we assume here that the tag has already been created.
+  iBase\_TagHandle fixed\_tag = 0;
+  iMesh\_getTagHandle( mesh\_instance,
+                      "fixed",
+                      \&fixed\_tag,
+                      \&ierr,
+                      strlen("fixed") );
+  if (iBase\_SUCCESS != ierr) return ierr;
+
+    // get all vertices in mesh
+  int count, num\_vtx;
+  iMesh\_getNumOfType( mesh\_instance, mesh, elem\_dim, \&count, \&ierr );
+  if (iBase\_SUCCESS != ierr) return ierr;
+  std::vector<iBase\_EntityHandle> elems(count), verts(max\_vtx\_per\_elem*count);
+  std::vector<int> indices(max\_vtx\_per\_elem*count), offsets(count+1);
+  junk1 = \&elems[0];
+  junk2 = \&verts[0];
+  junk3 = \&indices[0];
+  junk4 = \&offsets[0];
+  junk5 = elems.size();
+  junk7 = verts.size();
+  junk8 = indices.size();
+  junk10 = offsets.size();
+  iMesh\_getAdjEntIndices( mesh\_instance, mesh, 
+                          elem\_dim, iMesh\_ALL\_TOPOLOGIES, iBase\_VERTEX,
+                          \&junk1, \&junk5, \&junk6,
+                          \&junk2, \&junk7, \&num\_vtx,
+                          \&junk3, \&junk8, \&junk9,
+                          \&junk4, \&junk10, \&junk11, \&ierr );
+  if (iBase\_SUCCESS != ierr) return ierr;
+  verts.resize( num\_vtx );
+
+    // set fixed flag on all vertices
+  std::vector<int> tag\_data(num\_vtx, 1);
+  iMesh\_setIntArrData( mesh\_instance, \&verts[0], verts.size(), 
+                       fixed\_tag, \&tag\_data[0], tag\_data.size(), \&ierr );
+  if (iBase\_SUCCESS != ierr) return ierr;
+
+    // clear fixed flag for vertices contained directly in set
+  iMesh\_getNumOfType( mesh\_instance, mesh, iBase\_VERTEX, \&count, \&ierr );
+  if (iBase\_SUCCESS != ierr) return ierr;
+  verts.resize( count );
+  junk1 = \&verts[0];
+  junk5 = verts.size();
+  iMesh\_getEntities( mesh\_instance, mesh, iBase\_VERTEX, iMesh\_ALL\_TOPOLOGIES,
+                     \&junk1, \&junk5, \&junk6, \&ierr );
+  if (iBase\_SUCCESS != ierr) return ierr;
+  tag\_data.clear();
+  tag\_data.resize( verts.size(), 0 );
+  iMesh\_setIntArrData( mesh\_instance, \&verts[0], verts.size(), 
+                       fixed\_tag, \&tag\_data[0], tag\_data.size(), \&ierr );
+  if (iBase\_SUCCESS != ierr) return ierr;
+
+    // Finally, smooth the mesh
+  ShapeImprover smoother(err);
+  if (err) return err.error\_code();
+
+  smoother.run\_instructions( \&mesh\_adapter, err );
+  if (err) return err.error\_code();
+
+  return 0;
+}
+\end{alltt}
+
+\subsection{Two-dimensional Example}
+
+This section presents an example of how to use Mesquite to optimize a 2D mesh.  It is a modification of the example from the previous section with changes shown in a bold type face.  As Mesquite operates only on 3D meshes (either volume or surface), a 2D mesh is optimized by treating it as a surface mesh constrained to the XY plane.
+
+
+\begin{alltt}
+
+#include <MsqError.hpp>
+#include <ShapeImprover.hpp>
+#include <MsqIMesh.hpp>
+{\bf{}#include "PlanarDomain.hpp"}
+#include <vector>
+#include <iostream>
+#include <iMesh.h>
+
+using namespace Mesquite;
+
+/**\textbackslash{}brief Call Mesquite ShapeImprovement wrapper for 2D mesh
+ *
+ * Smooth mesh accessed through ITAPS APIs using Mesquite
+ * ShapeImprover.
+ *
+ *\textbackslash{}param mesh\_instance iMesh API instance
+ *\textbackslash{}param mesh A set defined in 'mesh\_instance' that contains
+ *            *both* the set of elements to smooth *and* the
+ *            set of interior vertices that are to be moved
+ *            to improve the quality of the mesh.  This set
+ *            must *not* contain vertices on the boundary of
+ *            the mesh.
+ *\textbackslash{}return mesquite error code or imesh error code
+ *        (0 for success in all cases.)
+ */
+int shape\_improve\_2D( iMesh\_Instance mesh\_instance,
+                      iBase\_EntitySetHandle mesh )
+{
+  MsqPrintError err(std::cerr);
+  int ierr;
+  iBase\_EntityHandle *junk1, *junk2;
+  int *junk3, *junk4;
+  int junk5, junk6, junk7, junk8, junk9, junk10, junk11;
+  {\bf{}const int elem\_dim = 2;}
+  {\bf{}const int max\_vertex\_per\_elem = 4;}
+  
+    // create adapter (should also create fixed tag)
+  MsqIMesh mesh\_adapter( mesh\_instance, mesh, elem\_dim, err );
+  if (err) return err.error\_code();
+
+    // get tag for marking vertices as fixed
+    // Note: we assume here that the tag has already been created.
+  iBase\_TagHandle fixed\_tag = 0;
+  iMesh\_getTagHandle( mesh\_instance,
+                      "fixed",
+                      \&fixed\_tag,
+                      \&ierr,
+                      strlen("fixed") );
+  if (iBase\_SUCCESS != ierr) return ierr;
+
+    // get all vertices in mesh
+  int count, num\_vtx;
+  iMesh\_getNumOfType( mesh\_instance, mesh, elem\_dim, \&count, \&ierr );
+  if (iBase\_SUCCESS != ierr) return ierr;
+  std::vector<iBase\_EntityHandle> elems(count), verts(max\_vtx\_per\_elem*count);
+  std::vector<int> indices(max\_vtx\_per\_elem*count), offsets(count+1);
+  junk1 = \&elems[0];
+  junk2 = \&verts[0];
+  junk3 = \&indices[0];
+  junk4 = \&offsets[0];
+  junk5 = elems.size();
+  junk7 = verts.size();
+  junk8 = indices.size();
+  junk10 = offsets.size();
+  iMesh\_getAdjEntIndices( mesh\_instance, mesh, 
+                          elem\_dim, iMesh\_ALL\_TOPOLOGIES, iBase\_VERTEX,
+                          \&junk1, \&junk5, \&junk6,
+                          \&junk2, \&junk7, \&num\_vtx,
+                          \&junk3, \&junk8, \&junk9,
+                          \&junk4, \&junk10, \&junk11, \&ierr );
+  if (iBase\_SUCCESS != ierr) return ierr;
+  verts.resize( num\_vtx );
+
+    // set fixed flag on all vertices
+  std::vector<int> tag\_data(num\_vtx, 1);
+  iMesh\_setIntArrData( mesh\_instance, \&verts[0], verts.size(), 
+                       fixed\_tag, \&tag\_data[0], tag\_data.size(), \&ierr );
+  if (iBase\_SUCCESS != ierr) return ierr;
+
+    // clear fixed flag for vertices contained directly in set
+  iMesh\_getNumOfType( mesh\_instance, mesh, iBase\_VERTEX, \&count, \&ierr );
+  if (iBase\_SUCCESS != ierr) return ierr;
+  verts.resize( count );
+  junk1 = \&verts[0];
+  junk5 = verts.size();
+  iMesh\_getEntities( mesh\_instance, mesh, iBase\_VERTEX, iMesh\_ALL\_TOPOLOGIES,
+                     \&junk1, \&junk5, \&junk6, \&ierr );
+  if (iBase\_SUCCESS != ierr) return ierr;
+  tag\_data.clear();
+  tag\_data.resize( verts.size(), 0 );
+  iMesh\_setIntArrData( mesh\_instance, \&verts[0], verts.size(), 
+                       fixed\_tag, \&tag\_data[0], tag\_data.size(), \&ierr );
+  if (iBase\_SUCCESS != ierr) return ierr;
+
+    // Finally, smooth the mesh
+  ShapeImprover smoother(err);
+  if (err) return err.error\_code();
+
+  {\bf{}PlanarDomain xyplane(PlanarDomain::XY);}
+  {\bf{}smoother.run\_instructions( \&mesh\_adapter, \&xyplane, err );}
+  if (err) return err.error\_code();
+
+  return 0;
+}
+\end{alltt}
 
