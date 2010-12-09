@@ -171,7 +171,7 @@ and is capable of reading any version of the file format up to 3.0.
 
 The ITAPS Working Group has defined a standard API for exchange of mesh data between applications.  The iMesh interface\cite{imesh} defines a superset of the functionality required for the \texttt{Mesquite::Mesh} interface.  Mesquite can access mesh through an iMesh interface using the \texttt{Mesquite::MsqIMesh} class declared in \texttt{MsqIMesh.hpp}.  This class is an ``adaptor'':  it presents the iMesh interface as the \texttt{Mesquite::Mesh} interface.  
 
-The primary advantage of using the iMesh Interface over mechanisms in other sections of this chapter to provide Mesquite with access to application-owned mesh data is that the same interface implementation can be used to allow other tools access to the same mesh data.  It may also be easier for Fortran developers to implement.
+The primary advantage of this method of providing mesh data to mesquite is that it is designed for interoperability.  The same API can be used to provide other tools and services access to the mesh data.  And there are stand-alone mesh data base libraries that already implement this API such as MOAB\cite{MOAB-webpage} and FMDB\cite{FMDB-webpage}.  It is also possible to implement the iMesh interface in Fortran.
 
 \subsection{Overview}
 
@@ -214,7 +214,7 @@ An implementation should provide complete implementations of all of these method
 
 \subsection{Volume Example}
 
-The following example demonstrates the use of the \texttt{ShapeImprover} wrapper to improve the shape of mesh volume elements by moving only vertices that are in the interior of the mesh.  The input to the example function is the \texttt{iMesh\_Instance} handle and an \texttt{iBase\_EntitySetHandle} specifying both the elements for which to improve the quality and the free vertices.  The example code marks all vertices that are adjacent to input elements but not contained in the passed set as fixed.
+The following example demonstrates the use of the \texttt{ShapeImprover} wrapper with an implementation of the iMesh interface.  It is assumed that the application has implemented the iMesh interface to provide access to its own data or is using an existing implementation of the iMesh interface to store its mesh data.  The example illustrates the setup necessary to correctly pass a subset of a mesh to mesquite and how to designate boundary verices as fixed using the ``fixed tag''.  The input to the example function is the \texttt{iMesh\_Instance} handle and an \texttt{iBase\_EntitySetHandle} specifying both the elements for which to improve the quality and the free vertices.  The example code uses this application-supplied designation of which vertices are fixed to initalize the ``fixed tag''.
 
 \begin{lstlisting}
 
@@ -247,9 +247,9 @@ int shape_improve_volume( iMesh_Instance mesh_instance,
 {
   MsqPrintError err(std::cerr);
   int ierr;
-  iBase_EntityHandle *junk1, *junk2;
-  int *junk3, *junk4;
-  int junk5, junk6, junk7, junk8, junk9, junk10, junk11;
+  iBase_EntityHandle *ptr1, *ptr2;
+  int *ptr3, *ptr4;
+  int i5, i6, i7, i8, i9, i10, i11;
   \<const int elem_dim = 3;\>
   \<const int max_vtx_per_elem = 8;\>
   
@@ -273,20 +273,20 @@ int shape_improve_volume( iMesh_Instance mesh_instance,
   if (iBase_SUCCESS != ierr) return ierr;
   std::vector<iBase_EntityHandle> elems(count), verts(max_vtx_per_elem*count);
   std::vector<int> indices(max_vtx_per_elem*count), offsets(count+1);
-  junk1 = &elems[0];
-  junk2 = &verts[0];
-  junk3 = &indices[0];
-  junk4 = &offsets[0];
-  junk5 = elems.size();
-  junk7 = verts.size();
-  junk8 = indices.size();
-  junk10 = offsets.size();
+  ptr1 = &elems[0];
+  ptr2 = &verts[0];
+  ptr3 = &indices[0];
+  ptr4 = &offsets[0];
+  i5 = elems.size();
+  i7 = verts.size();
+  i8 = indices.size();
+  i10 = offsets.size();
   iMesh_getAdjEntIndices( mesh_instance, mesh, 
                           elem_dim, iMesh_ALL_TOPOLOGIES, iBase_VERTEX,
-                          &junk1, &junk5, &junk6,
-                          &junk2, &junk7, &num_vtx,
-                          &junk3, &junk8, &junk9,
-                          &junk4, &junk10, &junk11, &ierr );
+                          &ptr1, &i5, &i6,
+                          &ptr2, &i7, &num_vtx,
+                          &ptr3, &i8, &i9,
+                          &ptr4, &i10, &i11, &ierr );
   if (iBase_SUCCESS != ierr) return ierr;
   verts.resize( num_vtx );
 
@@ -300,10 +300,10 @@ int shape_improve_volume( iMesh_Instance mesh_instance,
   iMesh_getNumOfType( mesh_instance, mesh, iBase_VERTEX, &count, &ierr );
   if (iBase_SUCCESS != ierr) return ierr;
   verts.resize( count );
-  junk1 = &verts[0];
-  junk5 = verts.size();
+  ptr1 = &verts[0];
+  i5 = verts.size();
   iMesh_getEntities( mesh_instance, mesh, iBase_VERTEX, iMesh_ALL_TOPOLOGIES,
-                     &junk1, &junk5, &junk6, &ierr );
+                     &ptr1, &i5, &i6, &ierr );
   if (iBase_SUCCESS != ierr) return ierr;
   tag_data.clear();
   tag_data.resize( verts.size(), 0 );
@@ -357,9 +357,9 @@ int shape_improve_2D( iMesh_Instance mesh_instance,
 {
   MsqPrintError err(std::cerr);
   int ierr;
-  iBase_EntityHandle *junk1, *junk2;
-  int *junk3, *junk4;
-  int junk5, junk6, junk7, junk8, junk9, junk10, junk11;
+  iBase_EntityHandle *ptr1, *ptr2;
+  int *ptr3, *ptr4;
+  int i5, i6, i7, i8, i9, i10, i11;
   \<const int elem_dim = 2;\>
   \<const int max_vertex_per_elem = 4;\>
   
@@ -383,20 +383,20 @@ int shape_improve_2D( iMesh_Instance mesh_instance,
   if (iBase_SUCCESS != ierr) return ierr;
   std::vector<iBase_EntityHandle> elems(count), verts(max_vtx_per_elem*count);
   std::vector<int> indices(max_vtx_per_elem*count), offsets(count+1);
-  junk1 = &elems[0];
-  junk2 = &verts[0];
-  junk3 = &indices[0];
-  junk4 = &offsets[0];
-  junk5 = elems.size();
-  junk7 = verts.size();
-  junk8 = indices.size();
-  junk10 = offsets.size();
+  ptr1 = &elems[0];
+  ptr2 = &verts[0];
+  ptr3 = &indices[0];
+  ptr4 = &offsets[0];
+  i5 = elems.size();
+  i7 = verts.size();
+  i8 = indices.size();
+  i10 = offsets.size();
   iMesh_getAdjEntIndices( mesh_instance, mesh, 
                           elem_dim, iMesh_ALL_TOPOLOGIES, iBase_VERTEX,
-                          &junk1, &junk5, &junk6,
-                          &junk2, &junk7, &num_vtx,
-                          &junk3, &junk8, &junk9,
-                          &junk4, &junk10, &junk11, &ierr );
+                          &ptr1, &i5, &i6,
+                          &ptr2, &i7, &num_vtx,
+                          &ptr3, &i8, &i9,
+                          &ptr4, &i10, &i11, &ierr );
   if (iBase_SUCCESS != ierr) return ierr;
   verts.resize( num_vtx );
 
@@ -410,10 +410,10 @@ int shape_improve_2D( iMesh_Instance mesh_instance,
   iMesh_getNumOfType( mesh_instance, mesh, iBase_VERTEX, &count, &ierr );
   if (iBase_SUCCESS != ierr) return ierr;
   verts.resize( count );
-  junk1 = &verts[0];
-  junk5 = verts.size();
+  ptr1 = &verts[0];
+  i5 = verts.size();
   iMesh_getEntities( mesh_instance, mesh, iBase_VERTEX, iMesh_ALL_TOPOLOGIES,
-                     &junk1, &junk5, &junk6, &ierr );
+                     &ptr1, &i5, &i6, &ierr );
   if (iBase_SUCCESS != ierr) return ierr;
   tag_data.clear();
   tag_data.resize( verts.size(), 0 );
