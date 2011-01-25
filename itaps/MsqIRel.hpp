@@ -48,7 +48,7 @@ public:
 
   MsqIRel( iGeom_Instance geom,
            iRel_Instance irel_iface,
-           iRel_RelationHandle irel_instance );
+           iRel_PairHandle irel_instance );
 
   virtual ~MsqIRel();
 
@@ -93,7 +93,7 @@ private:
 
     /** ITAPS interface implementation for mesh->geometry association */
   iRel_Instance  relateIface;
-  iRel_RelationHandle relateInstance;
+  iRel_PairHandle relateInstance;
   
     /** temporary storage of geometry entity handles */
   mutable std::vector<iBase_EntityHandle> geomHandles;
