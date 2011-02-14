@@ -36,13 +36,13 @@
 #include "Mesquite.hpp"
 #include "Exponent.hpp"
 
+#include "Vector3D.hpp"
+#include "Matrix3D.hpp"
+
 #include <vector>
 
 namespace MESQUITE_NS {
 
-class Vector3D;
-class Matrix3D;
-class SymMatrix3D;
 class PatchData;
 class MsqError;
 class QualityMetric;
