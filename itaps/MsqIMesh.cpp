@@ -39,6 +39,14 @@
 #include "MsqIBase.hpp"
 #include <algorithm>
 
+#ifdef IMESH_MAJOR_VERSION
+# define IMESH_VERSION_ATLEAST(MAJOR,MINOR) \
+           1000*IMESH_MAJOR_VERSION+IMESH_MINOR_VERSION <= \
+           1000*MAJOR+MINOR
+#else
+# define IMESH_VERSION_ATLEAST(MAJOR,MINOR) 0
+#endif
+
 namespace MESQUITE_NS {
 
 
@@ -332,12 +340,20 @@ void MsqIMesh::get_flag_data( iBase_TagHandle tag,
   }
   else if (type == iBase_BYTES) {
     if (sizeof(bool) == sizeof(char)) {  // always true?
+#if IMESH_VERSION_ATLEAST(1,1)
+      void* ptr = flag_array;
+#else
       char* ptr = reinterpret_cast<char*>(flag_array);
+#endif
       iMesh_getArrData( meshInstance, arr, num_vtx, tag, &ptr, &alloc, &size, &ierr );
     }
     else {
       std::vector<char> values(num_vtx);
+#if IMESH_VERSION_ATLEAST(1,1)
+      void* ptr = arrptr(values);
+#else
       char* ptr = arrptr(values);
+#endif
       iMesh_getArrData( meshInstance, arr, num_vtx, tag, &ptr, &alloc, &size, &ierr );
       for (int i = 0; i < size; ++i)
         flag_array[i] = !!values[i];
@@ -980,7 +996,11 @@ void MsqIMesh::tag_get_data( TagHandle tag,
     MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
     return;
   }
+#if IMESH_VERSION_ATLEAST(1,1)
+  void* ptr = data;
+#else
   char* ptr = static_cast<char*>(data);
+#endif
   int junk1 = size*num_elems, junk2;
   assert( sizeof(EntityHandle) == sizeof(iBase_EntityHandle) );
   const iBase_EntityHandle* arr = reinterpret_cast<const iBase_EntityHandle*>(array);
