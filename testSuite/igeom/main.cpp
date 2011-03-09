@@ -239,8 +239,8 @@ MeshDomain* get_itaps_domain()
   }
   
   Vector3D bmin, bmax;
-  iGeom_getEntBoundBox( igeom, sphere_surf, arrptr(bmin), &bmin[1], &bmin[2],
-                        arrptr(bmax), &bmax[1], &bmax[2], &ierr ); CHKIGEOM;
+  iGeom_getEntBoundBox( igeom, sphere_surf, &bmin[0], &bmin[1], &bmin[2],
+                        &bmax[0], &bmax[1], &bmax[2], &ierr ); CHKIGEOM;
   Vector3D center = 0.5 * (bmin + bmax);
   Vector3D rad = 0.5 * (bmax - bmin);
   if ((center - SPHERE_CENTER).length() > EPS ||
