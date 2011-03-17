@@ -920,13 +920,12 @@ void MsqIMesh::tag_get_data( TagHandle tag,
     MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
     return;
   }
-  char* ptr = static_cast<char*>(data);
   int junk1 = size*num_elems, junk2;
   assert( sizeof(EntityHandle) == sizeof(iBase_EntityHandle) );
   const iBase_EntityHandle* arr = reinterpret_cast<const iBase_EntityHandle*>(array);
   iMesh_getArrData( meshInstance, arr, num_elems, 
                     static_cast<iBase_TagHandle>(tag), 
-                    &ptr, &junk1, &junk2, &ierr );
+                    &data, &junk1, &junk2, &ierr );
   if (iBase_SUCCESS != ierr) {
     MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
     return;

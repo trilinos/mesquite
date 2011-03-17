@@ -47,7 +47,7 @@ namespace MESQUITE_NS
 
 MsqIRel::MsqIRel( iGeom_Instance geom,
                   iRel_Instance relate_iface,
-                  iRel_RelationHandle relate_instance ) 
+                  iRel_PairHandle relate_instance ) 
   : MsqCommonIGeom( geom ), 
     relateIface( relate_iface ),
     relateInstance( relate_instance )
@@ -186,7 +186,7 @@ int MsqIRel::geom_from_mesh( Mesh::EntityHandle mesh_ent_handle,
 {
     // get geometric entity
   int ierr;
-  iRel_getEntEntAssociation( relateIface,
+  iRel_getEntEntRelation( relateIface,
                              relateInstance,
                              (iBase_EntityHandle)mesh_ent_handle,
                              true,

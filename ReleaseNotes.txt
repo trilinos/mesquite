@@ -51,4 +51,7 @@
   - Handle file read error cleanly in imesh test.
   - Fix iMesh test compatability
   - Fix incorrect rotation in MeshTransform utility
-  
+
+2.1.4:
+  - Update to latest ITAPS APIs for March 2011 ITAPS release.
+
