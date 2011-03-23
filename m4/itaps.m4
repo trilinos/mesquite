@@ -99,7 +99,7 @@ else
   SNL_MAKE_INC_VAR( [${$2_DEFS}], [$2_INCLUDES], [$2_INCL="$make_val"] )
 
   # Set up testing environment
-  AC_LANG_PUSH([C])
+  AC_LANG_PUSH([C++])
   old_LIBS="$LIBS"
   LIBS="$LIBS ${$2_LIBS}"
   ALL_INCL="${$2_INCL}"
@@ -135,7 +135,7 @@ else
    # Resore environment
    LIBS="$old_LIBS"
    CPPFLAGS="$old_CPPFLAGS"
-   AC_LANG_POP([C])
+   AC_LANG_POP([C++])
    
    ENABLE_$2=yes
    ENABLE_IBASE=yes
