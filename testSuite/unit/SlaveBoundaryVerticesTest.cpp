@@ -182,10 +182,8 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
   mesh.get_all_vertices( verts, err ); ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!verts.empty());
   if (boundary >= 4) {
-    bool* flags = new bool[verts.size()];
+    std::vector<bool> flags;
     mesh.vertices_get_fixed_flag( arrptr(verts), flags, verts.size(), err );
-    if (err) 
-      delete [] flags;
     ASSERT_NO_ERROR(err);
     for (size_t i = 0; i < verts.size(); ++i)
       if (flags[i]) {
@@ -259,15 +257,12 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
   
     // Now build a map of all fixed vertices
   std::set<Mesh::VertexHandle> fixed_vertices;
-  bool* fixed = new bool[verts.size()];
+  std::vector<bool> fixed;
   mesh.vertices_get_fixed_flag( arrptr(verts), fixed, verts.size(), err );
-  if (err)
-    delete [] fixed;
   ASSERT_NO_ERROR(err);
   for (size_t i = 0; i < verts.size(); ++i)
     if (fixed[i])
       fixed_vertices.insert( verts[i] );
-  delete [] fixed;
 
     // Now actually run the tool
   Settings settings;

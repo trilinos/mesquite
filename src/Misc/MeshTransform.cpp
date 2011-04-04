@@ -55,6 +55,7 @@ namespace MESQUITE_NS {
     if (MSQ_CHKERR(err))
       return 1.0;
     
+    std::vector<bool> fixed(1);
     MsqVertex vertex;
     std::vector<Mesh::VertexHandle>::const_iterator iter;
     for (iter = handle_list.begin(); iter != handle_list.end(); ++iter)
@@ -64,11 +65,10 @@ namespace MESQUITE_NS {
         return 1.0;
       
       if (skipFixed) {
-        bool fixed;
-        mesh->vertices_get_fixed_flag( &*iter, &fixed, 1, err );
+        mesh->vertices_get_fixed_flag( &*iter, fixed, 1, err );
         if (MSQ_CHKERR(err))
           return 1.0;
-        if (fixed)
+        if (fixed.front())
           continue;
       }
       

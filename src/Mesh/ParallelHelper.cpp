@@ -286,7 +286,7 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   /* allocate the data arrays we'll use for smoothing */
   std::vector<size_t> gid(num_vertex);
   std::vector<int> proc_owner(num_vertex);
-  bool* app_fixed = new bool[num_vertex];
+  std::vector<bool> app_fixed;
 
   /* get the data from the mesquite mesh */
   mesh->vertices_get_global_id(arrptr(vertices),arrptr(gid),num_vertex,err); MSQ_ERRRTN(err);
@@ -391,8 +391,6 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   }
 
   num_vtx_partition_boundary = num_vtx_partition_boundary_local + num_vtx_partition_boundary_remote;
-
-  delete [] app_fixed;
 
   /********************************************************************
  COLLECT THE PARTITION BOUNDARY VERTICES AND THE UNUSED GHOST VERTICES
@@ -996,7 +994,7 @@ void ParallelHelperImpl::smoothing_close(MsqError& err)
     /* get the tags so we can find the requested vertices */
     std::vector<size_t> gid(num_vertex);
     mesh->vertices_get_global_id(arrptr(vertices),arrptr(gid),num_vertex,err); MSQ_ERRRTN(err);
-    bool* app_fixed = new bool[num_vertex];
+    std::vector<bool> app_fixed;
     mesh->vertices_get_fixed_flag(arrptr(vertices),app_fixed,num_vertex,err); MSQ_ERRRTN(err);
     std::vector<int> proc_owner(num_vertex);
     mesh->vertices_get_processor_id(arrptr(vertices),arrptr(proc_owner),num_vertex,err); MSQ_ERRRTN(err);
@@ -1013,7 +1011,7 @@ void ParallelHelperImpl::smoothing_close(MsqError& err)
 
     /* deallocate the tags */
     //delete [] gid; gid = 0;
-    delete [] app_fixed; app_fixed = 0;
+    //delete [] app_fixed; app_fixed = 0;
     //delete [] proc_owner; proc_owner = 0;
     
     /* find the requested updates and collect them into an array */

@@ -70,9 +70,8 @@ void get_fixed_vertices( Mesh* mesh,
                          std::vector<Mesh::VertexHandle>& fixed_verts,
                          MsqError& err )
 {
-  assert(sizeof(char) == sizeof(bool));
-  std::vector<unsigned char> fixed( num_verts );
-  mesh->vertices_get_fixed_flag( verts, (bool*)arrptr(fixed), num_verts, err );
+  std::vector<bool> fixed( num_verts );
+  mesh->vertices_get_fixed_flag( verts, fixed, num_verts, err );
   MSQ_ERRRTN(err);
   for (size_t i = 0; i < num_verts; ++i) 
     if (fixed[i])

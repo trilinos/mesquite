@@ -53,7 +53,7 @@ class ArrayMesh : public Mesh
        *\param interleaved_vertex_coords Vertex coordinates.  Ordered as
        *                         [x1, y1, z1, x2, y2, z2, ...]
        *\param vertex_fixed_flags One value per vertex.  Zero if vertex is
-       *                         free, one if the poistion is fixed.
+       *                         free, one if the position is fixed.
        *\param num_elements      Number of elements in the mesh
        *\param element_type      The type of the elements
        *\param element_connectivity_array Element connectivity, specified
@@ -65,6 +65,10 @@ class ArrayMesh : public Mesh
        *                         specified, number of nodes in a linear
        *                         element with the type 'element_type' is
        *                         assumed.
+       *\param vertex_slaved_flags One value per vertex.  Zero if vertex is
+       *                         free, one if the vertex is slaved to the
+       *                         logical position of the element mapping/shape
+       *                         function..
        */
     ArrayMesh( int coords_per_vertex,
                unsigned long num_vertices,
@@ -74,7 +78,8 @@ class ArrayMesh : public Mesh
                EntityTopology element_type,
                const unsigned long* element_connectivity_array,
                bool one_based_conn_indices = false,
-               unsigned nodes_per_element = 0 );
+               unsigned nodes_per_element = 0,
+               const int* vertex_slaved_flags = 0 );
                
       /** Create a Mesquite::Mesh instance that wraps application-provided
        *  arrays.  
@@ -114,6 +119,10 @@ class ArrayMesh : public Mesh
        *                         its topological type (that it has no higher-order
        *                         nodes.)
        *\param one_based_conn_indices Use one-based (Fortran) array indexing.
+       *\param vertex_slaved_flags One value per vertex.  Zero if vertex is
+       *                         free, one if the vertex is slaved to the
+       *                         logical position of the element mapping/shape
+       *                         function..
        */
     ArrayMesh( int coords_per_vertex,
                unsigned long num_vertices,
@@ -123,7 +132,8 @@ class ArrayMesh : public Mesh
                const EntityTopology* element_types,
                const unsigned long* element_connectivity_array,
                const unsigned long* element_connectivity_offsets = NULL,
-               bool one_based_conn_indices = false );
+               bool one_based_conn_indices = false,
+               const int* vertex_slaved_flags = 0 );
 
 
     ArrayMesh();
@@ -139,7 +149,8 @@ class ArrayMesh : public Mesh
                EntityTopology element_type,
                const unsigned long* element_connectivity_array,
                bool one_based_conn_indices = false,
-               unsigned nodes_per_element = 0 );
+               unsigned nodes_per_element = 0,
+               const int* vertex_slaved_flags = 0 );
     
     /**\brief Give mesquite access to per-entity application data via a tag
      *
@@ -219,11 +230,11 @@ class ArrayMesh : public Mesh
     virtual ElementIterator* element_iterator(MsqError &err);
 
     virtual void vertices_get_fixed_flag( const VertexHandle vert_array[], 
-                                          bool fixed_flag_array[],
+                                          std::vector<bool>& fixed_flag_array,
                                           size_t num_vtx, 
                                           MsqError &err );
     virtual void vertices_get_slaved_flag( const VertexHandle vert_array[], 
-                                           bool slaved_flag_array[],
+                                           std::vector<bool>& slaved_flag_array,
                                            size_t num_vtx, 
                                            MsqError &err );
    virtual void vertices_get_coordinates( const VertexHandle vert_array[],
@@ -329,6 +340,7 @@ class ArrayMesh : public Mesh
     unsigned long vertexCount;       //!< Number of vertices
     double* coordArray;              //!< Interleaved vertex coordinates
     const int* fixedFlags;           //!< Vertex fixed flags
+    const int* slavedFlags;          //!< Vertex slaved flags
     unsigned char* vertexByteArray;  //!< Vertex bytes
     
     unsigned long elementCount;      //!< Number of elements

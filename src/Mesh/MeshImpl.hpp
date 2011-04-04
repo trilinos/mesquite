@@ -120,17 +120,17 @@ namespace MESQUITE_NS
       //! property; this flag can't be modified by users of the
       //! Mesquite::Mesh interface.
     virtual void vertices_get_fixed_flag( const VertexHandle vert_array[], 
-                                          bool fixed_flag_array[],
+                                          std::vector<bool>& fixed_flag_array,
                                           size_t num_vtx, 
                                           MsqError &err);
 
     void vertices_set_fixed_flag( const VertexHandle vert_array[], 
-                                  const bool fixed_flag_array[],
+                                  const std::vector<bool>& fixed_flag_array,
                                   size_t num_vtx, 
                                   MsqError &err);
 
     virtual void vertices_get_slaved_flag( const VertexHandle vert_array[], 
-                                           bool slaved_flag_array[],
+                                           std::vector<bool>& slaved_flag_array,
                                            size_t num_vtx, 
                                            MsqError &err );
     

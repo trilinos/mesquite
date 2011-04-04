@@ -736,13 +736,6 @@ namespace MESQUITE_NS
     std::vector<size_t> offsetArray;
     std::vector<unsigned char> byteArray;
     mutable std::vector<bool> bitMap;
-    bool* boolArray;
-    size_t boolArraySize;
-    bool* get_bool_array( size_t size ) {
-      if (boolArraySize < size)
-        boolArray = (bool*)realloc( boolArray, (boolArraySize = size) );
-      return boolArray;
-    }
     
       // Patch Computed Information (maxs, mins, etc ... )
     double computedInfos[MAX_COMPUTED_INFO_ENUM];

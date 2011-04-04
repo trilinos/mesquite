@@ -434,14 +434,13 @@ void iMeshTest::testVertexFlagNone( bool fixed )
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!handles.empty());
 
-  bool* b = new bool[handles.size()];
-  std::fill( b, b+handles.size(), true );
+  std::vector<bool> b(handles.size 0, true );
   if (fixed)
     myMesh->vertices_get_fixed_flag( arrptr(handles), b, handles.size(), err );
   else
     myMesh->vertices_get_slaved_flag( arrptr(handles), b, handles.size(), err );
-  size_t first_true = std::find( b, b+handles.size(), true ) - b;
-  delete [] b;
+  CPPUNIT_ASSERT_EQUAL( handles.size(), b.size() );
+  size_t first_true = std::find( b.begin(), b.end(), true ) - b.begin();
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT_EQUAL(  handles.size(), first_true );
 }
@@ -502,14 +501,13 @@ void iMeshTest::testVertexFlag( bool fixed, iBase_TagValueType type )
   }
   
     // get flag through MsqIMesh
-  bool* b = new bool[handles.size()];
+  std::vector<bool> flags;
   if (fixed)
-    myMesh->vertices_get_fixed_flag( arrptr(handles), b, handles.size(), err );
+    myMesh->vertices_get_fixed_flag( arrptr(handles), flags, handles.size(), err );
   else
-    myMesh->vertices_get_slaved_flag( arrptr(handles), b, handles.size(), err );
-  std::vector<bool> flags(b, b+handles.size());
-  delete [] b;
+    myMesh->vertices_get_slaved_flag( arrptr(handles), flags, handles.size(), err );
   ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( handles.size(), flags.size() );
   
     // check flag values
   for (size_t i = 0; i < handles.size(); ++i)

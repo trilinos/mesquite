@@ -48,13 +48,6 @@ SlaveBoundaryVertices::SlaveBoundaryVertices( unsigned depth, unsigned dim )
 std::string SlaveBoundaryVertices::get_name() const
   { return "SlaveBoundaryVertices"; }
 
-struct BoolArr { // vector<bool> cannot be treated as an array of bool
-  BoolArr(size_t size) : mArray(new bool[size]) {}
-  ~BoolArr() { delete [] mArray; }
-  bool* mArray;
-  bool& operator[](size_t i) { return mArray[i]; }
-};
-
 double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh, 
                                               MeshDomain* domain, 
                                               const Settings* settings,
@@ -83,8 +76,8 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
     return 0.0;
   std::sort( vertices.begin(), vertices.end() );
   std::vector<unsigned short> depth( vertices.size(), elemDepth+1 );
-  BoolArr fixed( vertices.size() );
-  mesh->vertices_get_fixed_flag( arrptr(vertices), fixed.mArray, vertices.size(), err );
+  std::vector<bool> fixed;
+  mesh->vertices_get_fixed_flag( arrptr(vertices), fixed, vertices.size(), err );
   MSQ_ERRZERO(err);
   
     // Initialize map with boundary vertices.

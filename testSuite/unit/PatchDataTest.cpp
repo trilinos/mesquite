@@ -993,7 +993,7 @@ void PatchDataTest::get_higher_order_vertices( Mesh* mesh,
     std::map<Mesh::VertexHandle,bool>::iterator p;
     std::sort( verts.begin(), verts.end() );
     verts.erase( std::unique( verts.begin(), verts.end() ), verts.end() );
-    bool* fixed = new bool[verts.size()];
+    std::vector<bool> fixed;
     mesh->vertices_get_fixed_flag( arrptr(verts), fixed, verts.size(), err );
     ASSERT_NO_ERROR(err);
     for (size_t i = 0; i < verts.size(); ++i) {
@@ -1003,7 +1003,6 @@ void PatchDataTest::get_higher_order_vertices( Mesh* mesh,
           ho_verts.erase(p);
       }
     }
-    delete [] fixed;
   }
 }
 
@@ -1105,14 +1104,14 @@ class HoSlavedMesh : public MeshDecorator
       {}
       
     virtual void vertices_get_slaved_flag( const VertexHandle vert_array[], 
-                                           bool slaved_flag_array[],
+                                           std::vector<bool>& slaved_flag_array,
                                            size_t num_vtx, 
                                            MsqError &err );
   private:
     SMap slavedVerts;
 };
 void HoSlavedMesh::vertices_get_slaved_flag( const VertexHandle vert_array[], 
-                                             bool slaved_flag_array[],
+                                             std::vector<bool>& slaved_flag_array,
                                              size_t num_vtx, 
                                              MsqError &err )
 {

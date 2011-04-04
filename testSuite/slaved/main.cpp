@@ -138,6 +138,7 @@ int main( int argc, char* argv[] )
   MeshImpl meshes[NUM_MODES];
   
   bool have_slaved_flag = true;
+  std::vector<bool> flag(1);
   for (int i = 0; i < NUM_MODES; ++i) {
     std::cout << std::endl
               << "-----------------------------------------------" << std::endl
@@ -154,8 +155,7 @@ int main( int argc, char* argv[] )
       std::vector<Mesh::VertexHandle> verts;
       meshes[i].get_all_vertices( verts, err );
       if (err) return 1;
-      bool flag;
-      meshes[i].vertices_get_slaved_flag( arrptr(verts), &flag, 1, err );
+      meshes[i].vertices_get_slaved_flag( arrptr(verts), flag, 1, err );
       if (err) {
         have_slaved_flag = false;
         std::cout << "Skipped because input file does not contain slaved attribute" << std::endl;
@@ -303,19 +303,13 @@ int check_slaved_coords( Mesh& mesh,
   // are those vertices far from the boundary that would be slaved if
   // mode == SLAVE_FLAG, not those that were actually slaved during
   // the optimization
-  bool *fixed, *slaved;
-  fixed = new bool[verts.size()];
-  slaved = new bool[verts.size()];
+  std::vector<bool> fixed, slaved;
   mesh.vertices_get_fixed_flag( arrptr(verts), fixed, verts.size(), err );
   if (MSQ_CHKERR(err)) {
-    delete [] fixed;
-    delete [] slaved;
     return 1;
   }
   mesh.vertices_get_slaved_flag( arrptr(verts), slaved, verts.size(), err );
   if (MSQ_CHKERR(err)) {
-    delete [] fixed;
-    delete [] slaved;
     return 1;
   }
   std::vector<Mesh::VertexHandle> free, slave;
@@ -325,8 +319,6 @@ int check_slaved_coords( Mesh& mesh,
     else if (!fixed[i] && !slaved[i])
       free.push_back( verts[i] );
   }
-  delete [] fixed;
-  delete [] slaved;
   
     // get all coordinates
   std::vector<MsqVertex> free_coords(free.size()), slave_coords(slave.size());
@@ -426,11 +418,8 @@ int check_no_slaved_corners( Mesh& mesh, MsqError& err )
   mesh.elements_get_attached_vertices( arrptr(elems), elems.size(), verts, offsets, err );
   MSQ_ERRZERO(err);
   
-  bool* slaved_arr = new bool[verts.size()];
-  mesh.vertices_get_slaved_flag( arrptr(verts), slaved_arr, verts.size(), err );
-  std::vector<bool> slaved(verts.size());
-  std::copy( slaved_arr, slaved_arr + verts.size(), slaved.begin() );
-  delete [] slaved_arr;
+  std::vector<bool> slaved;
+  mesh.vertices_get_slaved_flag( arrptr(verts), slaved, verts.size(), err );
   MSQ_ERRZERO(err);
   
   int error_count = 0;
@@ -456,17 +445,12 @@ int check_global_patch_slaved( Mesh& mesh, MsqError& err )
   pd.set_mesh( &mesh );
   pd.fill_global_patch( err ); MSQ_ERRZERO(err);
 
-  bool *fixed_arr = new bool[pd.num_nodes()];
+  std::vector<bool> fixed, slaved;
   mesh.vertices_get_fixed_flag( pd.get_vertex_handles_array(), 
-                                fixed_arr, pd.num_nodes(), err );
-  std::vector<bool> fixed( fixed_arr, fixed_arr + pd.num_nodes() );
-  delete [] fixed_arr;
+                                fixed, pd.num_nodes(), err );
   MSQ_ERRZERO(err);
-  bool *slaved_arr = new bool[pd.num_nodes()];
   mesh.vertices_get_slaved_flag( pd.get_vertex_handles_array(), 
-                                 slaved_arr, pd.num_nodes(), err );
-  std::vector<bool> slaved( slaved_arr, slaved_arr + pd.num_nodes() );
-  delete [] slaved_arr;
+                                 slaved, pd.num_nodes(), err );
   MSQ_ERRZERO(err);
   
   const size_t first_free = 0;

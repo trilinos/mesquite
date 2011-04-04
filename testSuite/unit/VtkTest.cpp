@@ -866,14 +866,15 @@ public:
     CPPUNIT_ASSERT_EQUAL( verts.size(), (size_t)27 );
 
     // get fixed flag
-    bool fixed[27];
+    std::vector<bool> fixed;
     mesh.vertices_get_fixed_flag( arrptr(verts), fixed, verts.size(), err );
     CPPUNIT_ASSERT(!err);
+    CPPUNIT_ASSERT_EQUAL( verts.size(), fixed.size() );
     
     for (int i = 0; i < 27; ++i)
     {
       bool should_be_fixed = (i != 13);
-      CPPUNIT_ASSERT_EQUAL( should_be_fixed, fixed[i] );
+      CPPUNIT_ASSERT_EQUAL( should_be_fixed, (bool)fixed[i] );
     }
   }
  

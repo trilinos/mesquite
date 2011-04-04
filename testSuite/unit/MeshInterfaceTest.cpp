@@ -178,11 +178,12 @@ public:
   {
     size_t nbVert = mVertices.size();
     bool correct_fixed[9] = {false, false, false, true, true, true, true, true, true};
-    bool fixed[9];
+    std::vector<bool> fixed;
     mMesh->vertices_get_fixed_flag( arrptr(mVertices), fixed, 9, mErr );
     CPPUNIT_ASSERT(!mErr);
+    CPPUNIT_ASSERT_EQUAL( (size_t)8, fixed.size() );
     for (size_t i=0; i<nbVert; ++i) {
-      CPPUNIT_ASSERT(fixed[i] == correct_fixed[i]);
+      CPPUNIT_ASSERT_EQUAL(correct_fixed[i], (bool)fixed[i]);
     }
   }
 

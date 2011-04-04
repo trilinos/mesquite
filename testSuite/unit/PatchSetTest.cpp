@@ -29,7 +29,7 @@
 #include "GlobalPatch.hpp"
 #include "MeshInterface.hpp"
 #include "MsqError.hpp"
-#include "cppunit/extensions/HelperMacros.h"
+#include "UnitUtil.hpp"
 
 #include <assert.h>
 #include <vector>
@@ -63,9 +63,9 @@ public:
   
   void get_all_vertices( vector<VertexHandle>& verts, MsqError& err );
   
-  void vertices_get_fixed_flag( const VertexHandle* verts, bool* fixed, size_t n, MsqError& err );
+  void vertices_get_fixed_flag( const VertexHandle* verts, std::vector<bool>& fixed, size_t n, MsqError& err );
   
-  void vertices_get_slaved_flag( const VertexHandle* verts, bool* fixed, size_t n, MsqError& err );
+  void vertices_get_slaved_flag( const VertexHandle* verts, std::vector<bool>& fixed, size_t n, MsqError& err );
   
   void vertices_get_attached_elements( const VertexHandle* array, size_t len,
                                        vector<ElementHandle>& elems,
@@ -146,18 +146,19 @@ void FakeMesh::get_all_vertices( vector<Mesh::VertexHandle>& verts, MsqError& er
 }
   
 void FakeMesh::vertices_get_fixed_flag( const VertexHandle* verts, 
-                              bool* fixed, size_t n, MsqError& err )
+                              std::vector<bool>& fixed, size_t n, MsqError& err )
 {
   if (doError) {
     MSQ_SETERR(err)(MsqError::UNKNOWN_ERROR, "Expected error");
     return;
   }
   
-  if (!verts || !fixed) {
+  if (!verts) {
     MSQ_SETERR(err)(MsqError::INVALID_STATE, "NULL array pointer");
     return;
   }
   
+  fixed.resize(n);
   for (size_t i = 0; i < n; ++i)
   {
     size_t vert = (size_t)verts[i];
@@ -170,7 +171,7 @@ void FakeMesh::vertices_get_fixed_flag( const VertexHandle* verts,
 }
    
 void FakeMesh::vertices_get_slaved_flag( const VertexHandle* , 
-                              bool* , size_t , MsqError&  )
+                              std::vector<bool>& , size_t , MsqError&  )
 {
   CPPUNIT_ASSERT(false);
 }
@@ -286,26 +287,24 @@ void PatchSetTest::test_vertex_patches()
   vector<Mesh::VertexHandle> vertex_handles, patch_verts;
   vector<Mesh::ElementHandle> element_handles, patch_elems;
   myMesh.get_all_vertices( vertex_handles, err );
-  CPPUNIT_ASSERT(!err);
+  ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!vertex_handles.empty());
   
-  bool *fixed = new bool[vertex_handles.size()];
+  std::vector<bool> fixed;
   myMesh.vertices_get_fixed_flag(arrptr(vertex_handles), fixed, vertex_handles.size(), err );
-  if (err) { delete [] fixed; fixed = 0; }
-  CPPUNIT_ASSERT(!err);
+  ASSERT_NO_ERROR(err);
   
   set<Mesh::VertexHandle> free_verts;
   for (i = 0; i < vertex_handles.size(); ++i)
     if (!fixed[i])
       free_verts.insert( vertex_handles[i] );
-  delete [] fixed;
   
     // Get list of patch handles
   
   vector<PatchSet::PatchHandle> patch_handles;
   vp.get_patch_handles( patch_handles, err );
-  CPPUNIT_ASSERT(!err);
-  CPPUNIT_ASSERT(free_verts.size() == patch_handles.size());
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL(free_verts.size(), patch_handles.size());
   
   
     // Check each patch handle
@@ -313,8 +312,8 @@ void PatchSetTest::test_vertex_patches()
   for (i = 0; i < patch_handles.size(); ++i)
   {
     vp.get_patch(patch_handles[i], patch_elems, patch_verts, err );
-    CPPUNIT_ASSERT(!err);
-    
+    ASSERT_NO_ERROR(err);
+
       // Check that each patch contains exactly 1 free vertex
       // and that it is always a different free vertex.
     CPPUNIT_ASSERT(patch_verts.size() == 1);
@@ -326,7 +325,7 @@ void PatchSetTest::test_vertex_patches()
     element_handles.clear();
     myMesh.vertices_get_attached_elements( arrptr(patch_verts), 1, 
                                            element_handles, offsets, err );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
       // Compare element handle lists
     sort( element_handles.begin(), element_handles.end() );

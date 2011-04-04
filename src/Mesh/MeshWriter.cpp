@@ -852,10 +852,8 @@ void write_eps_triangle( Mesh* mesh,
   Vector3D coords2[6];
   std::copy( coords, coords+verts.size(), coords2 );
   
-  bool fixed_store[6];
-  bool* fixed = 0;
+  std::vector<bool> fixed(verts.size(), false);
   if (draw_nodes) {
-    fixed = fixed_store;
     mesh->vertices_get_fixed_flag( arrptr(verts), fixed, verts.size(), err ); MSQ_ERRRTN(err);
   }
   write_eps_triangle( coords2, verts.size(), filename, draw_iso_lines, draw_nodes, err, fixed, width, height );
@@ -867,7 +865,7 @@ void write_eps_triangle( const Vector3D* coords,
                          bool draw_iso_lines, 
                          bool draw_nodes,
                          MsqError& err,
-                         const bool* fixed,
+                         const std::vector<bool>& fixed,
                          int width, int height )
 {
   const int PT_RAD = 3; // radius of circles for drawing nodes, in points
@@ -992,7 +990,7 @@ void write_eps_triangle( const Vector3D* coords,
       int w, h;
         // fill interior with either white or black depending
         // on whether or not the vertex is fixed.
-      if (fixed && fixed[i]) 
+      if (fixed[i]) 
         str << FIXED_GRAY << " setgray"                     << endl;
       else
         str << FREE_GRAY << " setgray"                      << endl;

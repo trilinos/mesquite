@@ -229,6 +229,7 @@ void MeshImplTest::skin_mesh_2D()
   
   std::vector<Mesh::VertexHandle> elems;
   std::vector<size_t> offsets;
+  std::vector<bool> fixed;
   
   
   for (unsigned i = 0; i < verts.size(); ++i) {
@@ -237,14 +238,13 @@ void MeshImplTest::skin_mesh_2D()
     mesh.vertices_get_attached_elements( &verts[i], 1, elems, offsets, err );
     CPPUNIT_ASSERT(!err);
     
-    bool fixed;
-    mesh.vertices_get_fixed_flag( &verts[i], &fixed, 1, err );
+    mesh.vertices_get_fixed_flag( &verts[i], fixed, 1, err );
     CPPUNIT_ASSERT(!err);
     
     if (elems.size() == 4)
-      CPPUNIT_ASSERT(!fixed);
+      CPPUNIT_ASSERT(!fixed[0]);
     else 
-      CPPUNIT_ASSERT(fixed);
+      CPPUNIT_ASSERT(fixed[0]);
   }
 }
 
@@ -271,7 +271,7 @@ void MeshImplTest::skin_mesh_3D()
   
   std::vector<Mesh::VertexHandle> elems;
   std::vector<size_t> offsets;
-  
+  std::vector<bool> fixed;
   
   for (unsigned i = 0; i < verts.size(); ++i) {
     elems.clear();
@@ -279,14 +279,13 @@ void MeshImplTest::skin_mesh_3D()
     mesh.vertices_get_attached_elements( &verts[i], 1, elems, offsets, err );
     CPPUNIT_ASSERT(!err);
     
-    bool fixed;
-    mesh.vertices_get_fixed_flag( &verts[i], &fixed, 1, err );
+    mesh.vertices_get_fixed_flag( &verts[i], fixed, 1, err );
     CPPUNIT_ASSERT(!err);
     
     if (elems.size() == 8)
-      CPPUNIT_ASSERT(!fixed);
+      CPPUNIT_ASSERT(!fixed[0]);
     else 
-      CPPUNIT_ASSERT(fixed);
+      CPPUNIT_ASSERT(fixed[0]);
   }
 }
 
@@ -333,9 +332,10 @@ void MeshImplTest::skin_mesh_mixed()
   MsqVertex coords[5];
   mesh.vertices_get_coordinates( arrptr(verts), coords, 5, err );
   CPPUNIT_ASSERT(!err);
-  bool fixed[5];
+  std::vector<bool> fixed;
   mesh.vertices_get_fixed_flag( arrptr(verts), fixed, 5, err );
   CPPUNIT_ASSERT(!err);
+  CPPUNIT_ASSERT_EQUAL( (size_t)5, fixed.size() );
   
   int free_idx = -1;
   for (int i = 0; i < 5; ++i) {
@@ -406,9 +406,10 @@ void MeshImplTest::skin_mesh_higher_order()
   MsqVertex coords[13];
   mesh.vertices_get_coordinates( arrptr(verts), coords, 13, err );
   CPPUNIT_ASSERT(!err);
-  bool fixed[13];
+  std::vector<bool> fixed;
   mesh.vertices_get_fixed_flag( arrptr(verts), fixed, 13, err );
   CPPUNIT_ASSERT(!err);
+  CPPUNIT_ASSERT_EQUAL( (size_t)13, fixed.size() );
   
   int free_idx = -1;
   for (int i = 0; i < 13; ++i) {

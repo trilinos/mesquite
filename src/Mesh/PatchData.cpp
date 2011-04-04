@@ -72,8 +72,6 @@ PatchData::PatchData()
     myDomain(0),
     numFreeVertices(0),
     numSlaveVertices(0),
-    boolArray(0),
-    boolArraySize(0),
     haveComputedInfos(0),
     dataList(0),
     mSettings(&defaultSettings)
@@ -85,7 +83,6 @@ PatchData::PatchData()
 PatchData::~PatchData()
 {
   notify_patch_destroyed();
-  free(boolArray);
 }
 
 
@@ -1918,14 +1915,13 @@ void PatchData::set_mesh_entities(
 
   if (!mSettings || mSettings->get_fixed_vertex_mode() == Settings::FIXED_FLAG) {
       // Get vertex-fixed flags
-    bool* fixed_flags = get_bool_array( vertexHandlesArray.size() );
     get_mesh()->vertices_get_fixed_flag( arrptr(vertexHandlesArray), 
-                                       fixed_flags,
-                                       vertexHandlesArray.size(),
-                                       err);  MSQ_ERRRTN(err);
+                                         bitMap,
+                                         vertexHandlesArray.size(),
+                                         err);  MSQ_ERRRTN(err);
   
     for (size_t i = 0; i < vertexHandlesArray.size(); ++i) 
-      if (fixed_flags[i])
+      if (bitMap[i])
         byteArray[i] |= MsqVertex::MSQ_HARD_FIXED;
   } 
   else if (get_domain()) {
@@ -1985,7 +1981,6 @@ void PatchData::set_mesh_entities(
     elementArray[i].set_element_type( elem_topologies[i] );
     
     // Mark higher-order nodes as slave unless settings dictate otherwise
-  bool* flags;
   const Settings::HigherOrderSlaveMode ho_mode = mSettings ? mSettings->get_slaved_ho_node_mode() : Settings::SLAVE_ALL;
   switch (ho_mode) {
   case Settings::SLAVE_ALL:
@@ -1993,13 +1988,12 @@ void PatchData::set_mesh_entities(
     MSQ_ERRRTN(err);
     break;
   case Settings::SLAVE_FLAG:
-    flags = get_bool_array( vertexHandlesArray.size() );
     get_mesh()->vertices_get_slaved_flag( arrptr(vertexHandlesArray), 
-                                          flags,
+                                          bitMap,
                                           vertexHandlesArray.size(),
                                           err); MSQ_ERRRTN(err);
     for (size_t i = 0; i < vertexHandlesArray.size(); ++i) 
-      if (flags[i] && !(byteArray[i] & MsqVertex::MSQ_HARD_FIXED))
+      if (bitMap[i] && !(byteArray[i] & MsqVertex::MSQ_HARD_FIXED))
         byteArray[i] |= MsqVertex::MSQ_DEPENDENT;
       MSQ_ERRRTN(err);
     break;

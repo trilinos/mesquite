@@ -177,7 +177,7 @@ void ParallelMeshImpl::get_all_vertices(std::vector<VertexHandle>& verts,
 }
 
 void ParallelMeshImpl::vertices_get_fixed_flag(const VertexHandle vert_array[],
-					       bool flag_array[],
+					       std::vector<bool>& flag_array,
 					       size_t num_vtx,
 					       MsqError& err)
 {
@@ -199,7 +199,7 @@ void ParallelMeshImpl::vertices_get_coordinates(const Mesh::VertexHandle vert_ar
 }
 
 void ParallelMeshImpl::vertices_get_slaved_flag(const VertexHandle vert_array[],
-					       bool flag_array[],
+					       std::vector<bool>& flag_array,
 					       size_t num_vtx,
 					       MsqError& err)
 {

@@ -1155,9 +1155,11 @@ ElementIterator* MeshImpl::element_iterator(MsqError &/*err*/)
 // property; this flag can't be modified by users of the
 // Mesh interface.
 void MeshImpl::vertices_get_fixed_flag(
- const VertexHandle vert_array[], bool on_bnd[],
+ const VertexHandle vert_array[], 
+ std::vector<bool>& on_bnd,
  size_t num_vtx, MsqError& err)
 {
+  on_bnd.resize(num_vtx);
   for (size_t i=0; i<num_vtx; ++i)
   {
     on_bnd[i] = myMesh->vertex_is_fixed( (size_t)vert_array[i], err ); 
@@ -1166,9 +1168,11 @@ void MeshImpl::vertices_get_fixed_flag(
 }
 
 void MeshImpl::vertices_set_fixed_flag(
- const VertexHandle vert_array[], const bool on_bnd[],
+ const VertexHandle vert_array[], 
+ const std::vector<bool>& on_bnd,
  size_t num_vtx, MsqError& err)
 {
+  assert(on_bnd.size() >= num_vtx);
   for (size_t i=0; i<num_vtx; ++i)
   {
     myMesh->fix_vertex( (size_t)vert_array[i], on_bnd[i],  err ); 
@@ -1176,9 +1180,11 @@ void MeshImpl::vertices_set_fixed_flag(
   }
 }
 void MeshImpl::vertices_get_slaved_flag(
- const VertexHandle vert_array[], bool flags[],
+ const VertexHandle vert_array[], 
+ std::vector<bool>& flags,
  size_t num_vtx, MsqError& err)
 {
+  flags.resize(num_vtx);
   for (size_t i=0; i<num_vtx; ++i)
   {
     flags[i] = myMesh->vertex_is_slaved( (size_t)vert_array[i], err ); 

@@ -672,14 +672,13 @@ void TCTFauxOptimizer::initialize( PatchData& pd, MsqError& err )
   numPasses = 1;
   
   pd.get_mesh()->get_all_vertices( all, err ); MSQ_ERRRTN(err);
-  bool* fixed = new bool[all.size()];
+  std::vector<bool> fixed;
   pd.get_mesh()->vertices_get_fixed_flag( &all[0], fixed, all.size(), err );
   size_t w = 0;
   for (size_t r = 0; r < all.size(); ++r)
     if (!fixed[r])
       all[w++] = all[r];
   all.resize(w);
-  free(fixed);
   MSQ_ERRRTN(err);
   
   numPerturb = all.size();

@@ -46,14 +46,13 @@ int main( int argc, char* argv[] )
   std::vector<Mesh::VertexHandle> verts;
   mesh.get_all_vertices( verts, err );
   if (err) return 1;
-  bool* fixed = new bool[verts.size()];
+  std::vector<bool> fixed;
   mesh.vertices_get_fixed_flag( arrptr(verts), fixed, verts.size(), err );
   if (err) return 1;
   std::vector<Mesh::VertexHandle> skin;
   for (size_t i = 0; i < verts.size(); ++i)
     if (fixed[i])
       skin.push_back( verts[i] );
-  delete [] fixed;
   
     // create map for vertex depth, and initialize to 0 for skin vertices
   std::map<Mesh::VertexHandle,int> depth;

@@ -51,21 +51,18 @@ void VertexPatches::get_patch_handles( std::vector<PatchHandle>& patch_handles_o
   
   if (free_vertices_only()) {
       // get fixed flags for vertices
-    bool* fixed_flags = new bool[patch_handles_out.size()];
+    std::vector<bool> fixed_flags;
     get_mesh()->vertices_get_fixed_flag( arrptr(patch_handles_out),
                                          fixed_flags,
                                          patch_handles_out.size(),
-                                         err );
-
+                                         err ); MSQ_ERRRTN(err);
+    
       // remove fixed vertices from list
-    if (!MSQ_CHKERR(err)) {
-      size_t write = 0;
-      for (size_t read = 0; read < patch_handles_out.size(); ++read) 
-        if (!fixed_flags[read])
-          patch_handles_out[write++] = patch_handles_out[read];
-      patch_handles_out.resize(write);
-    }
-    delete [] fixed_flags;
+    size_t write = 0;
+    for (size_t read = 0; read < patch_handles_out.size(); ++read) 
+      if (!fixed_flags[read])
+        patch_handles_out[write++] = patch_handles_out[read];
+    patch_handles_out.resize(write);
   }
 }
 

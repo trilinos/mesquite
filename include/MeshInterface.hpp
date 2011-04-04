@@ -120,7 +120,7 @@ namespace MESQUITE_NS
       //! property; this flag can't be modified by users of the
       //! Mesquite::Mesh interface.
     virtual void vertices_get_fixed_flag( const VertexHandle vert_array[], 
-                                          bool fixed_flag_array[],
+                                          std::vector<bool>& fixed_flag_array,
                                           size_t num_vtx, 
                                           MsqError &err ) = 0;
 
@@ -132,7 +132,7 @@ namespace MESQUITE_NS
       //! requested by calling:
       //! InstructionQueue::set_slaved_ho_node_mode( Settings::SLAVE_FLAG )
     virtual void vertices_get_slaved_flag( const VertexHandle vert_array[], 
-                                           bool slaved_flag_array[],
+                                           std::vector<bool>& slaved_flag_array,
                                            size_t num_vtx, 
                                            MsqError &err ) = 0;
 

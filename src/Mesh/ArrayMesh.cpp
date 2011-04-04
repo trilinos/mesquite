@@ -60,6 +60,7 @@ ArrayMesh::ArrayMesh()
     vertexCount( 0 ),
     coordArray( 0 ),
     fixedFlags( 0 ),
+    slavedFlags( 0 ),
     vertexByteArray( 0 ),
     elementCount( 0 ),
     connArray( 0 ),
@@ -82,11 +83,13 @@ ArrayMesh::ArrayMesh( int coords_per_vertex,
                       EntityTopology element_type,
                       const unsigned long* element_connectivity_array,
                       bool one_based_conn_indices,
-                      unsigned nodes_per_element ) 
+                      unsigned nodes_per_element,
+                      const int* vertex_slaved_flags ) 
   : mDimension( coords_per_vertex ),
     vertexCount( num_vertices ),
     coordArray( interleaved_vertex_coords ),
     fixedFlags( vertex_fixed_flags ),
+    slavedFlags( vertex_slaved_flags ),
     vertexByteArray( new unsigned char[num_vertices + one_based_conn_indices] ),
     elementCount( num_elements ),
     connArray( element_connectivity_array ),
@@ -120,11 +123,13 @@ ArrayMesh::ArrayMesh( int coords_per_vertex,
                       const EntityTopology* element_types,
                       const unsigned long* element_connectivity_array,
                       const unsigned long* element_connectivity_offsets,
-                      bool one_based_conn_indices ) 
+                      bool one_based_conn_indices,
+                      const int* vertex_slaved_flags ) 
   : mDimension( coords_per_vertex ),
     vertexCount( num_vertices ),
     coordArray( interleaved_vertex_coords ),
     fixedFlags( vertex_fixed_flags ),
+    slavedFlags( vertex_slaved_flags ),
     vertexByteArray( new unsigned char[num_vertices + one_based_conn_indices] ),
     elementCount( num_elements ),
     connArray( element_connectivity_array ),
@@ -220,13 +225,15 @@ void ArrayMesh::set_mesh( int coords_per_vertex,
                           EntityTopology element_type,
                           const unsigned long* element_connectivity_array,
                           bool one_based_conn_indices,
-                          unsigned nodes_per_element ) 
+                          unsigned nodes_per_element,
+                          const int* vertex_slaved_flags ) 
 {
   clear_mesh();
   mDimension = coords_per_vertex;
   vertexCount = num_vertices;
   coordArray = interleaved_vertex_coords;
   fixedFlags = vertex_fixed_flags;
+  slavedFlags = vertex_slaved_flags;
   elementCount = num_elements;
   connArray = element_connectivity_array;
   elementType = element_type;
@@ -291,10 +298,11 @@ ElementIterator* ArrayMesh::element_iterator( MsqError& err )
   { return new IndexIterator( 0, elementCount ); }
 
 void ArrayMesh::vertices_get_fixed_flag( const VertexHandle vert_array[], 
-                                         bool fixed_flag_array[],
+                                         std::vector<bool>& fixed_flag_array,
                                          size_t num_vtx, 
                                          MsqError & )
 {
+  fixed_flag_array.resize( num_vtx );
   const size_t* indices = (const size_t*)vert_array;
   for (size_t i = 0; i < num_vtx; ++i) {
     assert(indices[i] < vertexCount);
@@ -302,13 +310,23 @@ void ArrayMesh::vertices_get_fixed_flag( const VertexHandle vert_array[],
   }
 }
 
-void ArrayMesh::vertices_get_slaved_flag( const VertexHandle*, 
-                                          bool*,
-                                          size_t , 
+void ArrayMesh::vertices_get_slaved_flag( const VertexHandle* vert_array, 
+                                          std::vector<bool>& slaved_flags,
+                                          size_t num_vtx, 
                                           MsqError &err )
 {
-  MSQ_SETERR(err)("ArrayMesh::vertices_get_slaved_flag not implemented.  "
-                  "Cannot support Settings::SLAVE_FLAG", MsqError::NOT_IMPLEMENTED);
+  if (!slavedFlags) {
+    MSQ_SETERR(err)("No data provided to ArrayMesh for Settings::SLAVE_FLAG", 
+                    MsqError::INVALID_STATE);
+    return ;
+  }
+  
+  slaved_flags.resize( num_vtx );
+  const size_t* indices = (const size_t*)vert_array;
+  for (size_t i = 0; i < num_vtx; ++i) {
+    assert(indices[i] < vertexCount);
+    slaved_flags[i] = !!slavedFlags[indices[i]];
+  }
 }
 
 void ArrayMesh::vertices_get_coordinates( const VertexHandle vert_array[],

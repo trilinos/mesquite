@@ -180,12 +180,12 @@ public:
 
       /**\brief Query "fixed" flag for a vertex */
     virtual void vertices_get_fixed_flag( const VertexHandle vert_array[], 
-                                          bool fixed_flag_array[],
+                                          std::vector<bool>& fixed_flag_array,
                                           size_t num_vtx, 
                                           MsqError &err);
 
     virtual void vertices_get_slaved_flag( const VertexHandle vert_array[], 
-                                           bool slaved_flag_array[],
+                                           std::vector<bool>& slaved_flag_array,
                                            size_t num_vtx, 
                                            MsqError &err );
  

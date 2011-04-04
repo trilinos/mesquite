@@ -422,20 +422,21 @@ void ArrayMeshTest::test_vertices_get_fixed_flag()
 {
   MsqPrintError err(std::cerr);
   const size_t verts[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 4 };
-  bool flags[10];
+  std::vector<bool> flags;
   zeroBased3D->vertices_get_fixed_flag( (const Mesh::VertexHandle*)verts,
                                         flags, 10, err );
   CPPUNIT_ASSERT(!err);
-  CPPUNIT_ASSERT_EQUAL(  true, flags[0] );
-  CPPUNIT_ASSERT_EQUAL(  true, flags[1] );
-  CPPUNIT_ASSERT_EQUAL(  true, flags[2] );
-  CPPUNIT_ASSERT_EQUAL(  true, flags[3] );
-  CPPUNIT_ASSERT_EQUAL( false, flags[4] );
-  CPPUNIT_ASSERT_EQUAL(  true, flags[5] );
-  CPPUNIT_ASSERT_EQUAL(  true, flags[6] );
-  CPPUNIT_ASSERT_EQUAL(  true, flags[7] );
-  CPPUNIT_ASSERT_EQUAL(  true, flags[8] );
-  CPPUNIT_ASSERT_EQUAL( false, flags[9] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)10, flags.size() );
+  CPPUNIT_ASSERT_EQUAL(  true, (bool)flags[0] );
+  CPPUNIT_ASSERT_EQUAL(  true, (bool)flags[1] );
+  CPPUNIT_ASSERT_EQUAL(  true, (bool)flags[2] );
+  CPPUNIT_ASSERT_EQUAL(  true, (bool)flags[3] );
+  CPPUNIT_ASSERT_EQUAL( false, (bool)flags[4] );
+  CPPUNIT_ASSERT_EQUAL(  true, (bool)flags[5] );
+  CPPUNIT_ASSERT_EQUAL(  true, (bool)flags[6] );
+  CPPUNIT_ASSERT_EQUAL(  true, (bool)flags[7] );
+  CPPUNIT_ASSERT_EQUAL(  true, (bool)flags[8] );
+  CPPUNIT_ASSERT_EQUAL( false, (bool)flags[9] );
 }
 
 void ArrayMeshTest::test_vertices_get_coordinates()

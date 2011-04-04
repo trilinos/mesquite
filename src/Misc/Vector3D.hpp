@@ -157,6 +157,9 @@ namespace MESQUITE_NS
     const double* to_array() const 
       { return mCoords; }
 
+    double* to_array() 
+      { return mCoords; }
+
   protected:
     double mCoords[3];
   };

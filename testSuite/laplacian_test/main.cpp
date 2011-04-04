@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
     mesh.get_all_vertices( vertices, err );
     if (err) return 1;
 
-    bool* fixed_flags = new bool[vertices.size()];
+    std::vector<bool> fixed_flags;
     mesh.vertices_get_fixed_flag( arrptr(vertices), fixed_flags, vertices.size(), err );
     if (err) return 1;
 
@@ -173,7 +173,6 @@ int main(int argc, char* argv[])
       }
       idx = i;
     }
-    delete [] fixed_flags;
 
     if (idx == -1) {
       std::cerr << "No free vertex in mesh!!!!!" << std::endl;
