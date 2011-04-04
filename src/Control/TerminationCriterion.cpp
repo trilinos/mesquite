@@ -867,7 +867,7 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
          //if movement was enough, cull
        prev_m = pd.get_max_vertex_movement_squared(previousVerticesMemento,err);
        MSQ_ERRZERO(err);
-       if(prev_m <= cullingEps){
+       if(prev_m <= cullingEps*cullingEps){
          cull_bool=true;  
        }
        
@@ -879,7 +879,7 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
        MSQ_ERRZERO(err);
        init_m = pd.get_max_vertex_movement_squared(initialVerticesMemento,err);
        MSQ_ERRZERO(err);
-       if(prev_m <= (cullingEps * init_m)){
+       if(prev_m <= (cullingEps*cullingEps * init_m)){
          cull_bool=true;  
        }
        break;
@@ -990,7 +990,17 @@ void TerminationCriterion::initialize_queue( Mesh* mesh,
       // we actually calculate the square of the length
     vertexMovementAbsoluteAvgEdge = limit * limit;
     if (VERTEX_MOVEMENT_ABS_EDGE_LENGTH & cullingMethodFlag)
-      cullingEps = vertexMovementAbsoluteAvgEdge;
+      cullingEps = limit;
+  }
+  
+  if (cullingMethodFlag) {
+    std::vector<Mesh::VertexHandle> verts;
+    mesh->get_all_vertices( verts, err ); MSQ_ERRRTN(err);
+    std::vector<unsigned char> bytes(verts.size());
+    mesh->vertices_get_byte( &verts[0], &bytes[0], verts.size(), err ); MSQ_ERRRTN(err);
+    for (size_t i = 0; i < bytes.size(); ++i)
+      bytes[i] &= ~(unsigned char)MsqVertex::MSQ_CULLED;
+    mesh->vertices_set_byte( &verts[0], &bytes[0], verts.size(), err ); MSQ_ERRRTN(err);
   }
 }
 

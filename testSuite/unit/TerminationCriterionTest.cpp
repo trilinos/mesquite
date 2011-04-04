@@ -40,14 +40,20 @@ Tests for the TerminationCriterion class..
 #include "ObjectiveFunction.hpp"
 #include "PatchData.hpp"
 #include "TerminationCriterion.hpp"
+#include "VertexMover.hpp"
+#include "VertexPatches.hpp"
 
 #include "UnitUtil.hpp"
 #include "PatchDataInstances.hpp"
 #include "ArrayMesh.hpp"
 #include "MeshUtil.hpp"
 #include "SimpleStats.hpp"
+#include "InstructionQueue.hpp"
 
 #include <iostream>
+#include <algorithm>
+#include <vector>
+#include <set>
 
 using namespace Mesquite;
 
@@ -116,6 +122,7 @@ private:
 
   CPPUNIT_TEST (test_vertex_bound);
   CPPUNIT_TEST (test_untangled_mesh);
+  CPPUNIT_TEST (test_abs_vtx_movement_culling);
 
   CPPUNIT_TEST_SUITE_END();
   
@@ -181,6 +188,9 @@ public:
   void test_vertex_bound();
   
   void test_untangled_mesh();
+  
+    // test culling on ABSOLUTE_VERTEX_MOVEMENT
+  void test_abs_vtx_movement_culling();
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TerminationCriterionTest, "TerminationCriterionTest");
@@ -632,6 +642,164 @@ void TerminationCriterionTest::test_untangled_mesh()
   CPPUNIT_ASSERT(tc.terminate());
 }
 
+class TCTFauxOptimizer : public VertexMover
+{
+public:
+  TCTFauxOptimizer( double pertubation_amount ) : mDelta(pertubation_amount) {}
+  virtual ~TCTFauxOptimizer() {};
+  virtual std::string get_name() const { return "Optimizer for TerminationCriterionTest"; }
+  virtual PatchSet* get_patch_set() { return &mPatchSet; }
+  virtual void initialize( PatchData& pd, MsqError& err );
+  virtual void initialize_mesh_iteration( PatchData& pd, MsqError& err ) {}
+  virtual void optimize_vertex_positions( PatchData& pd, MsqError& err ); 
+  virtual void terminate_mesh_iteration( PatchData& pd, MsqError& err ) {}
+  virtual void cleanup() { all.clear(); }
+  int num_passes() const { return numPasses; }
+  bool should_have_terminated() const { return numPerturb == 0; }
+private:
+  std::set<Mesh::VertexHandle> culled, visited;
+  std::vector<Mesh::VertexHandle> all;
+  VertexPatches mPatchSet;
+  int numPasses, numPerturb;
+  double mDelta;
+};
+
+void TCTFauxOptimizer::initialize( PatchData& pd, MsqError& err )
+{
+  CPPUNIT_ASSERT(all.empty());
+  culled.clear();
+  visited.clear();
+  numPasses = 1;
+  
+  pd.get_mesh()->get_all_vertices( all, err ); MSQ_ERRRTN(err);
+  bool* fixed = new bool[all.size()];
+  pd.get_mesh()->vertices_get_fixed_flag( &all[0], fixed, all.size(), err );
+  size_t w = 0;
+  for (size_t r = 0; r < all.size(); ++r)
+    if (!fixed[r])
+      all[w++] = all[r];
+  all.resize(w);
+  free(fixed);
+  MSQ_ERRRTN(err);
+  
+  numPerturb = all.size();
+}
+
+void TCTFauxOptimizer::optimize_vertex_positions( PatchData& pd, MsqError& err )
+{
+  Mesh::VertexHandle free_vtx = pd.get_vertex_handles_array()[0];
+  if (visited.insert(free_vtx).second == false) { // already visited this one
+    // The inner termination criterion should include an iteration limit of 1.
+    // So if we are seeing the same vertex again, this means that we *should*
+    // be stating a new pass over the mesh.
+  
+    // We are presumably starting a new pass over the mesh.
+    // Verify that we visisted all of the free, non-culled vertices
+    for (size_t i = 0; i < all.size(); ++i) {
+      if (culled.find(all[i]) == culled.end()) {
+        if (visited.find(all[i]) == visited.end()) {
+          std::ostringstream str;
+          str << "Did not visit vertex " << i << "(" << all[i] << ") in pass " << numPasses << std::endl;
+          CPPUNIT_FAIL( str.str() );
+        }
+      }
+    }
+    visited.clear();
+    visited.insert(free_vtx);
+    ++numPasses;
+    
+    // Check that we terminate when expected
+    CPPUNIT_ASSERT(!should_have_terminated());
+    
+    numPerturb /= 2; // for each pass, perturb half as many vertices
+  }
+  
+    // check that we are not visiting a culled vertex
+  CPPUNIT_ASSERT( culled.find(free_vtx) == culled.end() );
+  
+    // for each pass, perturb half as many vertices
+  size_t idx = std::find( all.begin(), all.end(), free_vtx ) - all.begin();
+  CPPUNIT_ASSERT( idx < all.size() ); // not a free vertex????
+  if (idx < (unsigned)numPerturb) {
+      // perturb vertex
+    double sign = numPasses % 2 == 0 ? 1 : -1;
+    Vector3D delta( sign * mDelta, 0, 0 );
+    pd.move_vertex( delta, 0, err ); 
+    ASSERT_NO_ERROR(err);
+      // any adjacent vertices should not be culled
+    for (size_t i = 0; i < pd.num_free_vertices(); ++i)
+      culled.erase( pd.get_vertex_handles_array()[i] );
+  }
+  else {  
+      // If we're not moving this vertex, then it should get culled
+    culled.insert( free_vtx );
+  }
+}
+
+void TerminationCriterionTest::test_abs_vtx_movement_culling()
+{
+  /* define a quad mesh like the following
+    16--17--18--19--20--21--22--23
+     |   |   |   |   |   |   |   |   Y
+     8---9--10--11--12--13--14--15   ^
+     |   |   |   |   |   |   |   |   |
+     0---1---2---3---4---5---6---7   +-->X
+  */
+
+  const int nvtx = 24;
+  int fixed[nvtx];
+  double coords[3*nvtx];
+  for (int i = 0; i < nvtx; ++i) {
+    coords[3*i  ] = i/8;
+    coords[3*i+1] = i%8;
+    coords[3*i+2] = 0;
+    fixed[i] = i < 9 || i > 14;
+  }
+  
+  const int nquad = 14;
+  unsigned long conn[4*nquad];
+  for (int i= 0; i < nquad; ++i) {
+    int row = i / 7;
+    int idx = i % 7;
+    int n0 = 8*row + idx;
+    conn[4*i  ] = n0;
+    conn[4*i+1] = n0 + 1;
+    conn[4*i+2] = n0 + 9;
+    conn[4*i+3] = n0 + 8;
+  }
+  
+  const double tol = 0.05;
+  PlanarDomain zplane(PlanarDomain::XY, 0.0);
+  ArrayMesh mesh( 3, nvtx, coords, fixed, nquad, QUADRILATERAL, conn );
+  
+    // fill vertex byte with garbage to make sure that quality improver
+    // is initializing correctly.
+  MsqError err;
+  std::vector<unsigned char> junk(nvtx, 255);
+  std::vector<Mesh::VertexHandle> vertices;
+  mesh.get_all_vertices( vertices, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( junk.size(), vertices.size() );
+  mesh.vertices_set_byte( &vertices[0], &junk[0], vertices.size(), err );
+  ASSERT_NO_ERROR(err);  
+  
+    // Define optimizer
+  TCTFauxOptimizer smoother( 2*tol );
+  TerminationCriterion outer, inner;
+  outer.add_absolute_vertex_movement( tol );
+  inner.cull_on_absolute_vertex_movement( tol );
+  inner.add_iteration_limit( 1 );
+  smoother.set_inner_termination_criterion( &inner );
+  smoother.set_outer_termination_criterion( &outer );
+  
+    // No run the "optimizer"
+  InstructionQueue q;
+  q.set_master_quality_improver( &smoother, err );
+  q.run_instructions( &mesh, &zplane, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT( smoother.should_have_terminated() );
+  CPPUNIT_ASSERT( smoother.num_passes() > 1 );
+}
 
 
 bool DummyOF::initialize_block_coordinate_descent( Mesh*,
