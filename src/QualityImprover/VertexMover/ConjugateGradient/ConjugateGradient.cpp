@@ -248,10 +248,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       }
       
     }//end if on alp == 0
-      //Removing the following line of code (4/2/03) as it should not
-      //be needed with the new version of Termination Criterion.
-      //Update mesh before checking criterion
-      //pd.update_mesh(err);
+
     term_crit->accumulate_patch( pd, err ); MSQ_ERRRTN(err);
     term_crit->accumulate_inner( pd, f, arrptr(fGrad), err );  MSQ_ERRRTN(err);
   }//end while

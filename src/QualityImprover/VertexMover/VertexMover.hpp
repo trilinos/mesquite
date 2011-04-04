@@ -41,6 +41,7 @@
 #include "Mesquite.hpp"
 #include "QualityImprover.hpp"
 #include "OFEvaluator.hpp"
+#include "MeshInterface.hpp"
 
 namespace MESQUITE_NS
 {
@@ -77,6 +78,13 @@ namespace MESQUITE_NS
                                    MeshDomain* domain,
                                    const Settings* settings,
                                    MsqError &err);
+    inline
+    void do_jacobi_optimization()
+      { jacobiOpt = true; }
+
+    inline
+    bool is_jacobi_optimization() const 
+      { return jacobiOpt; }
 
   protected:
 
@@ -99,8 +107,13 @@ namespace MESQUITE_NS
     OFEvaluator& get_objective_function_evaluator()
       { return objFuncEval; }
   
+    static TagHandle get_jacobi_coord_tag( Mesh* mesh, MsqError& err );
+    static void store_uncommitted_coords( TagHandle tag, PatchData& pd, MsqError& err );
+    static void commit_jacobi_coords( TagHandle tag, Mesh* mesh, MsqError& err );
+  
   private:
     OFEvaluator objFuncEval;
+    bool jacobiOpt;
   };
 
   
