@@ -342,25 +342,11 @@ void MsqIMesh::get_flag_data( iBase_TagHandle tag,
       flag_array[i] = !!values[i];
   }
   else if (type == iBase_BYTES) {
-    if (sizeof(bool) == sizeof(char)) {  // always true?
-#if IMESH_VERSION_ATLEAST(1,1)
-      void* ptr = flag_array;
-#else
-      char* ptr = reinterpret_cast<char*>(flag_array);
-#endif
-      iMesh_getArrData( meshInstance, arr, num_vtx, tag, &ptr, &alloc, &size, &ierr );
-    }
-    else {
-      std::vector<char> values(num_vtx);
-#if IMESH_VERSION_ATLEAST(1,1)
-      void* ptr = arrptr(values);
-#else
-      char* ptr = arrptr(values);
-#endif
-      iMesh_getArrData( meshInstance, arr, num_vtx, tag, &ptr, &alloc, &size, &ierr );
-      for (int i = 0; i < size; ++i)
-        flag_array[i] = !!values[i];
-    }
+    std::vector<char> values(num_vtx);
+    void* ptr = arrptr(values);
+    iMesh_getArrData( meshInstance, arr, num_vtx, tag, &ptr, &alloc, &size, &ierr );
+    for (int i = 0; i < size; ++i)
+      flag_array[i] = !!values[i];
   }
   else {
     MSQ_SETERR(err)("Invalid tag type for vertex flag data", MsqError::INVALID_STATE);

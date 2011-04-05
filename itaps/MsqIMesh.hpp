@@ -407,7 +407,7 @@ public:
                         bool have_tag,
                         iBase_TagValueType type,
                         const VertexHandle vert_array[],
-                        bool flag_array[],
+                        std::vector<bool>& flag_array,
                         size_t num_vtx, 
                         MsqError& err );
 
