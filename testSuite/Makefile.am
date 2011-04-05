@@ -24,31 +24,34 @@ endif
 
 SUBDIRS = test_1 \
 	  ActiveSetTest \
+	  algorithm_test\
+	  analytical_grad_3D \
+          $(EXO_TEST) \
+	  headers \
+          high_aspect_ratio \
+	  higher_order \
+	  idft_time \
+          $(IGEOM_TEST) \
+	  $(IMESH_TEST) \
+	  jacobi \
 	  laplacian_test\
 	  laplacian_wrapper_test\
-	  untangle_test\
-	  analytical_grad_3D\
-	  algorithm_test\
-	  simple_hybrid_test\
-	  shape_improve\
-	  wrapper_tests\
-	  tutorial\
-	  transform \
 	  pyramid \
+	  shape_improve\
+	  simple_hybrid_test\
+	  size_adapt_shape \
+          slaved \
+	  synchronous \
+	  transform \
+	  tutorial\
+	  untangle_test\
+	  viscous_cfd \
+	  wrapper_tests\
 	  wedge \
-	  idft_time \
-	  headers \
 	  2d_target \
 	  2d_metrics\
 	  2d_formulation \
-	  synchronous \
-          high_aspect_ratio \
-	  higher_order \
-	  viscous_cfd \
-	  size_adapt_shape \
-          slaved \
-	  $(IMESH_TEST) $(IGEOM_TEST) \
-          $(EXO_TEST) $(UNIT_TEST)
+          $(UNIT_TEST)
 
 EXTRA_DIST = CMakeLists.txt
 

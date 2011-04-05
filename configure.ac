@@ -719,6 +719,7 @@ AC_CONFIG_FILES([Makefile
                  testSuite/idft_time/Makefile
                  testSuite/igeom/Makefile
                  testSuite/imesh/Makefile
+                 testSuite/jacobi/Makefile
                  testSuite/laplacian_test/Makefile
                  testSuite/laplacian_wrapper_test/Makefile
                  testSuite/pyramid/Makefile
