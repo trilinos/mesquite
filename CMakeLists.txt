@@ -234,15 +234,17 @@ IF (${PACKAGE_NAME}_ENABLE_TESTS)
 
     #PACKAGE_ADD_EXAMPLE_DIRECTORIES(example)
 
-    #
-    # D) Do standard postprocessing
-    #
-
-    PACKAGE_POSTPROCESS()
-
   ELSE()
 
     ADD_SUBDIRECTORY(testSuite)
 
   ENDIF()
+ENDIF()
+
+IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
+  #
+  # D) Do standard postprocessing
+  #
+
+  PACKAGE_POSTPROCESS()
 ENDIF()
