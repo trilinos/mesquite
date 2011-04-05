@@ -108,7 +108,6 @@ namespace MESQUITE_NS
       { return objFuncEval; }
   
     static TagHandle get_jacobi_coord_tag( Mesh* mesh, MsqError& err );
-    static void store_uncommitted_coords( TagHandle tag, PatchData& pd, MsqError& err );
     static void commit_jacobi_coords( TagHandle tag, Mesh* mesh, MsqError& err );
   
   private:

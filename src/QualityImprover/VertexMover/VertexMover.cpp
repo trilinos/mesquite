@@ -120,6 +120,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
                                     MsqError& err )
 {
   TagHandle coord_tag = 0; // store uncommitted coords for jacobi optimization 
+  TagHandle* coord_tag_ptr = 0;
 
     // Get the patch data to use for the first iteration
   OFEvaluator& obj_func = get_objective_function_evaluator();
@@ -166,6 +167,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   if (jacobiOpt) {
     coord_tag = get_jacobi_coord_tag(mesh, err);
     MSQ_ERRZERO(err);
+    coord_tag_ptr = &coord_tag;
   }
   
     // Initialize outer loop
@@ -267,10 +269,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
         inner_crit->cull_vertices( patch, obj_func, err );
         if (MSQ_CHKERR(err)) goto ERROR;
         
-        if (jacobiOpt) 
-          store_uncommitted_coords( coord_tag, patch, err );
-        else
-          patch.update_mesh( err );
+        patch.update_mesh( err, coord_tag_ptr );
         if (MSQ_CHKERR(err)) goto ERROR;
       }
     } 
@@ -317,6 +316,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
   std::vector<size_t> junk;
   Mesh::VertexHandle vertex_handle;
   TagHandle coord_tag = 0; // store uncommitted coords for jacobi optimization 
+  TagHandle* coord_tag_ptr = 0;
 
     // Get the patch data to use for the first iteration
   OFEvaluator& obj_func = get_objective_function_evaluator();
@@ -365,6 +365,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
   if (jacobiOpt) {
     coord_tag = get_jacobi_coord_tag(mesh, err);
     MSQ_ERRZERO(err);
+    coord_tag_ptr = &coord_tag;
   }
   
     // Initialize outer loop
@@ -469,10 +470,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
         inner_crit->cull_vertices( patch, obj_func, err );
         if (MSQ_CHKERR(err)) goto ERROR;
         
-        if (jacobiOpt)
-          store_uncommitted_coords( coord_tag, patch, err );
-        else
-	  patch.update_mesh( err );
+        patch.update_mesh( err, coord_tag_ptr );
         if (MSQ_CHKERR(err)) goto ERROR;
       }
     }
@@ -535,10 +533,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
 	  inner_crit->cull_vertices( patch, obj_func, err );
 	  if (MSQ_CHKERR(err)) goto ERROR;
         
-          if (jacobiOpt)
-            store_uncommitted_coords( coord_tag, patch, err );
-          else
-	    patch.update_mesh( err );
+          patch.update_mesh( err, coord_tag_ptr );
 	  if (MSQ_CHKERR(err)) goto ERROR;
 	}
       }
@@ -640,21 +635,6 @@ TagHandle VertexMover::get_jacobi_coord_tag( Mesh* mesh, MsqError& err )
   }
   
   return tag;
-}
-
-void VertexMover::store_uncommitted_coords( TagHandle tag, PatchData& pd, MsqError& err )
-{
-  const size_t num_vtx = pd.num_free_vertices() + pd.num_slave_vertices();
-  std::vector<double> coords(3*num_vtx);
-  const MsqVertex* vertices = pd.get_vertex_array();
-  for (size_t i = 0; i < num_vtx; ++i) {
-    coords[3*i  ] = vertices[i][0];
-    coords[3*i+1] = vertices[i][1];
-    coords[3*i+2] = vertices[i][2];
-  }
-  pd.get_mesh()->tag_set_vertex_data( tag, num_vtx, 
-                                      pd.get_vertex_handles_array(), 
-                                      &coords[0], err ); MSQ_ERRRTN(err);
 }
 
 void VertexMover::commit_jacobi_coords( TagHandle tag, Mesh* mesh, MsqError& err )
