@@ -183,11 +183,20 @@ void write_vtk( PatchData& pd, const char* out_filename, MsqError &err,
        << "\nSCALARS fixed int\nLOOKUP_TABLE default\n";
   for (i = 0; i < pd.num_nodes(); ++i)
   {
+    if (pd.vertex_by_index(i).get_flags() & MsqVertex::MSQ_CULLED)
+      file << "1\n";
+    else
+      file << "0\n";
+  }
+  file << "SCALARS culled short\nLOOKUP_TABLE default\n";
+  for (i = 0; i < pd.num_nodes(); ++i)
+  {
     if (pd.vertex_by_index(i).is_free_vertex())
       file << "0\n";
     else
       file << "1\n";
   }
+  
   
   if (OF_gradient) {
     file << "VECTORS gradient double\n";
@@ -196,6 +205,8 @@ void write_vtk( PatchData& pd, const char* out_filename, MsqError &err,
     for (i = pd.num_free_vertices(); i < pd.num_nodes(); ++i)
       file << "0.0 0.0 0.0\n";
   }
+  
+  
   
     // Close the file
   file.close();
