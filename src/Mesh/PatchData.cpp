@@ -521,7 +521,7 @@ void PatchData::set_free_vertices_soft_fixed(MsqError &/*err*/)
  */
 void PatchData::set_all_vertices_soft_free(MsqError &/*err*/)
   {
-    for(size_t i=0;i<num_free_vertices();++i)
+    for(size_t i=0;i<num_nodes();++i)
       vertexArray[i].remove_soft_fixed_flag();
   }
   
@@ -758,21 +758,31 @@ void PatchData::get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
     free vertices / elements of the PatchData object.
 
 */
-void PatchData::update_mesh(MsqError &err)
+void PatchData::update_mesh(MsqError &err, const TagHandle* tag)
 {
   if (!myMesh) {
     MSQ_SETERR(err)("Cannot update mesh on temporary patch.\n", MsqError::INTERNAL_ERROR);
     return;
   }
   
-  for (size_t i = 0; i < vertexArray.size(); ++i)
-  {
-    if (!vertexArray[i].is_flag_set( MsqVertex::MSQ_HARD_FIXED ))
-    {
+  const size_t not_fixed = numFreeVertices + numSlaveVertices;
+  if (tag) {
+    for (size_t i = 0; i < not_fixed; ++i) {
+      myMesh->tag_set_vertex_data( *tag, 1, &vertexHandlesArray[i], 
+                                   vertexArray[i].to_array(), err );
+                                   MSQ_ERRRTN(err);
+    }
+  }
+  else {
+    for (size_t i = 0; i < not_fixed; ++i) {
       myMesh->vertex_set_coordinates( vertexHandlesArray[i],
                                       vertexArray[i],
                                       err ); MSQ_ERRRTN(err);
-    }
+    }      
+  }
+  
+  for (size_t i = 0; i < vertexArray.size(); ++i)
+  {
     myMesh->vertex_set_byte( vertexHandlesArray[i],
                              vertexArray[i].get_flags(),
                              err ); MSQ_ERRRTN(err);

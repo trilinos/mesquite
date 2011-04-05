@@ -655,13 +655,14 @@ public:
   virtual void terminate_mesh_iteration( PatchData& pd, MsqError& err ) {}
   virtual void cleanup() { all.clear(); }
   int num_passes() const { return numPasses; }
-  bool should_have_terminated() const { return numPerturb == 0; }
+  bool should_have_terminated() const { return perturbFrac > (int)all.size(); }
 private:
   std::set<Mesh::VertexHandle> culled, visited;
   std::vector<Mesh::VertexHandle> all;
   VertexPatches mPatchSet;
-  int numPasses, numPerturb;
-  double mDelta;
+  int numPasses;   //!< count number of outer iterations
+  int perturbFrac; //!< perturb 1/perturbFrac of the free vertices
+  double mDelta;   //!< distance to perturb vertices
 };
 
 void TCTFauxOptimizer::initialize( PatchData& pd, MsqError& err )
@@ -681,7 +682,7 @@ void TCTFauxOptimizer::initialize( PatchData& pd, MsqError& err )
   all.resize(w);
   MSQ_ERRRTN(err);
   
-  numPerturb = all.size();
+  perturbFrac = 1;
 }
 
 void TCTFauxOptimizer::optimize_vertex_positions( PatchData& pd, MsqError& err )
@@ -698,7 +699,7 @@ void TCTFauxOptimizer::optimize_vertex_positions( PatchData& pd, MsqError& err )
       if (culled.find(all[i]) == culled.end()) {
         if (visited.find(all[i]) == visited.end()) {
           std::ostringstream str;
-          str << "Did not visit vertex " << i << "(" << all[i] << ") in pass " << numPasses << std::endl;
+          str << "Did not visit vertex " << i << " (handle " << all[i] << ") in pass " << numPasses << std::endl;
           CPPUNIT_FAIL( str.str() );
         }
       }
@@ -710,7 +711,7 @@ void TCTFauxOptimizer::optimize_vertex_positions( PatchData& pd, MsqError& err )
     // Check that we terminate when expected
     CPPUNIT_ASSERT(!should_have_terminated());
     
-    numPerturb /= 2; // for each pass, perturb half as many vertices
+    perturbFrac *= 2; // for each pass, perturb half as many vertices
   }
   
     // check that we are not visiting a culled vertex
@@ -719,14 +720,14 @@ void TCTFauxOptimizer::optimize_vertex_positions( PatchData& pd, MsqError& err )
     // for each pass, perturb half as many vertices
   size_t idx = std::find( all.begin(), all.end(), free_vtx ) - all.begin();
   CPPUNIT_ASSERT( idx < all.size() ); // not a free vertex????
-  if (idx < (unsigned)numPerturb) {
+  if (0 == ((idx+1) % perturbFrac)) {
       // perturb vertex
     double sign = numPasses % 2 == 0 ? 1 : -1;
     Vector3D delta( sign * mDelta, 0, 0 );
     pd.move_vertex( delta, 0, err ); 
     ASSERT_NO_ERROR(err);
       // any adjacent vertices should not be culled
-    for (size_t i = 0; i < pd.num_free_vertices(); ++i)
+    for (size_t i = 0; i < pd.num_nodes(); ++i)
       culled.erase( pd.get_vertex_handles_array()[i] );
   }
   else {  
