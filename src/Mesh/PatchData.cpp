@@ -520,7 +520,7 @@ void PatchData::set_free_vertices_soft_fixed(MsqError &/*err*/)
  */
 void PatchData::set_all_vertices_soft_free(MsqError &/*err*/)
   {
-    for(size_t i=0;i<num_free_vertices();++i)
+    for(size_t i=0;i<num_nodes();++i)
       vertexArray[i].remove_soft_fixed_flag();
   }
   

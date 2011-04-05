@@ -55,3 +55,5 @@
 2.1.4:
   - Update to latest ITAPS APIs for March 2011 ITAPS release.
 
+2.1.5:
+  - Fix broken patch culling functionality
