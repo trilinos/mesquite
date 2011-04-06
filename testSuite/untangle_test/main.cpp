@@ -326,7 +326,7 @@ int uwt( bool skip,
   PlanarDomain domain( norm, coords );
     // run wrapper
   UntangleWrapper wrapper( metric );
-  wrapper.set_vertex_movement_limit_factor( 0.01 );
+  wrapper.set_vertex_movement_limit_factor( 0.005 );
   double constant = (metric == UntangleWrapper::BETA) ? beta : mu_sigma;
   if (constant > 0)
     wrapper.set_metric_constant( constant );
