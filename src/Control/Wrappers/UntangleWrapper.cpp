@@ -58,6 +58,8 @@ const int NUM_INNER_ITERATIONS = 1;
 const int DEFUALT_PARALLEL_ITERATIONS = 10;
 const double DEFAULT_MOVEMENT_FACTOR = 0.001;
 
+#undef USE_CULLING
+
 namespace MESQUITE_NS {
 
 UntangleWrapper::UntangleWrapper() 
@@ -140,12 +142,16 @@ void UntangleWrapper::run_wrapper( Mesh* mesh,
   PMeanPTemplate objfunc( 1.0, &metric );
   
     // define termination criterion
-  TerminationCriterion term;
+  double eps = movementFactor * (edge_len.average() - edge_len.standard_deviation());
+  TerminationCriterion term, inner;
   term.add_untangled_mesh();
-  term.add_absolute_vertex_movement( movementFactor * (edge_len.average() - edge_len.standard_deviation()) );
+#ifndef USE_CULLING
+  term.add_absolute_vertex_movement( eps );
+#else
+  inner.cull_on_absolute_vertex_movement( eps );
+#endif
   if (maxTime > 0.0) 
     term.add_cpu_time( maxTime );
-  TerminationCriterion inner;
   inner.add_iteration_limit( NUM_INNER_ITERATIONS );
   
     // construct solver
