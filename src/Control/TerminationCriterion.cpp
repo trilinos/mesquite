@@ -928,23 +928,6 @@ void TerminationCriterion::cleanup(Mesh* mesh, MeshDomain*, MsqError &err)
   delete initialVerticesMemento;
   previousVerticesMemento = 0;
   initialVerticesMemento = 0;
-  
-  if (!cullingMethodFlag)
-    return;
-  
-    // Clear soft fixed flag on all vertices
-  std::vector<Mesh::VertexHandle> vertices;
-  mesh->get_all_vertices( vertices, err ); MSQ_ERRRTN(err);
-  if (vertices.empty())
-    return;
-  std::vector<unsigned char> bytes(vertices.size(), 0);
-  std::vector<unsigned char>::iterator i;
-  mesh->vertices_get_byte( arrptr(vertices), arrptr(bytes), vertices.size(), err );
-  MSQ_ERRRTN(err);
-  for (i = bytes.begin(); i != bytes.end(); ++i)
-    *i &= ~MsqVertex::MSQ_CULLED;
-  mesh->vertices_set_byte( arrptr(vertices), arrptr(bytes), vertices.size(), err );
-  MSQ_ERRRTN(err);
 }
 
 void TerminationCriterion::write_timestep( PatchData& pd, 
@@ -991,16 +974,6 @@ void TerminationCriterion::initialize_queue( Mesh* mesh,
     vertexMovementAbsoluteAvgEdge = limit * limit;
     if (VERTEX_MOVEMENT_ABS_EDGE_LENGTH & cullingMethodFlag)
       cullingEps = limit;
-  }
-  
-  if (cullingMethodFlag) {
-    std::vector<Mesh::VertexHandle> verts;
-    mesh->get_all_vertices( verts, err ); MSQ_ERRRTN(err);
-    std::vector<unsigned char> bytes(verts.size());
-    mesh->vertices_get_byte( &verts[0], &bytes[0], verts.size(), err ); MSQ_ERRRTN(err);
-    for (size_t i = 0; i < bytes.size(); ++i)
-      bytes[i] &= ~(unsigned char)MsqVertex::MSQ_CULLED;
-    mesh->vertices_set_byte( &verts[0], &bytes[0], verts.size(), err ); MSQ_ERRRTN(err);
   }
 }
 

@@ -122,6 +122,9 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   TagHandle coord_tag = 0; // store uncommitted coords for jacobi optimization 
   TagHandle* coord_tag_ptr = 0;
 
+    // Clear culling flag, set hard fixed flag, etc on all vertices
+  initialize_vertex_byte( mesh, domain, settings, err ); MSQ_ERRZERO(err);
+
     // Get the patch data to use for the first iteration
   OFEvaluator& obj_func = get_objective_function_evaluator();
   
@@ -317,6 +320,9 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
   Mesh::VertexHandle vertex_handle;
   TagHandle coord_tag = 0; // store uncommitted coords for jacobi optimization 
   TagHandle* coord_tag_ptr = 0;
+
+    // Clear culling flag, set hard fixed flag, etc on all vertices
+  initialize_vertex_byte( mesh, domain, settings, err ); MSQ_ERRZERO(err);
 
     // Get the patch data to use for the first iteration
   OFEvaluator& obj_func = get_objective_function_evaluator();
@@ -578,7 +584,6 @@ void VertexMover::initialize_queue( Mesh* mesh,
   QualityImprover::initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);
   objFuncEval.initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);
 }
-
 
 TagHandle VertexMover::get_jacobi_coord_tag( Mesh* mesh, MsqError& err )
 {

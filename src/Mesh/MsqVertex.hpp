@@ -87,15 +87,16 @@ namespace MESQUITE_NS
        //!               so they have to be 2-based (2,4,8,16,32, ...)
      enum FlagMaskID
      {
-       MSQ_HARD_FIXED = 1<<0, //!< vertex is always fixed. This can only be set on and never off.
-       MSQ_DEPENDENT  = 1<<1, //!< higher-order node w/ position determined by mapping function
-       MSQ_CULLED     = 1<<2, //!< vertex is fixed. This flag can be set on and off. 
-       MSQ_PATCH_VTX  = 1<<3, //!< vertex used to define patch (for evaluated vertex-based metrics)
-       MSQ_MARK       = 1<<4  //!< arbitrary mark for use by code - clear before using
+       MSQ_HARD_FIXED  = 1<<0, //!< vertex is always fixed. This can only be set on and never off.
+       MSQ_DEPENDENT   = 1<<1, //!< higher-order node w/ position determined by mapping function
+       MSQ_CULLED      = 1<<2, //!< vertex is fixed. This flag can be set on and off. 
+       MSQ_PATCH_FIXED = 1<<3, //!< vertex is fixed only because it is on patch boundary (not by app request)
+       MSQ_MARK        = 1<<4, //!< arbitrary mark for use by code - clear before using
+       MSQ_FIXED = (MSQ_HARD_FIXED|MSQ_CULLED|MSQ_PATCH_FIXED)
      };
        //!Returns true if vertex is ``free''.
      bool is_free_vertex() const
-       { return (vertexBitFlags & (MSQ_CULLED|MSQ_HARD_FIXED)) == 0; }
+       { return (vertexBitFlags & (MSQ_HARD_FIXED|MSQ_PATCH_FIXED)) == 0; }
      
      void set_soft_fixed_flag()
        { vertexBitFlags|=MSQ_CULLED; }

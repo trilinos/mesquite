@@ -440,6 +440,8 @@ int check_global_patch_slaved( Mesh& mesh, MsqError& err )
 {
   Settings s;
   s.set_slaved_ho_node_mode( Settings::SLAVE_FLAG );
+  Instruction::initialize_vertex_byte( &mesh, 0, &s, err ); MSQ_ERRZERO(err);
+  
   PatchData pd;
   pd.attach_settings( &s );
   pd.set_mesh( &mesh );

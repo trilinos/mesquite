@@ -453,6 +453,9 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
     // Clear out any previous data
   reset_data();
 
+    // Clear culling flag, set hard fixed flag, etc on all vertices
+  initialize_vertex_byte( mesh, domain, settings, err ); MSQ_ERRZERO(err);
+
   PatchData patch;
   patch.set_mesh( mesh );
   patch.set_domain( domain );

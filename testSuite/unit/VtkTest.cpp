@@ -38,7 +38,8 @@ using std::cout;
 #  include "MeshImpl.hpp"
 #  include "VertexPatches.hpp"
 #  include "PatchIterator.hpp"
-#  include "cppunit/extensions/HelperMacros.h"
+#  include "UnitUtil.hpp"
+#  include "Instruction.hpp"
    using Mesquite::Mesh;
    using Mesquite::MeshImpl;
    using Mesquite::Vector3D;
@@ -444,12 +445,12 @@ public:
     std::vector<size_t> offsets(9);
     
     mesh.get_all_elements( elems, err );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     CPPUNIT_ASSERT_EQUAL(elems.size(), (size_t)8);
     
     mesh.elements_get_attached_vertices( arrptr(elems), elems.size(),
                                          verts, offsets, err );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     CPPUNIT_ASSERT(verts.size() == 64);
     CPPUNIT_ASSERT(offsets.size() == 9);
     
@@ -494,12 +495,12 @@ public:
     std::vector<size_t> offsets(5);
     
     mesh.get_all_elements( elems, err );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     CPPUNIT_ASSERT_EQUAL(elems.size(), (size_t)4);
     
     mesh.elements_get_attached_vertices( arrptr(elems), elems.size(),
                                          verts, offsets, err );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     CPPUNIT_ASSERT(verts.size() == 16);
     CPPUNIT_ASSERT(offsets.size() == 5);
     
@@ -551,18 +552,18 @@ public:
     MsqPrintError err(cout);
     
     mesh.read_vtk( filename, err );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
       // Get mesh data
     std::vector<Mesh::VertexHandle> conn;
     std::vector<Mesh::ElementHandle> elems(38);
     std::vector<size_t> offsets(39);
     mesh.get_all_elements( elems, err );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     CPPUNIT_ASSERT_EQUAL( elems.size(), (size_t)38 );
     mesh.elements_get_attached_vertices( arrptr(elems), elems.size(),
                                          conn, offsets, err );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
 
     unsigned i;
     struct meshdata { EntityTopology type; size_t nodes; size_t count; };
@@ -598,7 +599,7 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
     check_4quad_structured( mesh );
   }
@@ -616,7 +617,7 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
     check_8hex_structured( mesh );
   }
@@ -634,7 +635,7 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
     check_8hex_structured( mesh );
   }
@@ -652,7 +653,7 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
     check_8hex_structured( mesh );
   }
@@ -671,7 +672,7 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
     std::vector<Mesh::ElementHandle> elems;
     mesh.get_all_elements( elems, err );
@@ -709,7 +710,7 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
     std::vector<Mesh::ElementHandle> elems;
     mesh.get_all_elements( elems, err );
@@ -751,7 +752,7 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
     std::vector<Mesh::ElementHandle> elems;
     mesh.get_all_elements( elems, err );
@@ -821,12 +822,12 @@ public:
       // Read unstructured mesh file
     mesh.read_vtk( temp_file_name, err );
     remove(temp_file_name);
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
       // Write unstructured mesh file back out
     mesh.write_vtk( temp_file_name, err );
     if (err)  remove( temp_file_name );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
       // Check if file contained expected mesh
     check_field_attrib( temp_file_name );
@@ -846,7 +847,7 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
 
     std::vector<Mesh::ElementHandle> elems;
     mesh.get_all_elements( elems, err );
@@ -856,7 +857,7 @@ public:
     std::vector<Mesh::VertexHandle> verts;
     std::vector<size_t> offsets;
     mesh.elements_get_attached_vertices( arrptr(elems), elems.size(), verts, offsets, err );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
     // get unique list of vertices
     std::vector<Mesh::VertexHandle>::iterator new_end;
@@ -868,7 +869,7 @@ public:
     // get fixed flag
     std::vector<bool> fixed;
     mesh.vertices_get_fixed_flag( arrptr(verts), fixed, verts.size(), err );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     CPPUNIT_ASSERT_EQUAL( verts.size(), fixed.size() );
     
     for (int i = 0; i < 27; ++i)
@@ -896,12 +897,12 @@ public:
       // Read unstructured mesh file
     mesh.read_vtk( temp_file_name, err );
     remove(temp_file_name);
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
       // Write unstructured mesh file back out
     mesh.write_vtk( temp_file_name, err );
     if (err)  remove( temp_file_name );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
       // Check if file contained expected mesh
     test_read_unstructured( temp_file_name );
@@ -931,22 +932,22 @@ public:
     MsqPrintError err(cout);
     
     mesh.read_vtk( filename, err );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
     std::vector<Mesh::ElementHandle> elems(NUM_ELEM);
     mesh.get_all_elements( elems, err );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     CPPUNIT_ASSERT_EQUAL(elems.size(), NUM_ELEM );
     
     std::vector<Mesh::VertexHandle> conn;
     std::vector<size_t> offsets;
     mesh.elements_get_attached_vertices( arrptr(elems), elems.size(), conn, offsets, err );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     CPPUNIT_ASSERT_EQUAL( conn.size(), (size_t)108 );
     
     EntityTopology types[NUM_ELEM];
     mesh.elements_get_topologies( arrptr(elems), types, NUM_ELEM, err );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
 
     static const double hex_corners[] = 
      {  1.0, -1.0, -1.0, 
@@ -1059,7 +1060,7 @@ public:
       {
         Vector3D expected(expected_elems[i].corners + 3*c);
         mesh.vertices_get_coordinates( &*v_it, &have, 1, err );
-        CPPUNIT_ASSERT(!err);
+        ASSERT_NO_ERROR(err);
         expected -= have;
         CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, expected.length(), DBL_EPSILON );
       }
@@ -1073,7 +1074,7 @@ public:
         Vector3D expected = 0.5 * (start + end);
         
         mesh.vertices_get_coordinates( &*v_it, &have, 1, err );
-        CPPUNIT_ASSERT(!err);
+        ASSERT_NO_ERROR(err);
         
         expected -= have;
         CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, expected.length(), DBL_EPSILON );
@@ -1090,7 +1091,7 @@ public:
         expected /= face_size;
         
         mesh.vertices_get_coordinates( &*v_it, &have, 1, err );
-        CPPUNIT_ASSERT(!err);
+        ASSERT_NO_ERROR(err);
         
         expected -= have;
         CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, expected.length(), DBL_EPSILON );
@@ -1105,7 +1106,7 @@ public:
         expected /= expected_elems[i].num_corners;
 
         mesh.vertices_get_coordinates( &*v_it, &have, 1, err );
-        CPPUNIT_ASSERT(!err);
+        ASSERT_NO_ERROR(err);
 
         expected -= have;
         CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, expected.length(), DBL_EPSILON );
@@ -1132,12 +1133,12 @@ public:
       // Read unstructured mesh file
     mesh.read_vtk( temp_file_name, err );
     remove(temp_file_name);
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
       // Write unstructured mesh file back out
     mesh.write_vtk( temp_file_name, err );
     if (err)  remove( temp_file_name );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
       // Check if file contained expected mesh
     test_read_quadratic( temp_file_name );
@@ -1149,7 +1150,9 @@ public:
     Mesquite::MsqPrintError err(cout);
     MeshImpl mMesh;
     mMesh.read_vtk(MESH_FILES_DIR "2D/VTK/equil_tri2.vtk", err);
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
+    Mesquite::Instruction::initialize_vertex_byte( &mMesh, 0, 0, err );
+    ASSERT_NO_ERROR(err);
     
       // Retrieve a patch
     Mesquite::PatchData pd;
@@ -1158,29 +1161,29 @@ public:
     patch_set.set_mesh( &mMesh );
     PatchIterator patches( &patch_set );
     patches.get_next_patch( pd, err );
-    CPPUNIT_ASSERT(!err);
+    ASSERT_NO_ERROR(err);
     
     int free_vtx = pd.num_free_vertices(); 
 //    std::cout << "nb of free vertices: " << free_vtx << std::endl;
     CPPUNIT_ASSERT( free_vtx == 1 );
     
-    Mesquite::MsqMeshEntity* element_array =  pd.get_element_array(err); CPPUNIT_ASSERT(!err);
+    Mesquite::MsqMeshEntity* element_array =  pd.get_element_array(err); ASSERT_NO_ERROR(err);
     size_t num_elements = pd.num_elements();
     CPPUNIT_ASSERT( num_elements == 6 );
     
-    const Mesquite::MsqVertex* vtx_array = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err);
+    const Mesquite::MsqVertex* vtx_array = pd.get_vertex_array(err); ASSERT_NO_ERROR(err);
     size_t num_vertices = pd.num_nodes();
     CPPUNIT_ASSERT( num_vertices == 7 );
     
     CPPUNIT_ASSERT( tri_check_validity(element_array, num_elements, vtx_array, num_vertices) == 1 );
     
-    patches.get_next_patch( pd, err ); CPPUNIT_ASSERT(!err);
+    patches.get_next_patch( pd, err ); ASSERT_NO_ERROR(err);
     
-    element_array =  pd.get_element_array(err); CPPUNIT_ASSERT(!err);
+    element_array =  pd.get_element_array(err); ASSERT_NO_ERROR(err);
     num_elements = pd.num_elements();
     CPPUNIT_ASSERT( num_elements == 6 );
     
-    vtx_array = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err);
+    vtx_array = pd.get_vertex_array(err); ASSERT_NO_ERROR(err);
     num_vertices = pd.num_nodes();
     CPPUNIT_ASSERT( num_vertices == 7 );
     

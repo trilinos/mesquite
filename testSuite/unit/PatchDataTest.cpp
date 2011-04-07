@@ -49,6 +49,7 @@ Unit testing of various functions in the PatchData class.
 #include "PatchDataInstances.hpp"
 #include "UnitUtil.hpp"
 #include "Settings.hpp"
+#include "Instruction.hpp"
 
 #include "ArrayMesh.hpp"
 #include "DomainClassifier.hpp"
@@ -924,6 +925,8 @@ void PatchDataTest::test_fixed_by_geom_dim( unsigned dim )
   Mesh* mesh = 0;
   MeshDomain* domain = 0;
   get_quad8_mesh_and_domain( mesh, domain );
+  Instruction::initialize_vertex_byte( mesh, domain, &settings, err ); 
+  ASSERT_NO_ERROR(err);
   
   PatchData pd;
   pd.attach_settings( &settings );
@@ -1015,6 +1018,8 @@ void PatchDataTest::check_higher_order_vertices_slaved(
   
   Settings settings;
   settings.set_slaved_ho_node_mode( mode );
+  Instruction::initialize_vertex_byte( mesh, 0, &settings, err ); 
+  ASSERT_NO_ERROR(err);
   
   PatchData pd;
   pd.attach_settings( &settings );
@@ -1115,6 +1120,7 @@ void HoSlavedMesh::vertices_get_slaved_flag( const VertexHandle vert_array[],
                                              size_t num_vtx, 
                                              MsqError &err )
 {
+  slaved_flag_array.resize( num_vtx );
   for (size_t i = 0; i < num_vtx; ++i) {
     SMap::iterator j = slavedVerts.find( vert_array[i] );
     slaved_flag_array[i] = (j != slavedVerts.end()) && j->second;

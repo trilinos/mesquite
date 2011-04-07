@@ -286,13 +286,16 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   /* allocate the data arrays we'll use for smoothing */
   std::vector<size_t> gid(num_vertex);
   std::vector<int> proc_owner(num_vertex);
-  std::vector<bool> app_fixed;
+  std::vector<unsigned char> app_fixed(num_vertex);
 
   /* get the data from the mesquite mesh */
   mesh->vertices_get_global_id(arrptr(vertices),arrptr(gid),num_vertex,err); MSQ_ERRRTN(err);
-  mesh->vertices_get_fixed_flag(arrptr(vertices),app_fixed,num_vertex,err); MSQ_ERRRTN(err);
+  mesh->vertices_get_byte(arrptr(vertices),arrptr(app_fixed),num_vertex,err); MSQ_ERRRTN(err);
   mesh->vertices_get_processor_id(arrptr(vertices),arrptr(proc_owner),num_vertex,err); MSQ_ERRRTN(err);
-
+  /* only interested in fixed flag from vertex byte? Clear others. */
+  for (i = 0; i < num_vertex; ++i)
+    app_fixed |= MsqVertex::MSQ_HARD_FIXED;
+  
   /* create temporary Tag for the local IDs */
   std::vector<int> lid(num_vertex);
   for (i=0; i < num_vertex; i++) lid[i] = i;
@@ -994,10 +997,13 @@ void ParallelHelperImpl::smoothing_close(MsqError& err)
     /* get the tags so we can find the requested vertices */
     std::vector<size_t> gid(num_vertex);
     mesh->vertices_get_global_id(arrptr(vertices),arrptr(gid),num_vertex,err); MSQ_ERRRTN(err);
-    std::vector<bool> app_fixed;
-    mesh->vertices_get_fixed_flag(arrptr(vertices),app_fixed,num_vertex,err); MSQ_ERRRTN(err);
+    std::vector<unsigned char> app_fixed(num_vertex);
+    mesh->vertices_get_byte(arrptr(vertices),arrptr(app_fixed),num_vertex,err); MSQ_ERRRTN(err);
     std::vector<int> proc_owner(num_vertex);
     mesh->vertices_get_processor_id(arrptr(vertices),arrptr(proc_owner),num_vertex,err); MSQ_ERRRTN(err);
+    /* only interested in fixed flag from vertex byte? Clear others. */
+    for (i = 0; i < num_vertex; ++i)
+      app_fixed |= MsqVertex::MSQ_HARD_FIXED;
 
     /* insert all our unfixed vertices into a map so we can find the requested vertices efficiently */
     VertexIdMap temp_vid_map;

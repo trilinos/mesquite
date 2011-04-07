@@ -69,7 +69,7 @@ public:
    *over the mesh using element-on-vertex patches a given edge
    *is returned only once for the set of all patches.  This is
    *accomplished by returning only edges adjacent to vertices
-   *with the MSQ_PATCH_VERTEX set, and only if the handle for
+   *without the MSQ_PATCH_FIXED flag set, and only if the handle for
    *the opposite vertex is greater than the one with the flag
    *set.
    */

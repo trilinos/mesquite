@@ -59,7 +59,7 @@ void VertexQM::get_vertex_evaluations( PatchData& pd,
     handles.clear();
     handles.reserve( pd.num_nodes() );
     for (size_t i = 0; i < pd.num_nodes(); ++i)
-      if (pd.vertex_by_index(i).get_flags() & MsqVertex::MSQ_PATCH_VTX)
+      if (!(pd.vertex_by_index(i).get_flags() & MsqVertex::MSQ_PATCH_FIXED))
         handles.push_back(i);
   }
 }

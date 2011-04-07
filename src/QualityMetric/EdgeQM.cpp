@@ -83,7 +83,7 @@ void EdgeQM::get_edge_evaluations( PatchData& pd,
   handles.clear();
 
   for (size_t i = 0; i < n_verts; ++i) {
-    if (!pd.vertex_by_index(i).is_flag_set( MsqVertex::MSQ_PATCH_VTX ))
+    if (pd.vertex_by_index(i).is_flag_set( MsqVertex::MSQ_PATCH_FIXED ))
       continue;
 
     vtx_edges.clear();

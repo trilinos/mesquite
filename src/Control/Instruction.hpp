@@ -70,6 +70,18 @@ class MESQUITE_EXPORT Instruction
 
       //! Get string name for use in diagnostic and status output
     virtual std::string get_name() const = 0;
+    
+      //! Using data from query methods in MeshInterface or calculating
+      //! as necessary depending on values in Settings, initialize
+      //! MSQ_HARD_FIXED and MSQ_SLAVED flags on vertices, and clear
+      //! MSQ_CULLED flag on all vertices.  
+      //! \NOTE SLAVE_ALL setting is handled in PatchData rather than here 
+      //! for efficiency.
+    static
+    void initialize_vertex_byte( Mesh* mesh, 
+                                 MeshDomain* domain,
+                                 const Settings* settings,
+                                 MsqError& err );
 };
 
 } // namespace Mesquite

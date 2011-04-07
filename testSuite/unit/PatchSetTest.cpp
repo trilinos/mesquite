@@ -28,6 +28,7 @@
 #include "VertexPatches.hpp"
 #include "GlobalPatch.hpp"
 #include "MeshInterface.hpp"
+#include "Instruction.hpp"
 #include "MsqError.hpp"
 #include "UnitUtil.hpp"
 
@@ -77,9 +78,9 @@ public:
   ElementIterator* element_iterator(MsqError& err) { NI(err); return 0; }
   void vertices_get_coordinates( const VertexHandle*, MsqVertex*, size_t, MsqError& err ) { NI(err); }
   void vertex_set_coordinates( VertexHandle, const Vector3D&, MsqError& err ) { NI(err); }
-  void vertex_set_byte( VertexHandle, unsigned char, MsqError& err ) { NI(err); }
-  void vertices_set_byte( const VertexHandle*, const unsigned char*, size_t, MsqError& err ) { NI(err);  }
-  void vertex_get_byte( const VertexHandle, unsigned char*, MsqError& err) { NI(err);}
+  void vertex_set_byte( VertexHandle h, unsigned char b, MsqError& err ) { vertices_get_byte( &h, &b, 1, err ); }
+  void vertices_set_byte( const VertexHandle*, const unsigned char*, size_t, MsqError& err );
+  void vertex_get_byte( const VertexHandle h, unsigned char* b, MsqError& err) { vertices_get_byte( &h, b, 1, err );}
   void vertices_get_byte( const VertexHandle*, unsigned char*, size_t, MsqError& err );
   
   void elements_get_attached_vertices(const ElementHandle*, size_t,
@@ -102,6 +103,7 @@ private:
   std::vector<ElementHandle> elemHandles;
   std::vector<size_t> vertOffsets;
   std::vector<bool> fixedFlags;
+  std::vector<unsigned char> vertexBytes;
   bool doError;
 };
 
@@ -121,6 +123,7 @@ FakeMesh::FakeMesh( size_t num_vtx )
     fixedFlags[i] = !(i%2);
   }
   vertOffsets[vertOffsets.size()-1] = elemHandles.size();
+  vertexBytes.resize( num_vtx, 0 );
 }
 
 FakeMesh::~FakeMesh() {}
@@ -221,7 +224,22 @@ void FakeMesh::vertices_get_byte( const VertexHandle* handles,
       MSQ_SETERR(err)(MsqError::INVALID_STATE, "Vertex handle out of range");
       return;
     }
-    bytes[i] = 0;
+    bytes[i] = vertexBytes[vert];
+  }
+}
+  
+void FakeMesh::vertices_set_byte( const VertexHandle* handles, 
+                                  const unsigned char* bytes, 
+                                  size_t count, 
+                                  MsqError& err )
+{
+  for (size_t i = 0; i < count; ++i) {
+    size_t vert = (size_t)handles[i];
+    if (vert >= vertHandles.size()) {
+      MSQ_SETERR(err)(MsqError::INVALID_STATE, "Vertex handle out of range");
+      return;
+    }
+    vertexBytes[vert] = bytes[i];
   }
 }
     
@@ -281,6 +299,8 @@ void PatchSetTest::test_vertex_patches()
   VertexPatches vp;
   MsqPrintError err(std::cout);
   vp.set_mesh( &myMesh );
+  Instruction::initialize_vertex_byte( &myMesh, 0, 0, err );
+  ASSERT_NO_ERROR(err);
   
     // Get data from myMesh to compare to
   
