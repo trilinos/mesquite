@@ -252,7 +252,7 @@ void TerminationCriterionTest::test_cpu_time_common( bool inner )
 {
   MsqPrintError err(std::cout);
   PatchData pd;
-  double LIMIT = 1.5;
+  double LIMIT = 0.5;
 
   TerminationCriterion tc;
   tc.add_cpu_time(LIMIT);
