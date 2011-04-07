@@ -55,8 +55,8 @@ bool TShapeSize2DNB1::evaluate( const MsqMatrix<2,2>& T,
 
   MsqMatrix<2,2> Tdelta(T);
   while (fabs(psi) < DBL_EPSILON) {
-    Tdelta(0,0) += DBL_EPSILON;
-    Tdelta(1,1) += DBL_EPSILON;
+    Tdelta(0,0) += 1e-12;
+    Tdelta(1,1) += 1e-12;
     frob_sqr = sqr_Frobenius(Tdelta);
     psi = sqrt( frob_sqr + 2.0*det(Tdelta) );
   }
@@ -76,8 +76,8 @@ bool TShapeSize2DNB1::evaluate_with_grad( const MsqMatrix<2,2>& T,
 
   MsqMatrix<2,2> Tdelta(T);
   while (fabs(psi) < DBL_EPSILON) {
-    Tdelta(0,0) += DBL_EPSILON;
-    Tdelta(1,1) += DBL_EPSILON;
+    Tdelta(0,0) += 1e-12;
+    Tdelta(1,1) += 1e-12;
     frob_sqr = sqr_Frobenius(Tdelta);
     psi = sqrt( frob_sqr + 2.0*det(Tdelta) );
   }
@@ -103,8 +103,8 @@ bool TShapeSize2DNB1::evaluate_with_hess( const MsqMatrix<2,2>& T,
 
   MsqMatrix<2,2> Tdelta(T);
   while (fabs(psi) < DBL_EPSILON) {
-    Tdelta(0,0) += DBL_EPSILON;
-    Tdelta(1,1) += DBL_EPSILON;
+    Tdelta(0,0) += 1e-12;
+    Tdelta(1,1) += 1e-12;
     frob_sqr = sqr_Frobenius(Tdelta);
     psi = sqrt( frob_sqr + 2.0*det(Tdelta) );
   }
