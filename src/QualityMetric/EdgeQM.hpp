@@ -38,7 +38,7 @@
 
 namespace MESQUITE_NS {
 
-/**\brief Base type for per-element quality metrics */
+/**\brief Base type for quality metrics evaluated for each edge */
 class EdgeQM : public QualityMetric
 {
 public:
@@ -48,14 +48,31 @@ public:
   MESQUITE_EXPORT virtual MetricType get_metric_type() const
     { return VERTEX_BASED; }
   
-  /**\brief Returns list of edge indices in PatchData */
+  /**\brief Returns list of edge indices in PatchData
+   *
+   *This method returns metric evaluation points for every
+   *logical edge in the patch if \c free_vertices_only is
+   *false.  If \c free_vertices_only is true then only the 
+   *subset of edges adjacent to at least one free vertex are
+   *returned.
+   */
   MESQUITE_EXPORT virtual 
   void get_evaluations( PatchData& pd, 
                         std::vector<size_t>& handles,
                         bool free_vertices_only, 
                         MsqError& err );
   
-  /**\brief Returns list of edge indices in PatchData */
+  /**\brief Returns list of edge indices in PatchData 
+   *
+   *This method returns metric evaluation points only a subset
+   *of the logical edges in a patch such that if one iterates 
+   *over the mesh using element-on-vertex patches a given edge
+   *is returned only once for the set of all patches.  This is
+   *accomplished by returning only edges adjacent to vertices
+   *with the MSQ_PATCH_VERTEX set, and only if the handle for
+   *the opposite vertex is greater than the one with the flag
+   *set.
+   */
   MESQUITE_EXPORT virtual 
   void get_single_pass( PatchData& pd, 
                         std::vector<size_t>& handles,
