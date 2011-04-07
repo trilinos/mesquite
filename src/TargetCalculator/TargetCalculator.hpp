@@ -180,6 +180,13 @@ public:
   /**\brief Get skew component of W */
   static MsqMatrix<2,2> skew( const MsqMatrix<2,2>& W );
 
+  /**\brief Get skew component of W */
+  static MsqMatrix<3,3> aspect( const MsqMatrix<3,3>& W );
+  /**\brief Get skew component of W */
+  static MsqMatrix<2,2> aspect( const MsqMatrix<3,2>& W );
+  /**\brief Get skew component of W */
+  static MsqMatrix<2,2> aspect( const MsqMatrix<2,2>& W );
+
   /**\brief Get shape (skew and aspect) component of W */
   static MsqMatrix<3,3> shape( const MsqMatrix<3,3>& W );
   /**\brief Get skew component of W */

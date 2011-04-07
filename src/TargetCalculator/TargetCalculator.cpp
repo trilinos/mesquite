@@ -106,6 +106,46 @@ MsqMatrix<2,2> TargetCalculator::skew( const MsqMatrix<2,2>& W )
   return result;
 }
 
+MsqMatrix<3,3> TargetCalculator::aspect( const MsqMatrix<3,3>& W )
+{
+  double a1 = length(W.column(0));
+  double a2 = length(W.column(1));
+  double a3 = length(W.column(2));
+  double coeff = 1.0/Mesquite::cbrt(a1*a2*a3);
+  
+  MsqMatrix<3,3> result(coeff);
+  result(0,0) *= a1;
+  result(1,1) *= a2;
+  result(2,2) *= a3;
+  return result;
+}
+
+
+MsqMatrix<2,2> TargetCalculator::aspect( const MsqMatrix<3,2>& W )
+{
+  double a1_sqr  = W.column(0) % W.column(0);
+  double a2_sqr  = W.column(1) % W.column(1);
+  double sqrt_rho = sqrt(sqrt(a1_sqr/a2_sqr));
+  
+  MsqMatrix<2,2> result;
+  result(0,0) = sqrt_rho; result(0,1) = 0.0;
+  result(1,0) = 0.0     ; result(1,1) = 1/sqrt_rho;
+  return result;
+}
+
+
+MsqMatrix<2,2> TargetCalculator::aspect( const MsqMatrix<2,2>& W )
+{
+  double a1_sqr  = W.column(0) % W.column(0);
+  double a2_sqr  = W.column(1) % W.column(1);
+  double sqrt_rho = sqrt(sqrt(a1_sqr/a2_sqr));
+  
+  MsqMatrix<2,2> result;
+  result(0,0) = sqrt_rho; result(0,1) = 0.0;
+  result(1,0) = 0.0     ; result(1,1) = 1/sqrt_rho;
+  return result;
+}
+
 MsqMatrix<3,3> TargetCalculator::shape( const MsqMatrix<3,3>& W )
 {
   MsqVector<3> a1    = W.column(0);
