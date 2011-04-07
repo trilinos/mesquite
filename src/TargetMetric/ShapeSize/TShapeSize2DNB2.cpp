@@ -53,7 +53,7 @@ bool TShapeSize2DNB2::evaluate( const MsqMatrix<2,2>& T,
   double frob_sqr = sqr_Frobenius(T);
   double psi = sqrt( frob_sqr + 2.0*det(T) );
 
-  double a = DBL_EPSILON;
+  double a = 1e-12;
   while (!Mesquite::divide(frob_sqr+2,2*psi,result)) {
     MsqMatrix<2,2> Tdelta(T);
     Tdelta(0,0) += a;
@@ -77,7 +77,7 @@ bool TShapeSize2DNB2::evaluate_with_grad( const MsqMatrix<2,2>& T,
   double frob_sqr = sqr_Frobenius(T);
   double psi = sqrt( frob_sqr + 2.0*det(T) );
 
-  double a = DBL_EPSILON;
+  double a = 1e-12;
   while (!Mesquite::divide(frob_sqr+2,2*psi,result)) {
     MsqMatrix<2,2> Tdelta(T);
     Tdelta(0,0) += a;
@@ -110,7 +110,7 @@ bool TShapeSize2DNB2::evaluate_with_hess( const MsqMatrix<2,2>& T,
   double frob_sqr = sqr_Frobenius(T);
   double psi = sqrt( frob_sqr + 2.0*det(T) );
 
-  double a = DBL_EPSILON;
+  double a = 1e-12;
   while (!Mesquite::divide(frob_sqr+2,2*psi,result)) {
     MsqMatrix<2,2> Tdelta(T);
     Tdelta(0,0) += a;
