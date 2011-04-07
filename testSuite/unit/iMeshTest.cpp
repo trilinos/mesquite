@@ -434,7 +434,7 @@ void iMeshTest::testVertexFlagNone( bool fixed )
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!handles.empty());
 
-  std::vector<bool> b(handles.size 0, true );
+  std::vector<bool> b(handles.size(), true );
   if (fixed)
     myMesh->vertices_get_fixed_flag( arrptr(handles), b, handles.size(), err );
   else
