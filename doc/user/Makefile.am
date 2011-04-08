@@ -7,17 +7,22 @@ UG_SRCS = users-guide.tex \
 	ack.tex \
 	api.tex \
 	caveats.tex \
+	custom_solver.tex \
 	data.tex \
-	geom.tex \
 	extend.tex \
+	examples.tex \
+	geom.tex \
+	install.tex \
 	intro.tex \
 	mesh.tex \
+	more_tmp.tex \
+	opt_strategies.tex \
 	plan.tex \
         parallel.tex \
-	install.tex \
-	examples.tex \
+	solver_post.tex \
 	support.tex \
 	team.tex \
+	tmp.tex \
         trouble.tex \
 	wrappers.tex \
         MesquiteUI.eps \
