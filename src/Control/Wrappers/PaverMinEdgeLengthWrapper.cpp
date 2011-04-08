@@ -39,6 +39,7 @@
 #include "MeshImpl.hpp"
 #include "PlanarDomain.hpp"
 
+#include "ElementPMeanP.hpp"
 #include "PMeanPTemplate.hpp"
 #include "TrustRegion.hpp"
 #include "TQualityMetric.hpp"
@@ -77,7 +78,8 @@ void PaverMinEdgeLengthWrapper::run_wrapper( Mesh* mesh,
   IdealShapeTarget W_i;
   LambdaConstant W( lambda, &W_i );
   TShapeSizeB1 tm;
-  TQualityMetric mu( &W, &tm );
+  TQualityMetric mu_0( &W, &tm );
+  ElementPMeanP mu( 1.0, &mu_0 );
   PMeanPTemplate of( 1.0, &mu );
   
     // create quality assessor

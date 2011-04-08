@@ -35,6 +35,7 @@
 #include "MsqTimer.hpp"
 #include "MsqDebug.hpp"
 #include "PMeanPTemplate.hpp"
+#include "ElementPMeanP.hpp"
 #include "ConjugateGradient.hpp"
 #include "TerminationCriterion.hpp"
 #include "InstructionQueue.hpp"
@@ -89,10 +90,12 @@ void ShapeImprover::run_wrapper( Mesh* mesh,
   IdealShapeTarget target;
     // No-barrier phase
   TShapeNB1 mu_no;
-  TQualityMetric metric_no( &target, &mu_no );
+  TQualityMetric metric_no_0( &target, &mu_no );
+  ElementPMeanP metric_no( 1.0, &metric_no_0 );
     // Barrier phase
   TShapeB1 mu_b;
-  TQualityMetric metric_b( &target, &mu_b );
+  TQualityMetric metric_b_0( &target, &mu_b );
+  ElementPMeanP metric_b( 1.0, &metric_b_0 );
     // QualityAssessor
   qa->add_quality_assessment( &metric_no );
   qa->add_quality_assessment( &metric_b );

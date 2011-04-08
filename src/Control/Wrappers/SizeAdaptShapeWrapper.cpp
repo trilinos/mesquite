@@ -40,6 +40,7 @@
 #include "PlanarDomain.hpp"
 
 #include "PMeanPTemplate.hpp"
+#include "ElementPMeanP.hpp"
 #include "TrustRegion.hpp"
 #include "TQualityMetric.hpp"
 #include "IdealShapeTarget.hpp"
@@ -71,7 +72,8 @@ void SizeAdaptShapeWrapper::run_wrapper( Mesh* mesh,
   IdealShapeTarget W_i;
   LambdaTarget W( &W_0, &W_i );
   TShapeSizeB1 tm;
-  TQualityMetric mu( &W, &tm );
+  TQualityMetric mu_0( &W, &tm );
+  ElementPMeanP mu( 1.0, &mu_0 );
   PMeanPTemplate of( 1.0, &mu );
   
     // create quality assessor

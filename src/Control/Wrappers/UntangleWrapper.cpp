@@ -44,6 +44,7 @@
 #include "SteepestDescent.hpp"
 #include "QualityAssessor.hpp"
 #include "InstructionQueue.hpp"
+#include "ElementPMeanP.hpp"
 
 #include "TUntangleBeta.hpp"
 #include "TUntangleMu.hpp"
@@ -133,7 +134,8 @@ void UntangleWrapper::run_wrapper( Mesh* mesh,
     // define objective function
   IdealShapeTarget base_target;
   LambdaConstant target( lambda.average(), &base_target );
-  TQualityMetric metric(&target, mu.get());
+  TQualityMetric metric_0(&target, mu.get());
+  ElementPMeanP metric( 1.0, &metric_0 );
   PMeanPTemplate objfunc( 1.0, &metric );
   
     // define termination criterion
