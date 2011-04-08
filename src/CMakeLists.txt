@@ -130,7 +130,7 @@ APPEND_SET(SOURCES
 #
 
 APPEND_SET(HEADERS
-  Control/Wrappers/LaplacianIQ.hpp
+  Control/Wrappers/LaplaceWrapper.hpp
   Control/Wrappers/ShapeImprovementWrapper.hpp
   Control/Wrappers/ShapeImprover.hpp
   Control/Wrappers/SizeAdaptShapeWrapper.hpp
@@ -141,7 +141,7 @@ APPEND_SET(HEADERS
   )
 
 APPEND_SET(SOURCES
-  Control/Wrappers/LaplacianIQ.cpp
+  Control/Wrappers/LaplaceWrapper.cpp
   Control/Wrappers/ShapeImprovementWrapper.cpp
   Control/Wrappers/ShapeImprover.cpp
   Control/Wrappers/SizeAdaptShapeWrapper.cpp
