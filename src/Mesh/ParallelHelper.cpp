@@ -2523,4 +2523,12 @@ void ParallelHelperImpl::communicate_histogram_to_zero(std::vector<int> &histogr
   }
 }
 
+void ParallelHelperImpl::communicate_all_true( bool& value, MsqError& err ) const
+{
+  char byte_out = value, byte_in;
+  int rval = MPI_Allreduce( &byte_out, &byte_in, 1, MPI_CHAR, MPI_MAX, (MPI_Comm)communicator);
+  CHECK_MPI( rval, err );
+  value = (byte_in != 0);
+}
+
 } // namespace mesquite

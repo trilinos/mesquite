@@ -387,14 +387,23 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
    
    // Loop until outer termination criterion is met
   did_some = true;
-  while (!outer_crit->terminate())
+  all_culled = false;
+  for (;;)
   {
+    bool done = all_culled || outer_crit->terminate();
     if (!did_some) {
       MSQ_SETERR(err)("Inner termiation criterion satisfied for all patches "
                       "without meeting outer termination criterion.  This is "
                       "an infinite loop.  Aborting.", MsqError::INVALID_STATE);
-      break;
+      done = true;
     }
+    
+    helper->communicate_all_true( done, err ); 
+    if (MSQ_CHKERR(err)) goto ERROR;
+    if (done)
+      break;
+    
+    
     did_some = false;
     all_culled = true;
 
@@ -555,9 +564,6 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
     
     outer_crit->accumulate_outer( mesh, domain, obj_func, settings, err );
     if (MSQ_CHKERR(err)) goto ERROR;
-    
-    if (all_culled)
-      break;
   }
 
 ERROR: 
