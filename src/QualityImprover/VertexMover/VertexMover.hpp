@@ -85,6 +85,13 @@ namespace MESQUITE_NS
     inline
     bool is_jacobi_optimization() const 
       { return jacobiOpt; }
+    inline
+    void do_gauss_optimization()
+      { jacobiOpt = false; }
+
+    inline
+    bool is_gauss_optimization() const 
+      { return !jacobiOpt; }
 
   protected:
 
