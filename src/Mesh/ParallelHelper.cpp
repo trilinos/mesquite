@@ -294,7 +294,7 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   mesh->vertices_get_processor_id(arrptr(vertices),arrptr(proc_owner),num_vertex,err); MSQ_ERRRTN(err);
   /* only interested in fixed flag from vertex byte? Clear others. */
   for (i = 0; i < num_vertex; ++i)
-    app_fixed |= MsqVertex::MSQ_HARD_FIXED;
+    app_fixed[i] |= MsqVertex::MSQ_HARD_FIXED;
   
   /* create temporary Tag for the local IDs */
   std::vector<int> lid(num_vertex);
@@ -1003,7 +1003,7 @@ void ParallelHelperImpl::smoothing_close(MsqError& err)
     mesh->vertices_get_processor_id(arrptr(vertices),arrptr(proc_owner),num_vertex,err); MSQ_ERRRTN(err);
     /* only interested in fixed flag from vertex byte? Clear others. */
     for (i = 0; i < num_vertex; ++i)
-      app_fixed |= MsqVertex::MSQ_HARD_FIXED;
+      app_fixed[i] |= MsqVertex::MSQ_HARD_FIXED;
 
     /* insert all our unfixed vertices into a map so we can find the requested vertices efficiently */
     VertexIdMap temp_vid_map;
@@ -1425,7 +1425,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all( MsqError& err )
 	packing_vertex->y = coordinates[1];
 	packing_vertex->z = coordinates[2];
 	packing_vertex->glob_id = exportVtxGIDs[i];
-	if (0) printf("[%d]i%d vertex %d packed %g %g %g\n", rank,iteration,exportVtxGIDs[i],packing_vertex->x, packing_vertex->y, packing_vertex->z);
+	if (0) printf("[%d]i%d vertex %lu packed %g %g %g\n", rank,iteration,(unsigned long)exportVtxGIDs[i],packing_vertex->x, packing_vertex->y, packing_vertex->z);
       }
     }
   }
