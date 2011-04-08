@@ -3,7 +3,7 @@ MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_CONTROL_WRAPPERS_DIR)
 INCLUDED_MAKEFILES += $(SRC_CONTROL_WRAPPERS_DIR)/Makefile.am
 
 MSQ_SRCS += \
-	$(SRC_CONTROL_WRAPPERS_DIR)/LaplacianIQ.cpp \
+	$(SRC_CONTROL_WRAPPERS_DIR)/LaplaceWrapper.cpp \
 	$(SRC_CONTROL_WRAPPERS_DIR)/ShapeImprovementWrapper.cpp \
 	$(SRC_CONTROL_WRAPPERS_DIR)/ShapeImprover.cpp \
 	$(SRC_CONTROL_WRAPPERS_DIR)/SizeAdaptShapeWrapper.cpp \
@@ -13,7 +13,7 @@ MSQ_SRCS += \
 	$(SRC_CONTROL_WRAPPERS_DIR)/Wrapper.cpp
 
 MSQ_HDRS += \
-	$(SRC_CONTROL_WRAPPERS_DIR)/LaplacianIQ.hpp \
+	$(SRC_CONTROL_WRAPPERS_DIR)/LaplaceWrapper.hpp \
 	$(SRC_CONTROL_WRAPPERS_DIR)/ShapeImprovementWrapper.hpp \
 	$(SRC_CONTROL_WRAPPERS_DIR)/ShapeImprover.hpp \
 	$(SRC_CONTROL_WRAPPERS_DIR)/SizeAdaptShapeWrapper.hpp \

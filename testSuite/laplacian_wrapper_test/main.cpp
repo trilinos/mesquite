@@ -50,7 +50,7 @@ describe main.cpp here
 #include "MsqError.hpp"
 #include "PlanarDomain.hpp"
 // algorythms
-#include "LaplacianIQ.hpp"
+#include "LaplaceWrapper.hpp"
 
 
 #include <iostream>
@@ -74,7 +74,7 @@ int main()
   Mesquite::PlanarDomain msq_geom(s_norm, pnt);
   
     // creates an intruction queue
-  LaplacianIQ laplacian_smoother;
+  LaplaceWrapper laplacian_smoother;
   
   mesh.write_vtk("original_mesh.vtk", err); 
   if (err) return 1;

@@ -61,12 +61,12 @@ This class will use the iMeshP API to query processor identifiers and global ide
 
 \section{Examples}
 
-This section contains two different examples of simple stand-alone applications that demonstrate the use of the \texttt{LaplacianIQ} smoother in parallel.  Both examples, in being stand-alone programs, load the mesh from one or more files.  When integrating Mesquite into an existing application where it is desired that Mesquite access application mesh data in memory, the initial setup will be different.  It will typically involve either providing some application-specific implementation of the \texttt{Mesh} and possibly \texttt{ParallelMesh} interfaces or instances of an appliction-specific \texttt{iMeshP} and \texttt{iMesh} implementation.
+This section contains two different examples of simple stand-alone applications that demonstrate the use of the \texttt{LaplaceWrapper} smoother in parallel.  Both examples, in being stand-alone programs, load the mesh from one or more files.  When integrating Mesquite into an existing application where it is desired that Mesquite access application mesh data in memory, the initial setup will be different.  It will typically involve either providing some application-specific implementation of the \texttt{Mesh} and possibly \texttt{ParallelMesh} interfaces or instances of an appliction-specific \texttt{iMeshP} and \texttt{iMesh} implementation.
 
 \subsection{Example: Parallel Laplacian Smooth}
 \label{sec:parallel-example-1}
 
-This example uses the \texttt{LaplacianIQ} wrapper in parallel using the built-in \texttt{Mesh}, \texttt{ParallelMesh}, and \texttt{ParallelHelperImpl} implementations.  For this example to work, the mesh must be partitioned such that the mesh for each processor is saved in a separate file named \texttt{part-\%d.vtk}, with the \texttt{\%d} replaced with the processor rank.  Each VTK file must contain vertex attributes named \texttt{GID} and \texttt{PID} containing the global ID and owning processor rank for each vertex.  Further, as this example provides no geometric domain definition, the vertices on the boundary of the mesh must be designated as ``fixed'' for the problem setup to be valid.
+This example uses the \texttt{LaplaceWrapper} wrapper in parallel using the built-in \texttt{Mesh}, \texttt{ParallelMesh}, and \texttt{ParallelHelperImpl} implementations.  For this example to work, the mesh must be partitioned such that the mesh for each processor is saved in a separate file named \texttt{part-\%d.vtk}, with the \texttt{\%d} replaced with the processor rank.  Each VTK file must contain vertex attributes named \texttt{GID} and \texttt{PID} containing the global ID and owning processor rank for each vertex.  Further, as this example provides no geometric domain definition, the vertices on the boundary of the mesh must be designated as ``fixed'' for the problem setup to be valid.
 
 
 \begin{verbatim}
@@ -76,7 +76,7 @@ This example uses the \texttt{LaplacianIQ} wrapper in parallel using the built-i
 #include <ParallelMeshImpl.hpp>
 #include <ParallelHelper.hpp>
 #include <MsqError.hpp>
-#include <LaplacianIQ.hpp>
+#include <LaplaceWrapper.hpp>
 
 /* other includes */
 #include <mpi.h>
@@ -114,7 +114,7 @@ int main( int argc, char* argv[] )
   parallel_mesh.set_parallel_helper(&helper);
 
   /* do Laplacian smooth */
-  LaplacianIQ optimizer;
+  LaplaceWrapper optimizer;
   optimizer.run_instructions(&parallel_mesh, err);
   if (err) {cerr << err << endl; return 1; }
 
@@ -129,7 +129,7 @@ int main( int argc, char* argv[] )
 
 \subsection{Example: Using \texttt{Mesquite::Mesquite::MsqIMeshP}}
 
-Similar to the example in Section \ref{sec:parallel-example-1}, this example uses the \texttt{LaplacianIQ} wrapper in parallel to improve element shape.  However, this example assumes that either the iMeshP implementation is partitioning or that it is reading some pre-defined partitioned mesh and it relies on the iMeshP implementation to create ghost elements, assign global vertex IDs, etc.  
+Similar to the example in Section \ref{sec:parallel-example-1}, this example uses the \texttt{LaplaceWrapper} wrapper in parallel to improve element shape.  However, this example assumes that either the iMeshP implementation is partitioning or that it is reading some pre-defined partitioned mesh and it relies on the iMeshP implementation to create ghost elements, assign global vertex IDs, etc.  
 
 An implementation of the iMesh and iMeshP APIs must be provided for this example to work.  Mesquite can use these APIs, but does not provide them.
 
@@ -140,7 +140,7 @@ An implementation of the iMesh and iMeshP APIs must be provided for this example
 #include <ParallelMeshImpl.hpp>
 #include <ParallelHelper.hpp>
 #include <MsqError.hpp>
-#include <LaplacianIQ.hpp>
+#include <LaplaceWrapper.hpp>
 
 /* other includes */
 #include <mpi.h>
@@ -193,7 +193,7 @@ int main( int argc, char* argv[] )
   if (err) {cerr << err << endl; return 1; }
 
   /* do Laplacian smooth */
-  LaplacianIQ optimizer;
+  LaplaceWrapper optimizer;
   optimizer.run_instructions(&parallel_mesh, err);
   if (err) {cerr << err << endl; return 1; }
 
