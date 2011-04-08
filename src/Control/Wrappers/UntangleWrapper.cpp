@@ -55,10 +55,8 @@
 #include <memory>
 
 const int NUM_INNER_ITERATIONS = 1;
-const int DEFUALT_PARALLEL_ITERATIONS = 10;
 const double DEFAULT_MOVEMENT_FACTOR = 0.001;
-
-#undef USE_CULLING
+const bool CULLING_DEFAULT = true;
 
 namespace MESQUITE_NS {
 
@@ -67,7 +65,7 @@ UntangleWrapper::UntangleWrapper()
     maxTime(-1),
     movementFactor( DEFAULT_MOVEMENT_FACTOR ),
     metricConstant( -1 ),
-    parallelIterations(DEFUALT_PARALLEL_ITERATIONS)
+    doCulling(CULLING_DEFAULT)
 {}
 
 UntangleWrapper::UntangleWrapper(UntangleMetric m) 
@@ -75,7 +73,7 @@ UntangleWrapper::UntangleWrapper(UntangleMetric m)
     maxTime(-1),
     movementFactor( DEFAULT_MOVEMENT_FACTOR ),
     metricConstant( -1 ),
-    parallelIterations(DEFUALT_PARALLEL_ITERATIONS)
+    doCulling(CULLING_DEFAULT)
 {}
 
 UntangleWrapper::~UntangleWrapper()
@@ -92,9 +90,6 @@ void UntangleWrapper::set_cpu_time_limit( double seconds )
 
 void UntangleWrapper::set_vertex_movement_limit_factor( double f )
   { movementFactor = f; }
-
-void UntangleWrapper::set_parallel_iterations( int count )
-  { parallelIterations = count; }
 
 
 void UntangleWrapper::run_wrapper( Mesh* mesh,
@@ -145,11 +140,10 @@ void UntangleWrapper::run_wrapper( Mesh* mesh,
   double eps = movementFactor * (edge_len.average() - edge_len.standard_deviation());
   TerminationCriterion term, inner;
   term.add_untangled_mesh();
-#ifndef USE_CULLING
-  term.add_absolute_vertex_movement( eps );
-#else
-  inner.cull_on_absolute_vertex_movement( eps );
-#endif
+  if (doCulling) 
+    inner.cull_on_absolute_vertex_movement( eps );
+  else
+    term.add_absolute_vertex_movement( eps );
   if (maxTime > 0.0) 
     term.add_cpu_time( maxTime );
   inner.add_iteration_limit( NUM_INNER_ITERATIONS );

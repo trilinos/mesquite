@@ -68,9 +68,6 @@ public:
   void set_vertex_movement_limit_factor( double f );
 
   MESQUITE_EXPORT
-  void set_parallel_iterations( int count );
-
-  MESQUITE_EXPORT
   UntangleWrapper();
 
   MESQUITE_EXPORT
@@ -78,6 +75,12 @@ public:
 
   MESQUITE_EXPORT
   ~UntangleWrapper();
+
+  inline bool is_culling_enabled() const
+    { return doCulling; }
+  
+  inline void enable_culling( bool yesno )
+    { doCulling = yesno; }
 
 protected:
 
@@ -93,8 +96,7 @@ private:
 
   UntangleMetric qualityMetric;
   double maxTime, movementFactor, metricConstant;
-  int parallelIterations;
-
+  bool doCulling;
 };
 
 
