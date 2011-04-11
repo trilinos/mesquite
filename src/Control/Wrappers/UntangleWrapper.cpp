@@ -58,6 +58,7 @@
 const int NUM_INNER_ITERATIONS = 1;
 const double DEFAULT_MOVEMENT_FACTOR = 0.001;
 const bool CULLING_DEFAULT = true;
+const bool JACOBI_DEFAULT = false;
 
 namespace MESQUITE_NS {
 
@@ -66,7 +67,8 @@ UntangleWrapper::UntangleWrapper()
     maxTime(-1),
     movementFactor( DEFAULT_MOVEMENT_FACTOR ),
     metricConstant( -1 ),
-    doCulling(CULLING_DEFAULT)
+    doCulling(CULLING_DEFAULT),
+    doJacobi(JACOBI_DEFAULT)
 {}
 
 UntangleWrapper::UntangleWrapper(UntangleMetric m) 
@@ -74,7 +76,8 @@ UntangleWrapper::UntangleWrapper(UntangleMetric m)
     maxTime(-1),
     movementFactor( DEFAULT_MOVEMENT_FACTOR ),
     metricConstant( -1 ),
-    doCulling(CULLING_DEFAULT)
+    doCulling(CULLING_DEFAULT),
+    doJacobi(JACOBI_DEFAULT)
 {}
 
 UntangleWrapper::~UntangleWrapper()
@@ -155,6 +158,10 @@ void UntangleWrapper::run_wrapper( Mesh* mesh,
   solver.use_element_on_vertex_patch();
   solver.set_inner_termination_criterion( &inner );
   solver.set_outer_termination_criterion( &term );
+  if (doJacobi)
+    solver.do_jacobi_optimization();
+  else
+    solver.do_gauss_optimization();
   
     // Run 
   qa->add_quality_assessment( &metric );

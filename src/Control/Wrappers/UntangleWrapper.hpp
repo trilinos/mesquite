@@ -76,11 +76,29 @@ public:
   MESQUITE_EXPORT
   ~UntangleWrapper();
 
+  /**\brief Check if vertex culling will be used */
   inline bool is_culling_enabled() const
     { return doCulling; }
   
+  /**\brief Enable vertex culling */
   inline void enable_culling( bool yesno )
     { doCulling = yesno; }
+
+  /**\brief Check if a Jacobi optimization strategy will be used */
+  inline bool is_jacobi_optimization() const
+    { return doJacobi; }
+  
+  /**\brief Check if a Gauss optimization strategy will be used */
+  inline bool is_gauss_optimization() const
+    { return !doJacobi; }
+    
+  /**\brief Use a Jacobi optimization strategy */
+  inline void do_jacobi_optimization()
+    { doJacobi = true; }
+  
+  /**\brief Use a Gauss optimization strategy */
+  inline void do_gauss_optimization()
+    { doJacobi = false; }
 
 protected:
 
@@ -96,7 +114,7 @@ private:
 
   UntangleMetric qualityMetric;
   double maxTime, movementFactor, metricConstant;
-  bool doCulling;
+  bool doCulling, doJacobi;
 };
 
 
