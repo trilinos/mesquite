@@ -9,6 +9,7 @@ SET( unit_tests
      BCDTest
      BoundedCylinderDomainTest
      CachingTargetTest
+     CircleDomainTest
      CompositeMetricTest
      CompositeOFTest
      ConditionNumberTest
@@ -29,6 +30,7 @@ SET( unit_tests
      IdealWeightInverseMeanRatioTest
      InstructionQueueTest
      LinearMappingFunctionTest
+     LineDomainTest
      LVQDTargetTest
      MappingFunctionTest
      Matrix3DTest

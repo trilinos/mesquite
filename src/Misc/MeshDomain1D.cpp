@@ -116,6 +116,25 @@ void LineDomain::domain_DoF( const Mesh::VertexHandle* ,
                              MsqError& err ) const
   { std::fill( dof_array, dof_array+num_handles, 1 ); }
 
+
+double LineDomain::arc_length( const double position1[3],
+                               const double position2[3],
+                               MsqError& )
+{
+  double p1 = mGeom.closest( position1 );
+  double p2 = mGeom.closest( position2 );
+  return p2 - p1;
+}
+
+void LineDomain::position_from_length( const double from_here[3],
+                                       double length,
+                                       double result_point[3],
+                                       MsqError& )
+{
+  const double param = mGeom.closest( from_here );
+  mGeom.point(param + length).get_coordinates( result_point );
+}
+
 void CircleDomain::snap_to( Mesh::VertexHandle ,
                             Vector3D &coordinate) const
   { coordinate = geom().closest( coordinate ); }
@@ -164,6 +183,39 @@ void CircleDomain::domain_DoF( const Mesh::VertexHandle* ,
                                MsqError& err ) const
   { std::fill( dof_array, dof_array+num_handles, 1 ); }
 
+
+double CircleDomain::arc_length( const double position1[3],
+                                 const double position2[3],
+                                 MsqError& )
+{
+  Vector3D p1 = Vector3D(position1) - mGeom.center();
+  Vector3D p2 = Vector3D(position2) - mGeom.center();
+  Vector3D vy = mGeom.normal() * p1;
+  Vector3D vx = vy * mGeom.normal();
+  double x = p2 % vx;
+  double y = p2 % vy;
+  double angle = atan2( y, x );
+  return angle * mGeom.radius();
+}
+
+void CircleDomain::position_from_length( const double from_here[3],
+                                         double length,
+                                         double result_point[3],
+                                         MsqError& )
+{
+  Vector3D b = Vector3D(from_here) - mGeom.center();
+  Vector3D vy = mGeom.normal() * b;
+  Vector3D vx = vy * mGeom.normal();
+  double angle = length / mGeom.radius();
+  double x = std::cos( angle );
+  double y = std::sin( angle );
+  vy *= y/vy.length();
+  vx *= x/vx.length();
+  Vector3D result = vx + vy;
+  result *= mGeom.radius();
+  result += mGeom.center();
+  result.get_coordinates( result_point );
+}
 
 
 } // namespace Mesquite

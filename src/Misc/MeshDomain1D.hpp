@@ -36,6 +36,7 @@
 #include "Mesquite.hpp"
 #include "MeshInterface.hpp"
 #include "MsqGeomPrim.hpp"
+#include "CurveDomain.hpp"
 
 namespace MESQUITE_NS {
 
@@ -78,7 +79,7 @@ class MESQUITE_EXPORT PointDomain : public MeshDomain
                              MsqError& err ) const;
 };
 
-class MESQUITE_EXPORT LineDomain : public MeshDomain
+class MESQUITE_EXPORT LineDomain : public MeshDomain, public CurveDomain
 {
   private:
     MsqLine mGeom;
@@ -120,10 +121,17 @@ class MESQUITE_EXPORT LineDomain : public MeshDomain
                              size_t num_handles,
                              MsqError& err ) const;
    
-    
+  virtual double arc_length( const double position1[3],
+                             const double position2[3],
+                             MsqError& err );
+
+  virtual void position_from_length( const double from_here[3],
+                                     double length,
+                                     double result_point[3],
+                                     MsqError& err );
 };
 
-class MESQUITE_EXPORT CircleDomain : public MeshDomain
+class MESQUITE_EXPORT CircleDomain : public MeshDomain, CurveDomain
 {
   private:
     MsqCircle mGeom;
@@ -165,6 +173,14 @@ class MESQUITE_EXPORT CircleDomain : public MeshDomain
                              size_t num_handles,
                              MsqError& err ) const;
     
+  virtual double arc_length( const double position1[3],
+                             const double position2[3],
+                             MsqError& err );
+
+  virtual void position_from_length( const double from_here[3],
+                                     double length,
+                                     double result_point[3],
+                                     MsqError& err );
 };
 
 

@@ -39,6 +39,7 @@ APPEND_SET(HEADERS
   ../include/MeshInterface.hpp
   ../include/ParallelMeshInterface.hpp
   ../include/ParallelHelperInterface.hpp
+  ../include/CurveDomain.hpp
   )
 
 #

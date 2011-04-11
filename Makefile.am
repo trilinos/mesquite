@@ -86,6 +86,7 @@ libmesquite_la_include_HEADERS = include/Mesquite.hpp \
                                  include/MeshInterface.hpp \
 				 include/ParallelMeshInterface.hpp \
 				 include/ParallelHelperInterface.hpp \
+				 include/CurveDomain.hpp \
                                  $(MSQ_HDRS)
 libmesquite_la_LIBADD = $(MESQUITE_LIBS)
 AM_CPPFLAGS += -Iinclude \

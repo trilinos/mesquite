@@ -63,6 +63,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	BCDTest.cpp \
 	BoundedCylinderDomainTest.cpp \
 	CachingTargetTest.cpp \
+	CircleDomainTest.cpp \
 	CompositeMetricTest.cpp \
 	CompositeOFTest.cpp \
 	ConditionNumberTest.cpp \
@@ -83,6 +84,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	IdealWeightInverseMeanRatioTest.cpp \
 	InstructionQueueTest.cpp \
 	LinearMappingFunctionTest.cpp \
+	LineDomainTest.cpp \
 	LVQDTargetTest.cpp \
 	MappingFunctionTest.cpp \
 	Matrix3DTest.cpp \
