@@ -58,7 +58,7 @@
 namespace MESQUITE_NS {
 
 const DeformingDomainWrapper::MeshCharacteristic DEFAULT_METRIC_TYPE = 
-  DeformingDomainWrapper::SHAPE_SIZE;
+  DeformingDomainWrapper::SHAPE;
 
 const bool DEFAULT_CULLING = true;
 const double DEFAULT_CPU_TIME = 0.0;
