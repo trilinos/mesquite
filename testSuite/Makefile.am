@@ -35,17 +35,13 @@ SUBDIRS = test_1 \
 	  $(IMESH_TEST) \
 	  jacobi \
 	  laplacian_test\
-	  laplacian_wrapper_test\
 	  pyramid \
-	  shape_improve\
 	  simple_hybrid_test\
-	  size_adapt_shape \
           slaved \
 	  synchronous \
 	  transform \
 	  tutorial\
 	  untangle_test\
-	  viscous_cfd \
 	  wrapper_tests\
 	  wedge \
 	  2d_target \

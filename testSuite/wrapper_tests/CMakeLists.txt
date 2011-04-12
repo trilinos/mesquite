@@ -1,2 +1,9 @@
-MSQ_ADD_TEST( wrapper_tests wrapper_tests_main main.cpp )
-MSQ_ADD_TEST( deforming_test deforming_test_main deforming.cpp )
+MSQ_ADD_TEST( deforming_wrapper_test         deforming         deforming.cpp   )
+MSQ_ADD_TEST( laplacian_wrapper_test         laplacian         laplacian.cpp   )
+MSQ_ADD_TEST( shape_improvement_wrapper_test shape_improvement shape_improvement.cpp )
+MSQ_ADD_TEST( shape_improver_wrapper_test    shape_improver    shape_improver.cpp )
+MSQ_ADD_TEST( size_adapt_shape_wrapper_test  size_adapt_shape  size_adapt_shape.cpp )
+MSQ_ADD_TEST( untangle_wrapper_test          untangle          untangle.cpp    )
+MSQ_ADD_TEST( viscous_cdf_wrapper_test       viscous_cfd       viscous_cfd.cpp )
+
+set_source_files_properties( deforming.cpp COMPILE_FLAGS "-DSRCDIR=${CMAKE_CURRENT_SOURCE_DIR}" )
