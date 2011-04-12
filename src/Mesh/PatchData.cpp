@@ -2009,10 +2009,8 @@ NodeSet PatchData::non_slave_node_set( size_t element_index ) const
   unsigned num_edge = 0, num_face = 0, num_corner = TopologyInfo::corners(type);
   TopologyInfo::higher_order( type, n, have_midedge, have_midface, have_midelem, err );
   num_edge = TopologyInfo::edges(type);
-  if (TopologyInfo::dimension(type) == 2) {
-    have_midelem = have_midface;
-    have_midface = false;
-  }
+  if (TopologyInfo::dimension(type) == 2)
+    num_face = 1;
   else 
     num_face = TopologyInfo::faces(type);
   
