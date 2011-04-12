@@ -131,6 +131,7 @@ APPEND_SET(SOURCES
 #
 
 APPEND_SET(HEADERS
+  Control/Wrappers/DeformingDomainWrapper.hpp
   Control/Wrappers/LaplaceWrapper.hpp
   Control/Wrappers/ShapeImprovementWrapper.hpp
   Control/Wrappers/ShapeImprover.hpp
@@ -142,6 +143,7 @@ APPEND_SET(HEADERS
   )
 
 APPEND_SET(SOURCES
+  Control/Wrappers/DeformingDomainWrapper.cpp
   Control/Wrappers/LaplaceWrapper.cpp
   Control/Wrappers/ShapeImprovementWrapper.cpp
   Control/Wrappers/ShapeImprover.cpp
