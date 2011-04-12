@@ -167,11 +167,6 @@ IF (${PACKAGE_NAME}_ENABLE_ExodusII)
 ENDIF()
 
 
-autoconf_header( ${CMAKE_CURRENT_SOURCE_DIR}/include/mesquite_version.h.in
-                 ${CMAKE_CURRENT_BINARY_DIR}/include/mesquite_version.h )
-autoconf_header( ${CMAKE_CURRENT_SOURCE_DIR}/include/mesquite_config.h.in
-                 ${CMAKE_CURRENT_BINARY_DIR}/include/mesquite_config.h )
-
 
 #
 # C) Add the libraries, tests, and examples
@@ -182,8 +177,8 @@ autoconf_header( ${CMAKE_CURRENT_SOURCE_DIR}/include/mesquite_config.h.in
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/testSuite)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/include)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/src/include)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/include)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/itaps)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/itaps)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/Mesh)

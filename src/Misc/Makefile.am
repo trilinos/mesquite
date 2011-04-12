@@ -1,5 +1,5 @@
-SRC_MISC_DIR = src/Misc
-MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_MISC_DIR)
+SRC_MISC_DIR = Misc
+MSQ_INCLUDES += -I$(top_srcdir)/src/$(SRC_MISC_DIR)
 INCLUDED_MAKEFILES += $(SRC_MISC_DIR)/Makefile.am
 
 if ENABLE_ITAPS

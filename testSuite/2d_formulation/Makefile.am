@@ -1,7 +1,7 @@
 @TEST_MAKE_INCLUDE@
 AM_LDFLAGS = @AM_LDFLAGS@
 AM_CPPFLAGS = @AM_CPPFLAGS@
-LDADD = $(top_builddir)/libmesquite.la
+LDADD = $(top_builddir)/src/libmesquite.la
 AM_CPPFLAGS += '-DSRCDIR="$(srcdir)/"'
 check_PROGRAMS = main 
 main_SOURCES = main.cpp

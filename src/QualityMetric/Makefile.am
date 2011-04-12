@@ -1,6 +1,6 @@
-SRC_QUALITYMETRIC_DIR = src/QualityMetric
-MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_QUALITYMETRIC_DIR) \
-                -I$(top_srcdir)/$(SRC_QUALITYMETRIC_DIR)/Debug
+SRC_QUALITYMETRIC_DIR = QualityMetric
+MSQ_INCLUDES += -I$(top_srcdir)/src/$(SRC_QUALITYMETRIC_DIR) \
+                -I$(top_srcdir)/src/$(SRC_QUALITYMETRIC_DIR)/Debug
 INCLUDED_MAKEFILES += $(SRC_QUALITYMETRIC_DIR)/Makefile.am
 
 MSQ_SRCS += \

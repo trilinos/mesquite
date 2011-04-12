@@ -28,12 +28,12 @@ lib_LTLIBRARIES = $(IMESH_LIB) $(IGEOM_LIB) $(IREL_LIB) $(IMESHP_LIB)
 libmsqimesh_la_includedir = $(includedir)
 libmsqimesh_la_SOURCES = MsqIMesh.cpp 
 libmsqimesh_la_include_HEADERS = MsqIMesh.hpp 
-libmsqimesh_la_LIBADD = $(top_builddir)/libmesquite.la $(IMESH_LIBS)
+libmsqimesh_la_LIBADD = $(top_builddir)/src/libmesquite.la $(IMESH_LIBS)
 
 libmsqigeom_la_includedir = $(includedir)
 libmsqigeom_la_SOURCES = MsqIGeom.cpp 
 libmsqigeom_la_include_HEADERS = MsqIGeom.hpp 
-libmsqigeom_la_LIBADD = $(top_builddir)/libmesquite.la $(IGEOM_LIBS)
+libmsqigeom_la_LIBADD = $(top_builddir)/src/libmesquite.la $(IGEOM_LIBS)
 
 libmsqirel_la_includedir = $(includedir)
 libmsqirel_la_SOURCES = MsqIRel.cpp 
@@ -46,8 +46,8 @@ libmsqimeshp_la_include_HEADERS = MsqIMeshP.hpp
 libmsqimeshp_la_LIBADD = libmsqimesh.la $(IMESHP_LIBS)
 
 AM_CPPFLAGS = $(CPPFLAGS) \
-              -I$(top_builddir)/include \
-              -I$(top_srcdir)/include \
+              -I$(top_builddir)/src/include \
+              -I$(top_srcdir)/src/include \
               -I$(top_srcdir)/src/Mesh \
               -I$(top_srcdir)/src/Misc \
               -I$(top_srcdir)/src/Control \

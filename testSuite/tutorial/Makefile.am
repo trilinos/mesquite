@@ -1,5 +1,5 @@
 @TEST_MAKE_INCLUDE@
-LDADD = $(top_builddir)/libmesquite.la
+LDADD = $(top_builddir)/src/libmesquite.la
 check_PROGRAMS = tutorial wrapper lowlevel
 TESTS = run
 EXTRA_DIST = CMakeLists.txt run

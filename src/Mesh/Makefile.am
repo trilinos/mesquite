@@ -1,5 +1,5 @@
-SRC_MESH_DIR = src/Mesh
-MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_MESH_DIR)
+SRC_MESH_DIR = Mesh
+MSQ_INCLUDES += -I$(top_srcdir)/src/$(SRC_MESH_DIR)
 INCLUDED_MAKEFILES += $(SRC_MESH_DIR)/Makefile.am
 
 if WITH_MPI

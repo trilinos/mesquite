@@ -1,5 +1,5 @@
-SRC_CONTROL_DIR = src/Control
-MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_CONTROL_DIR)
+SRC_CONTROL_DIR = Control
+MSQ_INCLUDES += -I$(top_srcdir)/src/$(SRC_CONTROL_DIR)
 INCLUDED_MAKEFILES += $(SRC_CONTROL_DIR)/Makefile.am
 
 MSQ_SRCS += \

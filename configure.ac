@@ -4,7 +4,7 @@ dnl for the CCA tutorial software installation.
 AC_INIT(Mesquite, 2.99)
 AC_CONFIG_AUX_DIR(./config_aux)
 AC_CONFIG_MACRO_DIR([m4])
-AC_CONFIG_SRCDIR(include/Mesquite.hpp)
+AC_CONFIG_SRCDIR(src/include/Mesquite.hpp)
 AC_CANONICAL_SYSTEM
 m4_ifdef([AM_SILENT_RULES],
 [AM_INIT_AUTOMAKE([color-tests])],
@@ -693,8 +693,8 @@ AC_SUBST(MESQUITE_IMESH_MAKE_INCLUDE)
 AUTOHEADER=":"
 AC_SUBST(AUTOHEADER)
 
-TEST_MAKE_INCLUDE="include ../cppflags.make"
-UTIL_MAKE_INCLUDE="include ../testSuite/cppflags.make"
+TEST_MAKE_INCLUDE="include ../../src/cppflags.make"
+UTIL_MAKE_INCLUDE="include ../src/cppflags.make"
 AC_SUBST(TEST_MAKE_INCLUDE)
 AC_SUBST(UTIL_MAKE_INCLUDE)
 
@@ -703,10 +703,11 @@ AC_SUBST(UTIL_MAKE_INCLUDE)
 # not restricted to the Mesquite namespace and therefore
 # may conflict with the config.h of the application using
 # mesquite.
-AC_CONFIG_HEADERS([include/junk_config.h])
-AC_CONFIG_HEADERS([include/mesquite_config.h
-                   include/mesquite_version.h])
+AC_CONFIG_HEADERS([src/include/junk_config.h])
+AC_CONFIG_HEADERS([src/include/mesquite_config.h
+                   src/include/mesquite_version.h])
 AC_CONFIG_FILES([Makefile
+                 src/Makefile
                  itaps/Makefile
                  meshFiles/Makefile
                  testSuite/Makefile
@@ -760,7 +761,7 @@ AC_CONFIG_COMMANDS_POST([rm -f .deps/*])
 # may conflict with the config.h of the application using
 # mesquite.
 AC_CONFIG_COMMANDS([junk_config.h],
-                   [echo '#error "Dont use this header"' > include/junk_config.h])
+                   [echo '#error "Dont use this header"' > src/include/junk_config.h])
 
 # Generate output files
 AC_OUTPUT
