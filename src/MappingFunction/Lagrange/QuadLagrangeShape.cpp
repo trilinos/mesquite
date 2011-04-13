@@ -28,6 +28,7 @@
  */
  
 #include "QuadLagrangeShape.hpp"
+#include "LinearQuadrilateral.hpp"
 #include "MsqError.hpp"
 
 namespace MESQUITE_NS {
@@ -45,6 +46,11 @@ void QuadLagrangeShape::coefficients( Sample loc,
                                       size_t& num_coeff,
                                       MsqError& err ) const
 {
+  if (!nodeset.have_any_mid_node()) {
+    LinearQuadrilateral::coefficients( loc, nodeset, coeff_out, indices_out, num_coeff );
+    return;
+  }
+
   switch (loc.dimension) {
     case 0:
       num_coeff = 1;
@@ -354,6 +360,11 @@ void QuadLagrangeShape::derivatives( Sample loc,
                                      size_t& num_vtx,
                                      MsqError& err ) const
 {
+  if (!nodeset.have_any_mid_node()) {
+    LinearQuadrilateral::derivatives( loc, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+    return;
+  }
+
   switch (loc.dimension) {
     case 0:
       derivatives_at_corner( loc.number, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );

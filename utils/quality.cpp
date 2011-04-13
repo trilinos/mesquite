@@ -8,9 +8,9 @@
 #include "InstructionQueue.hpp"
 #include "MsqError.hpp"
 #include "MeshImpl.hpp"
-#include "QuadLagrangeShape.hpp"
-#include "TetLagrangeShape.hpp"
-#include "TriLagrangeShape.hpp"
+//#include "QuadLagrangeShape.hpp"
+//#include "TetLagrangeShape.hpp"
+//#include "TriLagrangeShape.hpp"
 #include "ElementMaxQM.hpp"
 
 using namespace Mesquite;
@@ -60,13 +60,13 @@ int main( int argc, char* argv[] )
   qa.add_quality_assessment( &max_tmp, intervals, 0.0, "TMP_Shape" );
   qa.tag_fixed_elements( "FIXED_ELEMS" );
 
-  QuadLagrangeShape quad;
-  TriLagrangeShape tri;
-  TetLagrangeShape tet;
+//  QuadLagrangeShape quad;
+//  TriLagrangeShape tri;
+//  TetLagrangeShape tet;
   InstructionQueue q;
-  q.set_mapping_function( &quad );
-  q.set_mapping_function( &tri );
-  q.set_mapping_function( &tet );
+//  q.set_mapping_function( &quad );
+//  q.set_mapping_function( &tri );
+//  q.set_mapping_function( &tet );
   
   q.add_quality_assessor( &qa, err );
   q.run_instructions( &mesh, err );

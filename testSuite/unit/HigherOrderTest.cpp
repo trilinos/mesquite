@@ -54,9 +54,9 @@
 #include "InstructionQueue.hpp"
 #include "TerminationCriterion.hpp"
 
-#include "TriLagrangeShape.hpp"
-#include "TetLagrangeShape.hpp"
-#include "QuadLagrangeShape.hpp"
+//#include "TriLagrangeShape.hpp"
+//#include "TetLagrangeShape.hpp"
+//#include "QuadLagrangeShape.hpp"
 #ifdef HAVE_HO_HEX
 # include "HexLagrangeShape.hpp"
 #endif
@@ -106,9 +106,9 @@ private:
 //  CPPUNIT_TEST (test_tri_slac);
   CPPUNIT_TEST_SUITE_END();
 
-  TriLagrangeShape tri_shape;
-  TetLagrangeShape tet_shape;
-  QuadLagrangeShape quad_shape;
+//  TriLagrangeShape tri_shape;
+//  TetLagrangeShape tet_shape;
+//  QuadLagrangeShape quad_shape;
 #ifdef HAVE_HO_HEX
   HexLagrangeShape hex_shape;
 #endif
@@ -127,9 +127,9 @@ public:
                       solver( &func )
   {
     MsqError err;
-    q.set_mapping_function( &tri_shape );
-    q.set_mapping_function( &tet_shape );
-    q.set_mapping_function( &quad_shape );
+//    q.set_mapping_function( &tri_shape );
+//    q.set_mapping_function( &tet_shape );
+//    q.set_mapping_function( &quad_shape );
 #ifdef HAVE_HO_HEX
     q.set_mapping_function( &hex_shape );
 #endif

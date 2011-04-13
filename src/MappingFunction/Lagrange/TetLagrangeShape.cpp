@@ -1057,6 +1057,12 @@ void TetLagrangeShape::derivatives( Sample loc,
                                     size_t& num_vtx,
                                     MsqError& err ) const
 {
+  if (!nodeset.have_any_mid_node()) {
+    num_vtx = 4;
+    get_linear_derivatives( vertex_indices_out, d_coeff_d_xi_out );
+    return;
+  }
+
   if (nodeset.have_any_mid_face_node() | nodeset.have_any_mid_region_node()) {
     MSQ_SETERR(err)("TetLagrangeShape does not support mid-face/mid-element nodes",
                     MsqError::UNSUPPORTED_ELEMENT);

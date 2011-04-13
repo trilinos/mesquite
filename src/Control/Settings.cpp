@@ -32,9 +32,9 @@
 
 #include "Mesquite.hpp"
 #include "Settings.hpp"
-#include "LinearTriangle.hpp"
-#include "LinearQuadrilateral.hpp"
-#include "LinearTetrahedron.hpp"
+#include "TriLagrangeShape.hpp"
+#include "QuadLagrangeShape.hpp"
+#include "TetLagrangeShape.hpp"
 #include "LinearPyramid.hpp"
 #include "LinearPrism.hpp"
 #include "LinearHexahedron.hpp"
@@ -58,12 +58,12 @@ struct SettingData {
   std::vector<const MappingFunction2D*> mapArray2D;
   std::vector<const MappingFunction3D*> mapArray3D;
   
-  LinearTriangle      linTriFunc;
-  LinearQuadrilateral linQuadFunc;
-  LinearTetrahedron   linTetFunc;
-  LinearPyramid       linPyrFunc;
-  LinearPrism         linPriFunc;
-  LinearHexahedron    linHexFunc;
+  TriLagrangeShape  defTriFunc;
+  QuadLagrangeShape defQuadFunc;
+  TetLagrangeShape  defTetFunc;
+  LinearPyramid     defPyrFunc;
+  LinearPrism       defPriFunc;
+  LinearHexahedron  defHexFunc;
   
 private:
   void fix_copy( const SettingData& other);
@@ -77,18 +77,18 @@ SettingData::SettingData()
     mapArray2D( MIXED, 0 ),
     mapArray3D( MIXED, 0 )
 {
-  mapArray[TRIANGLE     ] = &linTriFunc;
-  mapArray[QUADRILATERAL] = &linQuadFunc;
-  mapArray[TETRAHEDRON  ] = &linTetFunc;
-  mapArray[PYRAMID      ] = &linPyrFunc;
-  mapArray[PRISM        ] = &linPriFunc;
-  mapArray[HEXAHEDRON   ] = &linHexFunc;
-  mapArray2D[TRIANGLE     ] = &linTriFunc;
-  mapArray2D[QUADRILATERAL] = &linQuadFunc;
-  mapArray3D[TETRAHEDRON  ] = &linTetFunc;
-  mapArray3D[PYRAMID      ] = &linPyrFunc;
-  mapArray3D[PRISM        ] = &linPriFunc;
-  mapArray3D[HEXAHEDRON   ] = &linHexFunc;
+  mapArray[TRIANGLE     ] = &defTriFunc;
+  mapArray[QUADRILATERAL] = &defQuadFunc;
+  mapArray[TETRAHEDRON  ] = &defTetFunc;
+  mapArray[PYRAMID      ] = &defPyrFunc;
+  mapArray[PRISM        ] = &defPriFunc;
+  mapArray[HEXAHEDRON   ] = &defHexFunc;
+  mapArray2D[TRIANGLE     ] = &defTriFunc;
+  mapArray2D[QUADRILATERAL] = &defQuadFunc;
+  mapArray3D[TETRAHEDRON  ] = &defTetFunc;
+  mapArray3D[PYRAMID      ] = &defPyrFunc;
+  mapArray3D[PRISM        ] = &defPriFunc;
+  mapArray3D[HEXAHEDRON   ] = &defHexFunc;
 }
 
 
@@ -117,30 +117,30 @@ SettingData& SettingData::operator=( const SettingData& other )
 
 void SettingData::fix_copy( const SettingData& other )
 {
-  if (mapArray[TRIANGLE] == &other.linTriFunc)
-    mapArray[TRIANGLE] = &linTriFunc;
-  if (mapArray[QUADRILATERAL] == &other.linQuadFunc)
-    mapArray[QUADRILATERAL] = &linQuadFunc;
-  if (mapArray[TETRAHEDRON] == &other.linTetFunc)
-    mapArray[TETRAHEDRON] = &linTetFunc;
-  if (mapArray[PYRAMID] == &other.linPyrFunc)
-    mapArray[PYRAMID] = &linPyrFunc;
-  if (mapArray[PRISM] == &other.linPriFunc)
-    mapArray[PRISM] = &linPriFunc;
-  if (mapArray[HEXAHEDRON] == &other.linHexFunc)
-    mapArray[HEXAHEDRON] = &linHexFunc;
-  if (mapArray2D[TRIANGLE] == &other.linTriFunc)
-    mapArray2D[TRIANGLE] = &linTriFunc;
-  if (mapArray2D[QUADRILATERAL] == &other.linQuadFunc)
-    mapArray2D[QUADRILATERAL] = &linQuadFunc;
-  if (mapArray3D[TETRAHEDRON] == &other.linTetFunc)
-    mapArray3D[TETRAHEDRON] = &linTetFunc;
-  if (mapArray3D[PYRAMID] == &other.linPyrFunc)
-    mapArray3D[PYRAMID] = &linPyrFunc;
-  if (mapArray3D[PRISM] == &other.linPriFunc)
-    mapArray3D[PRISM] = &linPriFunc;
-  if (mapArray3D[HEXAHEDRON] == &other.linHexFunc)
-    mapArray3D[HEXAHEDRON] = &linHexFunc;
+  if (mapArray[TRIANGLE] == &other.defTriFunc)
+    mapArray[TRIANGLE] = &defTriFunc;
+  if (mapArray[QUADRILATERAL] == &other.defQuadFunc)
+    mapArray[QUADRILATERAL] = &defQuadFunc;
+  if (mapArray[TETRAHEDRON] == &other.defTetFunc)
+    mapArray[TETRAHEDRON] = &defTetFunc;
+  if (mapArray[PYRAMID] == &other.defPyrFunc)
+    mapArray[PYRAMID] = &defPyrFunc;
+  if (mapArray[PRISM] == &other.defPriFunc)
+    mapArray[PRISM] = &defPriFunc;
+  if (mapArray[HEXAHEDRON] == &other.defHexFunc)
+    mapArray[HEXAHEDRON] = &defHexFunc;
+  if (mapArray2D[TRIANGLE] == &other.defTriFunc)
+    mapArray2D[TRIANGLE] = &defTriFunc;
+  if (mapArray2D[QUADRILATERAL] == &other.defQuadFunc)
+    mapArray2D[QUADRILATERAL] = &defQuadFunc;
+  if (mapArray3D[TETRAHEDRON] == &other.defTetFunc)
+    mapArray3D[TETRAHEDRON] = &defTetFunc;
+  if (mapArray3D[PYRAMID] == &other.defPyrFunc)
+    mapArray3D[PYRAMID] = &defPyrFunc;
+  if (mapArray3D[PRISM] == &other.defPriFunc)
+    mapArray3D[PRISM] = &defPriFunc;
+  if (mapArray3D[HEXAHEDRON] == &other.defHexFunc)
+    mapArray3D[HEXAHEDRON] = &defHexFunc;
 }
 
 Settings::Settings() 

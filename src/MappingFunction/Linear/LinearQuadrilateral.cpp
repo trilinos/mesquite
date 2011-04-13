@@ -54,6 +54,15 @@ void LinearQuadrilateral::coefficients( Sample location,
     return;
   }
   
+  coefficients( location, nodeset, coeff_out, indices_out, num_coeff );
+}
+
+void LinearQuadrilateral::coefficients( Sample location,
+                                        NodeSet nodeset,
+                                        double* coeff_out,
+                                        size_t* indices_out,
+                                        size_t& num_coeff ) 
+{
   switch (location.dimension) {
     case 0:
       num_coeff = 1;
@@ -79,7 +88,7 @@ void LinearQuadrilateral::coefficients( Sample location,
       coeff_out[3] = 0.25;
       break;
     default:
-      MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);
+      num_coeff = 0;
   }
 }
 
@@ -162,6 +171,15 @@ void LinearQuadrilateral::derivatives( Sample loc,
     return;
   }
   
+  derivatives( loc, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+}
+
+void LinearQuadrilateral::derivatives( Sample loc,
+                                       NodeSet nodeset,
+                                       size_t* vertex_indices_out,
+                                       MsqVector<2>* d_coeff_d_xi_out,
+                                       size_t& num_vtx )
+{
   switch (loc.dimension) {
     case 0:
       derivatives_at_corner( loc.number, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
@@ -173,7 +191,7 @@ void LinearQuadrilateral::derivatives( Sample loc,
       derivatives_at_mid_elem( vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     default:
-      MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);
+      num_vtx = 0;
   }
 }
 

@@ -56,7 +56,7 @@ using std::endl;
 #include "PatchData.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
-#include "QuadLagrangeShape.hpp"
+//#include "QuadLagrangeShape.hpp"
 
 // algorithms
 #include "IdealShapeTarget.hpp"
@@ -253,7 +253,7 @@ InstructionQueue* create_instruction_queue(MsqError& err)
 int do_test( bool slave)
 {
   MsqPrintError err(cout);
-  QuadLagrangeShape quad9;
+//  QuadLagrangeShape quad9;
   
     // Create geometry
   Vector3D z(0,0,1), o(0,0,0);
@@ -305,7 +305,7 @@ int do_test( bool slave)
   if (MSQ_CHKERR(err)) return 1;
   if (!slave)
     q3->set_slaved_ho_node_mode(Settings::SLAVE_NONE);
-  q3->set_mapping_function( &quad9 );
+//  q3->set_mapping_function( &quad9 );
   q3->run_instructions( quadratic_in_2, &geom, err ); 
   if (MSQ_CHKERR(err)) return 1;
     // Make sure corner vertices are the same as in the linear case
@@ -330,7 +330,7 @@ int do_test( bool slave)
 int do_smooth_ho()
 {
   MsqPrintError err(cout);
-  QuadLagrangeShape quad9;
+//  QuadLagrangeShape quad9;
   
     // Create geometry
   PlanarDomain geom(PlanarDomain::XY);  
@@ -352,7 +352,7 @@ int do_smooth_ho()
   InstructionQueue* q1 = create_instruction_queue( err );
   if (MSQ_CHKERR(err)) return 1;
   q1->set_slaved_ho_node_mode(Settings::SLAVE_NONE);
-  q1->set_mapping_function( &quad9 );
+//  q1->set_mapping_function( &quad9 );
   q1->run_instructions( quadratic_in, &geom, err ); 
   if (MSQ_CHKERR(err)) return 1;
   cout << "Checking results" << endl;

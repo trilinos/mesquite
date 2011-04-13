@@ -63,7 +63,7 @@ class LinearMappingFunctionTest : public CppUnit::TestFixture
 
     CPPUNIT_TEST(test_linear_quad_coeff_corners);
     CPPUNIT_TEST(test_linear_quad_coeff_edges);
-    CPPUNIT_TEST(test_linear_quad_coeff_faces);
+//    CPPUNIT_TEST(test_linear_quad_coeff_faces);
     CPPUNIT_TEST(test_linear_quad_coeff_center);
 
     CPPUNIT_TEST(test_linear_tet_coeff_corners);
@@ -93,7 +93,7 @@ class LinearMappingFunctionTest : public CppUnit::TestFixture
 
     CPPUNIT_TEST(test_linear_quad_deriv_corners);
     CPPUNIT_TEST(test_linear_quad_deriv_edges);
-    CPPUNIT_TEST(test_linear_quad_deriv_faces);
+//    CPPUNIT_TEST(test_linear_quad_deriv_faces);
     CPPUNIT_TEST(test_linear_quad_deriv_center);
 
     CPPUNIT_TEST(test_linear_tet_deriv_corners);
@@ -188,7 +188,7 @@ class LinearMappingFunctionTest : public CppUnit::TestFixture
 
     void test_linear_quad_coeff_corners();
     void test_linear_quad_coeff_edges();
-    void test_linear_quad_coeff_faces();
+//    void test_linear_quad_coeff_faces();
     void test_linear_quad_coeff_center();
 
     void test_linear_tet_coeff_corners();
@@ -218,7 +218,7 @@ class LinearMappingFunctionTest : public CppUnit::TestFixture
 
     void test_linear_quad_deriv_corners();
     void test_linear_quad_deriv_edges();
-    void test_linear_quad_deriv_faces();
+//    void test_linear_quad_deriv_faces();
     void test_linear_quad_deriv_center();
 
     void test_linear_tet_deriv_corners();
@@ -389,10 +389,10 @@ void LinearMappingFunctionTest::test_linear_quad_coeff_edges()
   do_coeff_test( quad, 1, quad_coeff, 4, xi );
 }
 
-void LinearMappingFunctionTest::test_linear_quad_coeff_faces()
-{
-  test_coeff_fail( quad, 3 );
-}
+//void LinearMappingFunctionTest::test_linear_quad_coeff_faces()
+//{
+//  test_coeff_fail( quad, 3 );
+//}
 
 void LinearMappingFunctionTest::test_linear_quad_coeff_center()
 {
@@ -565,10 +565,10 @@ void LinearMappingFunctionTest::test_linear_quad_deriv_edges()
   do_deriv_test( quad, 1, quad_deriv, 4, xi );
 }
 
-void LinearMappingFunctionTest::test_linear_quad_deriv_faces()
-{
-  test_deriv_fail( quad, 3 );
-}
+//void LinearMappingFunctionTest::test_linear_quad_deriv_faces()
+//{
+//  test_deriv_fail( quad, 3 );
+//}
 
 void LinearMappingFunctionTest::test_linear_quad_deriv_center()
 {

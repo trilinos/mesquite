@@ -57,7 +57,7 @@ Unit testing of various functions in the PatchData class.
 #include "MeshDomain1D.hpp"
 #include "MeshDecorator.hpp"
 
-#include "TriLagrangeShape.hpp"
+//#include "TriLagrangeShape.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
 
@@ -648,8 +648,8 @@ void PatchDataTest::test_update_slave_node_coords()
   
     // update_slave_node_coords requires a mapping function
   Settings settings;
-  TriLagrangeShape tri_func;
-  settings.set_mapping_function( &tri_func );
+//  TriLagrangeShape tri_func;
+//  settings.set_mapping_function( &tri_func );
   pd.attach_settings( &settings );
   
     // call the function we're trying to test.
