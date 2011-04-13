@@ -65,7 +65,7 @@ const double DEFAULT_CPU_TIME = 0.0;
 const double DEFAULT_MOVEMENT_FACTOR = 0.01;
 const int DEFAULT_INNER_ITERATIONS = 2;
 const char DEFAULT_CURVE_TAG[] = "MesquiteCurveFraction";
-const DeformingCurveSmoother::MeshCharacteristic DEFAULT_CURVE_TYPE = 
+const DeformingCurveSmoother::Scheme DEFAULT_CURVE_TYPE = 
   DeformingCurveSmoother::PROPORTIONAL;
 
 DeformingDomainWrapper::DeformingDomainWrapper()
@@ -223,7 +223,7 @@ void DeformingCurveSmoother::smooth_curve( Mesh* mesh,
                                            const Mesh::VertexHandle* verts,
                                            int nverts,
                                            CurveDomain* geom,
-                                           MeshCharacteristic type,
+                                           Scheme type,
                                            MsqError& err )
 {
   if (nverts < 2) {

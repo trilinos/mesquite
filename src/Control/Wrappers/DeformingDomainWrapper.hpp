@@ -55,6 +55,10 @@ class CurveDomain;
  *      set up a "free" smooth where vertices on geometric curves are 
  *      smoothed as a part of teh surface or volume optimization or simply
  *      redistribute the vertices along the curves outside of mesquite.
+ *      The DeformingCurveSmoother class is provided below to facilitate
+ *      redistributing nodes on a curve such that fractional arc length
+ *      is preserved for edges.  However, this it is as a stand-alone utility 
+ *      that must be invoked independently for each curve.
  */
 class DeformingDomainWrapper : public Wrapper
 {
@@ -114,9 +118,20 @@ public:
   void store_initial_mesh( Mesh* mesh, MsqError& err );
   
   /**\brief Mesh characteristics to attempt to preserve */
-  enum MeshCharacteristic { SHAPE, SHAPE_SIZE, SHAPE_SIZE_ORIENT };
+  enum MeshCharacteristic { 
+    SHAPE,              //!< Attempt to preserve element shape
+    SHAPE_SIZE,         //!< Attempt to preserve element shape and size
+    SHAPE_SIZE_ORIENT   //!< Attempt to preserve element shape, size, and orientation
+  }; 
   
-  /**\brief Specify which mesh characteristics to preserve */
+  /**\brief Specify which mesh characteristics to preserve 
+   *
+   * It typically works the best to preserve whichever quantities can
+   * be preserved.  For example, if the overall area/volume of the domain
+   * didn't change much, attempt to preserve size.  If the deformation of
+   * the domain doesn't require rotation of the elements relative to the
+   * global coordinate system, then preserve orientation.
+   */
   inline
   void set_mesh_characteristic( MeshCharacteristic t )
     { metricType = t; }
@@ -152,7 +167,12 @@ public:
   /**\brief Specify factor by which to minimum distance a vertex must 
    *        move in an iteration to avoid termination of the untangler.
    *
-   * Value must be greater than zero, and should be less or equal to 1.0 */
+   * Value must be greater than zero, and should be less 1.0
+   * The optimizer will calculated a representative edge length
+   * from the mesh.  It will terminate the optimization when an
+   * iteration moves no vertex more than this factor times the
+   * characteristic edge length.
+   */
   MESQUITE_EXPORT
   void set_vertex_movement_limit_factor( double f );
   
@@ -177,11 +197,23 @@ protected:
 private:
 
   MeshCharacteristic metricType;
-  std::string initVertexCoords;
+  std::string initVertexCoords; //!< name of tag used to store coordinates of initial mesh
   bool doCulling;
   double cpuTime, movementFactor;
 };
 
+/**\brief Utility to do curve smoothing
+ *
+ * This class implements a simple utility to redistribute vertices
+ * on a curve (1D domain).  It can operate in two modes.  If the 
+ * charactristic is \c EQUAL, it will redistribute the vertices such
+ * that the arc length between each vertex is equal. In the 
+ * \c PROPORTIONAL mode the application must call \c store_initial_mesh
+ * for each curve before the domain is deformed.  \c store_initial_mesh
+ * will record the fractional arc length between vertices so that
+ * \c smooth_curve can redistribute the vertices such that the space
+ * between the vertices is the same fractional arc length.
+ */
 class DeformingCurveSmoother 
 {
 public:
@@ -193,7 +225,10 @@ public:
   ~DeformingCurveSmoother();
   
   /**\brief Mesh characteristics to attempt to preserve */
-  enum MeshCharacteristic { EQUAL, PROPORTIONAL };
+  enum Scheme { 
+     EQUAL,       //!< space curve vertices equally
+     PROPORTIONAL //!< preserve relative spacing from initial mesh
+  };
   
   /**\brief Specify tag used to get/set cached initial mesh data
    *
@@ -219,13 +254,32 @@ public:
   
   /**\brief Specify which mesh characteristics to preserve */
   inline
-  void set_mesh_characteristic( MeshCharacteristic t )
+  void set_mesh_characteristic( Scheme t )
     { metricType = t; }
   
   inline
-  MeshCharacteristic get_mesh_characteristic() const
+  Scheme get_mesh_characteristic() const
     { return metricType; }
   
+  /**\brief Record relative edge length from initial mesh
+   *
+   * Record the necessary characteristics of the initial mesh required
+   * for a later all to \c smooth_curve using the \c PROPORTIONAL mode.
+   *\param mesh_instance  This mesh instance need not contain only the
+   *               vertices of this curve, but it must preserve tag data
+   *               on the curve vertices for use in \c smooth_curve.
+   *\param vertex_array   The array of handles corresponding to vertices
+   *               on the curve and its end points.  Vertices must be 
+   *               ordered and in the forward direction along the curve,
+   *               where the forward direction is whichever direction
+   *               the \c CurveDomain instance considers a positive arc
+   *               length for the \c position_from_length call.  The array
+   *               must also contain both the start and end vertex for 
+   *               the curve, and if the curve is closed, the single start/end
+   *               vertex must occur at both the start and end of the list.
+   *\param vertex_array_length The number of handles in \c vertex_array.
+   *\param geometry The curve or 1D domain geometry.
+   */
   MESQUITE_EXPORT
   void store_initial_mesh( Mesh* mesh_instance,
                            const Mesh::VertexHandle* vertex_array,
@@ -233,17 +287,45 @@ public:
                            CurveDomain* geometry,
                            MsqError& err );
   
+  /**\brief Redistribute vertices along a curve or 1D domain.
+   *
+   * Smooth the curve mesh by redistributing the vertices using one of
+   * the schemes defined in \c Scheme.
+   *
+   *\param mesh_instance  This mesh instance need not contain only the
+   *               vertices of this curve, but if using the 
+   *               \c PROPORTIONAL scheme it must have the tag data
+   *               defined by the earlier call to \c store_initial_mesh.
+   *\param vertex_array   The array of handles corresponding to vertices
+   *               on the curve and its end points.  Vertices must be 
+   *               ordered and in the forward direction along the curve,
+   *               where the forward direction is whichever direction
+   *               the \c CurveDomain instance considers a positive arc
+   *               length for the \c position_from_length call.  The array
+   *               must also contain both the start and end vertex for 
+   *               the curve, and if the curve is closed, the single start/end
+   *               vertex must occur at both the start and end of the list.
+   *               The first and last vertex in the array will *not* be moved.
+   *               If the geometric points (0D domains) they are constrained
+   *               to lie on have moved, the caller must move them to those
+   *               new locations before calling this function.
+   *\param vertex_array_length The number of handles in \c vertex_array.
+   *\param geometry The curve or 1D domain geometry.
+   *\param type    The scheme to use.  If using \c PROPORTIONAL, 
+   *               then \c store_initial_mesh must be called for the same
+   *               vertices and mesh instance before any deformation.
+   */
   MESQUITE_EXPORT
   void smooth_curve( Mesh* mesh_instance,
                      const Mesh::VertexHandle* vertex_array,
                      int vertex_array_length,
                      CurveDomain* geometry,
-                     MeshCharacteristic type,
+                     Scheme type,
                      MsqError& err );
 
 private:
-  MeshCharacteristic metricType;
-  std::string initFractTag;
+  Scheme metricType;
+  std::string initFractTag; //!< name of tag used to store arc length fractions
   TagHandle get_tag(Mesh* mesh, MsqError& err);
 };
 
