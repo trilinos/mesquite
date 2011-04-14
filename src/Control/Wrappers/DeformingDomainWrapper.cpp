@@ -145,11 +145,11 @@ void DeformingDomainWrapper::run_wrapper( Mesh* mesh,
   improver.set_inner_termination_criterion( &inner );
   improver.set_outer_termination_criterion( &outer );
   
-  QualityAssessor qa(&elem_metric);
+  qa->add_quality_assessment(&elem_metric);
   InstructionQueue q;
-  q.add_quality_assessor( &qa, err ); MSQ_ERRRTN(err);
+  q.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
   q.set_master_quality_improver( &improver, err ); MSQ_ERRRTN(err);
-  q.add_quality_assessor( &qa, err ); MSQ_ERRRTN(err);
+  q.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
   q.run_common( mesh, pmesh, geom, settings, err ); MSQ_ERRRTN(err);
 }
 
