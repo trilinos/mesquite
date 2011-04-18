@@ -57,10 +57,10 @@ void VertexPatches::get_patch_handles( std::vector<PatchHandle>& patch_handles_o
                                    patch_handles_out.size(),
                                    err ); MSQ_ERRRTN(err);
     
-      // remove fixed vertices from list
+      // remove fixed  and slaved vertices from list
     size_t write = 0;
     for (size_t read = 0; read < patch_handles_out.size(); ++read) 
-      if (!(flags[read] & MsqVertex::MSQ_HARD_FIXED))
+      if (!(flags[read] & (MsqVertex::MSQ_HARD_FIXED|MsqVertex::MSQ_DEPENDENT)))
         patch_handles_out[write++] = patch_handles_out[read];
     patch_handles_out.resize(write);
   }

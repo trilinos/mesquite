@@ -1048,7 +1048,7 @@ void PatchDataTest::test_patch_data_mesh_slaved_ho_nodes()
   get_quad8_mesh( mesh );
   
   std::map<Mesh::VertexHandle,bool> ho_verts;
-  get_higher_order_vertices( mesh, ho_verts, true );
+  get_higher_order_vertices( mesh, ho_verts, true, false );
   
   check_higher_order_vertices_slaved( mesh, Settings::SLAVE_ALL, ho_verts );
   delete mesh;

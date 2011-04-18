@@ -60,15 +60,48 @@ void Instruction::initialize_vertex_byte( Mesh* mesh,
                                           MsqError& err )
 {
   std::vector<Mesh::VertexHandle> verts;
-  mesh->get_all_vertices( verts, err ); MSQ_ERRRTN(err);
-  std::vector<unsigned char> bytes( verts.size(), 0 );
+  std::vector<unsigned char> bytes;
+
+    // Handle SLAVE_ALL first because we want to work with vertices
+    // in element connectivity lists rather than one big array of
+    // vertex handles. 
+  bool use_existing_slaved_flag = false;
+  if (!settings || settings->get_slaved_ho_node_mode() == Settings::SLAVE_ALL) {
+    std::vector<Mesh::ElementHandle> elems;
+    std::vector<size_t> junk;
+    mesh->get_all_elements( elems, err ); MSQ_ERRRTN(err);
+    for (size_t i = 0; i < elems.size(); ++i) {
+      EntityTopology type;
+      mesh->elements_get_topologies( &elems[i], &type, 1, err ); MSQ_ERRRTN(err);
+      unsigned ncorner = TopologyInfo::corners( type );
+      
+      verts.clear();
+      junk.clear();
+      mesh->elements_get_attached_vertices( &elems[i], 1, verts, junk, err ); MSQ_ERRRTN(err);
+      if (ncorner < verts.size())
+        use_existing_slaved_flag = true;
+      
+      bytes.clear();
+      bytes.resize( verts.size(), 0 );
+      std::fill( bytes.begin() + TopologyInfo::corners(type), bytes.end(), MsqVertex::MSQ_DEPENDENT );
+      mesh->vertices_set_byte( arrptr(verts), arrptr(bytes), verts.size(), err ); MSQ_ERRRTN(err);
+    }
+  }
+  else if (settings && settings->get_slaved_ho_node_mode() == Settings::SLAVE_CALCULATED)
+    use_existing_slaved_flag = true;
+
   std::vector<bool> flags;
+  verts.clear();
+  mesh->get_all_vertices( verts, err ); MSQ_ERRRTN(err);
+  bytes.clear();
+  bytes.resize( verts.size(), 0 );  
   
     // Normally we start out with all bits cleared.  However, if
     // we're doing SLAVE_CALCULATED mode then we need to perserve
     // the exinsting value of that bit because it was presumably
-    // set by a previous tool in the InstructionQueue.
-  if (settings && settings->get_slaved_ho_node_mode() == Settings::SLAVE_CALCULATED) {
+    // set by a previous tool in the InstructionQueue.  Also, if doing
+    // SLAVE_ALL, preserve the value we just set.
+  if (use_existing_slaved_flag) {
     mesh->vertices_get_byte( arrptr(verts), arrptr(bytes), verts.size(), err ); MSQ_ERRRTN(err);
     for (size_t i = 0; i < bytes.size(); ++i)
       bytes[i] &= (unsigned char)MsqVertex::MSQ_DEPENDENT;
@@ -81,11 +114,7 @@ void Instruction::initialize_vertex_byte( Mesh* mesh,
       if (flags[i])
         bytes[i] |= (unsigned char)MsqVertex::MSQ_DEPENDENT;
   }
-    // If slave mode is SLAVE_ALL, that needs to be handled later
-    // because we need to check things on a per-element basis.
-    // For now, leave it to be handled in PatchData because we
-    // already have the element array there.
-  
+
     // If using application-specified fixed flag, copy that into
     // vertex byte now.
   if (!settings || settings->get_fixed_vertex_mode() == Settings::FIXED_FLAG) {
@@ -109,7 +138,7 @@ void Instruction::initialize_vertex_byte( Mesh* mesh,
       if (dof[i] <= dim)
         bytes[i] |= (unsigned char)MsqVertex::MSQ_HARD_FIXED;
   }
-
+  
     // Copy flag values back to mesh instance
   mesh->vertices_set_byte( arrptr(verts), arrptr(bytes), verts.size(), err ); MSQ_ERRRTN(err);
 }

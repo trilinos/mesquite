@@ -1666,10 +1666,9 @@ void PatchData::initialize_data( size_t* elem_offset_array,
     // occur after free, non-slave vertices in list.
   numSlaveVertices = 0;
   for (i = 0; i < vertexHandlesArray.size(); ++i) {
-    if (vertex_flags[i] & MsqVertex::MSQ_DEPENDENT) {
-      assert( !(vertex_flags[i] & MsqVertex::MSQ_HARD_FIXED));
+    if ((vertex_flags[i] & MsqVertex::MSQ_DEPENDENT) && 
+       !(vertex_flags[i] & MsqVertex::MSQ_FIXED))
       ++numSlaveVertices;
-    }
   }
   numFreeVertices -= numSlaveVertices;
 
@@ -1934,10 +1933,8 @@ void PatchData::set_mesh_entities(
         free_vertices.end() );
     
     for (size_t i = 0; i < vertexHandlesArray.size(); ++i) {
-      assert( byteArray[i] <= 1 ); // make sure cast from bool works as expected (true == 1)
-      if (std::binary_search(free_vertices.begin(), 
-                                 free_vertices.end(), 
-                                 vertexHandlesArray[i]))
+      if ((byteArray[i] & MsqVertex::MSQ_DEPENDENT) ||
+          std::binary_search(free_vertices.begin(), free_vertices.end(), vertexHandlesArray[i]))
         byteArray[i] &= ~MsqVertex::MSQ_PATCH_FIXED;
       else
         byteArray[i] |= MsqVertex::MSQ_PATCH_FIXED;
@@ -1948,12 +1945,6 @@ void PatchData::set_mesh_entities(
   elementArray.resize( elementHandlesArray.size() );
   for (size_t i = 0; i < elementHandlesArray.size(); ++i)
     elementArray[i].set_element_type( elem_topologies[i] );
-    
-    // Mark all higher-order nodes as slave unless settings dictate otherwise
-  if (!mSettings || mSettings->get_slaved_ho_node_mode() ==  Settings::SLAVE_ALL) {
-    enslave_higher_order_nodes( arrptr(offsetArray), arrptr(byteArray), err ); 
-    MSQ_ERRRTN(err);
-  }
   
     // get element connectivity, group vertices by free/slave/fixed state
   initialize_data( arrptr(offsetArray), arrptr(byteArray), err ); MSQ_ERRRTN(err);
