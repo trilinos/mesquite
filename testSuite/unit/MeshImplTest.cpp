@@ -115,14 +115,12 @@ void MeshImplTest::dump_mesh( const char* filename, MeshImpl& mesh, MsqError& er
 void MeshImplTest::test_zero_length_data()
 {
   const size_t num_vtx = 2, zero = 0;
-  const double vtx_coords1[] = { 0, 0, 0 };
-  const double vtx_coords2[] = { 1, 1, 1 };
-  const double* coords[num_vtx] = { vtx_coords1, vtx_coords2 };
+  const double coords[3*num_vtx] = { 0, 0, 0, 1, 1, 1 };
   const bool fixed[num_vtx] = { false, false };
   std::vector<Mesh::ElementHandle> elems;
   std::vector<Mesh::VertexHandle> verts;
   MsqError err;
-  const int* conn[2];
+  const int conn[6] = { 0, 1, 0, 1, 0, 1 };
   EntityTopology type = TRIANGLE;
 
   MeshImpl no_elem1( 2, 0, TRIANGLE, fixed, coords, 0 );

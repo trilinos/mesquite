@@ -63,21 +63,93 @@ namespace MESQUITE_NS
 //********* Functions that are NOT inherited ************
 
     MeshImpl();
+    
     virtual ~MeshImpl();
 
+    /**\brief Initialize mesh by copying data from arrays.
+     *
+     *\param num_vertex  Number of vertices in the mesh
+     *\param num_elem    Number of elements in the mesh
+     *\param entity_topology Type of all elements in the mesh
+     *\param fixed        Value of fixed flag for each vertex
+     *\param coords      Interleaved vertex coordinates.
+     *\param conn        Element corner vertices specified as indices into
+     *                   vertex list
+     */
     MeshImpl(int num_vertex, int num_elem, 
 	     EntityTopology entity_topology, 
-	     const bool *fixed, const double **coords, const int **conn);
+	     const bool *fixed, const double *coords, const int *conn);
     
+    /**\brief Initialize mesh by copying data from arrays.
+     *
+     *\param num_vertex  Number of vertices in the mesh
+     *\param num_elem    Number of elements in the mesh
+     *\param entity_topologies The types of each element in the mesh
+     *\param fixed       Value of fixed flag for each vertex
+     *\param coords      Interleaved vertex coordinates.
+     *\param conn        Element corner vertices specified as indices into
+     *                   vertex list
+     */
     MeshImpl(int num_vertex, int num_elem, 
 	     const EntityTopology *element_topologies, 
-	     const bool *fixed, const double **coords, const int **conn);
-
+	     const bool *fixed, const double *coords, const int *conn);
+    
+    /**\brief Read mesh from VTK file format version 3.0 or earlier */
     void read_vtk(const char* in_filename, Mesquite::MsqError &err);
+    
+    /**\brief Write mesh to VTK file format version 3.0 */
     void write_vtk(const char* out_filename, Mesquite::MsqError &err);
+    
+    /**\brief Read mesh from ExodusII file */
     void read_exodus(const char* in_filename, Mesquite::MsqError &err);
+    
+    /**\brief Write mesh to ExodusII file */
     void write_exodus(const char* out_filename, Mesquite::MsqError &err);
     
+    /**\brief Set the value returned by vertices_get_fixed_flag for all vertices */
+    void set_all_fixed_flags(bool value, MsqError& err);
+    
+    /**\brief Set the value returned by vertices_get_slaved_flag for all vertices
+     *
+     * Set value for vertices_get_slaved_flag for all corners nodes to false and
+     * for all other nodes to the passed value.
+     *
+     *\param value Value to set on mid-edge, mid-face, or mid-region nodes.
+     *
+     *\NOTE You must change slave vertex mode to Settings::SLAVED_FLAG for the values
+     *      returned by vertices_get_slaved_flag to be used during optimization.
+     */
+    void set_all_slaved_flags(bool value, MsqError& err);
+    
+    /**\brief Set values for vertices_get_fixed_flag and vertices_get_slaved_flag
+     * on skin vertices
+     *
+     * Set flag values for vertices on the skin (i.e. boundary) of the mesh.
+     * Does not modify flags on iterior vertices.  Call \c set_all_fixed _flags
+     * and \c set_all_slaved_flags *before* calling this function to set values
+     * on interior vertices.
+     *\param corner_fixed_flag  Value for vertices_get_fixed_flag for vertices at element corners
+     *\param midnode_fixed_flag  Value for vertices_get_fixed_flag for non-corner 
+     *                           vertices (i.e. mid-face or mid-element nodes)
+     *\param midnode_slaved_flag  Value for vertices_get_slaved_flag for non-corner 
+     *                            vertices (i.e. mid-face or mid-element nodes)
+     *
+     *\NOTE You must change slave vertex mode to Settings::SLAVED_FLAG for the values
+     *      returned by vertices_get_slaved_flag to be used during optimization.
+     */
+    void set_skin_flags( bool corner_fixed_flag, 
+                         bool midnode_fixed_flag,
+                         bool midnode_slaved_flag,
+                         MsqError& err );
+    
+    
+    /**\brief Find the vertices in the skin (i.e bounary) of the mesh and
+     * mark them as 'fixed'.
+     *\param clear_existing  If true only skin vertices are marked as fixed.
+     *                       If false, skin vertices will be marked as fixed
+     *                       in addition to any other vertices already marked
+     *                       as fixed.
+     */
     void mark_skin_fixed( MsqError& err, bool clear_existing = true );
                                      
 //********* Functions that ARE inherited ************

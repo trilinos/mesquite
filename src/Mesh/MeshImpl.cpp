@@ -90,117 +90,70 @@ MeshImpl::~MeshImpl()
 }
 
 MeshImpl::MeshImpl(int num_nodes, int num_elem, EntityTopology entity_topology, 
-                   const bool *fixed, const double **coords, const int **connectivity)
+                   const bool *fixed, const double *coords, const int *connectivity)
     : numCoords(3),
       myMesh( new MeshImplData ),
       myTags( new MeshImplTags )
 {
-  int i,j;
-  
   MsqError err;
   myMesh->allocate_vertices( num_nodes, err ); MSQ_ERRRTN(err);
   myMesh->allocate_elements( num_elem, err ); MSQ_ERRRTN(err);
   
   // Fill in the data
   if (fixed) {
-    for (i = 0; i < num_nodes; ++i) {
-      myMesh->reset_vertex(i, Vector3D(coords[i][0],coords[i][1],coords[i][2]), fixed[i], err);
+    for (int i = 0; i < num_nodes; ++i) {
+      myMesh->reset_vertex(i, Vector3D(coords + 3*i), fixed[i], err);
     }
   }
   else {
-    for (i = 0; i < num_nodes; ++i) {
-      myMesh->reset_vertex(i, Vector3D(coords[i][0],coords[i][1],coords[i][2]), false, err);
+    for (int i = 0; i < num_nodes; ++i) {
+      myMesh->reset_vertex(i, Vector3D(coords + 3*i), false, err);
     }
   }
 
-  int verts_per_elem=0;
-  EntityTopology elem_type;
-  
-  if (entity_topology == TRIANGLE) {
-    verts_per_elem = 3;
-    elem_type = TRIANGLE;
-  } else if (entity_topology == QUADRILATERAL) {
-    verts_per_elem = 4;
-    elem_type = QUADRILATERAL;
-  } else if (entity_topology == TETRAHEDRON) {
-    verts_per_elem = 4;
-    elem_type = TETRAHEDRON;
-  } else if (entity_topology == PYRAMID) {
-    verts_per_elem = 5;
-    elem_type = PYRAMID;
-  } else if (entity_topology == HEXAHEDRON) {
-    verts_per_elem = 8;
-    elem_type = HEXAHEDRON;
-  } else {
-    std::cout << "error... only supporting triangles, quadrangles, tets, and hexes at this time "<< std::endl;
-    elem_type = MIXED;
-    assert(false);
-  }
+  const int verts_per_elem=TopologyInfo::corners(entity_topology);
 
   std::vector<long> connect(verts_per_elem);
-  for (i = 0; i < num_elem; i++) {
-    for (j = 0; j < verts_per_elem; j++) {
-      connect[j] = connectivity[i][j];
-    }
-    myMesh->reset_element( i, connect, elem_type, err);
+  const int* conn_iter = connectivity;
+  for (int i = 0; i < num_elem; i++, conn_iter += verts_per_elem) {
+    std::copy( conn_iter, conn_iter + verts_per_elem, connect.begin() );
+    myMesh->reset_element( i, connect, entity_topology, err);
   }
 }
 
 MeshImpl::MeshImpl(int num_nodes, int num_elem, const EntityTopology *element_topologies, 
-                   const bool *fixed, const double **coords, const int **connectivity)
+                   const bool *fixed, const double *coords, const int *connectivity)
     : numCoords(3),
       myMesh( new MeshImplData ),
       myTags( new MeshImplTags )
 {
-  int i,j;
-  
   MsqError err;
   myMesh->allocate_vertices( num_nodes, err ); MSQ_ERRRTN(err);
   myMesh->allocate_elements( num_elem, err ); MSQ_ERRRTN(err);
 
   // Fill in the data
   if (fixed) {
-    for (i = 0; i < num_nodes; ++i) {
-      myMesh->reset_vertex(i, Vector3D(coords[i][0],coords[i][1],coords[i][2]), fixed[i], err);
+    for (int i = 0; i < num_nodes; ++i) {
+      myMesh->reset_vertex(i, Vector3D(coords + 3*i), fixed[i], err);
     }
   }
   else {
-    for (i = 0; i < num_nodes; ++i) {
-      myMesh->reset_vertex(i, Vector3D(coords[i][0],coords[i][1],coords[i][2]), false, err);
+    for (int i = 0; i < num_nodes; ++i) {
+      myMesh->reset_vertex(i, Vector3D(coords + 3*i), false, err );
     }
   }
 
   int num_indices = 0;
-  EntityTopology elem_type;
+  std::vector<long> connect;
 
   // Count the number of indices
-  for (i = 0; i < num_elem; ++i) {
-    elem_type = element_topologies[i];
-    switch (elem_type) {
-    case TRIANGLE:
-      num_indices = 3;
-      break;
-    case QUADRILATERAL:
-    case TETRAHEDRON:
-      num_indices = 4;
-      break;
-    case PYRAMID:
-      num_indices = 5;
-      break;
-    case HEXAHEDRON:
-      num_indices = 8;
-      break;
-    default:
-      std::cout << "error... only supporting triangles, quadrangles, tets, and hexes at this time "<< std::endl;
-      break;
-    }
-
-    std::vector<long> connect(num_indices);
-
-    for (j = 0; j < num_indices; j++) {
-      connect[j] = connectivity[i][j];
-    }
-    myMesh->reset_element( i, connect, elem_type, err);
+  const int* conn_iter = connectivity;
+  for (int i = 0; i < num_elem; ++i) {
+    num_indices = TopologyInfo::corners( element_topologies[i] );
+    connect.resize( num_indices );
+    std::copy( conn_iter, conn_iter + num_indices, connect.begin() );
+    myMesh->reset_element( i, connect, element_topologies[i], err );
+    conn_iter += num_indices;
   }
 }
 
@@ -208,6 +161,37 @@ void MeshImpl::clear()
 {
   myMesh->clear();
   myTags->clear();
+}
+
+void MeshImpl::set_all_fixed_flags( bool value, MsqError& err )
+{
+  for (size_t i = 0; i < myMesh->max_vertex_index(); ++i) {
+    if (myMesh->is_vertex_valid(i)) {
+      myMesh->fix_vertex( i, value, err ); MSQ_ERRRTN(err);
+    }
+  }
+}
+
+void MeshImpl::set_all_slaved_flags( bool value, MsqError& err )
+{
+  for (size_t i = 0; i < myMesh->max_element_index(); ++i) {
+    if (!myMesh->is_element_valid(i))
+      continue;
+    
+      // Get element connectivity
+    const std::vector<size_t>& verts = myMesh->element_connectivity( i, err ); MSQ_ERRRTN(err);
+    
+      // Get element properties
+    EntityTopology type = myMesh->element_topology( i, err ); MSQ_ERRRTN(err);
+    unsigned ncorner = TopologyInfo::corners(type);
+    
+    for (unsigned i = 0; i < ncorner; ++i) {
+      myMesh->slave_vertex( verts[i], false, err ); MSQ_ERRRTN(err);
+    }
+    for (unsigned i = ncorner; i < verts.size(); ++i) {
+      myMesh->slave_vertex( verts[i], false, err ); MSQ_ERRRTN(err);
+    }
+  }
 }
 
 /**\brief Helper function for MeshImpl::mark_skin_fixed */
@@ -263,16 +247,11 @@ static bool is_side_boundary( MeshImplData* myMesh,
 }
   
 
-void MeshImpl::mark_skin_fixed( MsqError& err, bool clear_fixed )
+void MeshImpl::set_skin_flags( bool corner_fixed_flag, 
+                               bool midnode_fixed_flag,
+                               bool midnode_slaved_flag,
+                               MsqError& err )
 {
-    // clear existing fixed flags
-  if (clear_fixed) {
-    for (size_t i = 0; i < myMesh->max_vertex_index(); ++i)
-      if (myMesh->is_vertex_valid(i))
-        myMesh->fix_vertex( i, false, err );
-  }
-  
-  
     // For each element, for each side of that element, check for
     // an adjacent element.
   for (size_t i = 0; i < myMesh->max_element_index(); ++i) {
@@ -306,7 +285,7 @@ void MeshImpl::mark_skin_fixed( MsqError& err, bool clear_fixed )
       if (boundary) {
           // mark corner vertices as fixed
         for (unsigned k = 0; k < n; ++k) {
-          myMesh->fix_vertex( verts[conn[k]], true, err );
+          myMesh->fix_vertex( verts[conn[k]], corner_fixed_flag, err );
           MSQ_ERRRTN(err);
         }
         
@@ -314,7 +293,9 @@ void MeshImpl::mark_skin_fixed( MsqError& err, bool clear_fixed )
         if (midside) {
           unsigned idx = TopologyInfo::higher_order_from_side( type, verts.size(), dim-1, j, err );
           MSQ_ERRRTN(err);
-          myMesh->fix_vertex( verts[idx], true, err );
+          myMesh->fix_vertex( verts[idx], midnode_fixed_flag, err );
+          MSQ_ERRRTN(err);
+          myMesh->slave_vertex( verts[idx], midnode_slaved_flag, err );
           MSQ_ERRRTN(err);
         }
         
@@ -328,7 +309,9 @@ void MeshImpl::mark_skin_fixed( MsqError& err, bool clear_fixed )
             
             unsigned idx = TopologyInfo::higher_order_from_side( type, verts.size(), 1, edge_num, err );
             MSQ_ERRRTN(err);
-            myMesh->fix_vertex( verts[idx], true, err );
+            myMesh->fix_vertex( verts[idx], midnode_fixed_flag, err );
+            MSQ_ERRRTN(err);
+            myMesh->slave_vertex( verts[idx], midnode_slaved_flag, err );
             MSQ_ERRRTN(err);
           }
         }
@@ -337,7 +320,14 @@ void MeshImpl::mark_skin_fixed( MsqError& err, bool clear_fixed )
   } // for (i in elems)
 }
       
-      
+void MeshImpl::mark_skin_fixed( MsqError& err, bool clear_existing )
+{
+  if (clear_existing) {
+    set_all_fixed_flags( false, err ); MSQ_ERRRTN(err);
+  }
+  
+  set_skin_flags( true, true, false, err ); MSQ_ERRRTN(err);
+}
       
 static void get_field_names( const TagDescription& tag,
                              std::string& field_out,
