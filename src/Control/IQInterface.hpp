@@ -43,11 +43,10 @@ class Mesh;
 class ParallelMesh;
 class MeshDomain;
 
-class IQInterface : public Settings
+class MESQUITE_EXPORT IQInterface : public Settings
 {
   public:
   
-    MESQUITE_EXPORT
     virtual ~IQInterface() {}
   
     inline void 
@@ -68,7 +67,6 @@ class IQInterface : public Settings
 
   protected:
   
-    MESQUITE_EXPORT
     virtual void run_common( Mesh* mesh,
                              ParallelMesh* pmesh,
                              MeshDomain* domain,

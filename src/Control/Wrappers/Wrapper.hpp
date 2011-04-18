@@ -46,14 +46,12 @@ class QualityAssessor;
  * IQInterface, also provide access to QualityAssessor instance so 
  * that caller can modify QA output.
  */
-class Wrapper : public IQInterface
+class MESQUITE_EXPORT Wrapper : public IQInterface
 {
   public:
     
-    MESQUITE_EXPORT
     Wrapper();  
   
-    MESQUITE_EXPORT
     virtual ~Wrapper();
     
     /** Get the quality assessor associated with this wrapper */
@@ -69,7 +67,6 @@ class Wrapper : public IQInterface
   protected:
   
     /** Function inherited from IQInterface that we implement here */
-    MESQUITE_EXPORT
     void run_common( Mesh* mesh,
                      ParallelMesh* pmesh,
                      MeshDomain* domain,
@@ -77,7 +74,6 @@ class Wrapper : public IQInterface
                      MsqError& err );
   
     /** Function that each wrapper must implement */
-    MESQUITE_EXPORT
     virtual void run_wrapper( Mesh* mesh,
                               ParallelMesh* pmesh,
                               MeshDomain* domain,
