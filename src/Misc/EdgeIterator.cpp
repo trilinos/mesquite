@@ -43,8 +43,13 @@ EdgeIterator::EdgeIterator( PatchData* p, MsqError& err )
     vertIdx(0)
 {
   p->generate_vertex_to_element_data();
-  if (patchPtr->num_nodes()) 
+  if (patchPtr->num_nodes()) {
     get_adjacent_vertices( err );
+    if (adjIter == adjList.end()) {
+      step(err);
+      MSQ_ERRRTN(err);
+    }
+  }
   else
     adjIter = adjList.end();
 }

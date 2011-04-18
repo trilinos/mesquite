@@ -74,8 +74,7 @@ inline bool operator==( const EdgeIterator::Edge& e1, const EdgeIterator::Edge& 
 
 bool EdgeIterator::is_at_end() const
 {
-  return vertIdx >= patchPtr->num_nodes() || 
-         adjIter == adjList.end();
+  return vertIdx >= patchPtr->num_nodes();
 }
 
 const Vector3D& EdgeIterator::start() const
