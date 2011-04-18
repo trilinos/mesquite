@@ -45,6 +45,7 @@
 #include "QualityAssessor.hpp"
 #include "InstructionQueue.hpp"
 #include "ElementPMeanP.hpp"
+#include "Instruction.hpp"
 
 #include "TUntangleBeta.hpp"
 #include "TUntangleMu.hpp"
@@ -103,6 +104,8 @@ void UntangleWrapper::run_wrapper( Mesh* mesh,
                                    QualityAssessor* qa,
                                    MsqError& err )
 {
+  Instruction::initialize_vertex_byte( mesh, geom, settings, err ); MSQ_ERRRTN(err);
+
     // get some global mesh properties
   SimpleStats edge_len, lambda;
   std::auto_ptr<MeshUtil> tool(new MeshUtil( mesh, settings ));
