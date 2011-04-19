@@ -46,7 +46,6 @@ class MESQUITE_EXPORT ViscousCFDTetShapeWrapper : public Wrapper
     int parallelIterations;
     double maxVtxMovement;
 
-    MESQUITE_EXPORT
     void run_wrapper( Mesh* mesh,
                       ParallelMesh* pmesh,
                       MeshDomain* geom,

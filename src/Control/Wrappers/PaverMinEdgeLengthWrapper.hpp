@@ -45,7 +45,6 @@ class MESQUITE_EXPORT PaverMinEdgeLengthWrapper : public Wrapper
     int parallelIterations;
     double maxVtxMovement;
 
-    MESQUITE_EXPORT
     void run_wrapper( Mesh* mesh,
                       ParallelMesh* pmesh,
                       MeshDomain* geom,
