@@ -337,137 +337,55 @@ APPEND_SET(SOURCES
 #
 
 APPEND_SET(HEADERS
+  QualityImprover/NullImprover.hpp
   QualityImprover/PatchSetUser.hpp
   QualityImprover/QualityImprover.hpp
+  QualityImprover/VertexMover.hpp
   )
 
 APPEND_SET(SOURCES
   QualityImprover/QualityImprover.cpp
+  QualityImprover/VertexMover.cpp
   )
 
 #
-# src/QualityImprover/TopologyModifier
-#
-
-APPEND_SET(HEADERS
-  QualityImprover/TopologyModifier/TopologyModifier.hpp
-  )
-
-APPEND_SET(SOURCES
-  QualityImprover/TopologyModifier/TopologyModifier.cpp
-  )
-
-#
-# src/QualityImprover/VertexMover
+# src/QualityImprover/OptSolvers
 #
 
 APPEND_SET(HEADERS
-  QualityImprover/VertexMover/NullImprover.hpp
-  QualityImprover/VertexMover/VertexMover.hpp
+  QualityImprover/OptSolvers/ConjugateGradient.hpp
+  QualityImprover/OptSolvers/FeasibleNewton.hpp
+  QualityImprover/OptSolvers/NonSmoothDescent.hpp
+  QualityImprover/OptSolvers/QuasiNewton.hpp
+  QualityImprover/OptSolvers/SteepestDescent.hpp
+  QualityImprover/OptSolvers/TrustRegion.hpp
   )
 
 APPEND_SET(SOURCES
-  QualityImprover/VertexMover/VertexMover.cpp
+  QualityImprover/OptSolvers/ConjugateGradient.cpp
+  QualityImprover/OptSolvers/FeasibleNewton.cpp
+  QualityImprover/OptSolvers/NonSmoothDescent.cpp
+  QualityImprover/OptSolvers/SteepestDescent.cpp
+  QualityImprover/OptSolvers/QuasiNewton.cpp
+  QualityImprover/OptSolvers/TrustRegion.cpp
   )
 
 #
-# src/QualityImprover/VertexMover/ConjugateGradient
+# src/QualityImprover/Relaxation
 #
 
 APPEND_SET(HEADERS
-  QualityImprover/VertexMover/ConjugateGradient/ConjugateGradient.hpp
+  QualityImprover/Relaxation/Randomize.hpp
+  QualityImprover/Relaxation/RelaxationSmoother.hpp
+  QualityImprover/Relaxation/LaplacianSmoother.hpp
+  QualityImprover/Relaxation/SmartLaplacianSmoother.hpp
   )
 
 APPEND_SET(SOURCES
-  QualityImprover/VertexMover/ConjugateGradient/ConjugateGradient.cpp
-  )
-
-#
-# src/QualityImprover/VertexMover/Relaxation
-#
-
-APPEND_SET(HEADERS
-  QualityImprover/VertexMover/Relaxation/RelaxationSmoother.hpp
-  QualityImprover/VertexMover/Relaxation/LaplacianSmoother.hpp
-  QualityImprover/VertexMover/Relaxation/SmartLaplacianSmoother.hpp
-  )
-
-APPEND_SET(SOURCES
-  QualityImprover/VertexMover/Relaxation/RelaxationSmoother.cpp
-  QualityImprover/VertexMover/Relaxation/LaplacianSmoother.cpp
-  QualityImprover/VertexMover/Relaxation/SmartLaplacianSmoother.cpp
-  )
-
-#
-# src/QualityImprover/VertexMover/SteepestDescent
-#
-
-APPEND_SET(HEADERS
-  QualityImprover/VertexMover/SteepestDescent/SteepestDescent.hpp
-  )
-
-APPEND_SET(SOURCES
-  QualityImprover/VertexMover/SteepestDescent/SteepestDescent.cpp
-  )
-
-#
-# src/QualityImprover/VertexMover/NonSmoothDescent
-#
-
-APPEND_SET(HEADERS
-  QualityImprover/VertexMover/NonSmoothDescent/NonSmoothDescent.hpp
-  )
-
-APPEND_SET(SOURCES
-  QualityImprover/VertexMover/NonSmoothDescent/NonSmoothDescent.cpp
-  )
-
-#
-# src/QualityImprover/VertexMover/FeasibleNewton
-#
-
-APPEND_SET(HEADERS
-  QualityImprover/VertexMover/FeasibleNewton/FeasibleNewton.hpp
-  )
-
-APPEND_SET(SOURCES
-  QualityImprover/VertexMover/FeasibleNewton/FeasibleNewton.cpp
-  )
-
-#
-# src/QualityImprover/VertexMover/Randomize
-#
-
-APPEND_SET(HEADERS
-  QualityImprover/VertexMover/Randomize/Randomize.hpp
-  )
-
-APPEND_SET(SOURCES
-  QualityImprover/VertexMover/Randomize/Randomize.cpp
-  )
-
-#
-# src/QualityImprover/VertexMover/TrustRegion
-#
-
-APPEND_SET(HEADERS
-  QualityImprover/VertexMover/TrustRegion/TrustRegion.hpp
-  )
-
-APPEND_SET(SOURCES
-  QualityImprover/VertexMover/TrustRegion/TrustRegion.cpp
-  )
-
-#
-# src/QualityImprover/VertexMover/QuasiNewton
-#
-
-APPEND_SET(HEADERS
-  QualityImprover/VertexMover/QuasiNewton/QuasiNewton.hpp
-  )
-
-APPEND_SET(SOURCES
-  QualityImprover/VertexMover/QuasiNewton/QuasiNewton.cpp
+  QualityImprover/Relaxation/Randomize.cpp
+  QualityImprover/Relaxation/RelaxationSmoother.cpp
+  QualityImprover/Relaxation/LaplacianSmoother.cpp
+  QualityImprover/Relaxation/SmartLaplacianSmoother.cpp
   )
 
 #
