@@ -106,10 +106,14 @@ IF(NOT HAVE_TIMES AND NOT HAVE_CLOCK)
     )
 ENDIF()
 
-ADD_OPTION_AND_DEFINE(${PACKAGE_NAME}_ENABLE_SHARED
-  HAVE_Mesquite_SHARED
-  "Build as shared library (e.g. Linux *.so, or Windows *.dll)."
-  OFF )
+IF (${PROJECT_NAME} STREQUAL "Trilinos")
+  SET(Mesquite_ENABLE_SHARED ${TRILINOS_BUILD_SHARED_LIBS})
+ELSE()
+  ADD_OPTION_AND_DEFINE(Mesquite_ENABLE_SHARED
+    HAVE_Mesquite_SHARED
+    "Build as shared library (e.g. Linux *.so, or Windows *.dll)."
+    OFF )
+ENDIF()
 
 #this needs to be done more like the mesquite version where 
 #there is a loop to determine the value. Not sure how to do
