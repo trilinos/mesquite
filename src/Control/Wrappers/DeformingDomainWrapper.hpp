@@ -51,6 +51,24 @@ class CurveDomain;
  * description.  The simplest way to do this is to call \c store_initial_mesh
  * prior to the deformation of the geometric domain. 
  *
+ * Application using this wrapper should preform the following steps.
+ * -# Change any wrapper settings
+ * -# Call \c store_initial_mesh with a mesh object containing all vertices in the mesh
+ * -# If using \c DeformingCurveSmoother, call DeformingCurveSmoother::store_initial_mesh
+ *      separately for each geometric curve in the mesh.
+ * -# Optionally export mesh to file if \c Mesh implementation can save tag data
+ * -# Deform domain
+ * -# Optionally restore mesh from file
+ * -# Move any vertices bound to geometric points/vertices to their new location
+ * -# If using \c DeformingCurveSmoother, call \c smooth_curve separately for each geometric curve
+ * -# If doing free smooth call \c run_instructions for entire mesh.  Otherwise
+ *       call run_instructions separately for each geometric surface and each
+ *       volume.
+ *
+ *\NOTE This algorithm uses non-barrier metrics which makes it possible, if
+ *      unlikely, that the result mesh will contain more/different inverted
+ *      elements than the input mesh.
+ *
  *\NOTE Mesquite does not do edge/curve smoothing.  The caller may either
  *      set up a "free" smooth where vertices on geometric curves are 
  *      smoothed as a part of teh surface or volume optimization or simply
@@ -119,9 +137,9 @@ public:
   
   /**\brief Mesh characteristics to attempt to preserve */
   enum MeshCharacteristic { 
-    SHAPE,              //!< Attempt to preserve element shape
-    SHAPE_SIZE,         //!< Attempt to preserve element shape and size
-    SHAPE_SIZE_ORIENT   //!< Attempt to preserve element shape, size, and orientation
+    SHAPE,              //!< Attempt to preserve element shape (TShapeNB1 metric)
+    SHAPE_SIZE,         //!< Attempt to preserve element shape and size (TShapeSize2DNB1 & TShapeSize3DNB1)
+    SHAPE_SIZE_ORIENT   //!< Attempt to preserve element shape, size, and orientation (TShapeSizeOrientNB1)
   }; 
   
   /**\brief Specify which mesh characteristics to preserve 
@@ -131,6 +149,8 @@ public:
    * didn't change much, attempt to preserve size.  If the deformation of
    * the domain doesn't require rotation of the elements relative to the
    * global coordinate system, then preserve orientation.
+   *
+   * The default is \c SHAPE.
    */
   inline
   void set_mesh_characteristic( MeshCharacteristic t )
@@ -144,11 +164,14 @@ public:
   inline bool is_culling_enabled() const
     { return doCulling; }
   
-  /**\brief Enable vertex culling */
+  /**\brief Enable vertex culling.
+   * 
+   * Culling will be enabled by default.
+   */
   inline void enable_culling( bool yesno )
     { doCulling = yesno; }
 
-  /**\brief Specify timeout after which untangler will exit */
+  /**\brief Specify timeout after which optimization will exit */
   inline
   void set_cpu_time_limit( double seconds )
     { cpuTime = seconds; }
@@ -158,14 +181,14 @@ public:
   void clear_cpu_time_limit()
     { cpuTime = 0.0; }
   
-  /**\brief Get timeout after which untangler will exit
+  /**\brief Get timeout after which optimization will exit
    *\return false if no timeout specified, true otherwise */
   inline 
   bool get_cpu_time_limit( double& seconds ) const 
     { seconds = cpuTime; return cpuTime > 0.0; }
 
   /**\brief Specify factor by which to minimum distance a vertex must 
-   *        move in an iteration to avoid termination of the untangler.
+   *        move in an iteration to avoid termination of the optimization.
    *
    * Value must be greater than zero, and should be less 1.0
    * The optimizer will calculated a representative edge length
