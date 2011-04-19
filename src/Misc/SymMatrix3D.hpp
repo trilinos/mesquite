@@ -38,7 +38,7 @@
 
 namespace MESQUITE_NS {
 
-class SymMatrix3D {
+class MESQUITE_EXPORT SymMatrix3D {
 private:
   double d_[6];
 

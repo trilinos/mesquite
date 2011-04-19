@@ -337,10 +337,11 @@ namespace MESQUITE_NS
       //!
       //! Do any preliminary global initialization, consistency checking,
       //! etc.  Default implementation does nothing.
-     virtual void initialize_queue( Mesh* mesh,
-                                    MeshDomain* domain,
-                                    const Settings* settings,
-                                    MsqError& err );
+     MESQUITE_EXPORT virtual 
+     void initialize_queue( Mesh* mesh,
+                            MeshDomain* domain,
+                            const Settings* settings,
+                            MsqError& err );
 
   private:
      int feasible;

@@ -57,52 +57,47 @@ namespace MESQUITE_NS
     Mote that the PatchData settings are inherited from the PathDataUser class. 
 
   */ 
-  class QualityImprover : public Instruction
+  class MESQUITE_EXPORT QualityImprover : public Instruction
   {
   public:
 
     // Constructor is protected ... see below.
     
      // virtual destructor ensures use of polymorphism during destruction
-    MESQUITE_EXPORT virtual ~QualityImprover();
+    virtual ~QualityImprover();
 
       //!Sets in the termination criterion for the concrete solver's
       //! optimization.
-    MESQUITE_EXPORT void set_inner_termination_criterion(TerminationCriterion* crit)
+    void set_inner_termination_criterion(TerminationCriterion* crit)
       {
         innerTerminationCriterion=crit;
       }
       //!Sets in the termination criterion for the outer loop over 
       //! patches.
-    MESQUITE_EXPORT void set_outer_termination_criterion(TerminationCriterion* crit)
+    void set_outer_termination_criterion(TerminationCriterion* crit)
       {
         outerTerminationCriterion=crit;
       }
       
-    MESQUITE_EXPORT virtual PatchSet* get_patch_set() = 0;
+    virtual PatchSet* get_patch_set() = 0;
     
-    MESQUITE_EXPORT virtual void initialize_queue( Mesh* mesh,
-                                              MeshDomain* domain,
-                                              const Settings* settings,
-                                              MsqError& err );
+    virtual void initialize_queue( Mesh* mesh,
+                                   MeshDomain* domain,
+                                   const Settings* settings,
+                                   MsqError& err );
 
   protected:
 
     /*! The default constructor initialises a few member variables
         to default values.
         This can be reused by concrete class constructor. */    
-    MESQUITE_EXPORT QualityImprover()
-      {
-        defaultOuterCriterion.add_iteration_limit( 1 );
-        outerTerminationCriterion = & defaultOuterCriterion;
-        innerTerminationCriterion = & defaultInnerCriterion;
-      }
+    QualityImprover();
     
       //!return the outer termination criterion pointer 
-    MESQUITE_EXPORT TerminationCriterion* get_outer_termination_criterion()
+    TerminationCriterion* get_outer_termination_criterion()
       { return outerTerminationCriterion; }
       //!return the inner termination criterion pointer       
-    MESQUITE_EXPORT TerminationCriterion* get_inner_termination_criterion()
+    TerminationCriterion* get_inner_termination_criterion()
       { return innerTerminationCriterion; } 
     
   private:
@@ -110,9 +105,9 @@ namespace MESQUITE_NS
     TerminationCriterion* innerTerminationCriterion;
     TerminationCriterion* outerTerminationCriterion;
       //default TerminationCriterion for outer loop will be set in constructor
-    TerminationCriterion defaultOuterCriterion;
+    TerminationCriterion* defaultOuterCriterion;
       //default TerminationCriterion for inner loop set by concrete improver
-    TerminationCriterion defaultInnerCriterion;
+    TerminationCriterion* defaultInnerCriterion;
   };
 
 }

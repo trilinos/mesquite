@@ -48,7 +48,7 @@ namespace MESQUITE_NS {
  * be identified either by dimension of the associated geometric
  * domain or by fixed vertices.
  */
-class SlaveBoundaryVertices : public VertexSlaver
+class MESQUITE_EXPORT SlaveBoundaryVertices : public VertexSlaver
 {
   public:
     /**\brief Define defintion of boundary as either the distance

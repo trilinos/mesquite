@@ -98,12 +98,17 @@ public:
                  double& value,
                  std::vector<size_t>& indices,
                  MsqError& err );
-    
+  
+  MESQUITE_EXPORT
   void set_target_calculator( TargetCalculator* tc ) { targetCalc = tc; }
+  MESQUITE_EXPORT
   void set_weight_calculator( WeightCalculator* wc ) { weightCalc = wc; }
+  MESQUITE_EXPORT
   TargetCalculator* get_target_calculator() const { return targetCalc; }
+  MESQUITE_EXPORT
   WeightCalculator* get_weight_calculator() const { return weightCalc; }
     
+  MESQUITE_EXPORT
   virtual void initialize_queue( Mesh* mesh,
                                  MeshDomain* domain,
                                  const Settings* settings,
@@ -119,6 +124,7 @@ protected:
                  size_t& num_indices,
                  MsqError& err ) = 0;
 
+  MESQUITE_EXPORT
   bool evaluate_surface_common( // input:
                                 PatchData& pd,
                                 Sample sample,
@@ -134,7 +140,8 @@ protected:
                                 MsqError& err );
                                 
 
-  void weight( PatchData& pd,
+   MESQUITE_EXPORT
+ void weight( PatchData& pd,
                Sample sample,
                size_t elem,
                int num_points,

@@ -52,37 +52,44 @@ namespace MESQUITE_NS
    class CompositeOFMultiply : public ObjectiveFunction
    {
    public:
+	 MESQUITE_EXPORT
      CompositeOFMultiply(ObjectiveFunction*, ObjectiveFunction*, 
                          bool delete_OFs = false);
+	 MESQUITE_EXPORT
      virtual ~CompositeOFMultiply();
      
       //!\brief Called at start of instruction queue processing
       //!
       //! Do any preliminary global initialization, consistency checking,
       //! etc. 
+	 MESQUITE_EXPORT
      virtual void initialize_queue( Mesh* mesh,
                                     MeshDomain* domain,
                                     const Settings* settings,
                                     MsqError& err );
 
+	 MESQUITE_EXPORT
      virtual bool initialize_block_coordinate_descent( Mesh* mesh, 
                                                        MeshDomain* domain,
                                                        const Settings* settings,
                                                        PatchSet* user_set,
                                                        MsqError& err );
 
+	 MESQUITE_EXPORT
      virtual bool evaluate( EvalType type, 
                             PatchData& pd,
                             double& value_out,
                             bool free,
                             MsqError& err ); 
 
+	 MESQUITE_EXPORT
      virtual bool evaluate_with_gradient( EvalType type, 
                                           PatchData& pd,
                                           double& value_out,
                                           std::vector<Vector3D>& grad_out,
                                           MsqError& err ); 
 
+	 MESQUITE_EXPORT
      virtual bool evaluate_with_Hessian_diagonal( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
@@ -90,6 +97,7 @@ namespace MESQUITE_NS
                                         std::vector<SymMatrix3D>& hess_diag_out,
                                         MsqError& err ); 
     
+	 MESQUITE_EXPORT
      virtual bool evaluate_with_Hessian( EvalType type, 
                                          PatchData& pd,
                                          double& value_out,
@@ -97,10 +105,13 @@ namespace MESQUITE_NS
                                          MsqHessian& Hessian_out,
                                          MsqError& err ); 
 
+	 MESQUITE_EXPORT
      virtual ObjectiveFunction* clone() const;
 
+	 MESQUITE_EXPORT
      virtual void clear();
      
+	 MESQUITE_EXPORT
      virtual int min_patch_layers() const;
      
 	private:

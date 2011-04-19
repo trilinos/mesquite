@@ -53,37 +53,37 @@ namespace MESQUITE_NS
     v_new = (mMat * v_old) + mVec,
     where mMat is a constant matrix and mVec is a constant vector.
    */  
-  class MeshTransform : public Instruction 
+  class MESQUITE_EXPORT MeshTransform : public Instruction 
   {
   public:
-    MESQUITE_EXPORT MeshTransform(bool skip_fixed = false) 
+    MeshTransform(bool skip_fixed = false) 
       : mMat(1,0,0,0,1,0,0,0,1), mVec(0.0), skipFixed(skip_fixed)
        {}
-    MESQUITE_EXPORT MeshTransform(Matrix3D &in_mat, Vector3D &in_vec,
+    MeshTransform(Matrix3D &in_mat, Vector3D &in_vec,
                                   bool skip_fixed = false)
       : mMat(in_mat), mVec(in_vec), skipFixed(skip_fixed)
       {}
 
       // virtual destructor ensures use of polymorphism during destruction
-    MESQUITE_EXPORT virtual ~MeshTransform() { };
+    virtual ~MeshTransform() { };
       //virtual functions from PatchDataUser...
       //!Loop over the mesh and perform the affine transformation
-    MESQUITE_EXPORT virtual double loop_over_mesh( Mesh* mesh, 
+    virtual double loop_over_mesh( Mesh* mesh, 
                                    MeshDomain* domain, 
                                    const Settings* settings,
                                    MsqError &err);
       //! Return the name of this PatchDataUser:  Mesh Transform
-    MESQUITE_EXPORT virtual std::string get_name() const { return "Mesh Transform";}
+    virtual std::string get_name() const { return "Mesh Transform";}
     
-    MESQUITE_EXPORT virtual void initialize_queue( Mesh* mesh,
+    virtual void initialize_queue( Mesh* mesh,
                                    MeshDomain* domain,
                                    const Settings* settings,
                                    MsqError& err );
     
-    MESQUITE_EXPORT void add_translation( const Vector3D& offset );
-    MESQUITE_EXPORT void add_rotation( const Vector3D& axis, double radians );
-    MESQUITE_EXPORT void add_scale( double factor );
-    MESQUITE_EXPORT void add_scale( const Vector3D& factors );
+    void add_translation( const Vector3D& offset );
+    void add_rotation( const Vector3D& axis, double radians );
+    void add_scale( double factor );
+    void add_scale( const Vector3D& factors );
     
     bool skipping_fixed_vertices() const { return skipFixed; }
     void skip_fixed_vertices(bool yesno) { skipFixed = yesno; }

@@ -52,8 +52,23 @@ Implements a couple of default virtual functions of the virtual class
 
 namespace MESQUITE_NS {
 
+    /*! The default constructor initialises a few member variables
+        to default values.
+        This can be reused by concrete class constructor. */    
+QualityImprover::QualityImprover()
+{
+  defaultOuterCriterion = new TerminationCriterion;
+  defaultInnerCriterion = new TerminationCriterion;
+  defaultOuterCriterion->add_iteration_limit( 1 );
+  outerTerminationCriterion = defaultOuterCriterion;
+  innerTerminationCriterion = defaultInnerCriterion;
+}
+ 
 QualityImprover::~QualityImprover()
-{}
+{
+	delete defaultOuterCriterion;
+	delete defaultInnerCriterion;
+}
     
 void QualityImprover::initialize_queue( Mesh* mesh,
                                         MeshDomain* domain,

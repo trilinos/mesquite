@@ -50,7 +50,7 @@ namespace MESQUITE_NS
    class PatchData;
    class MsqError;
    
-   class CompositeOFScalarMultiply : public ObjectiveFunction
+   class MESQUITE_EXPORT CompositeOFScalarMultiply : public ObjectiveFunction
    {
    public:
      CompositeOFScalarMultiply(double, ObjectiveFunction*, bool delete_OF = false);

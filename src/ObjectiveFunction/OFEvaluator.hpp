@@ -54,7 +54,7 @@ class PatchSet;
  * interact with this interface and need not be aware of the
  * Nash vs. BCD details.
  */
-class OFEvaluator 
+class MESQUITE_EXPORT OFEvaluator 
 {
 public:
   
@@ -63,10 +63,8 @@ public:
    *\param Nash True for Nash-type solutions, false for
    *       block coordinate descent.
    */
-  MESQUITE_EXPORT
   OFEvaluator( ObjectiveFunction* of, bool Nash );
     
-  MESQUITE_EXPORT 
   void initialize_queue( Mesh* mesh,
                          MeshDomain* domain,
                          const Settings* settings,
@@ -81,7 +79,6 @@ public:
    *
    *\param mesh The active mesh
    */
-  MESQUITE_EXPORT
   bool initialize( Mesh* mesh, 
                    MeshDomain* domain,
                    const Settings* settings,
@@ -106,7 +103,6 @@ public:
    *\param pd  The mesh patch
    *\param value Output, the value of the objective function.
    */
-  MESQUITE_EXPORT
   bool update( PatchData& pd, 
                double& value,
                MsqError& err );
@@ -132,7 +128,6 @@ public:
    *\param grad Output, the gradient of the objective function
    *             with respect to each FREE vertex in the patch.
    */
-  MESQUITE_EXPORT
   bool update( PatchData& pd, double& value, 
                std::vector<Vector3D>& grad,
                MsqError& err );
@@ -160,7 +155,6 @@ public:
    *\param Hessian_diag_blocks Output, 3x3 submatrices along diagonal of 
    *                           Hessian of objective function
    */
-  MESQUITE_EXPORT
   bool update( PatchData& pd, double& value,
                std::vector<Vector3D>& grad, 
                std::vector<SymMatrix3D>& Hessian_diag_blocks,
@@ -187,14 +181,12 @@ public:
    *             with respect to each FREE vertex in the patch.
    *\param Hessian Output, the Hessian of the objective function.
    */
-  MESQUITE_EXPORT
   bool update( PatchData& pd, double& value,
                std::vector<Vector3D>& grad, 
                MsqHessian& Hessian,
                MsqError& err );
                
   /**\brief Check if Nash or block coordinate descent algorithm.*/
-  MESQUITE_EXPORT
   bool is_Nash() const { return tempType == ObjectiveFunction::CALCULATE; }
   
   /**\brief Evaluate the objective function without changing any 
@@ -210,7 +202,6 @@ public:
    *\param pd  The mesh patch
    *\param value Output, the value of the objective function.
    */
-  MESQUITE_EXPORT
   bool evaluate( PatchData& pd, 
                  double& value,
                  MsqError& err ) const;
@@ -230,7 +221,6 @@ public:
    *\param grad Output, the gradient of the objective function
    *             with respect to each FREE vertex in the patch.
    */
-  MESQUITE_EXPORT
   bool evaluate( PatchData& pd, 
                  double& value, 
                  std::vector<Vector3D>& grad,
@@ -253,7 +243,6 @@ public:
    *\param Hessian_diag_blocks Output, 3x3 submatrices along diagonal of 
    *                           Hessian of objective function
    */
-  MESQUITE_EXPORT
   bool evaluate( PatchData& pd, 
                  double& value,
                  std::vector<Vector3D>& grad, 
@@ -276,7 +265,6 @@ public:
    *             with respect to each FREE vertex in the patch.
    *\param Hessian Output, the Hessian of the objective function.
    */
-  MESQUITE_EXPORT
   bool evaluate( PatchData& pd, 
                  double& value,
                  std::vector<Vector3D>& grad, 
@@ -291,16 +279,15 @@ public:
    * updated for the correct behavior of the first call to
    * the update() method for block coordinate descent algorithms.
    */
-  MESQUITE_EXPORT
   bool reset();
   
   /**\brief Get ObjectiveFunction pointer */
-  MESQUITE_EXPORT inline
+  inline
   ObjectiveFunction* get_objective_function() const
     { return this->OF; }
     
   /**\brief Check if we have an objective function */
-  MESQUITE_EXPORT inline
+  inline
   bool have_objective_function() const
     { return 0 != get_objective_function(); }
 

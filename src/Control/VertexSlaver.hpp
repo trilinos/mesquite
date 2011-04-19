@@ -37,7 +37,7 @@
 
 namespace MESQUITE_NS {
 
-class VertexSlaver : public Instruction
+class MESQUITE_EXPORT VertexSlaver : public Instruction
 {
 };
 
