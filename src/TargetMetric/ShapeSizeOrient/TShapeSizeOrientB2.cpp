@@ -70,7 +70,7 @@ bool TShapeSizeOrientB2::evaluate( const MsqMatrix<3,3>& T,
   return eval( T, result );
 }
 
-/** \f$ \frac{1}{\Tau^2}|T|^2 - \frac{2}{\Tau}tr(adj T) + 2 */
+/** \f$ \frac{1}{\tau^2}|T|^2 - \frac{2}{\tau}tr(adj T) + 2 \f$ */
 bool TShapeSizeOrientB2::evaluate_with_grad( const MsqMatrix<2,2>& T,
                                              double& result,
                                              MsqMatrix<2,2>& deriv_wrt_T,
@@ -94,7 +94,7 @@ bool TShapeSizeOrientB2::evaluate_with_grad( const MsqMatrix<2,2>& T,
   return true;
 }
 
-/** \f$ \frac{1}{\Tau^2}|adj T|^2 - \frac{2}{\Tau}tr(adj T) + 3 */
+/** \f$ \frac{1}{\tau^2}|adj T|^2 - \frac{2}{\tau}tr(adj T) + 3 \f$ */
 bool TShapeSizeOrientB2::evaluate_with_grad( const MsqMatrix<3,3>& T,
                                              double& result,
                                              MsqMatrix<3,3>& deriv_wrt_T,
