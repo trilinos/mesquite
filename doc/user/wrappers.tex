@@ -35,10 +35,11 @@ wrapper.  \newline
 \noindent {\it Name}: ShapeImprover \newline
 \noindent {\it Purpose}: Make the shape of an element as close as possible to 
 that of the ideal/regular element shape. For example, make triangular and 
-tetrahedral elements equilateral. \newline
-\noindent {\it Notes}: If the initial mesh is inverted, then an attempt to 
-untangle the mesh is made. If the untangling effort fails, then the wrapper
-aborts.  \newline
+tetrahedral elements equilateral.  The wrapper will use a non-barrier metric
+until the mesh contains no inverted elements.  If the initial mesh was not tangled this phase will not modify the mesh.  If no limit is imposed on CPU
+time or time remains a second phase using a barrier metric will further 
+optimize the mesh with the guarantee that no elements will become inverted. \newline
+\noindent {\it Notes}: Will return failure if mesh contains inverted elements after first phase.\newline
 \noindent {\it Limitations/assumptions}:  \newline 
 \noindent {\it Input Termination Criterion}: CPU time limit (not used if input 
 value is non-positive) or fraction of mean edge length (default is 0.005). \newline \newline
