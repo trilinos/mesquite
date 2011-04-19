@@ -28,7 +28,7 @@ libmesquite_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined
 
 include Mesh/Makefile.am
 include Control/Makefile.am
-include Control/Wrappers/Makefile.am
+include Wrappers/Makefile.am
 include MappingFunction/Makefile.am
 include MappingFunction/Lagrange/Makefile.am
 include MappingFunction/Linear/Makefile.am

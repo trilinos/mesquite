@@ -134,31 +134,31 @@ APPEND_SET(SOURCES
 
 
 #
-# src/Control/Wrappers
+# src/Wrappers
 #
 
 APPEND_SET(HEADERS
-  Control/Wrappers/DeformingDomainWrapper.hpp
-  Control/Wrappers/LaplaceWrapper.hpp
-  Control/Wrappers/ShapeImprovementWrapper.hpp
-  Control/Wrappers/ShapeImprover.hpp
-  Control/Wrappers/SizeAdaptShapeWrapper.hpp
-  Control/Wrappers/PaverMinEdgeLengthWrapper.hpp 
-  Control/Wrappers/UntangleWrapper.hpp 
-  Control/Wrappers/ViscousCFDTetShapeWrapper.hpp 
-  Control/Wrappers/Wrapper.hpp 
+  Wrappers/DeformingDomainWrapper.hpp
+  Wrappers/LaplaceWrapper.hpp
+  Wrappers/ShapeImprovementWrapper.hpp
+  Wrappers/ShapeImprover.hpp
+  Wrappers/SizeAdaptShapeWrapper.hpp
+  Wrappers/PaverMinEdgeLengthWrapper.hpp 
+  Wrappers/UntangleWrapper.hpp 
+  Wrappers/ViscousCFDTetShapeWrapper.hpp 
+  Wrappers/Wrapper.hpp 
   )
 
 APPEND_SET(SOURCES
-  Control/Wrappers/DeformingDomainWrapper.cpp
-  Control/Wrappers/LaplaceWrapper.cpp
-  Control/Wrappers/ShapeImprovementWrapper.cpp
-  Control/Wrappers/ShapeImprover.cpp
-  Control/Wrappers/SizeAdaptShapeWrapper.cpp
-  Control/Wrappers/PaverMinEdgeLengthWrapper.cpp
-  Control/Wrappers/UntangleWrapper.cpp 
-  Control/Wrappers/ViscousCFDTetShapeWrapper.cpp
-  Control/Wrappers/Wrapper.cpp 
+  Wrappers/DeformingDomainWrapper.cpp
+  Wrappers/LaplaceWrapper.cpp
+  Wrappers/ShapeImprovementWrapper.cpp
+  Wrappers/ShapeImprover.cpp
+  Wrappers/SizeAdaptShapeWrapper.cpp
+  Wrappers/PaverMinEdgeLengthWrapper.cpp
+  Wrappers/UntangleWrapper.cpp 
+  Wrappers/ViscousCFDTetShapeWrapper.cpp
+  Wrappers/Wrapper.cpp 
   )
 
 #
