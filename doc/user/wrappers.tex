@@ -26,7 +26,7 @@ wrapper.  \newline
 \noindent Under the Cover: \newline
 \noindent {\it Hardwired Parameters}: None \newline
 \noindent {\it Mesh/Element Type}: Any supported type. \newline
-\noindent {\it Global/Local}: Local Patch \newline
+\noindent {\it Global/Local}: Local Patch with Culling \newline
 
 
 
@@ -49,6 +49,27 @@ value is non-positive) or fraction of mean edge length (default is 0.005). \newl
 \noindent {\it Mesh/Element Type}: Any supported type. \newline
 \noindent {\it Solver}: Conjugate Gradient \newline
 \noindent {\it Global/Local}: Global \newline
+
+
+\section{Untangler} \label{sec:Untangler}
+
+\noindent {\it Name}: UntangleWrapper \newline
+\noindent {\it Purpose}: Untangle elements.  Prioritizes untangling over
+element shape or other mesh quality measures.  \newline
+\noindent {\it Notes}: A second optimization to improve element quality
+after untangling is often necessary.  \newline
+\noindent {\it Limitations/assumptions}:  \newline 
+\noindent {\it Input Termination Criterion}: CPU time limit (not used if input 
+value is non-positive) or fraction of mean edge length (default is 0.005).  It
+also terminates if all elements are untangled, such that it should not modify
+an input mesh with no inverted elements. \newline \newline
+
+\noindent Under the Cover: \newline
+\noindent {\it Metric}: TUntangleBeta or TUntangleMu(TSizeNB1) or TUntangleMu(TShapeSizeNB1) \newline
+\noindent {\it Objective Function}: Algebraic mean of quality metric values \newline
+\noindent {\it Mesh/Element Type}: Any supported type. \newline
+\noindent {\it Solver}: Steepest Descent \newline
+\noindent {\it Global/Local}: Local with culling, optionally Jacobi \newline
 
 
 \section{Minimum Edge-Length Improvement} \label{sec:PaverMinEdgeLengthWrapper}
@@ -112,3 +133,20 @@ preserving an existing layer of sliver elements in the boundary layer. \newline
 \noindent {\it Global/Local}: Global \newline
 
 
+\section{Deforming Domain} \label{sec:DeformingDomain}
+
+\noindent {\it Name}: DeformingDomainWrapper \newline
+\noindent {\it Purpose}:  Use initial mesh on undeformed geometric domain
+to guide optimization of mesh moved to deformed geometric domain.  \newline
+\noindent {\it Notes}: Uses a non-barrier metric which means that the
+wrapper could potentially invert/tangle elements.  \newline
+\noindent {\it Limitations/assumptions}:  Application responsible for explicit handling of mesh on geometric curves and points.  Initial mesh before moving to deformed domain must be available.\newline 
+\noindent {\it Input Termination Criterion}: CPU time limit (not used if input 
+value is non-positive) or fraction of mean edge length (default is 0.005). \newline \newline
+
+\noindent Under the Cover: \newline
+\noindent {\it Metric}: TMPQualityMetric(TShapeNB1 or TShapeSizeNB1 or TShapeSizeOrientNB1) \newline
+\noindent {\it Objective Function}: Algebraic mean of quality metric values \newline
+\noindent {\it Mesh/Element Type}: Any supported type. \newline
+\noindent {\it Solver}: Steepest Descent \newline
+\noindent {\it Global/Local}: Local with culling \newline
