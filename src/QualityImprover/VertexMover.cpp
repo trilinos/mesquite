@@ -52,6 +52,8 @@ VertexMover::VertexMover( ObjectiveFunction* OF, bool Nash )
   {}
 
 
+VertexMover::~VertexMover() {}
+
 /*
   
     +-----------+

@@ -51,7 +51,7 @@ class ElemSampleQM : public QualityMetric
 {
 public:
   
-  MESQUITE_EXPORT virtual ~ElemSampleQM() {}
+  MESQUITE_EXPORT virtual ~ElemSampleQM();
   
   MESQUITE_EXPORT virtual MetricType get_metric_type() const
     { return ELEMENT_BASED; }

@@ -35,6 +35,7 @@
 
 namespace MESQUITE_NS {
 
+ConicDomain::~ConicDomain() {}
 
 void ConicDomain::evaluate( Mesh::VertexHandle,
                             const Vector3D& point,

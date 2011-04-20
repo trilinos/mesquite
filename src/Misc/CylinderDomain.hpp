@@ -55,7 +55,7 @@ namespace MESQUITE_NS
         outwardSign( outward_normal ? 1.0 : -1.0 )
       { }
     
-    virtual ~CylinderDomain() { }
+    virtual ~CylinderDomain();
 
     virtual void snap_to(Mesh::VertexHandle entity_handle,
                          Vector3D &coordinate) const;

@@ -128,6 +128,7 @@ APPEND_SET(HEADERS
 APPEND_SET(SOURCES
   Control/Instruction.cpp
   Control/InstructionQueue.cpp
+  Control/IQInterface.cpp
   Control/TerminationCriterion.cpp
   Control/Settings.cpp
   Control/SlaveBoundaryVertices.cpp 
@@ -345,6 +346,7 @@ APPEND_SET(HEADERS
   )
 
 APPEND_SET(SOURCES
+  QualityImprover/PatchSetUser.cpp
   QualityImprover/QualityImprover.cpp
   QualityImprover/VertexMover.cpp
   )
@@ -418,6 +420,7 @@ APPEND_SET(SOURCES
   QualityMetric/AddQualityMetric.cpp
   QualityMetric/AveragingQM.cpp
   QualityMetric/EdgeQM.cpp
+  QualityMetric/ElemSampleQM.cpp
   QualityMetric/ElementMaxQM.cpp
   QualityMetric/ElementPMeanP.cpp
   QualityMetric/ElementQM.cpp

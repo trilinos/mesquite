@@ -118,7 +118,7 @@ namespace MESQUITE_NS
     };
     
       // virtual destructor ensures use of polymorphism during destruction
-    virtual ~ObjectiveFunction() {}
+    virtual ~ObjectiveFunction();
      
       //!\brief Called at start of instruction queue processing
       //!

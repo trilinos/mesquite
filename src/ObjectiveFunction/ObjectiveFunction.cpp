@@ -45,7 +45,7 @@
 
 namespace MESQUITE_NS {
 
-
+ObjectiveFunction::~ObjectiveFunction() {}
 
 /*!Returns an appropiate value (eps) to use as a delta step for
   MsqVertex vertex in dimension k (i.e. k=0 -> x, k=1 -> y, k=2 -> z).

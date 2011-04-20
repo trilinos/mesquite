@@ -43,7 +43,7 @@ class VertexQM : public QualityMetric
 {
 public:
 
-  MESQUITE_EXPORT virtual ~VertexQM() {}
+  MESQUITE_EXPORT virtual ~VertexQM();
   
   MESQUITE_EXPORT virtual MetricType get_metric_type() const
     { return VERTEX_BASED; }

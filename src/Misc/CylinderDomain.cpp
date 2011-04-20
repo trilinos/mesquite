@@ -33,6 +33,8 @@
 
 namespace MESQUITE_NS {
 
+CylinderDomain::~CylinderDomain() {}
+
 void CylinderDomain::evaluate( Mesh::VertexHandle,
                                const Vector3D& point,
                                Vector3D& closest,

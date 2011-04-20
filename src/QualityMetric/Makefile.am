@@ -9,6 +9,7 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_DIR)/AddQualityMetric.cpp \
 	$(SRC_QUALITYMETRIC_DIR)/AveragingQM.cpp \
 	$(SRC_QUALITYMETRIC_DIR)/EdgeQM.cpp \
+	$(SRC_QUALITYMETRIC_DIR)/ElemSampleQM.cpp \
 	$(SRC_QUALITYMETRIC_DIR)/ElementMaxQM.cpp \
 	$(SRC_QUALITYMETRIC_DIR)/ElementPMeanP.cpp \
 	$(SRC_QUALITYMETRIC_DIR)/ElementQM.cpp \

@@ -37,6 +37,8 @@
 
 namespace MESQUITE_NS {
 
+VertexQM::~VertexQM() {}
+
 void VertexQM::get_evaluations( PatchData& pd, 
                                 std::vector<size_t>& handles,
                                 bool free_vertices_only, 

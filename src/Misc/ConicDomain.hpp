@@ -68,7 +68,7 @@ public:
     
   inline ConicDomain() {}
 
-  virtual ~ConicDomain() { }
+  virtual ~ConicDomain();
 
   virtual void snap_to(Mesh::VertexHandle entity_handle,
                        Vector3D &coordinate) const;

@@ -56,7 +56,7 @@ public:
       activePatchSet( my_patch_set )
       {}
     
-    virtual ~PatchSetUser() {}
+    virtual ~PatchSetUser();
       
       /**\brief Use a single patch representing the entire mesh */
     void use_global_patch() 

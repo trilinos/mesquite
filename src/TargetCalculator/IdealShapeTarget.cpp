@@ -37,6 +37,7 @@
 
 namespace MESQUITE_NS {
 
+IdealShapeTarget::~IdealShapeTarget() {}
 
 bool IdealShapeTarget::get_3D_target( PatchData& pd, 
                                       size_t element,

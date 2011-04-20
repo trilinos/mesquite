@@ -57,7 +57,7 @@ namespace MESQUITE_NS
       //!Constructor allowing user to set mPercent
     MESQUITE_EXPORT Randomize(double percent);
 
-    MESQUITE_EXPORT virtual ~Randomize() { }
+    MESQUITE_EXPORT virtual ~Randomize();
     
     MESQUITE_EXPORT virtual std::string get_name() const;
 

@@ -5,6 +5,7 @@ INCLUDED_MAKEFILES += $(SRC_CONTROL_DIR)/Makefile.am
 MSQ_SRCS += \
 	$(SRC_CONTROL_DIR)/Instruction.cpp \
 	$(SRC_CONTROL_DIR)/InstructionQueue.cpp \
+	$(SRC_CONTROL_DIR)/IQInterface.cpp \
 	$(SRC_CONTROL_DIR)/TerminationCriterion.cpp \
         $(SRC_CONTROL_DIR)/Settings.cpp \
         $(SRC_CONTROL_DIR)/SlaveBoundaryVertices.cpp 

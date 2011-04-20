@@ -62,6 +62,7 @@ InstructionQueue::InstructionQueue() :
 {
 }
 
+InstructionQueue::~InstructionQueue() {}
 
 void InstructionQueue::add_target_calculator( TargetWriter* tc, MsqError& )
 {

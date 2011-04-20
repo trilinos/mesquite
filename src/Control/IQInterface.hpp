@@ -47,7 +47,7 @@ class MESQUITE_EXPORT IQInterface : public Settings
 {
   public:
   
-    virtual ~IQInterface() {}
+    virtual ~IQInterface();
   
     inline void 
     run_instructions( Mesh* mesh, MeshDomain* domain, MsqError &err)

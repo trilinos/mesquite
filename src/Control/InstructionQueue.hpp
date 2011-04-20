@@ -82,7 +82,7 @@ namespace MESQUITE_NS {
     InstructionQueue( const Settings& settings );
 
     MESQUITE_EXPORT
-    virtual ~InstructionQueue() {};
+    virtual ~InstructionQueue();
     
     MESQUITE_EXPORT
     void add_target_calculator( TargetWriter* tc, MsqError& err );

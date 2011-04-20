@@ -39,6 +39,8 @@
 
 #include <algorithm>
 
+Mesquite::SphericalDomain::~SphericalDomain() {}
+
 void Mesquite::SphericalDomain::snap_to(Mesh::VertexHandle /*entity_handle*/,
                                         Vector3D &coordinate) const
 {

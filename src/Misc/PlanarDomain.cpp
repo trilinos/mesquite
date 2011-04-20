@@ -32,6 +32,8 @@
 
 #include <algorithm>
 
+Mesquite::PlanarDomain::~PlanarDomain() {}
+
 void Mesquite::PlanarDomain::set_plane( const Mesquite::Vector3D& normal, 
                                         const Mesquite::Vector3D& point)
 {

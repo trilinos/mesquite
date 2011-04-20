@@ -55,7 +55,7 @@ namespace MESQUITE_NS
     SphericalDomain()
       {}
 
-    virtual ~SphericalDomain() { }
+    virtual ~SphericalDomain();
 
     void set_sphere(const Vector3D& center, double radius)
       {

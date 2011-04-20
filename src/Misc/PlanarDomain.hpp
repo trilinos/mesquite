@@ -65,7 +65,7 @@ namespace MESQUITE_NS
     inline PlanarDomain(const Vector3D& normal, const Vector3D& point)
       { set_plane( normal, point ); }
     
-    virtual ~PlanarDomain() { }
+    virtual ~PlanarDomain();
       
     void fit_vertices( Mesh* mesh, 
                        MsqError& err,

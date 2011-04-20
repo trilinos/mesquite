@@ -42,7 +42,7 @@ class MESQUITE_EXPORT IdealShapeTarget : public TargetCalculator
 {
 public:
 
-  virtual ~IdealShapeTarget() {}
+  virtual ~IdealShapeTarget();
 
 
   /**\brief Get a target matrix
