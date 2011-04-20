@@ -580,9 +580,9 @@ void MsqMeshEntity::check_element_orientation(
           inverted += inverted_jacobian_3d( pd, all, Sample(1,i), err );
     } 
     if (sample.have_any_mid_face_node()) {
-      for (i = 0; i < TopologyInfo::edges(mType); ++i)
+      for (i = 0; i < TopologyInfo::faces(mType); ++i)
         if (sample.mid_face_node(i))
-          inverted += inverted_jacobian_3d( pd, all, Sample(1,i), err );
+          inverted += inverted_jacobian_3d( pd, all, Sample(2,i), err );
     } 
     if (sample.have_any_mid_region_node()) {
       inverted += inverted_jacobian_3d( pd, all, Sample(3,0), err );
