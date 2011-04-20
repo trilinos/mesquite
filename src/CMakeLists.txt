@@ -105,6 +105,7 @@ APPEND_SET(SOURCES
   Mesh/ParallelMeshImpl.cpp
   Mesh/PatchData.cpp
   Mesh/PatchIterator.cpp
+  Mesh/PatchSet.cpp
   Mesh/TagVertexMesh.cpp
   Mesh/TopologyInfo.cpp
   Mesh/VertexPatches.cpp

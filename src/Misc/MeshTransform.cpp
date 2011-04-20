@@ -42,6 +42,8 @@
 
 namespace MESQUITE_NS {
   
+  MeshTransform::~MeshTransform() {}
+  
 /*! 
   Actually apply the affine transformation
   */

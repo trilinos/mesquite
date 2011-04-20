@@ -65,7 +65,8 @@ namespace MESQUITE_NS
       {}
 
       // virtual destructor ensures use of polymorphism during destruction
-    virtual ~MeshTransform() { };
+    virtual ~MeshTransform();
+    
       //virtual functions from PatchDataUser...
       //!Loop over the mesh and perform the affine transformation
     virtual double loop_over_mesh( Mesh* mesh, 

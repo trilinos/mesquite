@@ -1,7 +1,7 @@
 /* ***************************************************************** 
     MESQUITE -- The Mesh Quality Improvement Toolkit
 
-    Copyright 2009 Sandia National Laboratories.  Developed at the
+    Copyright 2010 Sandia National Laboratories.  Developed at the
     University of Wisconsin--Madison under SNL contract number
     624796.  The U.S. Government and the University of Wisconsin
     retain certain rights to this software.
@@ -20,35 +20,22 @@
     (lgpl.txt) along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    (2009) kraftche@cae.wisc.edu    
+    (2010) kraftche@cae.wisc.edu    
 
   ***************************************************************** */
 
 
-/** \file SizeMetric.cpp
+/** \file PatchSet.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "SizeMetric.hpp"
-#include "PatchData.hpp"
+#include "PatchSet.hpp"
 
 namespace MESQUITE_NS {
 
-SizeMetric::~SizeMetric() {}
+PatchSet::~PatchSet() {}
 
-std::string SizeMetric::get_name() const { return "Size"; }
-
-int SizeMetric::get_negate_flag() const { return 1; }
-
-bool SizeMetric::evaluate( PatchData& pd, 
-                           size_t handle, 
-                           double& value, 
-                           MsqError& err )
-{
-  value = pd.element_by_index(handle).compute_unsigned_area( pd, err );
-  return true;
-}
 
 } // namespace MESQUITE_NS

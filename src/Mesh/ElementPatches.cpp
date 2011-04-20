@@ -33,6 +33,8 @@
 
 namespace MESQUITE_NS {
 
+ElementPatches::~ElementPatches() {}
+
 void ElementPatches::get_patch_handles( 
                              std::vector<PatchHandle>& patch_handles_out,
                              MsqError& err )

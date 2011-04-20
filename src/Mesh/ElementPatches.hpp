@@ -39,9 +39,11 @@ namespace MESQUITE_NS {
  * This is intended for use in QualityAssessor.  It is not usable
  * for optimization.
  */
-class ElementPatches : public PatchSet
+class MESQUITE_EXPORT ElementPatches : public PatchSet
 {
 public:
+
+    ~ElementPatches();
     
     /**\brief Get a list of handles, one for each patch */
     virtual void get_patch_handles( std::vector<PatchHandle>& patch_handles_out,

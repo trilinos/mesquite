@@ -50,33 +50,36 @@ public:
      *\param num_layers Number of layers of elements adjacent to each vertex
      *\param free_vertices_only Skip fixed vertices if true.
      */
-    MESQUITE_EXPORT inline 
+    inline 
     VertexPatches( unsigned num_layers = 1, bool free_vertices_only = true ) 
       : numLayers(num_layers), freeVertices(free_vertices_only) {}
     
+    MESQUITE_EXPORT
+    ~VertexPatches();
+    
     /**\brief Set number of layers of elements adjacent to each vertex */
-    MESQUITE_EXPORT inline
+    inline
     void set_num_layers( unsigned num_layers ) 
       { numLayers = num_layers; }
       
     /**\brief Get number of layers of elements adjacent to each vertex */
-    MESQUITE_EXPORT inline
+    inline
     unsigned get_num_layers() const
       { return numLayers; }
       
     /**\brief Skip fixed vertices if true. */
-    MESQUITE_EXPORT inline
+    inline
     void free_vertices_only( bool yesno )
       { freeVertices = yesno; }
       
     /**\brief Skip fixed vertices if true. */
-    MESQUITE_EXPORT inline
+    inline
     bool free_vertices_only() const
       { return freeVertices; }
 
     
     /**\brief Get a list of handles, one for each patch */
-	MESQUITE_EXPORT
+    MESQUITE_EXPORT
     virtual void get_patch_handles( std::vector<PatchHandle>& patch_handles_out,
                                     MsqError& err );
     
@@ -91,7 +94,7 @@ public:
      *\param elem_handles_out the list of elements in the mesh
      *\param free_vertices_out the list of vertices interior to the patch
      */
-	MESQUITE_EXPORT
+    MESQUITE_EXPORT
     virtual void get_patch( PatchHandle patch_handle,
                             std::vector<Mesh::ElementHandle>& elem_handles_out,
                             std::vector<Mesh::VertexHandle>& free_vertices_out,

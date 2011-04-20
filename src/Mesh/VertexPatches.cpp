@@ -41,6 +41,9 @@
 
 namespace MESQUITE_NS {
 
+VertexPatches::~VertexPatches()
+{}
+
 void VertexPatches::get_patch_handles( std::vector<PatchHandle>& patch_handles_out,
                                        MsqError& err )
 {

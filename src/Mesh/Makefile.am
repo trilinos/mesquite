@@ -28,6 +28,7 @@ MSQ_SRCS += \
 	$(SRC_MESH_DIR)/ParallelMeshImpl.cpp \
 	$(SRC_MESH_DIR)/PatchData.cpp \
 	$(SRC_MESH_DIR)/PatchIterator.cpp \
+	$(SRC_MESH_DIR)/PatchSet.cpp \
 	$(SRC_MESH_DIR)/TagVertexMesh.cpp \
 	$(SRC_MESH_DIR)/TopologyInfo.cpp \
 	$(SRC_MESH_DIR)/VertexPatches.cpp \

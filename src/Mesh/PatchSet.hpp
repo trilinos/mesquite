@@ -46,25 +46,21 @@ class MsqError;
  * This class provides an interface for specifying how Mesquite
  * will divide the active mesh into working patches.
  */
-class PatchSet 
+class MESQUITE_EXPORT PatchSet 
 {
   public:
   
     typedef void* PatchHandle;
     
-    MESQUITE_EXPORT
     inline PatchSet() {}
     
     /**\brief Declare destructor virtual */
-    MESQUITE_EXPORT
-    virtual ~PatchSet() {}
+    virtual ~PatchSet();
   
     /**\brief Specify the working Mesh */
-    MESQUITE_EXPORT
     inline void set_mesh( Mesh* mesh ) { myMesh = mesh; }
     
     /**\brief Get a list of handles, one for each patch */
-    MESQUITE_EXPORT 
     virtual void get_patch_handles( std::vector<PatchHandle>& patch_handles_out,
                                     MsqError& err ) = 0;
     
@@ -79,15 +75,13 @@ class PatchSet
      *                         vertices in the closure of the elements are 
      *                         free.  
      */
-    MESQUITE_EXPORT 
     virtual void get_patch( PatchHandle patch_handle,
                             std::vector<Mesh::ElementHandle>& elem_handles_out,
                             std::vector<Mesh::VertexHandle>& free_vertices_out,
                             MsqError& err ) = 0;
     
       /**\brief get the Mesh object passed to set_mesh() */                        
-    MESQUITE_EXPORT 
-    Mesh* get_mesh() const { return myMesh; }
+    inline Mesh* get_mesh() const { return myMesh; }
     
   private:
   
