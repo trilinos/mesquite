@@ -20,7 +20,7 @@
     (lgpl.txt) along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    (2010) kraftche@cae.wisc.edu    
+    (2011) kraftche@cae.wisc.edu    
 
   ***************************************************************** */
 
@@ -28,6 +28,7 @@
 /** \file voshell.cpp
  *  \brief Implement some of the examples from N. Voshell.
  *  \author Jason Kraftcheck 
+ *  \author Nick Voshell
  */
 
 #include "ShapeImprover.hpp"
@@ -184,9 +185,10 @@ int run_example( const Example& e, bool write_output_file )
   untangler.run_instructions( &mesh, &domain, err ); 
   if (MSQ_CHKERR(err)) return 1;
   ShapeImprover smoother;
-  smoother.run_instructions( &mesh, &domain, err );
   smoother.set_slaved_ho_node_mode( Settings::SLAVE_NONE );
   smoother.set_mapping_function( &hex27 );
+  smoother.set_vertex_movement_limit_factor( 0.05 );
+  smoother.run_instructions( &mesh, &domain, err );
   if (MSQ_CHKERR(err)) return 1;
   
   if (write_output_file) {

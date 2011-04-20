@@ -3,7 +3,7 @@ AM_LDFLAGS = @AM_LDFLAGS@
 AM_CPPFLAGS = @AM_CPPFLAGS@
 AM_CPPFLAGS += '-DSRCDIR="$(srcdir)/"'
 LDADD = $(top_builddir)/src/libmesquite.la
-check_PROGRAMS = main #voshell
+check_PROGRAMS = main voshell
 TESTS = $(check_PROGRAMS)
 
 main_SOURCES = main.cpp
