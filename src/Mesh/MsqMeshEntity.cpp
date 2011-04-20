@@ -553,7 +553,7 @@ void MsqMeshEntity::check_element_orientation(
     if (sample.have_any_mid_edge_node()) {
       for (i = 0; i < TopologyInfo::edges(mType); ++i)
         if (sample.mid_edge_node(i))
-          inverted += inverted_jacobian_2d( pd, all, Sample(0,i), err );
+          inverted += inverted_jacobian_2d( pd, all, Sample(1,i), err );
     } 
     if (sample.have_any_mid_face_node())
       inverted += inverted_jacobian_2d( pd, all, Sample(2,0), err );
@@ -602,7 +602,12 @@ MsqMeshEntity::inverted_jacobian_3d( PatchData& pd, NodeSet nodes, Sample sample
   mf->jacobian( pd, pd.get_element_index(this), nodes, 
                 sample, junk2, junk, junk3, J, err );
   MSQ_ERRZERO(err);
-  return det(J) <= 0.0;
+  //const double size_eps_sqr = sqr_Frobenius( J ) * DBL_EPSILON;
+  const double d = det(J);
+  // determinant has units of volume, norm squared has units of area
+  // so det^2 and size_eps_sqr^3 both have units of length^6
+  //return d < 0 || d * d < size_eps_sqr * size_eps_sqr * size_eps_sqr;
+  return d < DBL_EPSILON;
 }
 
 bool 
@@ -613,18 +618,23 @@ MsqMeshEntity::inverted_jacobian_2d( PatchData& pd, NodeSet nodes, Sample sample
   size_t junk2[9], junk3;
   assert(node_count() <= 9);
 
+  const int idx = pd.get_element_index(this);
   const MappingFunction2D* mf = pd.get_mapping_function_2D( mType );
-  mf->jacobian( pd, pd.get_element_index(this), nodes, 
-                sample, junk2, junk, junk3, J, err );
+  mf->jacobian( pd, idx, nodes, sample, junk2, junk, junk3, J, err );
   MSQ_ERRZERO(err);
     
   Vector3D norm;
   pd.get_domain_normal_at_sample( pd.get_element_index(this), sample, norm, err );
   MSQ_ERRZERO(err);
   
-  MsqVector<3> N(&norm[0]);
-  MsqVector<3> cross = J.column(0) * J.column(1);
-  return (cross % N < 0.0);
+  const MsqVector<3> N(&norm[0]);
+  const MsqVector<3> cross = J.column(0) * J.column(1);
+  //const double size_sqr = sqr_Frobenius( J );
+  const double dot = cross % N;
+  // cross has units of area, surface norm is unitless (unit vector), 
+  // so dot has units of area and so does the matrix norm squared
+  //return dot < size_sqr * DBL_EPSILON;
+  return dot < DBL_EPSILON;
 }
 
 NodeSet
