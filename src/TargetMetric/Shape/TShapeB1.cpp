@@ -137,8 +137,10 @@ bool TShapeB1::evaluate_with_grad( const MsqMatrix<3,3>& T,
                                    MsqError&  )
 {
   double d = det(T);
-  if (d < 1e-12)
+  if (invalid_determinant(d)) {
+    result = 0.0;
     return false;
+  }
     
   double norm = Frobenius(T);
   double den = 1.0/(3 * MSQ_SQRT_THREE * d);
@@ -157,8 +159,10 @@ bool TShapeB1::evaluate_with_hess( const MsqMatrix<3,3>& T,
                                    MsqError& err )
 {
   double d = det(T);
-  if (d < 1e-12)
+  if (invalid_determinant(d)) {
+    result = 0.0;
     return false;
+  }
   
   double id = 1.0/d;
   double norm = Frobenius(T);
