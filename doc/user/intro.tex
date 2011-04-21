@@ -130,7 +130,9 @@ This library is described in the next section. \newline
 \section{Mesquite Goals}
 Mesquite (Mesh Quality Improvement Toolkit) is designed to provide a
 stand-alone, portable, comprehensive suite of mesh quality improvement
-algorithms.  The design flexible so that they can be applied to many
+algorithms and components that can be used to construct custom quality
+improvement algorithms.  
+The design is flexible so that the algorithms can be applied to many
 different mesh element types and orders and referenced to both
 isotropic and anisotropic ideal elements.  Mesquite provides a robust
 and effective mesh improvement toolkit that allows both meshing
@@ -148,8 +150,9 @@ in several of our design goal areas. \newline
 {\bf Versatile.}  Mesquite works on structured, unstructured, and
 hybrid meshes in both two and three dimensions. The design permits
 improvements to meshes composed of triangular, tetrahedral,
-quadrilateral, and hexahedral elements. Prismatic, pyramidal, and
-polyhedral elements can be easily added.  It currently incorporates
+quadrilateral, hexahedral, prismatic (wedge) and pyramidal elements. 
+Support for general polyhedral elements may be added at a future time.  
+It currently incorporates
 only methods for node movement; plans for topology modification and
 hybrid improvement strategies lie in the future.  Node movement
 strategies include both local patch-based iteration schemes for one or
@@ -178,12 +181,14 @@ approaches that use one or more improvement algorithms. \newline
 %be referenced to permit non-isotropic smoothing and adaptivity. \newline
 
 {\bf Inter-operable.}  To ensure that Mesquite is inter-operable with a
-large number of mesh generation packages, we use the common
-interfaces for mesh query currently under development by the TSTT
-center.  These interfaces provide uniform access to mesh geometry and
-topology and will be implemented by all TSTT center software including
+large number of mesh generation packages, Mesquite defines a generic 
+interface for accessing application mesh and domain data.  Additoinally,
+Mesquite provides an adapter to interface with the common
+interfaces for mesh and geometry query currently under developed by the 
+ITAPS center.  These interfaces provide uniform access to mesh geometry and
+topology and will be implemented by all ITAPS center software including
 several DOE-supported mesh generation packages.  We are working with
-the TSTT interface design team to ensure that Mesquite has efficient
+the ITAPS interface design team to ensure that Mesquite has efficient
 access to mesh and geometry information through strategies such as
 information caching and agglomeration.  We are also participating in
 the design of interfaces needed to support topological changes
