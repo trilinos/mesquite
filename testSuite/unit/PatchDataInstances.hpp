@@ -53,6 +53,8 @@ Patches must be allocated and dealocated by the caller.
 #include "MsqVertex.hpp"
 #include "PatchData.hpp"
 #include "PlanarDomain.hpp"
+#include "IdealElements.hpp"
+#include "TopologyInfo.hpp"
 
 #include <math.h>
 #include <iostream>
@@ -585,6 +587,66 @@ namespace MESQUITE_NS
                              1, 8, 9, 2, 5, 10, 11, 6 };
                              
      hexPatch.fill( 12, coords, 2, HEXAHEDRON, conn, 0, err ); 
+   }
+   
+   // Create patch containing one ideal element, optionally higher-order.
+   // For 2D elements, will attach appropriate planar domain.
+   inline void create_ideal_element_patch( PatchData& pd,
+                                           EntityTopology type, 
+                                           size_t num_nodes,
+                                           MsqError& err )
+   {
+      static PlanarDomain zplane(PlanarDomain::XY);
+      static Settings settings;
+      settings.set_slaved_ho_node_mode( Settings::SLAVE_NONE );
+      pd.attach_settings( &settings );
+      
+   
+        // build list of vertex coordinates
+      const Vector3D* corners = unit_edge_element( type );
+      std::vector<Vector3D> coords( corners, corners+TopologyInfo::corners(type) );
+      bool mids[4] = {false};
+      TopologyInfo::higher_order( type, num_nodes, mids[1], mids[2], mids[3], err );
+      MSQ_ERRRTN(err);
+      std::vector<size_t> conn(coords.size());
+      for (unsigned i = 0; i < coords.size(); ++i)
+        conn[i] = i;
+  
+      for (unsigned dim = 1; dim <= TopologyInfo::dimension(type); ++dim) {
+        if (!mids[dim])
+          continue;
+        
+        int num_side;
+        if (dim == TopologyInfo::dimension(type))
+          num_side = 1;
+        else
+          num_side = TopologyInfo::adjacent( type, dim );
+        
+        for (int s = 0; s < num_side; ++s) {
+          unsigned idx = TopologyInfo::higher_order_from_side( type, num_nodes, dim, s, err );
+          MSQ_ERRRTN(err);
+          conn.push_back(idx);
+        
+          unsigned n;
+          const unsigned* side = TopologyInfo::side_vertices( type, dim, s, n, err );
+          MSQ_ERRRTN(err);
+          Vector3D avg = coords[side[0]];
+          for (unsigned v = 1; v < n; ++v)
+            avg += coords[side[v]];
+          avg *= 1.0/n;
+          coords.push_back(avg);
+        }
+      }
+      
+      bool* fixed = new bool[coords.size()];
+      std::fill( fixed, fixed+coords.size(), false );
+      pd.fill( coords.size(), coords[0].to_array(), 1, &type, 
+               &num_nodes, &conn[0], fixed, err );
+      delete [] fixed;
+      MSQ_ERRRTN(err);
+      
+      if (TopologyInfo::dimension(type) == 2)
+        pd.set_domain( &zplane );
    }
    
 } // namespace

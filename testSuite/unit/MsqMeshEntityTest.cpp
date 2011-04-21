@@ -56,6 +56,7 @@ Unit testing of various functions in the MsqMeshEntity class.
 #include "PatchDataInstances.hpp"
 #include <math.h>
 #include <iostream>
+#include <sstream>
 #include "UnitUtil.hpp"
 
 using namespace Mesquite;
@@ -78,6 +79,8 @@ private:
   CPPUNIT_TEST (test_unsigned_area_pri);
   CPPUNIT_TEST (test_unsigned_area_hex);
   CPPUNIT_TEST (test_all_nodes);
+  CPPUNIT_TEST (test_check_element_orientation_linear);
+  CPPUNIT_TEST (test_check_element_orientation_quadratic);
   CPPUNIT_TEST_SUITE_END();
 
   void test_all_nodes( EntityTopology type, unsigned num_nodes );
@@ -197,6 +200,10 @@ public:
   void test_unsigned_area_common( EntityTopology type,
                                   const double* coords,
                                   double expected );
+                                  
+  void test_check_element_orientation_linear();
+  void test_check_element_orientation_quadratic();
+  void test_check_element_orientation( EntityTopology type, int nodes );
 };
 
 
@@ -381,5 +388,120 @@ void MsqMeshEntityTest::test_all_nodes()
   test_all_nodes( HEXAHEDRON, 26 );
   test_all_nodes( HEXAHEDRON, 27 );
 }
+
+void MsqMeshEntityTest::test_check_element_orientation_linear()
+{
+  const EntityTopology types[] = { TRIANGLE,
+                                   QUADRILATERAL,
+                                   TETRAHEDRON,
+                                   PYRAMID,
+                                   PRISM,
+                                   HEXAHEDRON };
+  const int num_types = sizeof(types)/sizeof(types[0]);
+
+  for (int i = 0; i < num_types; ++i) {
+    test_check_element_orientation( types[i], TopologyInfo::corners(types[i]) );
+  }
+}
+
+void MsqMeshEntityTest::test_check_element_orientation_quadratic()
+{
+  struct ElemType {
+    EntityTopology topo;
+    unsigned nodes;
+  };
+
+  const ElemType types[] = {
+    { TRIANGLE, 6 },
+    { QUADRILATERAL, 8 },
+    { QUADRILATERAL, 9 },
+    { TETRAHEDRON, 10 } };
+  const int num_types = sizeof(types)/sizeof(types[0]);
   
+  for (int i = 0; i < num_types; ++i) {
+    test_check_element_orientation( types[i].topo, types[i].nodes );
+  }
+}
+
+void MsqMeshEntityTest::test_check_element_orientation( EntityTopology type, 
+                                                        int nodes )
+{
+    // get an ideal element
+  MsqError err;
+  PatchData pd;
+  create_ideal_element_patch( pd, type, nodes, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( (size_t)1, pd.num_elements() );
+  CPPUNIT_ASSERT_EQUAL( (size_t)nodes, pd.num_nodes() );
+  MsqMeshEntity& elem = pd.element_by_index(0);
+  CPPUNIT_ASSERT_EQUAL( (size_t)nodes, elem.node_count() );
+  CPPUNIT_ASSERT_EQUAL( type, elem.get_element_type() );
+  const size_t* conn = elem.get_vertex_index_array();
   
+    // test that ideal element is not reported as inverted
+  int inverted, tested;
+  elem.check_element_orientation( pd, inverted, tested, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( 0, inverted );
+  CPPUNIT_ASSERT( tested > 0 );
+
+  bool mids[4] = {false};
+  TopologyInfo::higher_order( type, nodes, mids[1], mids[2], mids[3], err );
+  MSQ_ERRRTN(err);
+  
+    // invert element at each vertex and test
+  Vector3D centroid;
+  elem.get_centroid( centroid, pd, err );
+  ASSERT_NO_ERROR(err);
+  for (int i = 0; i < nodes; ++i) {
+    unsigned dim, num;
+    TopologyInfo::side_from_higher_order( type, nodes, i, dim, num, err );
+    ASSERT_NO_ERROR(err);
+    const Vector3D old_pos = pd.vertex_by_index( conn[i] );
+    Vector3D new_pos = old_pos;
+    if (dim == TopologyInfo::dimension(type)) { 
+      // move mid-element node 3/4 of the way to corner 0
+      new_pos += 3*pd.vertex_by_index( conn[0] );
+      new_pos *= 0.25;
+    }
+    else if (dim == 0) { // if a corner vertex
+      if (type == TRIANGLE || type == TETRAHEDRON) {
+        // move tri/tet vertex past opposite side of element
+        new_pos += 2*(centroid - old_pos);
+      }
+      else if (mids[1]) {
+        // if have mid-edge nodes move 3/4 of the way to center vertex
+        new_pos += 3*centroid;
+        new_pos *= 0.25;
+      }
+      else {
+        // move vertex past centroid
+        new_pos += 1.5*(centroid - old_pos);
+      }
+    }
+    else {
+      // otherwise move vertex past centroid
+      new_pos += 2.5*(centroid - old_pos);
+    }
+    
+    pd.set_vertex_coordinates( new_pos, conn[i], err );
+    ASSERT_NO_ERROR(err);
+    
+      // test that element is inverted
+    inverted = tested = 0;
+    elem.check_element_orientation( pd, inverted, tested, err );
+    ASSERT_NO_ERROR(err);
+    std::ostringstream str;
+    str << TopologyInfo::short_name(type) << nodes
+        << " Vertex " << i 
+        << " (Dimension " << dim
+        << " Index " << num << ")";
+    CppUnit::Message m( "MsqMeshEntity failed to detect inverted element" );
+    m.addDetail( str.str() );
+    ASSERT_MESSAGE( m, inverted > 0 );
+    
+      // move vertex back to ideal position
+    pd.set_vertex_coordinates( old_pos, conn[i], err );
+    ASSERT_NO_ERROR(err);
+  }
+}
