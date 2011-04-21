@@ -1,13 +1,55 @@
 \chapter{Optimization Strategies}
 
-\section{Patches}
+\section{The Generalized Optimization Loop}
 
-\section{Global}
+In Mesquite a generalization of the optimization strategy is used to implement a wide variety of optimization strategies.  Before discussing the different types of optimization strategies that can be implemented with Mesquite we will first need to discuss the generalized strategy.
+
+The mesh can be decomposed into subsets called {\em patches}.  The specifics of this mesh decomposition are discussed in Section \ref{sec:patches}.  The optimization is done by repeatedly iterating over the set of patches, optimizing each separately.
+
+\begin{figure}[htb!]
+\begin{center}
+\noindent\makebox[\textwidth]{%
+\includegraphics[width=6.5in]{generalized_optimization}}
+\caption{\em Optimization Loop \label{fig:genoptloop}}
+\end{center}
+\end{figure}
+
+Figure \ref{fig:genoptloop} depicts the generalization of optimization strategies in Mesquite.  The generalized optimization is composed of three loops shown as non-overlapping square cycles in the diagram.  The test to exit each loop is performed at the decision points (diamonds) in the diagram.  The loops are logically nested from left to right, such that the right most loop is performed within a single iteration of the loop to the left of it.  The inner- and outer-most loops terminate based on user-definable termination criterion, which are discussed in detail in Section \ref{sec:termination}.  The center loop is the iteration over the set of patches composing the mesh.
+
+The inner-most loop (the right-most cycle in the diagram) represents the iterative optimization of the mesh contained in a single patch.  This optimization is done until the {\em inner termination criterion} is met.  Once the inner criterion is met the optimizer advances to the next patch and the inner loop is entered again to optimize that patch.  Once each patch has been optimized the {\em outer termination criterion} is tested.  If the criterion has not been met then the loop over the set of patches is repeated.
+
+The set of outer termination criteria determine when the optimization of the entire mesh is complete.  The set of inner termination criteria determine when the optimization of a single patch is complete.  Both sets of criteria are tested before entering their respective loops.  If a criterion is met before the loop starts then no iterations of the corresponding loop will be performed.
+
+The outer loop(s) are implemented in the {\texttt VertexMover} class.  The inner loop is implemented in subclasses.  The {\texttt LaplacianSmoother} class in Mesquite provides a traditional Laplace smoother.  For this class the mesh is decomposed into patches that each contain a single free vertex and the adjacent elements, one patch for each free vertex in the mesh.  For Laplace smoothing the inner (per-vertex) optimization is not iterative.  The inner loop always has an implicit termination criterion of a single iteration.  Any other inner termination criterion will still be tested before performing the relaxation of the free vertex in the patch such that if any such criterion is met no optimization of the vertex will be performed.  However, culling (Section \ref{sec:culling} can have a similar effect while typically producing better results.  Passes are made over the entire mesh until one of the specified outer termination criterion is met.
+
+\section{Patches \label{sec:patches}}
+
+
+Mesquite can operate on a decomposition of the mesh into subsets called {\em patches}.  Each patch is optimized individually.  The overall mesh optimization is performed by repeatedly iterating over the set of patches.  Mesquite provides two build-in mesh decompositions\footnote{Mesquite includes an additional decomposition of the mesh into single-element patches which is not suitable for use in optimization.  It is used internally for quality assessment and other purposes}: element-on-vertex patches and a global patch.  
+
+\begin{figure}[htb]
+\includegraphics[width=5in]{patches-horiz}
+\caption{Miscellaneous patch configurations.\label{fig:patch-types}}
+\end{figure}
+
+The global patch is a ``decomposition'' where the entire mesh is contained in a single patch.  This is used in the global optimization strategy discussed in Section \ref{sec:global}. Figure \ref{fig:patch-types}c illustrates the global patch.
+
+The element-on-vertex decomposition subdivides the mesh into a single patch for each free vertex.  Each patch includes the layer of elements adjacent to the free vertex.  A element-on-vertex patch is illustrated in Figure \ref{fig:patch-types}b.  This decomposition is typically used for all optimization strategies discussed in this chapter except for global optimization.  Any other decomposition except global may be used for any of the optimization strategies.  All of the discussed strategies other than global do not make sense for a global patch.
+
+Any patch decomposition can be used with Mesquite.  While no other decomposition strategy is provided with Mesquite, the any implementation of the {\texttt PatchSet} interface can be associated with any quality improver that supports it (currently all except {\texttt LaplacianSmoother}).  An implementation of that interface is expected to provide three things:
+\begin{enumerate}
+\item An enumeration of all the patches in the decomposition of the mesh
+\item For each patch, the set of vertices to optimize
+\item For each patch, the set of elements for which the quality is to be optimized (typically all elements adjacent to the free vertices)
+\end{enumerate}
+A normal decomposition will be done such that each free vertex in the mesh is optimized in exactly one patch, but Mesquite does not enforce this.  Having a free vertex be optimized in no patch will result in that vertex effectively being fixed for the optimization.  A decomposition that optimized the same vertices in multiple patches is allowable, and should have no adverse side effects unless doing a Jacobi optimization (Section \ref{sec:jacobi}).
+
+\section{Global \label{sec:global}}
 
 \section{Nash Game}
 
 \section{Block Coordinate Descent}
 
-\section{Culling}
+\section{Culling \label{sec:culling}}
 
-\section{Jacobi}
+\section{Jacobi \label{sec:jacobi}}
