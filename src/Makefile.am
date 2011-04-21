@@ -91,14 +91,19 @@ include/Mesquite_all_headers.hpp: $(MSQ_HDRS)
 	@echo '#endif'                                  >> $@ 
 
 
+# Generate list of include flags src/ dir and subdirs 
+# for use when compiling stuff outside of the src/ subdir.
+# Basically, replace value of $(top_srcdir) with the
+# $(top_srcdir) variable in the existing list of include flags.
 $(RECURSIVE_TARGETS) distdir: cppflags.make
 cppflags.make: $(MSQ_HDRS) Makefile.am ../config.status
 	@echo "Generating $@..."
-	@echo "INCLUDES = -I\$$(top_srcdir)/src/include \\" > $@
+	@echo "#MSQ_INCLUDES = $(MSQ_INCLUDES)" > $@
+	@echo "INCLUDES = -I\$$(top_srcdir)/src/include \\" >> $@
 	@for flag in $(MSQ_INCLUDES); do \
-	  n=`expr X"$$flag" : X"-I$(srcdir)/\(.*\)" || true`; \
+	  n=`expr X"$$flag" : X"-I$(top_srcdir)/\(.*\)" || true`; \
 	  if test "x$$n" != "x"; then \
-	    echo "	-I\$$(top_srcdir)/src/$$n \\"     >> $@ ; \
+	    echo "	-I\$$(top_srcdir)/$$n \\"     >> $@ ; \
 	  fi ; \
 	done
 	@echo "	-I\$$(top_builddir)/src/include \\"       >> $@ 
