@@ -30,7 +30,7 @@ UG_SRCS = users-guide.tex \
         msq-paradigm.eps \
         square_rand.eps \
         parallel_mesh.eps \
-	general_optimization.eps \
+	generalized_optimization.eps \
 	patches-horiz.eps \
         mesquite.bib
 
