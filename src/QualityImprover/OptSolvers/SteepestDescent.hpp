@@ -56,7 +56,7 @@ namespace MESQUITE_NS
   {
   public:
     MESQUITE_EXPORT 
-    SteepestDescent(ObjectiveFunction* of, bool Nash = true);
+    SteepestDescent(ObjectiveFunction* of);
 
     MESQUITE_EXPORT virtual
     ~SteepestDescent() { }

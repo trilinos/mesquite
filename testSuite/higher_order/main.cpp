@@ -220,7 +220,7 @@ InstructionQueue* create_instruction_queue(MsqError& err)
   
   // creates the optimization procedures
 //   ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
-  FeasibleNewton* pass1 = new FeasibleNewton( obj_func, true );
+  FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
 
   //perform optimization globally
   pass1->use_global_patch();

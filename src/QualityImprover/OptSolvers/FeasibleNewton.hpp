@@ -95,7 +95,7 @@ namespace MESQUITE_NS
   class FeasibleNewton : public VertexMover, public PatchSetUser
   {
   public:
-    MESQUITE_EXPORT FeasibleNewton(ObjectiveFunction* of, bool Nash = true);
+    MESQUITE_EXPORT FeasibleNewton(ObjectiveFunction* of);
 
     MESQUITE_EXPORT virtual ~FeasibleNewton()
     { delete coordsMem; }

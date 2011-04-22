@@ -96,7 +96,7 @@ public:
      CPPUNIT_ASSERT(!err);
      mOF = new LPtoPTemplate(mQM, 2, err);
      CPPUNIT_ASSERT(!err);
-     mQI = new SteepestDescent( mOF, true );
+     mQI = new SteepestDescent( mOF );
      mQA = new QualityAssessor();
      mQA->set_stopping_assessment( mQM  );
      CPPUNIT_ASSERT(!err);

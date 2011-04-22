@@ -110,10 +110,11 @@ void BCDTest::compare_bcd( ObjectiveFunction* OF, string name, const char* mesh_
   iterations.add_iteration_limit( 2 );
   vertex_movement.add_absolute_vertex_movement( 1e-3 );
 
-  SolverType global_solver( OF, true );
-  SolverType bcd_solver( OF, false );
+  SolverType global_solver( OF );
+  SolverType bcd_solver( OF );
   global_solver.use_global_patch();
   bcd_solver.use_element_on_vertex_patch();
+  bcd_solver.do_block_coordinate_descent_optimization();
   global_solver.set_inner_termination_criterion( &vertex_movement );
   bcd_solver.set_inner_termination_criterion( &iterations );
   bcd_solver.set_outer_termination_criterion( &vertex_movement );

@@ -53,8 +53,7 @@ namespace MESQUITE_NS
   class ConjugateGradient : public VertexMover, public PatchSetUser
   {
   public:
-    MESQUITE_EXPORT ConjugateGradient(ObjectiveFunction* objective, 
-                                      bool Nash = true);
+    MESQUITE_EXPORT ConjugateGradient(ObjectiveFunction* objective);
     MESQUITE_EXPORT ConjugateGradient(ObjectiveFunction* objective, 
                                       MsqError &err);
 

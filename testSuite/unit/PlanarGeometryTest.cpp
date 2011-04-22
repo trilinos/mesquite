@@ -147,8 +147,8 @@ public:
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
        // creates the steepest descent optimization procedures
-     SteepestDescent pass1( &untan_func, true );
-     SteepestDescent pass2( &shape_func, true );
+     SteepestDescent pass1( &untan_func );
+     SteepestDescent pass2( &shape_func );
      pass1.use_element_on_vertex_patch();
      pass2.use_global_patch();
        //Make sure no errors

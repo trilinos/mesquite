@@ -49,9 +49,8 @@ std::string ConjugateGradient::get_name() const
 PatchSet* ConjugateGradient::get_patch_set()
   { return PatchSetUser::get_patch_set(); }
 
-ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective,
-                                     bool Nash ) :
-  VertexMover(objective, Nash),
+ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective) :
+  VertexMover(objective),
   PatchSetUser(true),
   pMemento(NULL),
   conjGradDebug(0)
@@ -59,7 +58,7 @@ ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective,
 
 ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective,
                                      MsqError &err) :
-  VertexMover(objective, true),
+  VertexMover(objective),
   PatchSetUser(true),
   pMemento(NULL),
   conjGradDebug(0)

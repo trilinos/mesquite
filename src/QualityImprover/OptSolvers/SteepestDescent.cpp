@@ -49,8 +49,8 @@ std::string SteepestDescent::get_name() const
 PatchSet* SteepestDescent::get_patch_set()
   { return PatchSetUser::get_patch_set(); }
 
-SteepestDescent::SteepestDescent(ObjectiveFunction* of, bool Nash) 
-  : VertexMover(of, Nash),
+SteepestDescent::SteepestDescent(ObjectiveFunction* of) 
+  : VertexMover(of),
     PatchSetUser(true),
     projectGradient(false) //,
     //cosineStep(false)

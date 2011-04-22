@@ -36,19 +36,8 @@
 namespace MESQUITE_NS {
 
 
-OFEvaluator::OFEvaluator( ObjectiveFunction* of, bool Nash ) : OF(of)
-{
-  if (Nash) {
-    tempType = firstType = updateType = ObjectiveFunction::CALCULATE;
-  }
-  else {
-    tempType = ObjectiveFunction::TEMPORARY;
-    firstType = ObjectiveFunction::SAVE;
-    updateType = ObjectiveFunction::UPDATE;
-  }
-  
-  reset();
-}
+OFEvaluator::OFEvaluator( ObjectiveFunction* of ) : OF(of), doBCD(false)
+  { }
 
 
 bool OFEvaluator::initialize( Mesh* mesh, 
@@ -57,7 +46,17 @@ bool OFEvaluator::initialize( Mesh* mesh,
                               PatchSet* user_set,
                               MsqError& err )
 {
-  if (tempType == ObjectiveFunction::CALCULATE) // Nash
+  if (doBCD) {
+    tempType = ObjectiveFunction::TEMPORARY;
+    firstType = ObjectiveFunction::SAVE;
+    updateType = ObjectiveFunction::UPDATE;
+  }
+  else {
+    tempType = firstType = updateType = ObjectiveFunction::CALCULATE;
+  }
+  reset();
+
+  if (!doBCD) // Nash
     return true;
   
   if (!have_objective_function()) {

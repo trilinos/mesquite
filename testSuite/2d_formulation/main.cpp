@@ -105,7 +105,7 @@ void run_test( Grouping grouping, int of_power, Weight w, const string filename 
   QualityMetric* qm_ptr = (grouping == ELEMENT) ? (QualityMetric*)&elem_metric : (QualityMetric*)&qual_metric;
 
   PMeanPTemplate OF( of_power, qm_ptr );
-  ConjugateGradient solver( &OF, true );
+  ConjugateGradient solver( &OF );
   TerminationCriterion tc;
   TerminationCriterion itc;
   tc.add_absolute_vertex_movement( 1e-4 );

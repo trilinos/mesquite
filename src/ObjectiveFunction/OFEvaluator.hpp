@@ -63,7 +63,7 @@ public:
    *\param Nash True for Nash-type solutions, false for
    *       block coordinate descent.
    */
-  OFEvaluator( ObjectiveFunction* of, bool Nash );
+  OFEvaluator( ObjectiveFunction* of );
     
   void initialize_queue( Mesh* mesh,
                          MeshDomain* domain,
@@ -186,8 +186,17 @@ public:
                MsqHessian& Hessian,
                MsqError& err );
                
-  /**\brief Check if Nash or block coordinate descent algorithm.*/
-  bool is_Nash() const { return tempType == ObjectiveFunction::CALCULATE; }
+  /**\brief Check if doing Nash game algorithm.*/
+  bool is_nash_game() const { return !doBCD; }
+  
+  /**\brief Do Nash game algorithm.*/
+  void do_nash_game() { doBCD = false; }
+  
+  /**\brief Check if doing block coordinate descent algorithm */
+  bool is_block_coordinate_descent() const { return doBCD; }
+  
+  /**\brief Do block coordinate descent algorithm.*/
+  void do_block_coordinate_descent() { doBCD = true; }
   
   /**\brief Evaluate the objective function without changing any 
    *        accumulated values.
@@ -301,6 +310,9 @@ private:
 
   /** The ObjectiveFunction to evaluate */
   ObjectiveFunction *const OF;
+  
+  /** Nash or BCD */
+  bool doBCD;
   
   /** Nash vs. BCD and state of BCD data */
   ObjectiveFunction::EvalType tempType, firstType, updateType, currUpdateType;

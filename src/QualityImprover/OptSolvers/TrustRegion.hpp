@@ -46,7 +46,7 @@ class TrustRegion : public VertexMover, public PatchSetUser
 {
   public:
   
-    MESQUITE_EXPORT TrustRegion( ObjectiveFunction* of, bool Nash = true );
+    MESQUITE_EXPORT TrustRegion( ObjectiveFunction* of );
     
     MESQUITE_EXPORT virtual ~TrustRegion();
     

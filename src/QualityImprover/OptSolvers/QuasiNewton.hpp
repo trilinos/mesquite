@@ -46,7 +46,7 @@ class QuasiNewton : public VertexMover, public PatchSetUser
 {
   public:
   
-    MESQUITE_EXPORT QuasiNewton( ObjectiveFunction* of, bool Nash = true );
+    MESQUITE_EXPORT QuasiNewton( ObjectiveFunction* of );
     
     MESQUITE_EXPORT virtual ~QuasiNewton();
     

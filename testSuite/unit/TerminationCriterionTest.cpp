@@ -137,7 +137,7 @@ private:
 public:
 
   TerminationCriterionTest()
-    : ofEval( &objFunc, true ) {}
+    : ofEval( &objFunc ) {}
   
     //NUMBER OF ITERATES
   void test_number_of_iterates_inner();

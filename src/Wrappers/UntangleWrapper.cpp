@@ -157,7 +157,7 @@ void UntangleWrapper::run_wrapper( Mesh* mesh,
   inner.add_iteration_limit( NUM_INNER_ITERATIONS );
   
     // construct solver
-  SteepestDescent solver( &objfunc, false );
+  SteepestDescent solver( &objfunc );
   solver.use_element_on_vertex_patch();
   solver.set_inner_termination_criterion( &inner );
   solver.set_outer_termination_criterion( &term );

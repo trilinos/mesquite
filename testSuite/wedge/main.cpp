@@ -258,7 +258,7 @@ bool smooth_mesh( MeshImpl* mesh, Mesh* ref_mesh,
   CPPUNIT_ASSERT(!err);
 
   // Create solver
-  FeasibleNewton solver( &obj_func, true );
+  FeasibleNewton solver( &obj_func );
   CPPUNIT_ASSERT(!err);
   solver.use_global_patch();
 

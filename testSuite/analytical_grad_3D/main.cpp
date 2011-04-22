@@ -87,7 +87,7 @@ int main()
   LPtoPTemplate obj_func(&mean_ratio, 2, err);
   if (err) return 1;
    // creates the steepest descent optimization procedures
-  SteepestDescent pass1( &obj_func, true );
+  SteepestDescent pass1( &obj_func );
   pass1.use_global_patch();
   //if (err) return 1;
   //pass1.set_maximum_iteration(6);

@@ -59,8 +59,8 @@ std::string FeasibleNewton::get_name() const { return "FeasibleNewton"; }
 PatchSet* FeasibleNewton::get_patch_set()
   { return PatchSetUser::get_patch_set(); }
 
-FeasibleNewton::FeasibleNewton(ObjectiveFunction* of, bool Nash)
-  : VertexMover(of, Nash), 
+FeasibleNewton::FeasibleNewton(ObjectiveFunction* of)
+  : VertexMover(of), 
     PatchSetUser(true),
     convTol(1e-6),
     coordsMem(0),

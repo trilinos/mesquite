@@ -216,7 +216,7 @@ bool smooth_mesh( Mesh* mesh, Mesh* ref_mesh,
   CPPUNIT_ASSERT(!err);
 
   // Create solver
-  FeasibleNewton solver( &obj_func, true );
+  FeasibleNewton solver( &obj_func );
   CPPUNIT_ASSERT(!err);
   solver.use_global_patch();
   CPPUNIT_ASSERT(!err);
@@ -310,7 +310,7 @@ bool smooth_mixed_mesh( const char* filename )
   CPPUNIT_ASSERT(!err);
 
   // Create solver
-  FeasibleNewton solver( &obj_func, true );
+  FeasibleNewton solver( &obj_func );
   CPPUNIT_ASSERT(!err);
   solver.use_global_patch();
   CPPUNIT_ASSERT(!err);

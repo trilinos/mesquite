@@ -86,7 +86,7 @@ int main()
   
   // creates the optimization procedures
 //   ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
-  FeasibleNewton pass1( &obj_func, true );
+  FeasibleNewton pass1( &obj_func );
 
   //perform optimization globally
   pass1.use_global_patch();

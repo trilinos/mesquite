@@ -51,8 +51,8 @@ std::string QuasiNewton::get_name() const { return "QuasiNewton"; }
 PatchSet* QuasiNewton::get_patch_set()
   { return PatchSetUser::get_patch_set(); }
 
-QuasiNewton::QuasiNewton( ObjectiveFunction* of, bool Nash )
-  : VertexMover( of, Nash ), PatchSetUser(true), mMemento(0)
+QuasiNewton::QuasiNewton( ObjectiveFunction* of )
+  : VertexMover( of ), PatchSetUser(true), mMemento(0)
 { }
 
 QuasiNewton::~QuasiNewton()

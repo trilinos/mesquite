@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
   
   // creates the steepest descentfeas newt optimization procedures
 //  ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
-  FeasibleNewton pass1( &obj_func, true );
+  FeasibleNewton pass1( &obj_func );
   pass1.use_global_patch();
     if (err) return 1;
   

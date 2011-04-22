@@ -55,7 +55,7 @@ namespace MESQUITE_NS
   class MESQUITE_EXPORT VertexMover : public QualityImprover 
   {
   protected:
-    VertexMover( ObjectiveFunction* OF = NULL, bool Nash = true );
+    VertexMover( ObjectiveFunction* OF = NULL );
     
   public:
     // virtual destructor ensures use of polymorphism during destruction
@@ -75,17 +75,67 @@ namespace MESQUITE_NS
                                    MeshDomain* domain,
                                    const Settings* settings,
                                    MsqError &err);
+
+      /**\brief Do Nash-game type optimization
+       *
+       * Default, opposite of \c do_block_coordinate_descent().
+       */
+    inline
+    void do_nash_game_optimization()
+      { objFuncEval.do_nash_game(); }
+      
+      /**\brief Check if optmizer will do Nash-game type optimization
+       *
+       * Default, opposite of \c is_block_coordinate_descent_optimization().
+       */
+    inline
+    bool is_nash_game_optimization() const
+      { return objFuncEval.is_nash_game(); }
+
+      /**\brief Do block coordinate descent optimization
+       *
+       * Opposite of \c do_nash_game().
+       */
+    inline
+    void do_block_coordinate_descent_optimization()
+      { objFuncEval.do_block_coordinate_descent(); }
+      
+      /**\brief Check if optmizer will do block coordinate descent type optimization
+       *
+       * Default, opposite of \c is_nash_game_optimization().
+       */
+    inline
+    bool is_block_coordinate_descent_optimization() const
+      { return objFuncEval.is_block_coordinate_descent(); }
+    
+      /**\brief Use Jacobi iteration for optimization
+       *
+       * Opposite of \c do_gauss_optimization()
+       */
     inline
     void do_jacobi_optimization()
       { jacobiOpt = true; }
 
+      /**\brief Check if optimization will use Jacobi iteration
+       *
+       * Opposite of \c is_gauss_optimization()
+       */
     inline
     bool is_jacobi_optimization() const 
       { return jacobiOpt; }
+    
+      /**\brief Use Gauss-Seidel iteration for optimization
+       *
+       * Default, opposite of \c do_jacobi_optimization()
+       */
     inline
     void do_gauss_optimization()
       { jacobiOpt = false; }
 
+      /**\brief Check if optimization will use Gauss-Seidel iteration
+       *
+       * Default, opposite of \c is_jacobi_optimization()
+       */
     inline
     bool is_gauss_optimization() const 
       { return !jacobiOpt; }
