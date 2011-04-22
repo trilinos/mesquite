@@ -19,7 +19,7 @@ UG_SRCS = users-guide.tex \
 	opt_strategies.tex \
 	plan.tex \
         parallel.tex \
-	solver_post.tex \
+	debugging.tex \
 	support.tex \
 	team.tex \
 	tmp.tex \
@@ -32,6 +32,12 @@ UG_SRCS = users-guide.tex \
         parallel_mesh.eps \
 	generalized_optimization.eps \
 	patches-horiz.eps \
+	iterplot.eps \
+	mesh_gpt.eps \
+	mesh_vtk.eps \
+	mesh.eps \
+	meshqual.eps \
+	meshqual3d.eps \
         mesquite.bib
 
 EXTRA_DIST = $(UG_SRCS)
