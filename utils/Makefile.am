@@ -11,7 +11,7 @@ libmsqutil_la_SOURCES = CLArgs.cpp CLArgs.hpp \
 vtkrandom_SOURCES = randomize.cpp domain.hpp domain.cpp
 msqshape_SOURCES = shape-improve.cpp domain.hpp domain.cpp
 vtkxform_SOURCES = transform.cpp
-msqquality_SOURCES = quality.cpp
+msqquality_SOURCES = quality.cpp domain.hpp domain.cpp
 
 vtkrandom.1: vtkrandom$(EXEEXT)
 	./$< -M > $@ || touch $@

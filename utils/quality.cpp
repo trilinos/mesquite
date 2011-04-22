@@ -12,6 +12,7 @@
 //#include "TetLagrangeShape.hpp"
 //#include "TriLagrangeShape.hpp"
 #include "ElementMaxQM.hpp"
+#include "domain.hpp"
 
 using namespace Mesquite;
 
@@ -31,6 +32,7 @@ int main( int argc, char* argv[] )
   args.toggle_flag( 'f', "Assess quality only for elements with at least one free vertex", &freeonly );
   args.add_required_arg( "input_file" );
   args.add_optional_arg( "output_file" );
+  add_domain_args( args );
   std::vector<std::string> files;
   if (!args.parse_options( argc, argv, files, std::cerr )) {
     args.print_usage( std::cerr );
@@ -45,6 +47,8 @@ int main( int argc, char* argv[] )
                     << "Failed to read file: " << files.front() << std::endl;
     return 2;
   }
+  
+  MeshDomain* domain = process_domain_args( &mesh );
 
   QualityAssessor qa( true, freeonly.value(), "INVERTED" );
   IdealWeightInverseMeanRatio imr;
@@ -69,7 +73,8 @@ int main( int argc, char* argv[] )
 //  q.set_mapping_function( &tet );
   
   q.add_quality_assessor( &qa, err );
-  q.run_instructions( &mesh, err );
+  q.run_instructions( &mesh, domain, err );
+  delete domain;
   if (err) {
     std::cerr << err << std::endl;
     return 3;
