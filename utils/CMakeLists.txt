@@ -71,6 +71,8 @@ IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
     NOEXEPREFIX
     NOEXESUFFIX
     SOURCES quality.cpp
+            domain.hpp
+            domain.cpp
     )
 
 ELSE()
