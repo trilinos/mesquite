@@ -121,7 +121,7 @@ void DeformingDomainWrapper::run_wrapper( Mesh* mesh,
   TShapeSize3DNB1 mu_3d_ss;
   TMixed mu_ss( &mu_2d_ss, &mu_3d_ss );
   TShapeSizeOrientNB1 mu_sso;
-  TMetric* mu;
+  TMetric* mu = 0;
   switch (metricType) {
     case SHAPE:             mu = &mu_s  ; break;
     case SHAPE_SIZE:        mu = &mu_ss ; break;
