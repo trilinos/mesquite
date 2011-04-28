@@ -174,7 +174,7 @@ int run_global_smoother( Mesh* mesh, MsqError& err )
   if (err) return 1;
   
   // creates the feas newt optimization procedures
-  FeasibleNewton* pass1 = new FeasibleNewton( obj_func, true );
+  FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
   pass1->use_global_patch();
   if (err) return 1;
   
