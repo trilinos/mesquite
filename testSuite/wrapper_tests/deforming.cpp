@@ -45,10 +45,7 @@
 
 using namespace Mesquite;
 
-#define _STRINGIFY(A) #A
-#define STRINGIFY(A) _STRINGIFY(A)
-
-const char INPUT_FILE[] = STRINGIFY(SRCDIR) "/sph-10-zsquare.vtk";
+const char INPUT_FILE[] = SRCDIR "sph-10-zsquare.vtk";
 //const char INPUT_FILE[] = "test.vtk";
 const double Z = 7.0;
 // size of new domain

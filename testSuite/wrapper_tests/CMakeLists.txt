@@ -5,5 +5,3 @@ MSQ_ADD_TEST( shape_improver_wrapper_test    shape_improver    shape_improver.cp
 MSQ_ADD_TEST( size_adapt_shape_wrapper_test  size_adapt_shape  size_adapt_shape.cpp )
 MSQ_ADD_TEST( untangle_wrapper_test          untangle          untangle.cpp    )
 MSQ_ADD_TEST( viscous_cdf_wrapper_test       viscous_cfd       viscous_cfd.cpp )
-
-set_source_files_properties( deforming.cpp COMPILE_FLAGS "-DSRCDIR=${CMAKE_CURRENT_SOURCE_DIR}" )

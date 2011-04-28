@@ -1,6 +1,6 @@
 @TEST_MAKE_INCLUDE@
 LDADD = $(top_builddir)/src/libmesquite.la
-AM_CPPFLAGS += "-DSRCDIR=$(srcdir)"
+AM_CPPFLAGS += '-DSRCDIR="$(srcdir)/"'
 
 check_PROGRAMS = deforming \
 		 laplacian \

@@ -1,5 +1,4 @@
 
-
 IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
   INCLUDE(PackageLibraryMacros)
   INCLUDE(PackageAddExecutable)
@@ -12,16 +11,15 @@ ENDIF()
 SET(HEADERS "")
 SET(SOURCES "")
 
-APPEND_SET(HEADERS
-  CLArgs.hpp
-  CLArgFlag.hpp
-  ManPage.hpp
-  )
-
 APPEND_SET(SOURCES
   CLArgs.cpp
   CLArgFlag.cpp
   ManPage.cpp
+  CLArgs.hpp
+  CLArgFlag.hpp
+  ManPage.hpp
+  domain.hpp
+  domain.cpp
   )
 
 IF (TPL_ENABLE_MPI)
@@ -46,8 +44,6 @@ IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
     NOEXEPREFIX
     NOEXESUFFIX
     SOURCES randomize.cpp
-            domain.hpp
-            domain.cpp
     )
 
   PACKAGE_ADD_EXECUTABLE(
@@ -55,8 +51,6 @@ IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
     NOEXEPREFIX
     NOEXESUFFIX
     SOURCES shape-improve.cpp
-            domain.hpp
-            domain.cpp
     )
 
   PACKAGE_ADD_EXECUTABLE(
@@ -90,11 +84,11 @@ TARGET_LINK_LIBRARIES( msqshape   mesquite msqutil )
 TARGET_LINK_LIBRARIES( vtkxform   mesquite msqutil )
 TARGET_LINK_LIBRARIES( msqquality mesquite msqutil )
 
-#IF(${PACKAGE_NAME}_ENABLE_SHARED)
-#  SET( MESQUITE_UTIL_DEFINES "${MESQUITE_DEFINES}" )
-#ELSE()
-#  SET( MESQUITE_UTIL_DEFINES "${MESQUITE_DEFINES} -DMESQUITE_STATIC_LIB" )
-#ENDIF()
+IF(${PACKAGE_NAME}_ENABLE_SHARED)
+  SET( MESQUITE_UTIL_DEFINES "${MESQUITE_DEFINES}" )
+ELSE()
+  SET( MESQUITE_UTIL_DEFINES "${MESQUITE_DEFINES} -DMESQUITE_STATIC_LIB" )
+ENDIF()
 SET( UTIL_SOURCES 
      CLArgFlag.cpp 
      CLArgs.cpp 
@@ -104,4 +98,4 @@ SET( UTIL_SOURCES
      randomize.cpp
      shape-improve.cpp
      transform.cpp )
-#SET_SOURCE_FILES_PROPERTIES( ${UTIL_SOURCES} COMPILE_FLAGS ${MESQUITE_UTIL_DEFINES} )
+SET_SOURCE_FILES_PROPERTIES( ${UTIL_SOURCES} COMPILE_FLAGS ${MESQUITE_UTIL_DEFINES} )
