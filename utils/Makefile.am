@@ -1,5 +1,5 @@
 @UTIL_MAKE_INCLUDE@
-LDADD = $(top_builddir)/src/libmesquite.la libmsqutil.la
+LDADD = libmsqutil.la $(top_builddir)/src/libmesquite.la
 bin_PROGRAMS = vtkrandom vtkxform msqshape msqquality
 man1_MANS = vtkrandom.1 vtkxform.1 msqshape.1 msqquality.1
 noinst_LTLIBRARIES = libmsqutil.la

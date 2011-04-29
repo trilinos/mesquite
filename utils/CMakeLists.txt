@@ -79,10 +79,10 @@ ELSE()
 
 ENDIF()
 
-TARGET_LINK_LIBRARIES( vtkrandom  mesquite msqutil )
-TARGET_LINK_LIBRARIES( msqshape   mesquite msqutil )
-TARGET_LINK_LIBRARIES( vtkxform   mesquite msqutil )
-TARGET_LINK_LIBRARIES( msqquality mesquite msqutil )
+TARGET_LINK_LIBRARIES( vtkrandom  msqutil mesquite )
+TARGET_LINK_LIBRARIES( msqshape   msqutil mesquite )
+TARGET_LINK_LIBRARIES( vtkxform   msqutil mesquite )
+TARGET_LINK_LIBRARIES( msqquality msqutil mesquite )
 
 IF(${PACKAGE_NAME}_ENABLE_SHARED)
   SET( MESQUITE_UTIL_DEFINES "${MESQUITE_DEFINES}" )
