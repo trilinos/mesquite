@@ -66,7 +66,7 @@ class DomainClassifier : public MeshDomain
      *\param array_length Length of 'domain_array' and 'id_array'
      */
     static MESQUITE_EXPORT
-	void classify_by_tag( DomainClassifier& result,
+    void classify_by_tag( DomainClassifier& result,
                           Mesh* mesh,
                           const char* tag_name,
                           MeshDomain** domain_array,
@@ -97,7 +97,7 @@ class DomainClassifier : public MeshDomain
      *\param array_length Length of 'domain_array' and 'dimension_array'
      */
     MESQUITE_EXPORT static
-	void classify_skin_geometrically( DomainClassifier& result,
+    void classify_skin_geometrically( DomainClassifier& result,
                                       Mesh* mesh,
                                       double tolerance,
                                       MeshDomain** domain_array,
@@ -176,38 +176,38 @@ class DomainClassifier : public MeshDomain
     
     MESQUITE_EXPORT virtual ~DomainClassifier();
     
-	MESQUITE_EXPORT
-	virtual void snap_to(Mesh::VertexHandle entity_handle,
-                         Vector3D &coordinate) const;
+    MESQUITE_EXPORT
+    virtual void snap_to( Mesh::VertexHandle entity_handle,
+                          Vector3D &coordinate) const;
     
-	MESQUITE_EXPORT
-    virtual void vertex_normal_at(Mesh::VertexHandle entity_handle,
-                                  Vector3D &coordinate) const;
-	MESQUITE_EXPORT
-    virtual void element_normal_at(Mesh::ElementHandle entity_handle,
-                                  Vector3D &coordinate) const;
+    MESQUITE_EXPORT
+    virtual void vertex_normal_at( Mesh::VertexHandle entity_handle,
+                                   Vector3D &coordinate) const;
+    MESQUITE_EXPORT
+    virtual void element_normal_at( Mesh::ElementHandle entity_handle,
+                                    Vector3D &coordinate) const;
                           
-	MESQUITE_EXPORT
+    MESQUITE_EXPORT
     virtual void vertex_normal_at( const Mesh::VertexHandle* handles,
                                    Vector3D coordinates[],
                                    unsigned count,
                                    MsqError& err ) const;
                             
-	MESQUITE_EXPORT
+    MESQUITE_EXPORT
     virtual void closest_point( Mesh::VertexHandle handle,
                                 const Vector3D& position,
                                 Vector3D& closest,
                                 Vector3D& normal,
                                 MsqError& err ) const;
                                 
-	MESQUITE_EXPORT
+    MESQUITE_EXPORT
     virtual void domain_DoF( const Mesh::VertexHandle* handle_array,
                              unsigned short* dof_array,
                              size_t num_handles,
                              MsqError& err ) const;
     
       /**\brief Clear all data, including MeshDomain list */
-	MESQUITE_EXPORT
+    MESQUITE_EXPORT
     void clear() {
       vertexList.clear();
       elementList.clear();
@@ -226,11 +226,11 @@ class DomainClassifier : public MeshDomain
     MeshDomain* find_element_domain( Mesh::ElementHandle element ) const
       { return find_domain( element, elementList ); }
       
-	MESQUITE_EXPORT
+    MESQUITE_EXPORT
     void delete_sub_domains(bool yesno)
       { deleteSubDomains = yesno; }
 
-	MESQUITE_EXPORT
+    MESQUITE_EXPORT
     void delete_all_sub_domains();
     
   private:
