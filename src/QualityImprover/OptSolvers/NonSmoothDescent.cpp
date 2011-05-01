@@ -44,7 +44,6 @@ namespace MESQUITE_NS {
 
 const double EPSILON = 1e-16;
 const int MSQ_MAX_OPT_ITER = 20;
-const int MAX_NUM_ELEMENTS = 150;
 
 enum Rotate {
   COUNTERCLOCKWISE = 1,
@@ -152,7 +151,7 @@ void NonSmoothDescent::find_plane_points( Direction dir1,
                                           MsqError& )
 {
     int i;
-    int ind[50], num_min, num_max;
+    int num_min, num_max;
     Rotate rotate=CLOCKWISE;
     int num_rotated=0;
     double pt_1, pt_2;
@@ -162,6 +161,16 @@ void NonSmoothDescent::find_plane_points( Direction dir1,
     double max_inv_slope=0;
     double inv_origin_slope=0;
     const int num_vec = vec.size();
+    const int auto_ind_size = 50;
+    int auto_ind[auto_ind_size];
+    std::vector<int> heap_ind;
+    int* ind;
+    if (num_vec <= auto_ind_size)
+      ind = auto_ind;
+    else {
+      heap_ind.resize(num_vec);
+      ind = &heap_ind[0];
+    }
 
     status = MSQ_CHECK_BOTTOM_UP;
     /* find the minimum points in dir1 starting at -1 */
@@ -473,7 +482,8 @@ void NonSmoothDescent::minmax_opt(PatchData &pd, MsqError &err)
       MSQ_PRINT(3)("Done copying original function to function\n");
 
       this->find_active_set(mFunction, mActive);
-      prevActiveValues[0] = mActive.true_active_value;
+      prevActiveValues.clear();
+      prevActiveValues.push_back( mActive.true_active_value );
 
      /* check for equilibrium point */
      /* compute the gradient */
@@ -540,7 +550,7 @@ void NonSmoothDescent::minmax_opt(PatchData &pd, MsqError &err)
 	    }
 
 	    /* record the values */
-	    prevActiveValues[iterCount] = mActive.true_active_value;
+            prevActiveValues.push_back( mActive.true_active_value );
 
 	} else {
 	    /* decrease the iteration count by one */
@@ -1429,7 +1439,7 @@ void NonSmoothDescent::compute_alpha(MsqError &/*err*/)
 	  }
 	  if ((alpha_i > minStepSize ) && (fabs(alpha_i) < fabs(mAlpha))) {
 	    mAlpha = fabs(alpha_i); 
-            MSQ_PRINT(3)("Setting alpha %lu %g\n",i,alpha_i);
+            MSQ_PRINT(3)("Setting alpha %lu %g\n",(unsigned long)i,alpha_i);
 	  }
           if ((alpha_i > 0) && (alpha_i < min_positive_value)) {
             min_positive_value = alpha_i;
@@ -1458,7 +1468,7 @@ void NonSmoothDescent::print_active_set( const ActiveSet& active_set, const std:
     if (active_set.active_ind.empty()) MSQ_DBGOUT(3)<< "No active values\n";
     /* print the active set */
     for (size_t i = 0; i < active_set.active_ind.size(); i++) {
-     MSQ_PRINT(3)("Active value %lu:   %f \n", i+1,func[active_set.active_ind[i]]);
+     MSQ_PRINT(3)("Active value %lu:   %f \n", (unsigned long)i+1,func[active_set.active_ind[i]]);
     }
 }
 
@@ -1497,7 +1507,7 @@ void NonSmoothDescent::init_opt(PatchData& pd, MsqError &err)
     MSQ_PRINT(3)("  Initialized G\n");
  
     prevActiveValues.clear();
-    prevActiveValues.resize( qmHandles.size(), 0.0 );
+    prevActiveValues.reserve(32);
     MSQ_PRINT(3)("  Initialized prevActiveValues\n");
 }
 
