@@ -604,10 +604,10 @@ MsqMeshEntity::inverted_jacobian_3d( PatchData& pd, NodeSet nodes, Sample sample
   MSQ_ERRZERO(err);
   //const double size_eps_sqr = sqr_Frobenius( J ) * DBL_EPSILON;
   const double d = det(J);
-  // determinant has units of volume, norm squared has units of area
-  // so det^2 and size_eps_sqr^3 both have units of length^6
-  //return d < 0 || d * d < size_eps_sqr * size_eps_sqr * size_eps_sqr;
-  return d < DBL_EPSILON;
+  double l1 = J.column(0) % J.column(0);
+  double l2 = J.column(1) % J.column(1);
+  double l3 = J.column(2) % J.column(2);
+  return d < 0 || d*d < DBL_EPSILON*DBL_EPSILON * l1*l2*l3;
 }
 
 bool 
@@ -622,19 +622,21 @@ MsqMeshEntity::inverted_jacobian_2d( PatchData& pd, NodeSet nodes, Sample sample
   const MappingFunction2D* mf = pd.get_mapping_function_2D( mType );
   mf->jacobian( pd, idx, nodes, sample, junk2, junk, junk3, J, err );
   MSQ_ERRZERO(err);
-    
-  Vector3D norm;
-  pd.get_domain_normal_at_sample( pd.get_element_index(this), sample, norm, err );
-  MSQ_ERRZERO(err);
-  
-  const MsqVector<3> N(&norm[0]);
   const MsqVector<3> cross = J.column(0) * J.column(1);
-  //const double size_sqr = sqr_Frobenius( J );
-  const double dot = cross % N;
-  // cross has units of area, surface norm is unitless (unit vector), 
-  // so dot has units of area and so does the matrix norm squared
-  //return dot < size_sqr * DBL_EPSILON;
-  return dot < DBL_EPSILON;
+
+  if (pd.domain_set()) {
+    Vector3D norm;
+    pd.get_domain_normal_at_sample( pd.get_element_index(this), sample, norm, err );
+    MSQ_ERRZERO(err);
+  
+    const MsqVector<3> N(&norm[0]);
+    if (cross % N < 0.0)
+      return true;
+  }
+  
+  const double l1 = J.column(0) % J.column(0);
+  const double l2 = J.column(1) % J.column(1);
+  return cross % cross < DBL_EPSILON*DBL_EPSILON * l1*l2;
 }
 
 NodeSet
