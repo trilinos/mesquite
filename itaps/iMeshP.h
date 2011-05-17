@@ -1,18 +1,18 @@
 
-#ifndef iMeshP_H
-#define iMeshP_H
+#ifndef _ITAPS_iMeshP
+#define _ITAPS_iMeshP
 
 #include "iMesh.h"
 #include "iMeshP_protos.h"
-#define MPICH_SKIP_MPICXX
 #include <mpi.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/**
+*  \defgroup imeshp IMeshP:  ITAPS Parallel Mesh Interface 
 
-/** \mainpage
 iMeshP.h -- ITAPS Parallel Mesh Interface
 
 Release 1.0; Updated April 2009
@@ -80,7 +80,7 @@ iMesh concepts that are relevant to the iMeshP interface.
    subsets; like a "mesh," it does not imply a serial or parallel 
    implementation.
 -  An application may use one or more meshes.  
--  A paritition can create subsets of entities from a mesh.
+-  A partition can create subsets of entities from a mesh.
 -  Meshes can be subdivided by one or more partitions.
 -  Partitions contain parts.  Parts contain the subsets of entities in the
    partition.
@@ -202,6 +202,8 @@ iMesh concepts that are relevant to the iMeshP interface.
    the mesh operations that were requested.  If non-blocking calls are used,
    appropriate calls to iMeshP "wait" or "poll" functions must be used to
    handle and satisfy requests.
+*
+*\{
 */
 
 /*------------------------------------------------------------------------*/
@@ -209,6 +211,9 @@ iMesh concepts that are relevant to the iMeshP interface.
 /*             Definitions needed in iMeshP                               */
 /*------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------*/
+/**\defgroup imeshp_defs Type Definitions
+ *\{
+ */
 /** Definition of Partition Handle type for iMeshP. */
 typedef struct iMeshP_PartitionHandle_Private* iMeshP_PartitionHandle;
 
@@ -227,13 +232,21 @@ typedef unsigned iMeshP_Part;
 /** Types for classifying entities within a part. */
 enum iMeshP_EntStatus 
 {
-  iMeshP_INTERNAL, /**< An owned entity that is not on a part boundary. */
+  iMeshP_EntStatus_MIN = 0,
+  iMeshP_INTERNAL=iMeshP_EntStatus_MIN, /**< An owned entity that is not on a part boundary. */
   iMeshP_BOUNDARY, /**< A shared entity on a part boundary. */
-  iMeshP_GHOST     /**< An entity copy that is not a shared boundary entity. */
+  iMeshP_GHOST,    /**< An entity copy that is not a shared boundary entity. */
+  iMeshP_EntStatus_MAX = iMeshP_GHOST
 };
 
 /** Part ID number indicating information should be returned about all parts. */
 #define iMeshP_ALL_PARTS -1
+
+/**\} */  /* end group imeshp_defs */
+
+/**\defgroup imeshp_partition Partition Functionality
+ *\{
+ */
 
 /*------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------*/
@@ -253,7 +266,7 @@ enum iMeshP_EntStatus
  *  For serial use, the communicator may be MPI_COMM_SELF or communicator may
  *  be NULL.
  *
- *  COMMUNICATION:  Collective.
+ *  \xrefitem comm "Communication" "Communication" Collective
  * 
  *  \param  instance         (In)  Mesh instance to contain the partition.
  *  \param  communicator     (In)  Communicator to be used for parallel 
@@ -275,7 +288,7 @@ void iMeshP_createPartitionAll(
  *  destroy the partition associated with the handle.
  *  Note that the partition handle is not invalidated upon return.
  *
- *  COMMUNICATION:  Collective.
+ *  \xrefitem comm "Communication" "Communication" Collective.
  * 
  *  \param  instance         (In)  Mesh instance containing the partition.
  *  \param  partition        (In)  The partition to be destroyed.
@@ -293,7 +306,7 @@ void iMeshP_destroyPartitionAll(
  *  Given a partition handle, return the communicator associated with
  *  it during its creation by iMeshP_createPartitionAll.
  *
- *  COMMUNICATION:  None
+ *  \xrefitem comm "Communication" "Communication" None
  *
  *  \param  instance         (In)  Mesh instance containing the partition.
  *  \param  partition        (In)  The partition being queried.
@@ -308,37 +321,13 @@ void iMeshP_getPartitionComm(
     
 
 
-/**  \brief Update a partition after parts have been added.
- * 
- *  This function gives the implementation an opportunity to locally store info
- *  about the partition so that queries on the partition can be 
- *  performed without synchronous communication. 
- *  This function must be called after all parts have been added to the
- *  partition and after changes to the partition (e.g., due to load balancing).
- *  Values that are precomputed by syncPartitionAll include:
- *  -  the total number of parts in a partition;
- *  -  the mapping between part IDs and processes; and
- *  -  updated remote entity handle information.
- *
- *  COMMUNICATION:  Collective.
- *
- *  \param  instance         (In)  Mesh instance containing the partition.
- *  \param  partition        (In)  The partition being updated.
- *  \param  err              (Out) Error code.
- */
-void iMeshP_syncPartitionAll(
-            iMesh_Instance instance,
-            iMeshP_PartitionHandle partition,
-            int *err); 
-
-
 
 /**  \brief Return the number of partitions associated with a mesh instance.
  *
  *  Given a mesh instance, return the number of partition handles
  *  associated with the mesh instance.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance         (In)  Mesh instance containing the partitions.
  *  \param  num_partitions   (Out) Number of partitions associated with the
@@ -357,7 +346,7 @@ void iMeshP_getNumPartitions(
  *  Given a mesh instance, return all partition handles
  *  associated with the mesh instance.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance                    (In)     Mesh instance containing the 
  *                                               partitions.
@@ -379,12 +368,96 @@ void iMeshP_getPartitions(
 
 
 
+/**\} */  /* end group imeshp_partition */
+
+/**\defgroup imeshp_partnmod Partition Modification
+ *\{
+ */
+
+
+/** \brief Create a new part in a partition.
+ *
+ *  Given a partition handle, create a new part and add it to the
+ *  partition on the process invoking the creation.  Return the part handle
+ *  for the new part.
+ *
+ *  \xrefitem comm "Communication" "Communication" None.
+ *
+ *  \param  instance          (In)  Mesh instance containing the partition.
+ *  \param  partition         (In)  The partition being updated.
+ *  \param  part              (Out) The newly created part.
+ *  \param  err               (Out) Error code.
+ */
+void iMeshP_createPart(
+            iMesh_Instance instance,
+            iMeshP_PartitionHandle partition,
+            iMeshP_PartHandle *part,
+            int *err);
+ 
+
+
+/** \brief  Remove a part from a partition.
+ *
+ *  Given a partition handle and a part handle, remove the part
+ *  from the partition and destroy the part.  Note that the part handle
+ *  is not invalidated by this function.
+ *
+ *  \xrefitem comm "Communication" "Communication" None.
+ *
+ *  \param  instance          (In)  Mesh instance containing the partition.
+ *  \param  partition         (In)  The partition being updated.
+ *  \param  part              (In)  The part to be removed.
+ *  \param  err               (Out) Error code.
+ */
+void iMeshP_destroyPart(
+            iMesh_Instance instance,
+            iMeshP_PartitionHandle partition,
+            iMeshP_PartHandle part,
+            int *err);
+
+/**  \brief Update a partition after parts have been added.
+ * 
+ *  This function gives the implementation an opportunity to locally store info
+ *  about the partition so that queries on the partition can be 
+ *  performed without synchronous communication. 
+ *  This function must be called after all parts have been added to the
+ *  partition and after changes to the partition (e.g., due to load balancing).
+ *  Values that are precomputed by syncPartitionAll include:
+ *  -  the total number of parts in a partition;
+ *  -  the mapping between part IDs and processes; and
+ *  -  updated remote entity handle information.
+ *
+ *  \xrefitem comm "Communication" "Communication" Collective.
+ *
+ *  \param  instance         (In)  Mesh instance containing the partition.
+ *  \param  partition        (In)  The partition being updated.
+ *  \param  err              (Out) Error code.
+ */
+void iMeshP_syncPartitionAll(
+            iMesh_Instance instance,
+            iMeshP_PartitionHandle partition,
+            int *err); 
+
+/**\} */  /* end group imeshp_partnmod */
+
+/**\defgroup imeshp_part Part Functionality
+ *\{
+ */
+
+/*------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*/
+/*                        Part Functionality                              */
+/*------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*/
+
+
+
 /** \brief Return the global number of parts in a partition.
  *
  *  Given a partition handle, return the total number of parts 
  *  in the partition across all processes in the partition's communicator.
  *
- *  COMMUNICATION:  None++.
+ *  \xrefitem comm "Communication" "Communication" None++.
  *
  *  \param  instance         (In)  Mesh instance containing the partition.
  *  \param  partition        (In)  The partition being queried.
@@ -404,7 +477,7 @@ void iMeshP_getNumGlobalParts(
  *  Given a partition handle, return the number of local (on-process) parts 
  *  in the partition.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance         (In)  Mesh instance containing the partition.
  *  \param  partition        (In)  The partition being queried.
@@ -425,7 +498,7 @@ void iMeshP_getNumLocalParts(
  *  Given a partition handle, return the 
  *  part handles for the local (on-process) parts in the partition.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance               (In)     Mesh instance containing the 
  *                                          partition.
@@ -454,7 +527,7 @@ void iMeshP_getLocalParts(
  *  (with respect to the partition's communicator) of the 
  *  process that owns the part. The part may be local or remote.
  *
- *  COMMUNICATION:  None++.
+ *  \xrefitem comm "Communication" "Communication" None++.
  *
  *  \param  instance         (In)  Mesh instance containing the partition.
  *  \param  partition        (In)  The partition being queried.
@@ -477,7 +550,7 @@ void iMeshP_getRankOfPart(
  *  (with respect to the partition's communicator) of the 
  *  process that owns each part. The parts may be local or remote.
  *
- *  COMMUNICATION:  None++.
+ *  \xrefitem comm "Communication" "Communication" None++.
  *
  *  \param  instance         (In)     Mesh instance containing the partition.
  *  \param  partition        (In)     The partition being queried.
@@ -510,7 +583,7 @@ void iMeshP_getRankOfPartArr(
  *  communication and, thus, must be called by all processes in the partition's 
  *  communicator.
  * 
- *  COMMUNICATION:  Collective.
+ *  \xrefitem comm "Communication" "Communication" Collective.
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -540,7 +613,7 @@ void iMeshP_getNumOfTypeAll(
  *  communication and, thus, must be called by all processes in the partition's 
  *  communicator.
  * 
- *  COMMUNICATION:  Collective.
+ *  \xrefitem comm "Communication" "Communication" Collective.
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -560,62 +633,13 @@ void iMeshP_getNumOfTopoAll(
             int *num_topo, 
             int *err);
 
-
-/*------------------------------------------------------------------------*/
-/*------------------------------------------------------------------------*/
-/*                        Part Functionality                              */
-/*------------------------------------------------------------------------*/
-/*------------------------------------------------------------------------*/
-
-/** \brief Create a new part in a partition.
- *
- *  Given a partition handle, create a new part and add it to the
- *  partition on the process invoking the creation.  Return the part handle
- *  for the new part.
- *
- *  COMMUNICATION:  None.
- *
- *  \param  instance          (In)  Mesh instance containing the partition.
- *  \param  partition         (In)  The partition being updated.
- *  \param  part              (Out) The newly created part.
- *  \param  err               (Out) Error code.
- */
-void iMeshP_createPart(
-            iMesh_Instance instance,
-            iMeshP_PartitionHandle partition,
-            iMeshP_PartHandle *part,
-            int *err);
- 
-
-
-/** \brief  Remove a part from a partition.
- *
- *  Given a partition handle and a part handle, remove the part
- *  from the partition and destroy the part.  Note that the part handle
- *  is not invalidated by this function.
- *
- *  COMMUNICATION:  None.
- *
- *  \param  instance          (In)  Mesh instance containing the partition.
- *  \param  partition         (In)  The partition being updated.
- *  \param  part              (In)  The part to be removed.
- *  \param  err               (Out) Error code.
- */
-void iMeshP_destroyPart(
-            iMesh_Instance instance,
-            iMeshP_PartitionHandle partition,
-            iMeshP_PartHandle part,
-            int *err);
-
-
-
 /** \brief Obtain a part ID from a part handle.
  *
  *  Given a partition handle and a local part handle, return the part ID.
  *  If the part handle is not a valid part handle for a local part,
  *  an error is returned.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -640,7 +664,7 @@ void iMeshP_getPartIdFromPartHandle(
  *  If any part handle is not a valid part handle for a local part,
  *  an error is returned.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance            (In)     Mesh instance containing the partition.
  *  \param  partition           (In)     The partition being queried.
@@ -671,7 +695,7 @@ void iMeshP_getPartIdsFromPartHandlesArr(
  *  associated with the part
  *  if the part is local; otherwise, return an error code.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -696,7 +720,7 @@ void iMeshP_getPartHandleFromPartId(
  *  If any part ID is not a valid part ID for a local part,
  *  an error is returned.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance                (In)     Mesh instance containing the 
  *                                           partition.
@@ -724,6 +748,13 @@ void iMeshP_getPartHandlesFromPartsIdsArr(
 
 
 
+/**\} */  /* end group imeshp_part */
+
+/**\defgroup imeshp_bound Part Boundaries
+ *\{
+ */
+
+
 
 /*------------------------------------------------------------------------*/
 /*                        Part Boundaries                                 */
@@ -737,7 +768,7 @@ void iMeshP_getPartHandlesFromPartsIdsArr(
  *  the given part or (2) own entities of the given entity type that are 
  *  copied on the given part).
  *
- *  COMMUNICATION:  None++.
+ *  \xrefitem comm "Communication" "Communication" None++.
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -766,7 +797,7 @@ void iMeshP_getNumPartNbors(
  *  the given part or (2) own entities of the given entity type that are 
  *  copied on the given part).
  *
- *  COMMUNICATION:  None++.
+ *  \xrefitem comm "Communication" "Communication" None++.
  *
  *  \param  instance                  (In)     Mesh instance containing the 
  *                                             partition.
@@ -808,7 +839,7 @@ void iMeshP_getNumPartNborsArr(
  *  the given part or (2) own entities of the given entity type that are 
  *  copied on the given part).
  *
- *  COMMUNICATION:  None++.
+ *  \xrefitem comm "Communication" "Communication" None++.
  *
  *  \param  instance                 (In)     Mesh instance containing the 
  *                                            partition.
@@ -848,7 +879,7 @@ void iMeshP_getPartNbors(
  *  the given part or (2) own entities of the given entity type that are 
  *  copied on the given part).
  *
- *  COMMUNICATION:  None++.
+ *  \xrefitem comm "Communication" "Communication" None++.
  *
  *  \param  instance                 (In)     Mesh instance containing the 
  *                                            partition.
@@ -895,7 +926,7 @@ void iMeshP_getPartNborsArr(
  *  target part ID, return the number of entities of the given type and/or
  *  topology on the part boundary shared with the target part.  
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -929,7 +960,7 @@ void iMeshP_getNumPartBdryEnts(
  *  target part ID, return the entity handles of entities of the given type 
  *  and/or topology on the part boundary shared with the target part.  
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance                 (In)     Mesh instance containing the 
  *                                            partition.
@@ -979,7 +1010,7 @@ void iMeshP_getPartBdryEnts(
  *  iMesh_getNextEntIter, iMesh_resetEntIter, and iMesh_endEntIter,
  *  respectively.  
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  * 
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -1001,7 +1032,7 @@ void iMeshP_initPartBdryEntIter(
             int entity_type, 
             int entity_topology, 
             iMeshP_Part target_part_id, 
-            iMesh_EntityIterator* entity_iterator, 
+            iBase_EntityIterator* entity_iterator, 
             int *err); 
 
 
@@ -1017,7 +1048,7 @@ void iMeshP_initPartBdryEntIter(
  *  iMesh_getNextEntArrIter, iMesh_resetEntArrIter, and iMesh_endEntArrIter,
  *  respectively.  
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  * 
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -1042,8 +1073,15 @@ void iMeshP_initPartBdryEntArrIter(
             int entity_topology, 
             int array_size, 
             iMeshP_Part target_part_id, 
-            iMesh_EntityArrIterator* entity_iterator, 
+            iBase_EntityArrIterator* entity_iterator, 
             int *err); 
+
+
+/**\} */  /* end group imeshp_bound */
+
+/**\defgroup imeshp_set Parts and Sets
+ *\{
+ */
 
 
 /*------------------------------------------------------------------------*/
@@ -1058,7 +1096,7 @@ void iMeshP_initPartBdryEntArrIter(
  *  This function is similar to iMesh_getNumOfType, but it also restricts
  *  the returned data with respect to its existence in the given part.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -1090,7 +1128,7 @@ void iMeshP_getNumOfType(
  *  This function is similar to iMesh_getNumOfTopo, but it also restricts
  *  the returned data with respect to its existence in the given part.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -1122,17 +1160,17 @@ void iMeshP_getNumOfTopo(
  * - For each entity in the first list, the adjacent entities,
  *    specified as indices into the second list.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance              (In)     Mesh instance containing the 
  *                                         partition.
  *  \param  partition             (In)     The partition being queried.
  *  \param  part                  (In)     The part being queried.
  *  \param entity_set_handle      (In)     The set being queried
- *  \param entity_type_requestor  (In)     If not iBase_ALL_TYPES, act only 
+ *  \param entity_type_requester  (In)     If not iBase_ALL_TYPES, act only 
  *                                         on the subset of entities with
  *                                         the specified type.
- *  \param entity_topology_requestor (In)  If not iMesh_ALL_TOPOLOGIES, act 
+ *  \param entity_topology_requester (In)  If not iMesh_ALL_TOPOLOGIES, act 
  *                                         only on the subset of entities with
  *                                         the specified topology.
  *  \param entity_type_requested  (In)     The type of the adjacent entities
@@ -1163,8 +1201,8 @@ void iMeshP_getAdjEntIndices(
             iMeshP_PartitionHandle partition,
             iMeshP_PartHandle part,
             iBase_EntitySetHandle entity_set_handle,
-            int entity_type_requestor,
-            int entity_topology_requestor,
+            int entity_type_requester,
+            int entity_topology_requester,
             int entity_type_requested,
             iBase_EntityHandle** entity_handles,
             int* entity_handles_allocated,
@@ -1188,7 +1226,7 @@ void iMeshP_getAdjEntIndices(
  *  This function is similar to iMesh_getEntities, but it also restricts
  *  the returned data with respect to its existence in the given part.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance                 (In)     Mesh instance containing the 
  *                                            partition.
@@ -1232,7 +1270,7 @@ void iMeshP_getEntities(
  *  iMesh_getNextEntIter, iMesh_resetEntIter, and iMesh_endEntIter,
  *  respectively.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance                     (In)  Mesh instance containing the 
  *                                             partition.
@@ -1254,7 +1292,7 @@ void iMeshP_initEntIter(
             const iBase_EntitySetHandle entity_set,
             const int requested_entity_type,
             const int requested_entity_topology,
-            iMesh_EntityIterator* entity_iterator,
+            iBase_EntityIterator* entity_iterator,
             int *err);
 
 
@@ -1269,7 +1307,7 @@ void iMeshP_initEntIter(
  *  iMesh_getNextEntArrIter, iMesh_resetEntArrIter, and iMesh_endEntArrIter,
  *  respectively.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance                     (In)  Mesh instance containing the 
  *                                             partition.
@@ -1294,10 +1332,17 @@ void iMeshP_initEntArrIter(
             const int requested_entity_type,
             const int requested_entity_topology,
             const int requested_array_size,
-            iMesh_EntityArrIterator* entArr_iterator,
+            iBase_EntityArrIterator* entArr_iterator,
             int *err);
 
 
+
+
+/**\} */  /* end group imeshp_sets */
+
+/**\defgroup imeshp_entity Entity Functionality
+ *\{
+ */
 
 
 /*------------------------------------------------------------------------*/
@@ -1312,7 +1357,7 @@ void iMeshP_initEntArrIter(
  *  of the part that owns the entity.
  *  Return an error code if an entity is not in the partition.
  *
- *  COMMUNICATION:  None++.
+ *  \xrefitem comm "Communication" "Communication" None++.
  *
  *  \param  instance                     (In)  Mesh instance containing the 
  *                                             partition.
@@ -1337,7 +1382,7 @@ void iMeshP_getEntOwnerPart(
  *  entity handle the part ID of the part that owns the entity.
  *  Return an error code if an entity is not in the partition.
  *
- *  COMMUNICATION:  None++.
+ *  \xrefitem comm "Communication" "Communication" None++.
  *
  *  \param  instance              (In)     Mesh instance containing the 
  *                                         partition.
@@ -1369,7 +1414,7 @@ void iMeshP_getEntOwnerPartArr(
  *  Given a partition handle, a part handle, and an entity handle, return a
  *  flag indicating whether the entity is owned by the part.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance             (In)  Mesh instance containing the partition.
  *  \param  partition            (In)  The partition being queried.
@@ -1394,7 +1439,7 @@ void iMeshP_isEntOwner(
  *  return for each entity handle a flag indicating whether the entity 
  *  is owned by the part.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance                 (In)     Mesh instance containing the 
  *                                            partition.
@@ -1431,7 +1476,7 @@ void iMeshP_isEntOwnerArr(
  *  part boundary, or is a ghost with respect to the given part.  
  *  The returned value is a member of the iMeshP_EntStatus enumerated type.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance             (In)  Mesh instance containing the partition.
  *  \param  partition            (In)  The partition being queried.
@@ -1459,7 +1504,7 @@ void iMeshP_getEntStatus(
  *  to the given part.  
  *  The returned value is a member of the iMeshP_EntStatus enumerated type.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance                (In)     Mesh instance containing the 
  *                                           partition.
@@ -1499,7 +1544,7 @@ void iMeshP_getEntStatusArr(
  *  If the given entity is a ghost entity, the number of copies will be two
  *  (the ghost and its owner).
  *
- *  COMMUNICATION:  None++.
+ *  \xrefitem comm "Communication" "Communication" None++.
  *
  *  \param  instance             (In)  Mesh instance containing the partition.
  *  \param  partition            (In)  The partition being queried.
@@ -1526,7 +1571,7 @@ void iMeshP_getNumCopies(
  *  If the given entity is a ghost entity, the number of copies considered
  *  will be two (the ghost and its owner).
  *
- *  COMMUNICATION:  None++.
+ *  \xrefitem comm "Communication" "Communication" None++.
  *
  *  \param  instance                (In)     Mesh instance containing the 
  *                                           partition.
@@ -1559,7 +1604,7 @@ void iMeshP_getCopyParts(
  *  If the given entity is a ghost entity, the number of copies considered
  *  will be two (the ghost and its owner).
  *
- *  COMMUNICATION:  None++.
+ *  \xrefitem comm "Communication" "Communication" None++.
  *
  *  \param  instance                (In)     Mesh instance containing the 
  *                                           partition.
@@ -1596,7 +1641,7 @@ void iMeshP_getCopies(
  *  return the (remote) entity handle of the copy of the entity in that part.
  *  Return an error if the entity does not exist in the specified part.
  *
- *  COMMUNICATION:  None++.
+ *  \xrefitem comm "Communication" "Communication" None++.
  *
  *  \param  instance                (In)  Mesh instance containing the 
  *                                        partition.
@@ -1624,7 +1669,7 @@ void iMeshP_getCopyOnPart(
  *  Given a partition handle and an entity handle, return the (remote) 
  *  entity handle of the copy of the entity in its owner part.
  *
- *  COMMUNICATION:  None++.
+ *  \xrefitem comm "Communication" "Communication" None++.
  *
  *  \param  instance                (In)  Mesh instance containing the 
  *                                        partition.
@@ -1645,6 +1690,13 @@ void iMeshP_getOwnerCopy(
             int *err); 
 
 
+
+/**\} */  /* end group imeshp_entity */
+
+/**\defgroup imeshp_comm Communication
+ *\{
+ */
+
 /*------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------*/
 /*-------                         COMMUNICATION                 ----------*/
@@ -1652,11 +1704,15 @@ void iMeshP_getOwnerCopy(
 /*------------------------------------------------------------------------*/
 
 
+/**\defgroup imeshp_commgen General Communication
+ *\{
+ */
+
 /**\brief  Wait for a specific iMeshP request to complete.
  *
  *  Given an iMeshP_RequestHandle, wait for the request to complete.
  *
- *  COMMUNICATION:  Blocking point-to-point.
+ *  \xrefitem comm "Communication" "Communication" Blocking point-to-point.
  *
  *  \param  instance                (In)  Mesh instance containing the 
  *                                        partition.
@@ -1677,7 +1733,7 @@ void iMeshP_waitForRequest(
  *  Given an array of iMeshP_RequestHandles, wait for any one of the requests 
  *  to complete.
  *
- *  COMMUNICATION:  Blocking point-to-point.
+ *  \xrefitem comm "Communication" "Communication" Blocking point-to-point.
  *
  *  \param  instance                (In)  Mesh instance containing the 
  *                                        partition.
@@ -1703,7 +1759,7 @@ void iMeshP_waitForAnyRequest(
  *  Given an array of iMeshP_RequestHandles, wait for all of the requests 
  *  to complete.
  *
- *  COMMUNICATION:  Blocking point-to-point.
+ *  \xrefitem comm "Communication" "Communication" Blocking point-to-point.
  *
  *  \param  instance                (In)  Mesh instance containing the 
  *                                        partition.
@@ -1726,7 +1782,7 @@ void iMeshP_waitForAllRequests(
  *  Given an iMeshP_RequestHandle, wait for the request to complete.  Return
  *  entities for which information was received.
  *
- *  COMMUNICATION:  Blocking point-to-point.
+ *  \xrefitem comm "Communication" "Communication" Blocking point-to-point.
  *
  *  \param  instance                (In)     Mesh instance containing the 
  *                                           partition.
@@ -1754,7 +1810,7 @@ void iMeshP_waitForRequestEnt(
  *  This function will not wait until the request completes; it will only
  *  return the completion status (complete = 1 or 0).
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance                (In)  Mesh instance containing the 
  *                                        partition.
@@ -1783,7 +1839,7 @@ void iMeshP_testRequest(
  *  working when it has generated that many completed requests, even if there
  *  are more requests waiting. 
  *  
- *  COMMUNICATION:  non-blocking; point-to-point.
+ *  \xrefitem comm "Communication" "Communication" non-blocking; point-to-point.
  *
  *  \param  instance                     (In)     Mesh instance containing the 
  *                                                partition.
@@ -1803,6 +1859,12 @@ void iMeshP_pollForRequests(
             int *requests_completed_size,
             int *err);
 
+/**\} */  /* end group imeshp_commgen */
+
+/**\defgroup imeshp_remotemod Requests for off-processor mesh modification
+ *\{
+ */
+
 /*--------------------------------------------------------------------
   -------    Requests for off-processor mesh modification      -------
   --------------------------------------------------------------------*/
@@ -1819,7 +1881,7 @@ void iMeshP_pollForRequests(
  *  An iMeshP_RequestHandle is returned; any of the 
  *  iMeshP_wait* functions can be used to block until the request is completed.
  *
- *  COMMUNICATION:  Collective.  Non-blocking.
+ *  \xrefitem comm "Communication" "Communication" Collective.  Non-blocking.
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  Handle for the partition being queried.
@@ -1862,7 +1924,7 @@ void iMeshP_exchEntArrToPartsAll(
  *  are migrated as well as the appropriate adjacency info.
  *  An iMeshP request handle is returned.
  *
- *  COMMUNICATION:  point-to-point, non-blocking, pull. 
+ *  \xrefitem comm "Communication" "Communication" point-to-point, non-blocking, pull. 
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -1891,7 +1953,7 @@ void iMeshP_migrateEntity(
  *  The communication here is push-and-forget; as such, 
  *  no request handle needs to be returned.
  *
- *  COMMUNICATION:  point-to-point, non-blocking, push-and-forget.
+ *  \xrefitem comm "Communication" "Communication" point-to-point, non-blocking, push-and-forget.
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -1920,7 +1982,7 @@ void iMeshP_updateVtxCoords(
  *  adjacency requests) so that a single call can easily handle coordination
  *  with multiple entities on part-boundary.
  *
- *  COMMUNICATION:  point-to-point, non-blocking, push-and-forget. 
+ *  \xrefitem comm "Communication" "Communication" point-to-point, non-blocking, push-and-forget. 
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -1956,7 +2018,7 @@ void iMeshP_replaceOnPartBdry(
  *  entity handle of the created ghosts).  The closure of a new ghost is pushed
  *  automatically as part of the underlying communication.
  *
- *  COMMUNICATION:  point-to-point, non-blocking, push.
+ *  \xrefitem comm "Communication" "Communication" point-to-point, non-blocking, push.
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -1982,7 +2044,7 @@ void iMeshP_addGhostOf(
  *  The remote part will clean up the closure of the removed ghost
  *  as appropriate during deletion.
  *
- *  COMMUNICATION:  point-to-point, non-blocking, push-and-forget.
+ *  \xrefitem comm "Communication" "Communication" point-to-point, non-blocking, push-and-forget.
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -2007,7 +2069,7 @@ void iMeshP_rmvGhostOf(
  *  message traffic to clear and rebuilds ghost information that was
  *  allowed to go obsolete during mesh modification.
  *
- *  COMMUNICATION:  collective.
+ *  \xrefitem comm "Communication" "Communication" collective.
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -2017,6 +2079,12 @@ void iMeshP_syncMeshAll(
             iMesh_Instance instance, 
             iMeshP_PartitionHandle partition,
             int *err);
+
+/**\} */  /* end group imeshp_remotemod */
+
+/**\defgroup imeshp_commtag Functions to send Tag data from owning entities to copies.   
+ *\{
+ */
                             
 /*--------------------------------------------------------------------------*/
 /*         Functions to send Tag data from owning entities to copies.       */
@@ -2033,7 +2101,7 @@ void iMeshP_syncMeshAll(
  *  data type, size, etc.  This call blocks until communication is
  *  completed.
  *
- *  COMMUNICATION:  point-to-point, blocking.
+ *  \xrefitem comm "Communication" "Communication" point-to-point, blocking.
  * 
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -2064,7 +2132,7 @@ void iMeshP_pushTags(
  *  data type, size, etc.  This call blocks until communication is
  *  completed.
  *
- *  COMMUNICATION:  point-to-point, blocking.
+ *  \xrefitem comm "Communication" "Communication" point-to-point, blocking.
  * 
  *  \param  instance        (In)  Mesh instance containing the partition.
  *  \param  partition       (In)  The partition being queried.
@@ -2099,7 +2167,7 @@ void iMeshP_pushTagsEnt(
  *  iMeshP_waitForRequest (or a similar wait function)
  *  to block until this push is completed.
  *
- *  COMMUNICATION:  point-to-point, non-blocking.
+ *  \xrefitem comm "Communication" "Communication" point-to-point, non-blocking.
  * 
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition being queried.
@@ -2133,7 +2201,7 @@ void iMeshP_iPushTags(
  *  iMeshP_waitForRequest (or a similar wait function)
  *  to block until this push is completed.
  *
- *  COMMUNICATION:  point-to-point, non-blocking.
+ *  \xrefitem comm "Communication" "Communication" point-to-point, non-blocking.
  * 
  *  \param  instance        (In)  Mesh instance containing the partition.
  *  \param  partition       (In)  The partition being queried.
@@ -2154,12 +2222,18 @@ void iMeshP_iPushTagsEnt(
             iMeshP_RequestHandle *request,
             int *err);
 
+/**\} */  /* end group imeshp_commtag */
+
+/**\defgroup imeshp_ghost Ghosting
+ *\{
+ */
+
 
 /*------------------------------------------------------------*
  *                   GHOSTING                                 *
  *------------------------------------------------------------*/
 
-/* \brief Create ghost entities between parts.
+/** \brief Create ghost entities between parts.
  *
  *  Ghost entities are specified similar to 2nd-order adjacencies, i.e.,
  *  through a "bridge" dimension.  The number of layers is measured from
@@ -2183,7 +2257,7 @@ void iMeshP_iPushTagsEnt(
  *  iMeshP_createGhostEntsAll is cumulative; that is, multiple calls can only
  *  add more ghosts, not eliminate previous ghosts.  
  *  
- *  COMMUNICATION:  Collective.  Blocking.
+ *  \xrefitem comm "Communication" "Communication" Collective.  Blocking.
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition in which to create ghosts.
@@ -2207,11 +2281,11 @@ void iMeshP_createGhostEntsAll(
 
 
 
-/* \brief Delete all ghost entities between parts.
+/** \brief Delete all ghost entities between parts.
  *
  *  Given a partition, delete all ghost entities in that partition of the mesh.
  *
- *  COMMUNICATION:  Collective.  Blocking.
+ *  \xrefitem comm "Communication" "Communication" Collective.  Blocking.
  *
  *  \param  instance          (In)  Mesh instance containing the partition.
  *  \param  partition         (In)  The partition from which to delete ghosts.
@@ -2231,7 +2305,7 @@ void iMeshP_deleteGhostEntsAll(
  *  Return the ghosting rules established through calls to
  *  iMeshP_createGhostEntsAll.
  *
- *  COMMUNICATION:  None.
+ *  \xrefitem comm "Communication" "Communication" None.
  *
  *  \param  instance               (In)     Mesh instance containing the 
  *                                          partition.
@@ -2261,6 +2335,15 @@ void iMeshP_ghostEntInfo(
             int **num_layers,
             int *err);
 
+
+/**\} */  /* end group imeshp_ghost */
+
+/**\} */  /* end group imeshp_comm */
+
+/**\defgroup imeshp_file File I/O
+ *\{
+ */
+
 /*--------------------------------------------------------------------------
             FILE I/O                                          
  --------------------------------------------------------------------------*/
@@ -2277,7 +2360,7 @@ void iMeshP_ghostEntInfo(
  *  and creating ghost entities as requested by the application; the
  *  availability of these options is implementation dependent.
  *
- *  COMMUNICATION:  Collective.
+ *  \xrefitem comm "Communication" "Communication" Collective.
  * 
  *  \param  instance            (In)  Mesh instance to contain the data.
  *  \param  partition           (In)  The newly populated partition.
@@ -2303,7 +2386,7 @@ void iMeshP_loadAll(
  *  iMeshP_saveAll writes mesh and partition data to the specified file.
  *  Options allow n>=1 files on p processes.
  *
- *  COMMUNICATION:  Collective.
+ *  \xrefitem comm "Communication" "Communication" Collective.
  * 
  *  \param  instance            (In)  Mesh instance containing the partition.
  *  \param  partition           (In)  The partition being saved.
@@ -2324,6 +2407,8 @@ void iMeshP_saveAll(
             const int name_len, 
             int options_len);
 
+
+/**\} */  /* end group imeshp_file */
 
 /*
 ------------------------------------------------
@@ -2572,5 +2657,7 @@ Reducing storage:
 } /*  extern "C"  */
 #endif
 
-#endif /* defined(iMeshP_h) */
+/** \} */ /* end group IMESHP */
+
+#endif /* !defined(_ITAPS_iMeshP) */
 

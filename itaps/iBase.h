@@ -88,7 +88,6 @@ extern "C"
     iBase_ErrorType_MIN = 0,
     iBase_SUCCESS = iBase_ErrorType_MIN,
     iBase_MESH_ALREADY_LOADED,
-    iBase_NO_MESH_DATA,
     iBase_FILE_NOT_FOUND,
     iBase_FILE_WRITE_ERROR,
     iBase_NIL_ARRAY,

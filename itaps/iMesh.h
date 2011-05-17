@@ -1,25 +1,25 @@
 #ifndef _ITAPS_iMesh
 #define _ITAPS_iMesh
 
-  /**\brief iMesh Interface Specification Major Release Number
+  /* iMesh Interface Specification Major Release Number
     */
-#define IMESH_MAJOR_VERSION 1
+#define IMESH_VERSION_MAJOR 1
 
-  /**\brief iMesh Interface Specification Minor Release Number
+  /* iMesh Interface Specification Minor Release Number
     */
-#define IMESH_MINOR_VERSION 1
+#define IMESH_VERSION_MINOR 3
 
-  /**\brief iMesh Interface Specification Patch Release Number
+  /* iMesh Interface Specification Patch Release Number
     *
     * Technically speaking, there is not much practical value in
     * a 'patch' digit for an interface specification. A 'patch'
     * release is typically only used for bug fix releases. That
     * is unlikely to apply to an interface specification such as
-    * iMesh. Nonetheless, there is non-technical value in having
-    * a bit finer grained control over version numbers that a patch
-    * digit affords. So, we define one for iMesh.
+    * iMesh. On the other hand, there are indeed ways of interpreting
+    * some interface changes as bug fixes. So, we define a patch
+    * digit for iMesh.
     */
-#define IMESH_PATCH_VERSION 0
+#define IMESH_VERSION_PATCH 0
 
   /** \mainpage The ITAPS Mesh Interface iMesh
    *
@@ -30,9 +30,9 @@
    * to this interface, for example mesh smoothing, adaptive mesh refinement,
    * and parallel mesh support.
    *
-   * \section ITAPS Data Model
+   * \section iMesh Data Model
    *
-   * The ITAPS interfaces use a data model composed of four basic data types: \n
+   * The iMesh interface use a data model composed of four basic data types: \n
    * \em Entity: basic topological entities in a mesh, e.g. vertices, 
    * triangles, hexahedra. \n
    * \em Entity \em Set: arbitrary grouping of other entities and sets. 
@@ -45,7 +45,7 @@
    * \em Tag: application data associated with objects of any of the other 
    * data types.  Each tag has a designated name, size, and data type.
    *
-   * \section ITAPS Entity Type, Topology
+   * \section iMesh Entity Type, Topology
    * Each entity has a specific Entity Type and Entity Topology.  The Entity 
    * Type is one of VERTEX, EDGE, FACE, and REGION, and is synonymous with
    * the topological dimension of the entity.  The Entity Topology denotes
@@ -54,14 +54,28 @@
    * types, Entity Type in the iBase_EntityType enumeration, and
    * Entity Topology in the iMesh_EntityTopology enumeration.
    *
-   * \section ITAPS Entity-, Array-, and Iterator-Based Access
+   * \section iMesh Errors
+   *
+   * With few exceptions, every iMesh function includes an output argument,
+   * 'int *err', which returns an error code indicating if the function call
+   * may have failed. If the value returned for the 'err' argument is NOT
+   * iBase_SUCCESS, the caller should NOT attempt to interpret (read the
+   * values in) any of the other return arguments of the call. While some
+   * implementations may actually return valid/useful results in other
+   * return arguments of a call that has failed, there is no guarentee that
+   * ALL implementations will do similarly and so depending on such behavior
+   * is neither portable nor safe. This is true even if the returned values
+   * are different from the values of the arguments before the call was
+   * made.
+   *
+   * \section iMesh Entity-, Array-, and Iterator-Based Access
    *
    * The iMesh interface provides functions for accessing entities
    * individually, as arrays of entities, or using iterators.  These access
    * methods have different memory versus execution time tradeoffs, 
    * depending on the implementation.
    *
-   * \section ITAPS Lists Passed Through Interface
+   * \section iMesh Lists Passed Through Interface
    *
    * Many of the functions in iMesh have arguments corresponding to lists of 
    * objects.  In-type arguments for lists consist of a pointer to an array and
@@ -79,7 +93,7 @@
    * INTERFACE IMPLEMENTATIONS IS DONE USING THE C MALLOC FUNCTION, AND CAN BE
    * DE-ALLOCATED USING THE C FREE FUNCTION.
    *
-   * \section ITAPS Storage Orders
+   * \section iMesh Storage Orders
    *
    * Many of the functions in iMesh can return arrays of tuples; that is, arrays
    * of multi-valued type. For example, the function iMesh_getVtxArrCoords,
@@ -239,27 +253,27 @@
 #include "iBase.h"
 #include "iMesh_protos.h"
 
-/**\brief Useful macro for greater-than or equal-to comparisons of version number.
+/* Useful macro for greater-than or equal-to comparisons of version number.
  *
  * Returns true (non-zero) if the current version is greater-than or equal-to that
  * specified by Maj,Min,Pat triple.
  */
 #define IMESH_VERSION_GE(Maj,Min,Pat) \
-    (((IMESH_MAJOR_VERSION==(Maj)) && (IMESH_MINOR_VERSION==(Min)) && (IMESH_PATCH_VERSION>=(Pat))) || \
-     ((IMESH_MAJOR_VERSION==(Maj)) && (IMESH_MINOR_VERSION>(Min))) || \
-      (IMESH_MAJOR_VERSION>(Maj)))
+    (((IMESH_VERSION_MAJOR==(Maj)) && (IMESH_VERSION_MINOR==(Min)) && (IMESH_VERSION_PATCH>=(Pat))) || \
+     ((IMESH_VERSION_MAJOR==(Maj)) && (IMESH_VERSION_MINOR>(Min))) || \
+      (IMESH_VERSION_MAJOR>(Maj)))
 
 #define IMESH_VERSION_TAG__(X,Y,Z) iMesh_Version_##X##_##Y##_##Z
 #define IMESH_VERSION_TAG_(X,Y,Z) IMESH_VERSION_TAG__(X,Y,Z)
-#define IMESH_VERSION_TAG IMESH_VERSION_TAG_(IMESH_MAJOR_VERSION,IMESH_MINOR_VERSION,IMESH_PATCH_VERSION)
+#define IMESH_VERSION_TAG IMESH_VERSION_TAG_(IMESH_VERSION_MAJOR,IMESH_VERSION_MINOR,IMESH_VERSION_PATCH)
 
 #define IMESH_VERSION_STRING__(X,Y,Z) "iMesh_Version_" #X "." #Y "." #Z
 #define IMESH_VERSION_STRING_(X,Y,Z) IMESH_VERSION_STRING__(X,Y,Z)
-#define IMESH_VERSION_STRING IMESH_VERSION_STRING_(IMESH_MAJOR_VERSION,IMESH_MINOR_VERSION,IMESH_PATCH_VERSION)
+#define IMESH_VERSION_STRING IMESH_VERSION_STRING_(IMESH_VERSION_MAJOR,IMESH_VERSION_MINOR,IMESH_VERSION_PATCH)
 
 #define IMESH_NEW_MESH_NAME__(A,B,C) A##_##B##_##C
 #define IMESH_NEW_MESH_NAME_(A,B,C) IMESH_NEW_MESH_NAME__(A,B,C)
-#define IMESH_NEW_MESH_NAME(A) IMESH_NEW_MESH_NAME_(A,IMESH_MAJOR_VERSION,IMESH_MINOR_VERSION)
+#define IMESH_NEW_MESH_NAME(A) IMESH_NEW_MESH_NAME_(A,IMESH_VERSION_MAJOR,IMESH_VERSION_MINOR)
 
 /*
 #undef  iMesh_newMesh
@@ -270,13 +284,13 @@
 extern "C" {
 #endif
 
-    /**\brief  Type used to store iMesh interface handle
+    /* Type used to store iMesh interface handle
      *
      * Type used to store iMesh interface handle
      */
   typedef struct iMesh_Instance_Private* iMesh_Instance;
 
-    /**\brief  Enumerator specifying entity topology
+    /* Enumerator specifying entity topology
      *
      * Enumerator specifying entity topology.
      */
@@ -310,11 +324,9 @@ extern "C" {
      * returned is a member of the iBase_ErrorType enumeration.
      * \param instance iMesh instance handle
      * \param *error_type Error type returned from last iMesh function
-     * \param *err Pointer to error type returned from function
      */
   void iMesh_getErrorType(iMesh_Instance instance,
-                          /*out*/ int *error_type, 
-                          int *err);
+                          /*out*/ int *error_type);
 
     /**\brief  Get a description of the error returned from the last iMesh function
      *
@@ -322,12 +334,10 @@ extern "C" {
      * \param instance iMesh instance handle
      * \param descr Pointer to a character string to be filled with a
      *        description of the error from the last iMesh function
-     * \param *err Pointer to error type returned from function
      * \param descr_len Length of the character string pointed to by descr
      */
   void iMesh_getDescription(iMesh_Instance instance,
                             /*inout*/ char *descr, 
-                            int *err, 
                             /*in*/ int descr_len);
 
     /**\brief  Construct a new iMesh instance
@@ -340,7 +350,7 @@ extern "C" {
      * \param options_len Length of the character string pointed to by options
      */
   void iMesh_newMesh(const char *options,
-                     /*out*/ iMesh_Instance *instance, 
+                     /*out*/ iMesh_Instance *instance,
                      /*out*/ int *err, 
                      /*in*/ int options_len);
 
@@ -350,7 +360,7 @@ extern "C" {
      * \param instance iMesh instance to be destroyed
      * \param *err Pointer to error type returned from function
      */
-  void iMesh_dtor(iMesh_Instance instance, 
+  void iMesh_dtor(iMesh_Instance instance,
                   /*out*/ int *err);
 
     /**\brief  Load a mesh from a file
@@ -554,7 +564,7 @@ extern "C" {
      * \param areHandlesInvariant Pointer to invariant flag returned from function
      * \param *err Pointer to error type returned from function
      */
-  void iMesh_areEHValid(iMesh_Instance instance, 
+  void iMesh_areEHValid(iMesh_Instance instance,
                         /*in*/ int doReset,
                         /*out*/ int *areHandlesInvariant, 
                         /*out*/ int *err);
@@ -819,7 +829,7 @@ extern "C" {
  *        adjacencies of ith entity in entity_handles.  
  * \param offset_allocated Allocated size of offset array
  * \param offset_size Occupied size of offset array
- * \param err 
+ * \param *err 
  */
   void iMesh_getEntArr2ndAdj( iMesh_Instance instance,
                               /*in*/ iBase_EntityHandle const* entity_handles,
@@ -843,35 +853,44 @@ extern "C" {
     * - For each entity in the first list, the adjacent entities,
     *    specified as indices into the second list.
     *
-    *\param entity_set_handle     The set of entities from which to query
-    *\param entity_type_requester If not iBase_ALL_TYPES, act only on 
+    * \param instance iMesh instance
+    * \param entity_set_handle     The set of entities from which to query
+    * \param entity_type_requester If not iBase_ALL_TYPES, act only on 
     *                             the subset of 'entity_set_handle' of the
     *                             specified type.
-    *\param entity_topology_requester If not iMesh_ALL_TOPOLOGIES, act only
+    * \param entity_topology_requester If not iMesh_ALL_TOPOLOGIES, act only
     *                             on the subset of 'entity_set_handle' with
     *                             the specified topology.
-    *\param entity_type_requested The type of the adjacent entities to
+    * \param entity_type_requested The type of the adjacent entities to
     *                             return.
-    *\param entity_handles        The handles of the (non-struct) subset of   
+    * \param entity_handles        The handles of the (non-struct) subset of   
     *                             the entity set indicated by 
     *                             'entity_set_handle' and the optional type
     *                             and topology filtering arguments.
-    *\param adj_entity_handles    The union of the unique entities of type 
+    * \param entity_handles_allocated Allocated size of entity_handles 
+    * \param entity_handles_size Occupied size of entity_handles
+    * \param adj_entity_handles    The union of the unique entities of type 
     *                             'requested_entity_type' adjacent to each
     *                             entity in 'entity_handles'. Note that the
     *                             implicit INTERLEAVED storage order rule
     *                             applies (see section ITAPS Storage Orders)
-    *\param adj_entity_indices    For each entity in 'entity_handles', the
+    * \param adj_entity_handles_allocated Allocated size of adj_entity_handles
+    * \param adj_entity_handles_size Occupied size of adj_entity_handles
+    * \param adj_entity_indices    For each entity in 'entity_handles', the
     *                             adjacent entities of type
     *                             'entity_type_requested', specified as 
     *                             indices into 'adj_entity_handles'.  The
     *                             values are concatenated into a single   
     *                             array in the order of the entity handles 
     *                             in 'entity_handles'.
-    *\param offset                For each entity in the corresponding 
+    * \param adj_entity_indices_allocated Allocated size of adj_entity_indices
+    * \param adj_entity_indices_size Occupied size of adj_entity_indices
+    * \param offset                For each entity in the corresponding 
     *                             position in 'entity_handles', the position
     *                             in 'adj_entity_indices' at which values
     *                             for that entity are stored.
+    * \param offset_allocated     Allocated size of offset
+    * \param offset_size          Occupied size of offset
     *
     * Note 1: Because 'adjacent' as defined by the iMesh data model refers
     *         to those entities that bound another, the entities being queried
@@ -1099,12 +1118,15 @@ extern "C" {
      * \param instance iMesh instance handle
      * \param containing_entity_set Entity set being queried
      * \param entity_handles List of entities for which to check containment.
+     * \param num_entity_handles Size of entity_handles
      * \param is_contained One value for each input entity, 1 if contained
      *          in set, zero otherwise.
+     * \param is_contained_allocated Allocated size of is_contained
+     * \param is_contained_size Occupied size of is_contained
      * \param *err Pointer to error type returned from function
      */
   void iMesh_isEntArrContained( iMesh_Instance instance,
-                         /*in*/ iBase_EntitySetHandle containing_set,
+                         /*in*/ iBase_EntitySetHandle containing_entity_set,
                          /*in*/ const iBase_EntityHandle* entity_handles,
                          /*in*/ int num_entity_handles,
                       /*inout*/ int** is_contained,
@@ -1577,7 +1599,7 @@ extern "C" {
   void iMesh_getEntSetData(iMesh_Instance instance,
                            /*in*/ const iBase_EntitySetHandle entity_set_handle,
                            /*in*/ const iBase_TagHandle tag_handle,
-                           /*inout*/ void** tag_value,
+                           /*inout*/ void* tag_value,
                            /*inout*/ int* tag_value_allocated,
                            /*out*/ int* tag_value_size,
                            /*out*/ int *err);
@@ -1687,7 +1709,8 @@ extern "C" {
      */
   void iMesh_setVtxCoord(iMesh_Instance instance,
                          /*in*/ iBase_EntityHandle vertex_handle,
-                         /*in*/ const double x, /*in*/ const double y,
+                         /*in*/ const double x,
+                         /*in*/ const double y,
                          /*in*/ const double z,
                          /*out*/ int *err);
 
@@ -1703,7 +1726,8 @@ extern "C" {
      * \param *err Pointer to error type returned from function
      */
   void iMesh_createVtx(iMesh_Instance instance,
-                       /*in*/ const double x, /*in*/ const double y,
+                       /*in*/ const double x,
+                       /*in*/ const double y,
                        /*in*/ const double z,
                        /*out*/ iBase_EntityHandle* new_vertex_handle,
                        /*out*/ int *err);
@@ -1770,7 +1794,7 @@ extern "C" {
                         /*in*/ const iBase_EntityHandle* entity_handles,
                         /*in*/ const int entity_handles_size,
                         /*in*/ const iBase_TagHandle tag_handle,
-                        /*inout*/ void** tag_values,
+                        /*inout*/ void* tag_values,
                         /*inout*/int* tag_values_allocated,
                         /*out*/ int* tag_values_size,
                         /*out*/ int *err);
@@ -2020,7 +2044,7 @@ extern "C" {
   void iMesh_getData(iMesh_Instance instance,
                      /*in*/ const iBase_EntityHandle entity_handle,
                      /*in*/ const iBase_TagHandle tag_handle,
-                     /*inout*/ void** tag_value,
+                     /*inout*/ void* tag_value,
                      /*inout*/ int *tag_value_allocated,
                      /*out*/ int *tag_value_size,
                      /*out*/ int *err);
@@ -2135,7 +2159,6 @@ extern "C" {
      * \param *err Pointer to error type returned from function
      */
   void iMesh_setDblData(iMesh_Instance instance,
-
                         /*in*/ iBase_EntityHandle entity_handle,
                         /*in*/ const iBase_TagHandle tag_handle,
                         /*in*/ const double tag_value,
@@ -2314,7 +2337,9 @@ extern "C" {
      */
   void iMesh_getVtxCoord(iMesh_Instance instance,
                          /*in*/ const iBase_EntityHandle vertex_handle,
-                         /*out*/ double *x, /*out*/ double *y, /*out*/ double *z,
+                         /*out*/ double *x,
+                         /*out*/ double *y,
+                         /*out*/ double *z,
                          /*out*/ int *err);
 
     /**\brief  Get entities of specified type adjacent to an entity

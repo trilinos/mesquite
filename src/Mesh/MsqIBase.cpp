@@ -44,7 +44,6 @@ std::string process_itaps_error( int ierr )
   std::string result( "ITAPS ERROR: " );
   switch (ierr) {
     case iBase_MESH_ALREADY_LOADED:      result += "File Already Loaded";   break;
-    case iBase_NO_MESH_DATA:             result += "No Mesh";               break;
     case iBase_FILE_NOT_FOUND:           result += "File Not Found";        break;
     case iBase_FILE_WRITE_ERROR:         result += "File Write Error";      break;
     case iBase_NIL_ARRAY:                result += "NULL Array";            break;
