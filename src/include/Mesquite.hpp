@@ -65,12 +65,6 @@
 #include <assert.h>
 
 #include "mesquite_version.h"
-#define MESQUITE_NS__(X) Mesquite##X
-#define MESQUITE_NS_(X) MESQUITE_NS__(X)
-#define MESQUITE_NS MESQUITE_NS_(MSQ_VERSION_MAJOR)
-namespace MESQUITE_NS { }
-namespace Mesquite = MESQUITE_NS;
-
 
 /*! \file Mesquite.hpp
  */

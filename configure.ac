@@ -29,6 +29,24 @@ if test "x" != "x$VERSION_PATCH"; then
 fi
 AC_DEFINE(MSQ_VERSION_STRING,["AC_PACKAGE_STRING"],"Mesquite Version String")
 
+AC_ARG_ENABLE( [namespace],
+               [AC_HELP_STRING([--enable-namespace=NAME],[Specify alternate namespace])],
+               [namespace=$enableval],
+               [namespace=yes] )
+case "x$namespace" in
+  xyes)
+    namespace="Mesquite$VERSION_MAJOR"
+    ;;
+  xno|x)
+    AC_MSG_ERROR([Invalid value for --enable-namespace.  Mesquite cannot be configured with no namespace])
+    ;;
+esac
+AC_DEFINE_UNQUOTED(MESQUITE_NS,[$namespace],"Mesquite namespace")
+if test "x$namespace" != "xMesquite"; then
+AC_DEFINE(MESQUITE_NS_ALIAS,[1],"Mesquite namespace alias")
+fi
+
+
 #------------------------------------------------------------------------------
 # Standard stuff
 #------------------------------------------------------------------------------
