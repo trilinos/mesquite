@@ -129,7 +129,13 @@ else
    [AC_LANG_PROGRAM([#include <$3.h>],[$3_dtor(($3_Instance)0,(int*)0)])],
    [AC_MSG_RESULT([yes])],
    [AC_MSG_RESULT([no])
-    AC_MSG_ERROR([$3 library unsuable: $2_LIBS=\"${$2_LIBS}\" from ${$2_DEFS}])]
+    AC_MSG_CHECKING([for $3_destroy in $3 library])
+    AC_LINK_IFELSE(
+     [AC_LANG_PROGRAM([#include <$3.h>],[$3_destroy(($3_Instance)0,(int*)0)])],
+     [AC_MSG_RESULT([yes])],
+     [AC_MSG_RESULT([no])
+      AC_MSG_ERROR([$3 library unsuable: $2_LIBS=\"${$2_LIBS}\" from ${$2_DEFS}])]
+     )]
    )
    
    # Resore environment
