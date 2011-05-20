@@ -47,6 +47,7 @@ Header file for the Mesquite::ObjectiveFunction class
 
 #include <list>
 #include <vector>
+#include <cstddef>
 
 namespace MESQUITE_NS
 {
