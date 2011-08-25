@@ -250,10 +250,9 @@ void DeformingCurveSmoother::smooth_curve( Mesh* mesh,
   const double total = geom->arc_length( coords[0].to_array(), coords[1].to_array(), err ); MSQ_ERRRTN(err);
   
   std::vector<double> vals(nverts-1);
-  double fracsum;
   if (metricType == EQUAL) {
     std::fill( vals.begin(), vals.end(), 1.0/(nverts-1) );
-    fracsum = 1.0;
+    //fracsum = 1.0;
   }
   else { // metricType == PROPORTIONAL
     TagHandle tag = get_tag( mesh, err ); MSQ_ERRRTN(err);

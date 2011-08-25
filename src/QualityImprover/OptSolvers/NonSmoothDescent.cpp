@@ -597,7 +597,7 @@ void NonSmoothDescent::step_acceptance( PatchData &pd,
   const double minAcceptableImprovement = 1e-6;
 
 //  int        ierr;
-  int        num_values;
+//  int        num_values;
   bool       step_done;
   bool       valid = true, accept_alpha;
   double     estimated_improvement;
@@ -607,7 +607,7 @@ void NonSmoothDescent::step_acceptance( PatchData &pd,
   Vector3D   original_point;
 
 //  MSQ_FUNCTION_TIMER( "Step Acceptance" );
-  num_values = qmHandles.size();
+//  num_values = qmHandles.size();
 
   optStatus = MSQ_NO_STATUS;
 

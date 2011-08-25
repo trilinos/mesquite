@@ -1974,7 +1974,7 @@ void MeshImpl::vtk_create_structured_elems( const long* dims,
     //      Mesquite ever supports them.  Just add the
     //      type for dimension 1 to the switch statement.
     
-  int non_zero[3] = {0,0,0};  // True if dim > 0 for x, y, z respectively
+  //int non_zero[3] = {0,0,0};  // True if dim > 0 for x, y, z respectively
   long elem_dim = 0;          // Element dimension (2->quad, 3->hex)
   long num_elems = 1;         // Total number of elements
   long vert_per_elem;         // Element connectivity length
@@ -1984,7 +1984,7 @@ void MeshImpl::vtk_create_structured_elems( const long* dims,
   for (int d = 0; d < 3; d++) 
     if (dims[d] > 1)
     {
-      non_zero[elem_dim++] = d;
+      //non_zero[elem_dim++] = d;
       edims[d] = dims[d] - 1;
       num_elems *= edims[d];
     }

@@ -174,7 +174,7 @@ void QuasiNewton::optimize_vertex_positions( PatchData& pd, MsqError& err )
   const double tol1 = 1e-8;
   const double epsilon = 1e-10;
 
-  double norm_r, norm_g;
+  double norm_r; //, norm_g;
   double alpha, beta;
   double obj, objn;
 
@@ -265,7 +265,7 @@ void QuasiNewton::optimize_vertex_positions( PatchData& pd, MsqError& err )
     
     func.update( pd, obj, v[QNVEC], mHess, err ); MSQ_ERRRTN(err);
     norm_r = length_squared( &(v[QNVEC][0]), nn );
-    norm_g = sqrt(norm_r);
+    //norm_g = sqrt(norm_r);
 
     // checks stopping criterion 
     term.accumulate_patch( pd, err ); MSQ_ERRRTN(err);

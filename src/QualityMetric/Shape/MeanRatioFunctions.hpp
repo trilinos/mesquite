@@ -1716,7 +1716,7 @@ inline bool h_fcn_3e_v3(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
 			const double a, const Exponent& b, const Exponent& c)
 {
   double matr[9], f, g;
-  double dg[9], loc0, loc1, loc3, loc4;
+  double dg[9], loc0, /*loc1,*/ loc3, loc4;
   double cross;
 
   /* Calculate M = A*inv(W). */
@@ -1767,7 +1767,7 @@ inline bool h_fcn_3e_v3(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
 
   /* Calculate the hessian of the objective.                   */
   loc0 = f;			/* Constant on nabla^2 f       */
-  loc1 = g;			/* Constant on nabla^2 g       */
+//  loc1 = g;			/* Constant on nabla^2 g       */
   cross = f * c.value() / loc4;		/* Constant on nabla g nabla f */
   f = f * (b.value()-1) / loc3;		/* Constant on nabla f nabla f */
   g = g * (c.value()-1) / loc4;		/* Constant on nabla g nabla g */

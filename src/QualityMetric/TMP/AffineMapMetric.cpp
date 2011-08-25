@@ -105,10 +105,10 @@ bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, Msq
     // This metric only supports sampling at corners, except for simplices.
     // If element is a simpex, then the Jacobian is constant over a linear 
     // element.  In this case, always evaluate at any vertex.
-  unsigned corner = s.number;
+  //unsigned corner = s.number;
   if (s.dimension != 0) {
     if (type == TRIANGLE || type == TETRAHEDRON)
-      corner = 0;
+      /*corner = 0*/;
     else {
       MSQ_SETERR(err)("Invalid sample point for AffineMapMetric", MsqError::UNSUPPORTED_ELEMENT );
       return false;
