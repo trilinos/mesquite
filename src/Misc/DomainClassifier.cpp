@@ -991,7 +991,7 @@ void DomainClassifier::test_valid_classification( Mesh* mesh,
           if (verts2[(idx+1)%verts2.size()] != v2 &&
               verts2[(idx+verts2.size()-1)%verts2.size()] != v2)
             continue;
-          std::set<Mesh::ElementHandle>::const_iterator r = remaining.find(e2);
+          std::set<Mesh::ElementHandle>::iterator r = remaining.find(e2);
           if (r == remaining.end())
             continue;
 
