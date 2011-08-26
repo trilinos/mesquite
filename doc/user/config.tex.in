@@ -1,4 +1,4 @@
-% Set loctations to search for graphics files
+% Set locations to search for graphics files
 \graphicspath{{@builddir@/}{@srcdir@/}}
 
 % Define custom macro 'srcinclude' to include from srcdir
