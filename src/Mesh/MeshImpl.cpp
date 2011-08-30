@@ -783,9 +783,11 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
     }
   }
   std::vector<int> fixed_nodes(num_fixed_nodes);
-  exo_err = ex_get_node_set(file_id, 111, arrptr(fixed_nodes));
-  if(exo_err<0){
-    MSQ_SETERR(err)("Error retrieving fixed nodes.", MsqError::PARSE_ERROR);
+  if (num_fixed_nodes) {
+    exo_err = ex_get_node_set(file_id, 111, arrptr(fixed_nodes));
+    if(exo_err<0){
+      MSQ_SETERR(err)("Error retrieving fixed nodes.", MsqError::PARSE_ERROR);
+    }
   }
   
     // See if this vertex is marked as a boundary vertex
@@ -1984,9 +1986,10 @@ void MeshImpl::vtk_create_structured_elems( const long* dims,
   for (int d = 0; d < 3; d++) 
     if (dims[d] > 1)
     {
-      //non_zero[elem_dim++] = d;
+      //non_zero[elem_dim] = d;
       edims[d] = dims[d] - 1;
       num_elems *= edims[d];
+      elem_dim++;
     }
   vert_per_elem = 1 << elem_dim;
   
