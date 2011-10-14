@@ -145,7 +145,7 @@ namespace MESQUITE_NS
        MSQ_STEP_TOO_SMALL,
        MSQ_EQUILIBRIUM,
        MSQ_ZERO_SEARCH,
-       MSQ_MAX_ITER_EXCEEDED,
+       MSQ_MAX_ITER_EXCEEDED
     };
 
     enum Status {
