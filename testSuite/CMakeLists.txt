@@ -1,7 +1,7 @@
 # Define Macro for adding tests
 
 IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
-    INCLUDE(PackageAddTest)
+    INCLUDE(TribitsAddTest)
 ENDIF()
 
 
@@ -13,8 +13,8 @@ ENDIF()
 
 MACRO(MSQ_ADD_TEST name exe)
   IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
-    PACKAGE_ADD_EXECUTABLE( ${exe} SOURCES ${ARGN} )
-    PACKAGE_ADD_TEST( ${exe} NAME ${name} NUM_MPI_PROCS 1 )
+    TRIBITS_ADD_EXECUTABLE( ${exe} SOURCES ${ARGN} )
+    TRIBITS_ADD_TEST( ${exe} NAME ${name} NUM_MPI_PROCS 1 )
     #TARGET_LINK_LIBRARIES( ${exe} mesquite )
   ELSE(NOT ${PROJECT_NAME} STREQUAL "Mesquite")
     IF (${PACKAGE_NAME}_ENABLE_TESTS)

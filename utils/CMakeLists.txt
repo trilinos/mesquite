@@ -1,7 +1,7 @@
 
 IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
-  INCLUDE(PackageLibraryMacros)
-  INCLUDE(PackageAddExecutable)
+  INCLUDE(TribitsLibraryMacros)
+  INCLUDE(TribitsAddExecutable)
 ENDIF()
 
 #
@@ -33,34 +33,34 @@ ENDIF()
 IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
 
   ADD_LIBRARY( msqutil STATIC ${SOURCES} ${HEADERS} )
-#  PACKAGE_ADD_LIBRARY(
+#  TRIBITS_ADD_LIBRARY(
 #    msqutil
 #    HEADERS ${HEADERS}
 #    SOURCES ${SOURCES}
 #    )
 
-  PACKAGE_ADD_EXECUTABLE(
+  TRIBITS_ADD_EXECUTABLE(
     vtkrandom
     NOEXEPREFIX
     NOEXESUFFIX
     SOURCES randomize.cpp
     )
 
-  PACKAGE_ADD_EXECUTABLE(
+  TRIBITS_ADD_EXECUTABLE(
     msqshape
     NOEXEPREFIX
     NOEXESUFFIX
     SOURCES shape-improve.cpp
     )
 
-  PACKAGE_ADD_EXECUTABLE(
+  TRIBITS_ADD_EXECUTABLE(
     vtkxform
     NOEXEPREFIX
     NOEXESUFFIX
     SOURCES transform.cpp
     )
 
-  PACKAGE_ADD_EXECUTABLE(
+  TRIBITS_ADD_EXECUTABLE(
     msqquality
     NOEXEPREFIX
     NOEXESUFFIX

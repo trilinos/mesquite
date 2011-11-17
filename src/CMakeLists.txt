@@ -1,6 +1,6 @@
 IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
 
-  INCLUDE(PackageLibraryMacros)
+  INCLUDE(TribitsLibraryMacros)
 
   #
   # A) Package-specific configuration options
@@ -11,7 +11,7 @@ ELSE()
     SET(${VARNAME} ${${VARNAME}} ${ARGN})
   ENDMACRO()
   
-  FUNCTION(PACKAGE_ADD_LIBRARY name)
+  FUNCTION(TRIBITS_ADD_LIBRARY name)
     LIST(REMOVE_ITEM ARGV "${name}" "HEADERS" "SOURCES")
     IF(${PACKAGE_NAME}_ENABLE_SHARED)
       ADD_LIBRARY( ${name} SHARED ${ARGV} )
@@ -850,7 +850,7 @@ APPEND_SET(HEADERS ${all_file} )
 # C) Define the targets for package's library(s)
 #
 
-PACKAGE_ADD_LIBRARY(
+TRIBITS_ADD_LIBRARY(
   mesquite
   HEADERS ${HEADERS}
   SOURCES ${SOURCES}
