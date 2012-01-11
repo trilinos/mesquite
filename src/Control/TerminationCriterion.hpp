@@ -247,7 +247,7 @@ namespace MESQUITE_NS
     
 
       //!Constructor which does not take any arguements
-    MESQUITE_EXPORT TerminationCriterion();
+    MESQUITE_EXPORT TerminationCriterion(std::string name="");
     
       //!Destructor
     MESQUITE_EXPORT ~TerminationCriterion(){};
@@ -400,6 +400,7 @@ namespace MESQUITE_NS
     //! Base name for timestep files
     std::string timeStepFileName;    
     TimeStepFileType timeStepFileType;
+    std::string moniker;
   };
 
 } //namespace

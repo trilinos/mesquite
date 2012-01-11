@@ -6,8 +6,8 @@ if WITH_MPI
   MPI_SRCS = $(SRC_MESH_DIR)/ParallelHelper.cpp
   MPI_INCS = $(SRC_MESH_DIR)/ParallelHelper.hpp
 else
-  MPI_SRCS = 
-  MPI_INCS = 
+  MPI_SRCS = $(SRC_MESH_DIR)/ParallelHelperNoMPIStub.cpp
+  MPI_INCS = $(SRC_MESH_DIR)/ParallelHelperNoMPIStub.hpp
 endif
 
 

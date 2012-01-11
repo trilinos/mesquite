@@ -45,6 +45,9 @@
 
 namespace MESQUITE_NS {
 
+extern int get_parallel_rank();
+extern int get_parallel_size();
+
 VertexMover::VertexMover( ObjectiveFunction* OF ) 
   : QualityImprover(),
     objFuncEval( OF ) ,
@@ -569,6 +572,10 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
   }
 
 ERROR: 
+  if (MSQ_CHKERR(err)) {
+    std::cout << "P[" << get_parallel_rank() << "] VertexMover::loop_over_mesh error = " << err.error_message() << std::endl;
+  }
+
   if (jacobiOpt)
     mesh->tag_delete( coord_tag, err );
 

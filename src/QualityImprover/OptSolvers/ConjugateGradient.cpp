@@ -43,6 +43,9 @@
 
 namespace MESQUITE_NS {
 
+extern int get_parallel_rank();
+extern int get_parallel_size();
+
 std::string ConjugateGradient::get_name() const 
   { return "ConjugateGradient"; }
   
@@ -88,7 +91,10 @@ ConjugateGradient::~ConjugateGradient()
   
 void ConjugateGradient::initialize(PatchData &pd, MsqError &err)
 {
-  MSQ_DBGOUT(2) << "\no   Performing Conjugate Gradient optimization.\n";
+  if (get_parallel_size())
+    MSQ_DBGOUT(2) << "\nP[" << get_parallel_rank() << "] " << "o   Performing Conjugate Gradient optimization.\n";
+  else
+    MSQ_DBGOUT(2) << "\no   Performing Conjugate Gradient optimization.\n";
   pMemento=pd.create_vertices_memento(err);
 }
 

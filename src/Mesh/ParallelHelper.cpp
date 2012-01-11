@@ -21,6 +21,26 @@
 
 namespace MESQUITE_NS {
 
+int get_parallel_rank()
+{
+  int rank=0;
+  int is_init=0;
+  int err = MPI_Initialized(&is_init);
+  if (MPI_SUCCESS != err) return 0;
+  if (is_init) MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  return rank;
+}
+
+int get_parallel_size()
+{
+  int nprocs=0;
+  int is_init=0;
+  int err = MPI_Initialized(&is_init);
+  if (MPI_SUCCESS != err) return 0;
+  if (is_init) MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+  return nprocs;
+}
+
 static const char* mpi_err_string( int error_code )
 {
   static char buffer[128];
@@ -2525,8 +2545,8 @@ void ParallelHelperImpl::communicate_histogram_to_zero(std::vector<int> &histogr
 
 void ParallelHelperImpl::communicate_all_true( bool& value, MsqError& err ) const
 {
-  char byte_out = value, byte_in;
-  int rval = MPI_Allreduce( &byte_out, &byte_in, 1, MPI_CHAR, MPI_MAX, (MPI_Comm)communicator);
+  int byte_out = value, byte_in;
+  int rval = MPI_Allreduce( &byte_out, &byte_in, 1, MPI_INT, MPI_MAX, (MPI_Comm)communicator);
   CHECK_MPI( rval, err );
   value = (byte_in != 0);
 }

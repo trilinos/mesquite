@@ -61,6 +61,14 @@ IF (TPL_ENABLE_MPI)
   APPEND_SET(SOURCES
     Mesh/ParallelHelper.cpp
     )
+ELSE()
+  APPEND_SET(HEADERS
+    Mesh/ParallelHelperNoMPIStub.hpp
+    )
+
+  APPEND_SET(SOURCES
+    Mesh/ParallelHelperNoMPIStub.cpp
+    )
 ENDIF()
 
 APPEND_SET(HEADERS
