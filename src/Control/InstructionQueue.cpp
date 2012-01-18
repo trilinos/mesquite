@@ -131,7 +131,7 @@ void InstructionQueue::add_preconditioner(QualityImprover* instr,
                                         MsqError &err)
 {
   if (isMasterSet) {
-    MSQ_SETERR(err)("Cannot add preconditionners once the master "
+    MSQ_SETERR(err)("Cannot add preconditioners once the master "
                     "QualityImprover has been set.", MsqError::INVALID_STATE);
     return;
   }
@@ -158,7 +158,7 @@ void InstructionQueue::remove_preconditioner(size_t index, MsqError &err)
     return;
   }
   
-  // position the instruction iterator over the preconditionner to delete
+  // position the instruction iterator over the preconditioner to delete
   std::list<Instruction*>::iterator pos;
   pos = instructions.begin();
   std::advance(pos, index);
@@ -189,7 +189,7 @@ void InstructionQueue::insert_preconditioner(QualityImprover* instr,
 {
   // checks index is valid
   if (isMasterSet==true && index > masterInstrIndex) {
-    MSQ_SETERR(err)("Cannot add a preconditionner after the master "
+    MSQ_SETERR(err)("Cannot add a preconditioner after the master "
                     "QualityImprover.", MsqError::INVALID_STATE);
     return;
   }

@@ -71,7 +71,7 @@ class InstructionQueueTest : public CppUnit::TestFixture
 {
 private:
    CPPUNIT_TEST_SUITE(InstructionQueueTest);
-   CPPUNIT_TEST (test_add_preconditionner);
+   CPPUNIT_TEST (test_add_preconditioner);
    CPPUNIT_TEST (test_remove_preconditioner);
    CPPUNIT_TEST (test_insert_preconditioner);
    CPPUNIT_TEST (test_add_quality_assessor);
@@ -114,7 +114,7 @@ public:
   InstructionQueueTest()
     {}
   
-  void test_add_preconditionner()
+  void test_add_preconditioner()
   {
      MsqPrintError err(cout);
      mQueue.clear();
@@ -125,7 +125,7 @@ public:
      CPPUNIT_ASSERT(!err);
      err.clear();
      mQueue.add_preconditioner(mQI, err);
-     CPPUNIT_ASSERT_MESSAGE("preconditionner cannot be added after master QI"
+     CPPUNIT_ASSERT_MESSAGE("preconditioner cannot be added after master QI"
                             , err);
      err.clear(); 
   }
