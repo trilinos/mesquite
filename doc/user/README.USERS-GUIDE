@@ -1,0 +1,19 @@
+How to build the Mesquite Users Guide (on Unix/Linux)
+
+1. cd to the mesquite top level directory (the one 
+      that contains all the makefiles)
+
+2. Enter the following commands:
+
+     ./mkconfigure
+     ./configure
+     cd doc/user
+     make pdf
+ 
+  Note: "make pdf" will build both a .pdf and postscript (.ps)
+     version of the guide.
+
+3. To build only a postscript version:
+
+     make ps
+
