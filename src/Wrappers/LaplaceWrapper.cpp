@@ -72,7 +72,7 @@ void LaplaceWrapper::run_wrapper( Mesh* mesh,
   qa->add_quality_assessment( &qa_metric );
   
   LaplacianSmoother smoother;
-  TerminationCriterion outer, inner;
+  TerminationCriterion outer("<type:laplace_outer>"), inner("<type:laplace_inner>");
   if (maxTime > 0.0)
     outer.add_cpu_time( maxTime );
   if (iterationLimit > 0)

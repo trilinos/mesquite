@@ -313,8 +313,9 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   mesh->vertices_get_byte(arrptr(vertices),arrptr(app_fixed),num_vertex,err); MSQ_ERRRTN(err);
   mesh->vertices_get_processor_id(arrptr(vertices),arrptr(proc_owner),num_vertex,err); MSQ_ERRRTN(err);
   /* only interested in fixed flag from vertex byte? Clear others. */
+  // srkenno AT sandia.gov 1/19/12: bug fix: changed from |= which makes all vertices fixed
   for (i = 0; i < num_vertex; ++i)
-    app_fixed[i] |= MsqVertex::MSQ_HARD_FIXED;
+    app_fixed[i] &= MsqVertex::MSQ_HARD_FIXED;
   
   /* create temporary Tag for the local IDs */
   std::vector<int> lid(num_vertex);
@@ -1022,8 +1023,9 @@ void ParallelHelperImpl::smoothing_close(MsqError& err)
     std::vector<int> proc_owner(num_vertex);
     mesh->vertices_get_processor_id(arrptr(vertices),arrptr(proc_owner),num_vertex,err); MSQ_ERRRTN(err);
     /* only interested in fixed flag from vertex byte? Clear others. */
+    // srkenno AT sandia.gov 1/19/12: bug fix: changed from |= which makes all vertices fixed
     for (i = 0; i < num_vertex; ++i)
-      app_fixed[i] |= MsqVertex::MSQ_HARD_FIXED;
+      app_fixed[i] &= MsqVertex::MSQ_HARD_FIXED;
 
     /* insert all our unfixed vertices into a map so we can find the requested vertices efficiently */
     VertexIdMap temp_vid_map;
@@ -2543,10 +2545,23 @@ void ParallelHelperImpl::communicate_histogram_to_zero(std::vector<int> &histogr
   }
 }
 
-void ParallelHelperImpl::communicate_all_true( bool& value, MsqError& err ) const
+/// if any proc has a true input @param value, return true to all 
+void ParallelHelperImpl::communicate_any_true( bool& value, MsqError& err ) const
 {
   int byte_out = value, byte_in;
   int rval = MPI_Allreduce( &byte_out, &byte_in, 1, MPI_INT, MPI_MAX, (MPI_Comm)communicator);
+  CHECK_MPI( rval, err );
+  value = (byte_in != 0);
+}
+
+/// srkenno AT sandia.gov 1/19/12: bug fix: changed from MPI_MAX to MIN - this makes the name of the
+/// function correct, if all proc's values are true, it returns true.  @see communicate_any_true above
+
+/// return true in @param value if all procs have value=true, else if any have it false, return false
+void ParallelHelperImpl::communicate_all_true( bool& value, MsqError& err ) const
+{
+  int byte_out = value, byte_in;
+  int rval = MPI_Allreduce( &byte_out, &byte_in, 1, MPI_INT, MPI_MIN, (MPI_Comm)communicator);
   CHECK_MPI( rval, err );
   value = (byte_in != 0);
 }

@@ -336,6 +336,8 @@ namespace MESQUITE_NS
     void write_timestep( PatchData& pd, const Vector3D* gradient, MsqError& err );
     
     static size_t count_inverted( PatchData& pd, MsqError& err );
+
+    std::string par_string();  // for debug print of parallel rank
     
  private:
     //PRIVATE DATA MEMBERS
