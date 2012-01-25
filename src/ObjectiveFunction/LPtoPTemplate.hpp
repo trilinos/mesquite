@@ -125,7 +125,8 @@ namespace MESQUITE_NS
     void set_dividing_by_n(bool d_bool){dividingByN=d_bool;}
      
    private:
-     double get_value( double power_sum, size_t count, EvalType type, size_t& global_count );
+     double get_value( double power_sum, size_t count, EvalType type, 
+		       size_t& global_count, MsqError& err );
      
        //! The metric value entries are raised to the pVal power
      short pVal;

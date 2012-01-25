@@ -79,7 +79,7 @@ ObjectiveFunction* LPtoPTemplate::clone() const
   { return new LPtoPTemplate(*this); }
 
 double LPtoPTemplate::get_value( double power_sum, size_t count, EvalType type,
-                                 size_t& global_count )
+                                 size_t& global_count, MsqError& err )
 {
   double result = 0;
   switch (type) 
@@ -120,6 +120,11 @@ double LPtoPTemplate::get_value( double power_sum, size_t count, EvalType type,
       break;
   }
   
+  if (!global_count)
+    {
+      MSQ_SETERR(err)(" global_count is zero, possibly due to an invalid mesh.", MsqError::INVALID_MESH);
+      return -1;  // result is invalid
+    }   
   if (dividingByN)
     result /= global_count;
   return result;
@@ -155,8 +160,11 @@ bool LPtoPTemplate::evaluate( EvalType type,
   
     // get overall OF value, update member data, etc.
   size_t global_count;
-  value_out = qm->get_negate_flag() * get_value( working_sum, qmHandles.size(), type, global_count );
-  return true;
+  value_out = qm->get_negate_flag() * get_value( working_sum, qmHandles.size(), type, global_count, err );
+  if (!global_count)
+    return false;  // invalid mesh
+  else
+    return true;
 }
 
 bool LPtoPTemplate::evaluate_with_gradient( EvalType type, 
@@ -205,7 +213,10 @@ bool LPtoPTemplate::evaluate_with_gradient( EvalType type,
   
     // get overall OF value, update member data, etc.
   size_t global_count;
-  OF_val = qm->get_negate_flag() * get_value( OF_val, qmHandles.size(), type, global_count );
+  OF_val = qm->get_negate_flag() * get_value( OF_val, qmHandles.size(), type, global_count, err );
+  if (!global_count)
+    return false;  // invalid mesh
+
   if (dividingByN) {
     const double inv_n = 1.0/global_count;
     std::vector<Vector3D>::iterator g;
@@ -305,7 +316,10 @@ bool LPtoPTemplate::evaluate_with_Hessian_diagonal( EvalType type,
 
   size_t global_count;
   OF_val = qm->get_negate_flag() 
-         * get_value( OF_val, qmHandles.size(), type, global_count );
+         * get_value( OF_val, qmHandles.size(), type, global_count, err );
+  if (!global_count)
+    return false;  // invalid mesh
+
   if (dividingByN) {
     const double inv_n = 1.0 / global_count;
     for (i = 0; i < pd.num_free_vertices(); ++i) {
@@ -434,7 +448,10 @@ bool LPtoPTemplate::evaluate_with_Hessian( EvalType type,
 
   size_t global_count;
   OF_val = qm->get_negate_flag() 
-         * get_value( OF_val, qmHandles.size(), type, global_count );
+         * get_value( OF_val, qmHandles.size(), type, global_count, err );
+  if (!global_count)
+    return false;  // invalid mesh
+
   if (dividingByN) {
     const double inv_n = 1.0 / global_count;
     std::vector<Vector3D>::iterator g;
