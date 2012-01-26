@@ -30,6 +30,10 @@ is a structured mesh of a box.  The edges of the box are scaled to
 be 10,000 units long.  The interior vertices are slightly perturbed
 from their ideal positions.
 
+par_original_hex_mesh.*.vtk: parallel split mesh of unit box with one
+side pushed in with a bi-quadratic bump; meshed with hexes.  The
+smoothed/expected mesh is in par_smoothed_hex_mesh.*.vtk.
+
 single_hex:  A single hex mesh with no free vertices.
 
 small_box_hex_1000.vtk:  Similar to large_box_hex_1000.  This is

@@ -22,6 +22,14 @@ else
   UNIT_TEST =
 endif
 
+if WITH_MPI
+  PARALLEL_UNTANGLE_SHAPE = parallel_untangle_shape
+  PARALLEL_SMOOTH_LAPLACE = parallel_smooth_laplace
+else
+  PARALLEL_UNTANGLE_SHAPE = 
+  PARALLEL_SMOOTH_LAPLACE = 
+endif
+
 SUBDIRS = test_1 \
 	  ActiveSetTest \
 	  algorithm_test\
@@ -35,6 +43,8 @@ SUBDIRS = test_1 \
 	  $(IMESH_TEST) \
 	  jacobi \
 	  laplacian_test\
+	  $(PARALLEL_SMOOTH_LAPLACE) \
+	  $(PARALLEL_UNTANGLE_SHAPE) \
 	  pyramid \
 	  simple_hybrid_test\
           slaved \
