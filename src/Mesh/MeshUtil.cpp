@@ -136,4 +136,70 @@ void MeshUtil::lambda_distribution( SimpleStats& results, MsqError& err )
   }
 }
 
+bool MeshUtil::meshes_are_different(Mesh& mesh1, Mesh& mesh2, MsqError& err, double tol, bool do_print )
+{
+  //MsqError& err = (do_print ? MsqPrintError(cout) : MsqError());
+    
+  // mesh 1
+  std::vector<Mesh::ElementHandle> elements1;
+  std::vector<Mesh::VertexHandle> vertices1;
+  std::vector<Mesh::VertexHandle> connectivity1;
+  std::vector<size_t> offsets1;                                                                                      
+
+  mesh1.get_all_elements(elements1, err);  MSQ_ERRZERO(err);
+  mesh1.get_all_vertices(vertices1, err);  MSQ_ERRZERO(err);
+  mesh1.elements_get_attached_vertices( arrptr(elements1), elements1.size(),
+                                        connectivity1, offsets1, err ); MSQ_ERRZERO(err);
+  std::vector<EntityTopology> types1(elements1.size());
+  mesh1.elements_get_topologies( arrptr(elements1), arrptr(types1), elements1.size(), err ); MSQ_ERRZERO(err);
+
+  // mesh 2
+  std::vector<Mesh::ElementHandle> elements2;
+  std::vector<Mesh::VertexHandle> vertices2;
+  std::vector<Mesh::VertexHandle> connectivity2;
+  std::vector<size_t> offsets2;                                                                                      
+
+  mesh2.get_all_elements(elements2, err);  MSQ_ERRZERO(err);
+  mesh2.get_all_vertices(vertices2, err);  MSQ_ERRZERO(err);
+  mesh2.elements_get_attached_vertices( arrptr(elements2), elements2.size(),
+                                        connectivity2, offsets2, err ); MSQ_ERRZERO(err);
+  std::vector<EntityTopology> types2(elements2.size());
+  mesh2.elements_get_topologies( arrptr(elements2), arrptr(types2), elements2.size(), err ); MSQ_ERRZERO(err);
+
+#define MDRET(msg) do { if (do_print) std::cout << "MeshUtil::mesh_diff meshes are different: " << msg << std::endl; return true; } while(0)
+  if (elements1.size() != elements2.size()) MDRET("elements sizes differ");
+  if (vertices1.size() != vertices2.size()) MDRET("vertices sizes differ");
+  if (offsets1.size() != offsets2.size()) MDRET("offsets sizes differ");
+  if (connectivity1.size() != connectivity2.size()) MDRET("connectivity sizes differ");
+
+  for (unsigned i=0; i < offsets1.size(); i++)
+    {
+      if (offsets1[i] != offsets2[i]) MDRET("offets differ");
+    }
+
+  for (unsigned i=0; i < vertices1.size(); i++)
+    {
+      MsqVertex vert1, vert2;
+      mesh1.vertices_get_coordinates( &vertices1[i], &vert1, 1, err ); MSQ_ERRZERO(err);
+      mesh2.vertices_get_coordinates( &vertices2[i], &vert2, 1, err ); MSQ_ERRZERO(err);
+      double dist = Vector3D::distance_between(vert1, vert2);
+      double v1 = vert1.length();
+      double v2 = vert2.length();
+      if ( dist > 0.5*(v1+v2)*tol ) MDRET("vertices coordinates differ more than tolerance");
+    }
+
+  for (unsigned i=0; i < connectivity1.size(); i++)
+    {
+      MsqVertex vert1, vert2;
+      mesh1.vertices_get_coordinates( &connectivity1[i], &vert1, 1, err ); MSQ_ERRZERO(err);
+      mesh2.vertices_get_coordinates( &connectivity2[i], &vert2, 1, err ); MSQ_ERRZERO(err);
+      double dist = Vector3D::distance_between(vert1, vert2);
+      double v1 = vert1.length();
+      double v2 = vert2.length();
+      if ( dist > 0.5*(v1+v2)*tol ) MDRET("connectivity coordinates differ more than tolerance");
+    }
+
+  return false;
+}
+
 } // namespace MESQUITE_NS

@@ -79,6 +79,7 @@ namespace MESQUITE_NS
     virtual void communicate_power_sum_to_zero(double* pMean, MsqError&) const = 0;
     virtual void communicate_histogram_to_zero(std::vector<int> &histogram, MsqError&) const = 0;
     virtual void communicate_all_true( bool& value, MsqError& err ) const = 0;
+    virtual void communicate_any_true( bool& value, MsqError& err ) const = 0;
   };
 } // namespace
 

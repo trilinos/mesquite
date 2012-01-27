@@ -1547,6 +1547,16 @@ void MeshImpl::tag_to_bool( const char* tag_name,
       }
       break;
     }
+    case HANDLE:
+    {
+      unsigned long data;
+      for (i = 0; i < myMesh->max_vertex_index(); ++i)
+      {
+        myTags->get_vertex_data( (size_t)handle, 1, &i, &data, err ); MSQ_ERRRTN(err);
+        values[i] = !!data;
+      }
+      break;
+    }
     default:
       MSQ_SETERR(err)(MsqError::PARSE_ERROR, "'%s' attribute has invalid type", tag_name);
       return;
@@ -2299,12 +2309,20 @@ void* MeshImpl::vtk_read_typed_data( FileTokenizer& tokens,
     case 5:
     case 6:
     case 7:
-    case 8:
-    case 9:
       tag.size = per_elem*sizeof(int);
       tag.type = INT;
       data_ptr = malloc( num_elem*tag.size );
       tokens.get_integers( count, (int*)data_ptr, err );
+      break;
+    case 8:
+    case 9:
+      // this is a bit of a hack since MeshImpl doesn't have a LONG type (HANDLE is used by ParallelMesh for long)
+      tag.size = per_elem*sizeof(size_t);
+      assert(sizeof(long) == sizeof(size_t));
+      assert(sizeof(long) == sizeof(void *));
+      tag.type = HANDLE;
+      data_ptr = malloc( num_elem*tag.size );
+      tokens.get_long_ints( count, (long*)data_ptr, err );
       break;
     case 10:
     case 11:
@@ -2521,13 +2539,14 @@ void MeshImpl::vtk_write_attrib_data( std::ostream& file,
                                       const void* data, size_t count,
                                       MsqError& err ) const
 {
+  //srkenno@sandia.gov: we now allow this type to be able to write e.g. GLOBAL_ID for parallel meshes
+  /*
   if (desc.type == HANDLE)
   {
     MSQ_SETERR(err)("Cannot write HANDLE tag data to VTK file.",
                     MsqError::FILE_FORMAT);
     return;
-  }
-    
+    }*/
   
   TagDescription::VtkType vtk_type = desc.vtkType;
   unsigned vlen = desc.size / MeshImplTags::size_from_tag_type(desc.type);
@@ -2542,8 +2561,11 @@ void MeshImpl::vtk_write_attrib_data( std::ostream& file,
         return;
     }
   }
-  
-  const char* const typenames[] = { "unsigned_char", "bit", "int", "double" };
+
+  //srkenno@sandia.gov: from class Mesh, the typenames below should correspond in order...
+  // enum TagType { BYTE, BOOL, INT, DOUBLE, HANDLE };
+
+  const char* const typenames[] = { "unsigned_char", "bit", "int", "double", "unsigned_long" };
   std::string field, member;
   
   int num_per_line;
@@ -2612,6 +2634,7 @@ void MeshImpl::vtk_write_attrib_data( std::ostream& file,
   const unsigned char* odata = (const unsigned char*)data;
   const bool* bdata = (const bool*)data;
   const int* idata = (const int*)data;
+  const  long* ldata = (const long*)data;
   const double* ddata = (const double*)data;
   switch ( desc.type )
   {
@@ -2630,6 +2653,10 @@ void MeshImpl::vtk_write_attrib_data( std::ostream& file,
     case DOUBLE:
       for (i = 0 ; i < total; ++i)
         file << ddata[i] << space[i%num_per_line];
+      break;
+    case HANDLE:
+      for (i = 0 ; i < total; ++i)
+        file << ldata[i] << space[i%num_per_line];
       break;
     default:
       MSQ_SETERR(err)("Unknown tag type.", MsqError::INTERNAL_ERROR);

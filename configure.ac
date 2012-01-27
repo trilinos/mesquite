@@ -175,7 +175,7 @@ AC_ARG_WITH( [mpi], [AC_HELP_STRING([--with-mpi(=DIR)],[Enable parallel support]
              [WITH_MPI=$withval],[WITH_MPI=no] )
 
 # Modify compiler list if MPI is requested
-if test "xyes" = "x$WITH_MPI"; then
+if test "xyes" = "x$WITH_MPI"; then  
   CC_LIST="mpicc $CC_LIST"
   CXX_LIST="mpicxx $CXX_LIST"
 elif test "xno" != "x$WITH_MPI"; then
@@ -724,6 +724,7 @@ AC_SUBST(UTIL_MAKE_INCLUDE)
 AC_CONFIG_HEADERS([src/include/junk_config.h])
 AC_CONFIG_HEADERS([src/include/mesquite_config.h
                    src/include/mesquite_version.h])
+
 AC_CONFIG_FILES([Makefile
                  src/Makefile
                  itaps/Makefile
@@ -748,6 +749,8 @@ AC_CONFIG_FILES([Makefile
                  testSuite/tutorial/tutorial.make
                  testSuite/unit/Makefile
                  testSuite/untangle_test/Makefile
+                 testSuite/parallel_untangle_shape/Makefile 
+                 testSuite/parallel_smooth_laplace/Makefile
                  testSuite/wedge/Makefile
                  testSuite/wrapper_tests/Makefile
                  testSuite/2d_target/Makefile

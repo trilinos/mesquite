@@ -55,16 +55,6 @@ namespace MESQUITE_NS {
 extern int get_parallel_rank();
 extern int get_parallel_size();
 
-static std::string par_string() 
-{
-  if (get_parallel_size())
-    {
-      std::ostringstream str;
-      str << "P[" << get_parallel_rank() << "] ";
-      return str.str();
-    }
-  return "";
-}
 
  /*! \enum TCType  defines the termination criterion */
 enum TCType {
@@ -182,6 +172,17 @@ TerminationCriterion::TerminationCriterion(std::string name)
   globalInvertedCount = 0;
   patchInvertedCount = 0;
   
+}
+
+std::string TerminationCriterion::par_string() 
+{
+  if (get_parallel_size())
+    {
+      std::ostringstream str;
+      str << "P[" << get_parallel_rank() << "] " + moniker + " ";
+      return str.str();
+    }
+  return moniker + " ";
 }
 
 void TerminationCriterion::add_absolute_gradient_L2_norm( double eps )
@@ -422,14 +423,14 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
     if (totalFlag & (GRADIENT_INF_NORM_ABSOLUTE|GRADIENT_INF_NORM_RELATIVE))
     {
       currentGradInfNorm = initialGradInfNorm = Linf(mGrad);
-      MSQ_DBGOUT(debugLevel) << par_string() << "  o Initial gradient Inf norm: " << moniker << " "
+      MSQ_DBGOUT(debugLevel) << par_string() << "  o Initial gradient Inf norm: " << " "
         << initialGradInfNorm << std::endl;
     }  
       
     if (totalFlag & (GRADIENT_L2_NORM_ABSOLUTE|GRADIENT_L2_NORM_RELATIVE))
     {
       currentGradL2NormSquared = initialGradL2NormSquared = length_squared(mGrad);
-      MSQ_DBGOUT(debugLevel) << par_string() << "  o Initial gradient L2 norm: " << moniker << " "
+      MSQ_DBGOUT(debugLevel) << par_string() << "  o Initial gradient L2 norm: " << " "
         << std::sqrt(initialGradL2NormSquared) << std::endl;
     }  
 
@@ -464,7 +465,7 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
   }
   
   if (totalFlag & (GRAD_FLAGS|OF_FLAGS))
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o Initial OF value: " << moniker << " " << initialOFValue << std::endl;
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o Initial OF value: " << " " << initialOFValue << std::endl;
   
     // Store current vertex locations now, because we'll
     // need them later to compare the current movement with.
@@ -487,7 +488,7 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
   
   if (terminationCriterionFlag & UNTANGLED_MESH) {
     globalInvertedCount = count_inverted( pd, err );
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o Num Inverted: " << moniker << " " << globalInvertedCount << std::endl;
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o Num Inverted: " << " " << globalInvertedCount << std::endl;
     patchInvertedCount = 0;
     MSQ_ERRRTN(err);
   }
@@ -533,7 +534,7 @@ void TerminationCriterion::reset_patch(PatchData &pd, MsqError &err)
 
   if (totalFlag & UNTANGLED_MESH) {
     patchInvertedCount = count_inverted( pd, err );
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o Num Patch Inverted: " << moniker << " " << patchInvertedCount << std::endl;
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o Num Patch Inverted: " << " " << patchInvertedCount << std::endl;
     MSQ_ERRRTN(err);
   }
 }
@@ -579,14 +580,14 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
   if (terminationCriterionFlag & (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_L2_NORM_RELATIVE)) 
   {
     currentGradL2NormSquared = length_squared(grad_array, pd.num_free_vertices()); // get the L2 norm
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- gradient L2 norm: " << moniker << " "
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o Info -- gradient L2 norm: " << " "
       << std::sqrt(currentGradL2NormSquared) << std::endl;
   }
   //currentGradInfNorm = 10e6;
   if (terminationCriterionFlag & (GRADIENT_INF_NORM_ABSOLUTE | GRADIENT_INF_NORM_RELATIVE)) 
   {
     currentGradInfNorm = Linf(grad_array, pd.num_free_vertices()); // get the Linf norm
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- gradient Inf norm: " << moniker << " "
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o Info -- gradient Inf norm: " << " "
       << currentGradInfNorm << std::endl;
   } 
   
@@ -594,15 +595,17 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
   {
     maxSquaredInitialMovement = pd.get_max_vertex_movement_squared(
                                initialVerticesMemento, err );  MSQ_ERRRTN(err);
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o Info -- max initial vertex movement: " << " "
+      << maxSquaredInitialMovement << std::endl;
   }
   
   previousOFValue = currentOFValue;
   currentOFValue = of_value;
   if (terminationCriterionFlag & OF_FLAGS) {
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- OF Value: " << moniker << " " << of_value << " iterationCounter= " << iterationCounter << std::endl;
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o Info -- OF Value: " << " " << of_value << " iterationCounter= " << iterationCounter << std::endl;
   }
   else if (grad_array) {
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o OF Value: " << moniker << " " << of_value << " iterationCounter= " << iterationCounter << std::endl;
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o OF Value: " << " " << of_value << " iterationCounter= " << iterationCounter << std::endl;
   }
   
   ++iterationCounter;
@@ -680,7 +683,7 @@ void TerminationCriterion::accumulate_patch( PatchData& pd, MsqError& err )
     globalInvertedCount += new_count;
     globalInvertedCount -= patchInvertedCount;
     patchInvertedCount = new_count;
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o Num Patch Inverted: " << moniker << " " << patchInvertedCount << " globalInvertedCount= " << globalInvertedCount << std::endl;
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o Num Patch Inverted: " << " " << patchInvertedCount << " globalInvertedCount= " << globalInvertedCount << std::endl;
       
     MSQ_ERRRTN(err);
   }
@@ -695,11 +698,12 @@ bool TerminationCriterion::terminate( )
 {
   bool return_flag = false;
   //std::cout<<"\nInside terminate(pd,of,err):  flag = "<<terminationCriterionFlag << std::endl;
+  int type=0;
 
     //First check for an interrupt signal
   if (MsqInterrupt::interrupt())
   {
-     MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- INTERRUPTED" << moniker << " " << std::endl;
+     MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- INTERRUPTED" << " " << std::endl;
     return true;
   }
   
@@ -708,32 +712,40 @@ bool TerminationCriterion::terminate( )
     && iterationCounter >= iterationBound)
   {
     return_flag = true;
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- Reached " << moniker << " " << iterationBound << " iterations." << std::endl;
+    type=1;
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- Reached " << " " << iterationBound << " iterations." << std::endl;
   }
   
   if (CPU_TIME & terminationCriterionFlag && mTimer.since_birth()>=timeBound)
   {
     return_flag=true;
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- Exceeded CPU time. " << moniker << " " << std::endl;
+    type=2;
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- Exceeded CPU time. " << " " << std::endl;
   }
   
   
   if (MOVEMENT_FLAGS & terminationCriterionFlag
       && maxSquaredMovement >= 0.0)
   {
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- Maximuim vertex movement: " << moniker << " "
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o Info -- Maximum vertex movement: " << " "
     << sqrt(maxSquaredMovement) << std::endl;
 
     if (VERTEX_MOVEMENT_ABSOLUTE & terminationCriterionFlag 
         && maxSquaredMovement <= vertexMovementAbsoluteEps)
     {
+      MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- VERTEX_MOVEMENT_ABSOLUTE: " << " "
+                             << sqrt(maxSquaredMovement) << std::endl;
       return_flag = true;
+    type=3;
     }
   
     if (VERTEX_MOVEMENT_RELATIVE & terminationCriterionFlag
         && maxSquaredMovement <= vertexMovementRelativeEps*maxSquaredInitialMovement)
     {
+      MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- VERTEX_MOVEMENT_RELATIVE: " << " "
+                             << sqrt(maxSquaredMovement) << std::endl;
       return_flag = true;
+    type=4;
     }
 
     if (VERTEX_MOVEMENT_ABS_EDGE_LENGTH & terminationCriterionFlag)
@@ -741,7 +753,10 @@ bool TerminationCriterion::terminate( )
       assert( vertexMovementAbsoluteAvgEdge > -1e-12 ); // make sure value actually got calculated
       if (maxSquaredMovement <= vertexMovementAbsoluteAvgEdge)
       {
+        MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- VERTEX_MOVEMENT_ABS_EDGE_LENGTH: " << " "
+                               << sqrt(maxSquaredMovement) << std::endl;
         return_flag = true;
+        type=5;
       }
     }
   }
@@ -749,37 +764,42 @@ bool TerminationCriterion::terminate( )
   if (GRADIENT_L2_NORM_ABSOLUTE & terminationCriterionFlag &&
       currentGradL2NormSquared <= gradL2NormAbsoluteEpsSquared)
   {
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- GRADIENT_L2_NORM_ABSOLUTE: " << moniker << " " << currentGradL2NormSquared << std::endl;
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- GRADIENT_L2_NORM_ABSOLUTE: " << " " << currentGradL2NormSquared << std::endl;
     return_flag = true;
+    type=6;
   }
   
   if (GRADIENT_INF_NORM_ABSOLUTE & terminationCriterionFlag &&
       currentGradInfNorm <= gradInfNormAbsoluteEps)
   {
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- GRADIENT_INF_NORM_ABSOLUTE: " << moniker << " " << currentGradInfNorm << std::endl;
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- GRADIENT_INF_NORM_ABSOLUTE: " << " " << currentGradInfNorm << std::endl;
     return_flag = true;
+    type=7;
   }
   
   if (GRADIENT_L2_NORM_RELATIVE & terminationCriterionFlag &&
       currentGradL2NormSquared <= (gradL2NormRelativeEpsSquared * initialGradL2NormSquared))
   {
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- GRADIENT_L2_NORM_RELATIVE: " << moniker << " " << currentGradL2NormSquared << std::endl;
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- GRADIENT_L2_NORM_RELATIVE: " << " " << currentGradL2NormSquared << std::endl;
     return_flag = true;
+    type=8;
   }
   
   if (GRADIENT_INF_NORM_RELATIVE & terminationCriterionFlag &&
       currentGradInfNorm <= (gradInfNormRelativeEps * initialGradInfNorm))
   {
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- GRADIENT_INF_NORM_RELATIVE: " << moniker << " " << currentGradInfNorm << std::endl;
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- GRADIENT_INF_NORM_RELATIVE: " << " " << currentGradInfNorm << std::endl;
     return_flag = true;
+    type=9;
   }
     //Quality Improvement and Successive Improvements are below.
     // The relative forms are only valid after the first iteration.
   if ((QUALITY_IMPROVEMENT_ABSOLUTE & terminationCriterionFlag) &&
       currentOFValue <= qualityImprovementAbsoluteEps)
   {
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- QUALITY_IMPROVEMENT_ABSOLUTE: " << moniker << " " << currentOFValue << std::endl;
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- QUALITY_IMPROVEMENT_ABSOLUTE: " << " " << currentOFValue << std::endl;
     return_flag = true;
+    type=10;
   }
   
     //only valid if an iteration has occurred, see above.
@@ -787,40 +807,45 @@ bool TerminationCriterion::terminate( )
     if (SUCCESSIVE_IMPROVEMENTS_ABSOLUTE & terminationCriterionFlag &&
         (previousOFValue - currentOFValue) <= successiveImprovementsAbsoluteEps)
     {  
-      MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- SUCCESSIVE_IMPROVEMENTS_ABSOLUTE: previousOFValue= " << moniker << " " << previousOFValue << " currentOFValue= " << currentOFValue 
+      MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- SUCCESSIVE_IMPROVEMENTS_ABSOLUTE: previousOFValue= " << " " << previousOFValue << " currentOFValue= " << currentOFValue 
                              << " successiveImprovementsAbsoluteEps= " << successiveImprovementsAbsoluteEps
                              << std::endl;
       return_flag = true;
+    type=11;
     }
     if (QUALITY_IMPROVEMENT_RELATIVE & terminationCriterionFlag &&
         (currentOFValue - lowerOFBound) <= 
         qualityImprovementRelativeEps * (initialOFValue - lowerOFBound))
     {
-      MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- QUALITY_IMPROVEMENT_RELATIVE: " << moniker << " " << std::endl;
+      MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- QUALITY_IMPROVEMENT_RELATIVE: " << " " << std::endl;
       return_flag = true;
+    type=12;
     }
     if (SUCCESSIVE_IMPROVEMENTS_RELATIVE & terminationCriterionFlag &&
         (previousOFValue - currentOFValue) <= 
         successiveImprovementsRelativeEps * (initialOFValue - currentOFValue))
     {
-      MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- SUCCESSIVE_IMPROVEMENTS_RELATIVE: previousOFValue= " << moniker << " " << previousOFValue << " currentOFValue= " << currentOFValue 
+      MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- SUCCESSIVE_IMPROVEMENTS_RELATIVE: previousOFValue= " << " " << previousOFValue << " currentOFValue= " << currentOFValue 
                              << " successiveImprovementsRelativeEps= " << successiveImprovementsRelativeEps
                              << std::endl;
       return_flag = true;
+    type=13;
     }
   }
   
   if (BOUNDED_VERTEX_MOVEMENT & terminationCriterionFlag && vertexMovementExceedsBound)
   {
     return_flag = true;
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- " << moniker << " " << vertexMovementExceedsBound
+    type=14;
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- " << " " << vertexMovementExceedsBound
                            << " vertices out of bounds." << std::endl;
   }
   
   if (UNTANGLED_MESH & terminationCriterionFlag && !globalInvertedCount)
   {
-    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- UNTANGLED_MESH: "<< moniker << " " << std::endl;
+    MSQ_DBGOUT(debugLevel) << par_string() << "  o TermCrit -- UNTANGLED_MESH: "<< " " << std::endl;
     return_flag = true;
+    type=15;
   }
   
     // clear this value at the end of each iteration
@@ -831,6 +856,10 @@ bool TerminationCriterion::terminate( )
     MsqError err;
     MeshWriter::write_gnuplot_overlay( iterationCounter, timeStepFileName.c_str(), err );
   }
+
+  //   if (return_flag)
+  //   std::cout << "tmp srk TerminationCriterion::terminate: " << moniker << " return_flag= " << return_flag << " type= " << type
+  //              << " terminationCriterionFlag= " << terminationCriterionFlag << " debugLevel= " << debugLevel << std::endl;
   
     //if none of the criteria were satisfied
   return return_flag;

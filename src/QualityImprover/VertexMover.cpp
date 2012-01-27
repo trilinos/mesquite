@@ -138,7 +138,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   patch.set_domain( domain );
   if (settings)
     patch.attach_settings( settings );
-  bool one_patch = false, did_some, all_culled;
+  bool one_patch = false, inner_crit_terminated, all_culled;
   std::vector<Mesh::VertexHandle> patch_vertices;
   std::vector<Mesh::ElementHandle> patch_elements;
   bool valid;
@@ -205,16 +205,16 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   }
   
    // Loop until outer termination criterion is met
-  did_some = true;
+  inner_crit_terminated = false;
   while (!outer_crit->terminate())
   {
-    if (!did_some) {
+    if (inner_crit_terminated) {
       MSQ_SETERR(err)("Inner termiation criterion satisfied for all patches "
                       "without meeting outer termination criterion.  This is "
                       "an infinite loop.  Aborting.", MsqError::INVALID_STATE);
       break;
     }
-    did_some = false;
+    inner_crit_terminated = true;
     all_culled = true;
 
       // Loop over each patch
@@ -262,7 +262,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
         // criterion has already been met.
       if (!inner_crit->terminate())
       {
-        did_some = true;
+        inner_crit_terminated = false;
         
           // Call optimizer - should loop on inner_crit->terminate()
         this->optimize_vertex_positions( patch, err );
@@ -310,6 +310,27 @@ ERROR:
 }
   
 
+static void checkpoint_bytes( Mesh* mesh, std::vector<unsigned char>& saved_bytes, MsqError& err)
+{
+  std::vector<Mesh::VertexHandle> vertexHandlesArray;
+  mesh->get_all_vertices(vertexHandlesArray, err); MSQ_ERRRTN(err);
+  saved_bytes.resize(vertexHandlesArray.size());
+  mesh->vertices_get_byte( &vertexHandlesArray[0],
+                           &saved_bytes[0],
+                           vertexHandlesArray.size(),
+                           err ); MSQ_ERRRTN(err);
+}
+
+static void restore_bytes( Mesh* mesh, std::vector<unsigned char>& saved_bytes, MsqError& err)
+{
+  std::vector<Mesh::VertexHandle> vertexHandlesArray;
+  mesh->get_all_vertices(vertexHandlesArray, err); MSQ_ERRRTN(err);
+  mesh->vertices_set_byte( &vertexHandlesArray[0],
+                           &saved_bytes[0],
+                           vertexHandlesArray.size(),
+                           err ); MSQ_ERRRTN(err);
+}
+
 /*! \brief Improves the quality of the MeshSet, calling some
     methods specified in a class derived from VertexMover
 
@@ -325,6 +346,8 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
   Mesh::VertexHandle vertex_handle;
   TagHandle coord_tag = 0; // store uncommitted coords for jacobi optimization 
   TagHandle* coord_tag_ptr = 0;
+  int outer_iter=0;
+  int inner_iter=0;
 
     // Clear culling flag, set hard fixed flag, etc on all vertices
   initialize_vertex_byte( mesh, domain, settings, err ); MSQ_ERRZERO(err);
@@ -345,7 +368,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
 
   helper->smoothing_init(err);  MSQ_ERRZERO(err);
 
-  bool did_some, all_culled;
+  bool inner_crit_terminated, all_culled;
   std::vector<Mesh::VertexHandle> patch_vertices;
   std::vector<Mesh::ElementHandle> patch_elements;
   std::vector<Mesh::VertexHandle> fixed_vertices;
@@ -391,25 +414,68 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
   if (MSQ_CHKERR(err)) goto ERROR;
    
    // Loop until outer termination criterion is met
-  did_some = true;
+  inner_crit_terminated = false;
   all_culled = false;
   for (;;)
   {
-    bool done = all_culled || outer_crit->terminate();
-    if (!did_some) {
-      MSQ_SETERR(err)("Inner termiation criterion satisfied for all patches "
+    if (0)
+      std::cout << "P[" << get_parallel_rank() << "] tmp srk inner_iter= " << inner_iter << " outer_iter= " << outer_iter << std::endl;
+
+    ++outer_iter;
+
+    /// srkenno@sandia.gov 1/19/12: the logic here was changed so that all proc's must agree
+    ///   on the values used for outer and inner termination before the iteration is stopped.
+    ///   Previously, the ParallelHelper::communicate_all_true method returned true if any
+    ///   proc sent it a true value, which seems to be a bug, at least in the name of the method.
+    ///   The method has been changed to return true only if all proc's values are true.  
+    ///   In the previous version, this meant that if any proc hit its inner or outer
+    ///   termination criterion, the loop was exited, and thus some parts of the mesh
+    ///   are potentially left unconverged.  Also, if the outer criterion was satisfied on
+    ///   part of the mesh (say a uniform part), the iterations were not executed at all.
+    /// Also, changed name of "did_some" to "inner_crit_terminated", and flipped its boolean 
+    ///   value to be consistent with the name - for readability and for correctness since
+    ///   we want to communicate a true value through the helper.
+
+    bool outer_crit_terminated = outer_crit->terminate();
+    bool outer_crit_terminated_local = outer_crit_terminated;
+    helper->communicate_all_true( outer_crit_terminated, err ); 
+
+    bool inner_crit_terminated_local = inner_crit_terminated;
+    helper->communicate_all_true( inner_crit_terminated, err ); 
+
+    bool all_culled_local = all_culled;
+    helper->communicate_all_true( all_culled, err ); 
+
+    bool done = all_culled || outer_crit_terminated;
+    if (inner_crit_terminated) {
+      MSQ_SETERR(err)("Inner termination criterion satisfied for all patches "
                       "without meeting outer termination criterion.  This is "
                       "an infinite loop.  Aborting.", MsqError::INVALID_STATE);
       done = true;
     }
-    
+
+    bool local_done=done;
+
     helper->communicate_all_true( done, err ); 
+
+    if (0)
+      std::cout << "P[" << get_parallel_rank() << "] tmp srk done= " << done << " local_done= " << local_done 
+                << " all_culled= " << all_culled 
+                << " outer_crit->terminate()= " << outer_crit->terminate()
+                << " outer_term= " << outer_crit_terminated
+                << " outer_term_local= " << outer_crit_terminated_local
+                << " inner_crit_terminated = " << inner_crit_terminated
+                << " inner_crit_terminated_local = " << inner_crit_terminated_local
+                << " all_culled = " << all_culled
+                << " all_culled_local = " << all_culled_local
+                << std::endl;
+
     if (MSQ_CHKERR(err)) goto ERROR;
     if (done)
       break;
     
     
-    did_some = false;
+    inner_crit_terminated = true;
     all_culled = true;
 
     ///*** smooth the interior ***////
@@ -475,8 +541,9 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
         // criterion has already been met.
       if (!inner_crit->terminate())
       {
-        did_some = true;
-        
+        inner_crit_terminated = false;
+        ++inner_iter;
+
           // Call optimizer - should loop on inner_crit->terminate()
         this->optimize_vertex_positions( patch, err );
         if (MSQ_CHKERR(err)) goto ERROR;
@@ -494,6 +561,11 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
         if (MSQ_CHKERR(err)) goto ERROR;
       }
     }
+
+    /// srkenno@sandia.gov save vertex bytes since boundary smoothing changes them
+    std::vector<unsigned char> saved_bytes;
+    checkpoint_bytes(mesh, saved_bytes, err); 
+    if (MSQ_CHKERR(err)) goto ERROR;
 
     helper->communicate_first_independent_set(err); 
     if (MSQ_CHKERR(err)) goto ERROR;
@@ -538,7 +610,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
         // criterion has already been met.
 	if (!inner_crit->terminate())
 	{
-	  did_some = true;
+	  inner_crit_terminated = false;
 	  
           // Call optimizer - should loop on inner_crit->terminate()
 	  this->optimize_vertex_positions( patch, err );
@@ -560,6 +632,10 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
       helper->communicate_next_independent_set(err);
       if (MSQ_CHKERR(err)) goto ERROR;
     }
+
+    /// srkenno@sandia.gov restore vertex bytes since boundary smoothing changes them
+    restore_bytes(mesh, saved_bytes, err);
+    if (MSQ_CHKERR(err)) goto ERROR;
 
     if (jacobiOpt)
       commit_jacobi_coords( coord_tag, mesh, err );

@@ -69,6 +69,20 @@ class MeshUtil
     void edge_length_distribution( SimpleStats& result, MsqError& err );
 
     void lambda_distribution( SimpleStats& result, MsqError& err );
+
+    /**\brief Given two meshes, check if they are different, return true if they are.
+     * 
+     *\param mesh1 the first mesh to compare
+     *\param mesh2 the second mesh to compare
+     *\param tol a relative tolerance for coordinates
+     *\param do_print flag for printing differences 
+     *
+     * \NOTE Only basic mesh properties are checked, number of vertices & elements,
+     * element connectivity, and coordinates (within the given relative tolerance).
+     */
+  static bool meshes_are_different(Mesh& mesh1, Mesh& mesh2, MsqError& err, double tol=1.e-5, bool do_print = false);
+
+
 };
 
 
