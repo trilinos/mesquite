@@ -236,6 +236,7 @@ T* arrptr( std::vector< T >& v, bool check_zero_size=false )
 {
   if (check_zero_size && !v.size()) return 0;
   assert(!v.empty());
+  if (check_zero_size && !v.size()) return 0;
   return &v[0];
 }
 template <typename T> inline 
@@ -243,6 +244,7 @@ const T* arrptr( const std::vector< T >& v, bool check_zero_size=false )
 {
   if (check_zero_size && !v.size()) return 0;
   assert(!v.empty());
+  if (check_zero_size && !v.size()) return 0;
   return &v[0];
 }
 
