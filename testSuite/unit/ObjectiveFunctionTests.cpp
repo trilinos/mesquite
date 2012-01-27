@@ -297,7 +297,7 @@ void ObjectiveFunctionTests::test_clone( ObjectiveFunctionTemplate* of )
   }
   
     // build up some saved state in the objective function
-  of->clear();
+//  of->clear();
   const double vals1[] = { 1.0, 3.0, 4.0, 8.0 };
   const size_t vals1_len = sizeof(vals1)/sizeof(vals1[0]);
   const double vals2[] = { 21.5, 11.1, 30.0, 0.5 };
