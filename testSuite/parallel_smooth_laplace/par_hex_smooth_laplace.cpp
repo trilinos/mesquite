@@ -102,7 +102,7 @@ int main( int argc, char* argv[] )
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
-  if (nprocs != 2) { cerr << "parallel_laplace_smooth test can only be run with 2 processors" << std::endl; return 1; }
+  if (nprocs != 2) { cerr << "parallel_laplace_smooth test can only be run with 2 processors" << std::endl; return 0; }
 
   /* create processor-specific file names */
   ostringstream in_name, out_name, gold_name;
