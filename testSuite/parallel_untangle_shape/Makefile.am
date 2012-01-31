@@ -6,4 +6,4 @@ par_hex_untangle_shape_DEPENDENCIES = $(LDADD)
 TESTS = $(check_PROGRAMS)
 EXTRA_DIST = CMakeLists.txt
 
-MOSTLYCLEANFILES = *.*.vtk
+MOSTLYCLEANFILES = *.*.vtk *.gpt
