@@ -101,6 +101,7 @@ using std::endl;
 using namespace Mesquite;
 
 #define VTK_3D_DIR MESH_FILES_DIR "3D/VTK/"
+#define VTK_2D_DIR MESH_FILES_DIR "2D/VTK/"
 
 using namespace std;
   
@@ -402,25 +403,21 @@ void ParShapeImprover::run(Mesh &mesh, MeshDomain *domain, MsqError& err, bool a
     }
 }
 
-
-int main( int argc, char* argv[] )
+static int test(std::string filename_prefix, std::string mesh_topology_name, MeshDomain *domain=0)
 {
-  /* init MPI */
   int rank, nprocs;
-  if (MPI_SUCCESS != MPI_Init(&argc, &argv)) {
-    cerr << "MPI_Init failed." << endl;
-    return 2;
-  }
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
-  if (nprocs != 2) { cerr << "parallel_laplace_smooth test can only be run with 2 processors" << std::endl; return 0; }
+  if (nprocs > 2) { cerr << "parallel_untangle_shape::test(" << mesh_topology_name << " can only be run with 1 or 2 processors" << std::endl; return 0; }
 
   /* create processor-specific file names */
   ostringstream in_name, out_name, gold_name;
-  in_name << VTK_3D_DIR << "par_untangle_original_hex_mesh." << nprocs << "." << rank << ".vtk";
-  gold_name << VTK_3D_DIR << "par_untangle_smoothed_hex_mesh." << nprocs << "." << rank << ".vtk";
-  out_name << "par_untangle_smoothed_hex_mesh." << nprocs << "." << rank << ".vtk";
+  in_name << filename_prefix << "par_untangle_original_" << mesh_topology_name << "_mesh." << nprocs << "." << rank << ".vtk";
+  gold_name << filename_prefix << "par_untangle_smoothed_" << mesh_topology_name << "_mesh." << nprocs << "." << rank << ".vtk";
+  out_name << "par_untangle_smoothed_" << mesh_topology_name << "_mesh." << nprocs << "." << rank << ".vtk";
+
+  cout << "in_name= " << in_name.str() << " gold_name= " << gold_name.str() << " out_name= " << out_name.str() << std::endl;
 
   /* load different mesh files on each processor */
   MsqError err;
@@ -446,26 +443,50 @@ int main( int argc, char* argv[] )
 
   ParShapeImprover si(innerIter);
   //Mesh *pmesh = &parallel_mesh;
-  si.run(parallel_mesh, 0, err, always_smooth, msq_debug);
+  si.run(parallel_mesh, domain, err, always_smooth, msq_debug);
   if (err) {cerr << err << endl; return 1; }
 
   /* write mesh */
   mesh.write_vtk(out_name.str().c_str(),err);
   if (err) {cerr << err << endl; return 1;}
 
+  //std::cout << "P[ " << rank <<"] reading gold..." << std::endl;
+
   /* compare mesh with gold copy */
   MeshImpl gold;
   gold.read_vtk(gold_name.str().c_str(),err);
   if (err) {cerr << err << endl; return 1;}
 
+  //std::cout << "P[ " << rank <<"] read gold, checking mesh diff..." << std::endl;
   bool do_print=true;
   double tol = 1.e-5;
   bool diff = MeshUtil::meshes_are_different(mesh, gold, err, tol, do_print);
   if (err) {cerr << err << endl; return 1;}
+  //std::cout << "P[ " << rank <<"] read gold, checking mesh diff...done" << std::endl;
 
   if (diff) {cerr << "Error, computed mesh different from gold copy" << std::endl; return 1;}
   
   print_timing_diagnostics(cout);
+
+  return 0;
+}
+
+int main( int argc, char* argv[] )
+{
+  /* init MPI */
+  if (MPI_SUCCESS != MPI_Init(&argc, &argv)) {
+    cerr << "MPI_Init failed." << endl;
+    return 2;
+  }
+
+  Vector3D pnt(0,0,0);
+  Vector3D s_norm(0,0,1);
+  PlanarDomain msq_geom(s_norm, pnt);
+
+  int t1 = test(VTK_2D_DIR, "quad", &msq_geom); 
+  if (t1) return t1;
+  t1 = test(VTK_3D_DIR, "hex");
+  if (t1) return t1;
 
   MPI_Finalize();
   return 0;
