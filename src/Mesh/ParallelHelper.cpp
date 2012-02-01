@@ -8,6 +8,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <algorithm>
+#include <time.h>
 
 #include "MsqVertex.hpp"
 #include "MsqError.hpp"
@@ -183,7 +184,14 @@ static double generate_random_number(int generate_random_numbers, int proc_id, s
       xsubi[0] = (unsigned short)(65535 & (mist >> 16)); 
     } 
     xsubi[2] = proc_id;
+    
+#if (defined WIN32 || defined WIN64)
+    time_t seed = (gid + xsubi[1]) / ((time(NULL) % 10)+1);
+    srand((int)seed);
+    return rand() / (RAND_MAX+1.0);
+#else
     return erand48(xsubi);
+#endif
   }
   else if (generate_random_numbers == 2)
   {
@@ -207,7 +215,14 @@ static double generate_random_number(int generate_random_numbers, int proc_id, s
       xsubi[0] = (unsigned short)(65535 & (mist >> 16));
     }
     xsubi[2] = proc_id ^ xsubi[1];
+
+#if (defined WIN32 || defined WIN64)
+    time_t seed = (gid + xsubi[1]) / ((time(NULL) % 10)+1);
+    srand((int)seed);
+    return rand() / (RAND_MAX+1.0);
+#else
     return erand48(xsubi);
+#endif
   }
   else if (generate_random_numbers == 3)
   {
@@ -226,7 +241,14 @@ static double generate_random_number(int generate_random_numbers, int proc_id, s
     xsubi[0] = (unsigned short)(key >> 48);
     xsubi[1] = (unsigned short)(key >> 32);
     xsubi[2] = (unsigned short)(key >> 16);
+
+#if (defined WIN32 || defined WIN64)
+    time_t seed = (gid + xsubi[1]) / ((time(NULL) % 10)+1);
+    srand((int)seed);
+    return rand() / (RAND_MAX+1.0);
+#else
     return erand48(xsubi);
+#endif
   }
   else
   {
@@ -573,7 +595,7 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
       num_sends_of_unghost[unghost_procs[j]]++;
     }
     /* now we process messages from all other processors that want unused ghost node information */
-    int unghost_procs_array[procs_max];
+    int *unghost_procs_array = new int[procs_max];
     for (i = 0; i < procs_num; i++)
     {
       MPI_Status status;
@@ -583,9 +605,10 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
       MPI_Get_count(&status, MPI_INT, &count);
       for (j = 0; j < count; j++)
       {
-	num_sends_of_unghost[unghost_procs_array[j]]++;
+	       num_sends_of_unghost[unghost_procs_array[j]]++;
       }
     }
+    delete [] unghost_procs_array;
   }
   else
   {
