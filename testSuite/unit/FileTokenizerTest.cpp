@@ -8,6 +8,11 @@ using std::cout;
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#ifdef WIN32
+#include <string>
+#include <direct.h>
+#endif
 
 using Mesquite::FileTokenizer;
 using Mesquite::MsqPrintError;
@@ -47,7 +52,21 @@ public:
   
   FILE* make_file()
   {
+#ifdef WIN32
+    char name1[L_tmpnam_s];
+    errno_t err = tmpnam_s( name1, L_tmpnam_s );
+    
+    // Get the current working directory: 
+    char* buffer;
+    buffer = _getcwd( NULL, 0 );
+    std::string full_path(buffer);
+    std::string temp_name(name1);
+    full_path = full_path + temp_name;
+    FILE* file = fopen( full_path.c_str(), "w+");
+#elif
     FILE* file = tmpfile();
+#endif
+
     CPPUNIT_ASSERT( !!file );
     const char* const* t_iter = tokens;
     const char* const* s_iter = spaces;
