@@ -312,7 +312,6 @@ private:
   bool degenHexPyramid; //!< See: ideal_pyramid_base_equals_height()
   std::vector<EntityTopology> types;
   const Settings* mSettings;
-  Settings defaultSettings;
   PlanarDomain geomPlane;
 };
 

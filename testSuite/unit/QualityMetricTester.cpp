@@ -85,7 +85,7 @@ QualityMetricTester::QualityMetricTester(
                      const Settings* settings )
   : degenHexPyramid(false), 
     types( len ), 
-    mSettings( settings ? settings : &defaultSettings ), 
+    mSettings( settings ), 
     geomPlane( Vector3D(0,0,1), Vector3D(0,0,0) )
 {
   std::copy( supported_elem_types, supported_elem_types+len, types.begin() );
@@ -96,7 +96,7 @@ QualityMetricTester::QualityMetricTester(
                      const Settings* settings )
   : degenHexPyramid(false), 
     types( types_in_group(group) ),
-    mSettings( settings ? settings : &defaultSettings ), 
+    mSettings( settings ), 
     geomPlane( Vector3D(0,0,1), Vector3D(0,0,0) )
 {
 }
@@ -134,8 +134,6 @@ void QualityMetricTester::get_ideal_tris( PatchData& pd, bool unit_area )
       ideal_tri_verts[i] *= unit_tri_scale;
   }
   
-  if (!pd.get_settings())
-    pd.attach_settings( mSettings );
   pd.set_domain( &geomPlane );
   
   MsqPrintError err( std::cout );
@@ -171,8 +169,6 @@ void QualityMetricTester::get_ideal_quads( PatchData& pd )
                                              0, 7, 8, 1 };
   const bool fixed[] = { false, true, true, true, true, true, true, true, true };
   
-  if (!pd.get_settings())
-    pd.attach_settings( mSettings );
   pd.set_domain( &geomPlane );
   
   MsqPrintError err( std::cout );
@@ -223,9 +219,6 @@ void QualityMetricTester::get_ideal_hexes( PatchData& pd )
   for (size_t f = 1; f < 27; ++f)
     fixed[f] = true;
   
-  if (!pd.get_settings())
-    pd.attach_settings( mSettings );
-  
   MsqPrintError err( std::cout );
   pd.fill( 27, ideal_hex_verts, 8, HEXAHEDRON, ideal_hex_elems, fixed, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
@@ -240,8 +233,6 @@ void QualityMetricTester::get_ideal_element( EntityTopology type,
                                              PatchData& pd,
                                              int free_vertex_index )
 {
-  if  (!pd.get_settings())
-    pd.attach_settings( mSettings );
   if (TopologyInfo::dimension(type) == 2)
     pd.set_domain( &geomPlane );
   
@@ -426,6 +417,8 @@ void QualityMetricTester::test_type_is_supported( EntityTopology type, QualityMe
   bool rval;
     // create patch containing only elements of sepcified type
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   get_ideal_element( type, false, pd );
     // get list of evaluation locations in patch
   std::vector<size_t> handles;
@@ -463,6 +456,8 @@ void QualityMetricTester::test_type_is_not_supported( EntityTopology type, Quali
   bool rval;
     // create patch containing only elements of sepcified type
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   get_ideal_element( type, false, pd );
     // get list of evaluation locations in patch
   std::vector<size_t> handles;
@@ -518,6 +513,8 @@ static void test_evaluate( PatchData& pd, QualityMetric* qm, double value )
 void QualityMetricTester::test_evaluate_unit_element( QualityMetric* qm, EntityTopology type, double value )
 {
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   get_ideal_element( type, true, pd );
   test_evaluate( pd, qm, value );
 }
@@ -525,6 +522,8 @@ void QualityMetricTester::test_evaluate_unit_element( QualityMetric* qm, EntityT
 void QualityMetricTester::test_evaluate_unit_edge_element( QualityMetric* qm, EntityTopology type, double value )
 {
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   get_ideal_element( type, false, pd );
   test_evaluate( pd, qm, value );
 }
@@ -532,6 +531,8 @@ void QualityMetricTester::test_evaluate_unit_edge_element( QualityMetric* qm, En
 void QualityMetricTester::test_evaluate_unit_tris_about_vertex( QualityMetric* qm, double value )
 {
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   get_ideal_tris( pd, true );
   test_evaluate( pd, qm, value );
 }
@@ -539,6 +540,8 @@ void QualityMetricTester::test_evaluate_unit_tris_about_vertex( QualityMetric* q
 void QualityMetricTester::test_evaluate_unit_quads_about_vertex( QualityMetric* qm, double value )
 {
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   get_ideal_quads( pd );
   test_evaluate( pd, qm, value );
 }
@@ -546,6 +549,8 @@ void QualityMetricTester::test_evaluate_unit_quads_about_vertex( QualityMetric* 
 void QualityMetricTester::test_evaluate_unit_hexes_about_vertex( QualityMetric* qm, double value )
 {
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   get_ideal_hexes( pd );
   test_evaluate( pd, qm, value );
 }
@@ -553,6 +558,8 @@ void QualityMetricTester::test_evaluate_unit_hexes_about_vertex( QualityMetric* 
 void QualityMetricTester::test_evaluate_unit_edge_tris_about_vertex( QualityMetric* qm, double value )
 {
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   get_ideal_tris( pd, false );
   test_evaluate( pd, qm, value );
 }
@@ -561,6 +568,8 @@ void QualityMetricTester::test_get_element_evaluations( QualityMetric* qm )
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   unsigned count = 0;
   std::vector<size_t> handles;
 
@@ -604,6 +613,8 @@ void QualityMetricTester::test_get_vertex_evaluations( QualityMetric* qm )
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   unsigned count = 0;
   std::vector<size_t> handles;
 
@@ -638,6 +649,8 @@ void QualityMetricTester::test_get_sample_evaluations( QualityMetric* qm )
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   unsigned count = 0;
   std::vector<size_t> handles;
   
@@ -703,6 +716,8 @@ void QualityMetricTester::test_get_edge_evaluations( EdgeQM* qm )
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles;
 
   CPPUNIT_ASSERT(!types.empty());
@@ -719,6 +734,8 @@ void QualityMetricTester::test_get_in_element_evaluations( ElemSampleQM* qm )
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles1, handles2;
   
   CPPUNIT_ASSERT(!types.empty());
@@ -752,6 +769,10 @@ void QualityMetricTester::test_get_indices_fixed( QualityMetric* qm )
 {
   MsqPrintError err( std::cout );
   PatchData pd1, pd2;
+  if (mSettings) {
+    pd1.attach_settings(mSettings);  
+    pd2.attach_settings(mSettings);
+  }
   std::vector<size_t> handles1, handles2, indices1, indices2;
   double qm_val1, qm_val2;
   
@@ -805,6 +826,8 @@ void QualityMetricTester::test_get_element_indices( QualityMetric* qm )
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles, indices, verts;
   double qm_val;
   
@@ -842,6 +865,8 @@ void QualityMetricTester::test_get_vertex_indices( QualityMetric* qm )
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> indices, verts;
   double qm_val;
   
@@ -877,6 +902,10 @@ void QualityMetricTester::test_get_edge_indices( EdgeQM* qm )
 {
   MsqPrintError err( std::cout );
   PatchData pd, pd2;
+  if (mSettings) {
+    pd.attach_settings(mSettings);
+    pd2.attach_settings(mSettings);
+  }
   std::vector<size_t> handles, indices, indices2, verts;
   std::vector<size_t>::iterator it;
   double qm_val;
@@ -928,6 +957,8 @@ void QualityMetricTester::test_get_sample_indices( QualityMetric* qm )
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles, indices, verts;
   double qm_val;
   
@@ -973,6 +1004,8 @@ void QualityMetricTester::compare_eval_and_eval_with_indices( QualityMetric* qm 
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles, indices;
   double qm_val1, qm_val2;
   bool rval;
@@ -1028,6 +1061,8 @@ void QualityMetricTester::compare_eval_with_indices_and_eval_with_gradient( Qual
 void QualityMetricTester::compare_eval_with_indices_and_eval_with_gradient( QualityMetric* qm )
 {
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   
   CPPUNIT_ASSERT( !types.empty() );
   for (size_t i = 0; i < types.size(); ++i) {
@@ -1070,6 +1105,8 @@ void QualityMetricTester::compare_eval_with_indices_and_eval_with_hessian(
 void QualityMetricTester::compare_eval_with_indices_and_eval_with_hessian( QualityMetric* qm )
 {
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   
   CPPUNIT_ASSERT( !types.empty() );
   for (size_t i = 0; i < types.size(); ++i) {
@@ -1112,6 +1149,8 @@ void QualityMetricTester::compare_eval_with_indices_and_eval_with_diagonal(
 void QualityMetricTester::compare_eval_with_indices_and_eval_with_diagonal( QualityMetric* qm )
 {
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   
   CPPUNIT_ASSERT( !types.empty() );
   for (size_t i = 0; i < types.size(); ++i) {
@@ -1157,6 +1196,8 @@ void QualityMetricTester::compare_eval_with_grad_and_eval_with_hessian(
 void QualityMetricTester::compare_eval_with_grad_and_eval_with_hessian( QualityMetric* qm )
 {
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
  
   CPPUNIT_ASSERT( !types.empty() );
   for (size_t i = 0; i < types.size(); ++i) {
@@ -1202,6 +1243,8 @@ void QualityMetricTester::compare_eval_with_grad_and_eval_with_diagonal(
 void QualityMetricTester::compare_eval_with_grad_and_eval_with_diagonal( QualityMetric* qm )
 {
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
  
   CPPUNIT_ASSERT( !types.empty() );
   for (size_t i = 0; i < types.size(); ++i) {
@@ -1255,6 +1298,8 @@ void QualityMetricTester::compare_eval_with_diag_and_eval_with_hessian(
 void QualityMetricTester::compare_eval_with_diag_and_eval_with_hessian( QualityMetric* qm )
 {
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
  
   CPPUNIT_ASSERT( !types.empty() );
   for (size_t i = 0; i < types.size(); ++i) {
@@ -1302,6 +1347,8 @@ void QualityMetricTester::compare_analytical_and_numerical_gradients(
 void QualityMetricTester::compare_analytical_and_numerical_gradients( QualityMetric* qm )
 {
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   
   CPPUNIT_ASSERT( !types.empty() );
   for (size_t i = 0; i < types.size(); ++i) {
@@ -1365,6 +1412,8 @@ void QualityMetricTester::compare_analytical_and_numerical_hessians(
 void QualityMetricTester::compare_analytical_and_numerical_hessians( QualityMetric* qm )
 {
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   
   CPPUNIT_ASSERT( !types.empty() );
   for (size_t i = 0; i < types.size(); ++i) {
@@ -1418,6 +1467,8 @@ void QualityMetricTester::compare_analytical_and_numerical_diagonals(
 void QualityMetricTester::compare_analytical_and_numerical_diagonals( QualityMetric* qm )
 {
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   MsqError err;
   
   CPPUNIT_ASSERT( !types.empty() );
@@ -1538,6 +1589,8 @@ void QualityMetricTester::test_transform_invariant( QualityMetric* qm,
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles;
   double qmval;
   bool rval;
@@ -1579,6 +1632,8 @@ void QualityMetricTester::test_grad_transform_invariant( QualityMetric* qm,
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles, indices2;
   std::vector<Vector3D> grad2;
   double qmval;
@@ -1632,6 +1687,8 @@ void QualityMetricTester::test_hessian_transform_invariant( QualityMetric* qm,
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles, indices2;
   std::vector<Vector3D> grad1, grad2;
   std::vector<Matrix3D> hess2;
@@ -1729,6 +1786,8 @@ void QualityMetricTester::test_measures_transform( QualityMetric* qm,
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles;
   double qmval1, qmval2;
   bool rval;
@@ -1795,10 +1854,13 @@ static void test_bad_element( QualityMetricTester* instance,
                               QualityMetric* qm, 
                               patch_func_t type_func, 
                               bool should_succeed,
-                              const std::vector<EntityTopology>& types )
+                              const std::vector<EntityTopology>& types,
+                              const Settings* mSettings )
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles;
   double qmval;
   bool rval;
@@ -1820,16 +1882,18 @@ static void test_bad_element( QualityMetricTester* instance,
 }
 
 void QualityMetricTester::test_evaluate_inverted_element( QualityMetric* qm, bool should_succeed )
-  { test_bad_element( this, qm, &QualityMetricTester::get_inverted_element, should_succeed, types ); }
+  { test_bad_element( this, qm, &QualityMetricTester::get_inverted_element, should_succeed, types, mSettings ); }
 void QualityMetricTester::test_evaluate_degenerate_element( QualityMetric* qm, bool should_succeed )
-  { test_bad_element( this, qm, &QualityMetricTester::get_degenerate_element, should_succeed, types ); }
+  { test_bad_element( this, qm, &QualityMetricTester::get_degenerate_element, should_succeed, types, mSettings ); }
 void QualityMetricTester::test_evaluate_zero_element( QualityMetric* qm, bool should_succeed )
-  { test_bad_element( this, qm, &QualityMetricTester::get_zero_element, should_succeed, types ); }
+  { test_bad_element( this, qm, &QualityMetricTester::get_zero_element, should_succeed, types, mSettings ); }
 
 void QualityMetricTester::test_measures_quality( QualityMetric* qm )
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles;
   double qmval1, qmval2;
   bool rval;
@@ -1890,6 +1954,8 @@ void QualityMetricTester::test_domain_deviation_quality( QualityMetric* qm )
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles, indices;
   size_t i;
   double qmval1, qmval2;
@@ -1976,6 +2042,8 @@ void QualityMetricTester::test_domain_deviation_gradient( QualityMetric* qm )
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles, indices;
   std::vector<Vector3D> grad;
   size_t i;
@@ -2038,6 +2106,8 @@ void QualityMetricTester::test_gradient_reflects_quality( QualityMetric* qm )
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles, indices;
   std::vector<Vector3D> grad;
   double qmval;
@@ -2087,6 +2157,8 @@ void QualityMetricTester::test_measures_vertex_quality( QualityMetric* qm )
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   double qmval1, qmval2;
   bool rval;
   bool increasing = true;
@@ -2137,6 +2209,8 @@ void QualityMetricTester::test_vertex_gradient_reflects_quality( QualityMetric* 
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> indices;
   std::vector<Vector3D> grad;
   double qmval;
@@ -2190,6 +2264,8 @@ void QualityMetricTester::test_ideal_element_zero_gradient( QualityMetric* qm, b
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles, indices;
   std::vector<Vector3D> grad;
   double qmval;
@@ -2221,6 +2297,8 @@ void QualityMetricTester::test_ideal_element_zero_vertex_gradient(
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles, indices;
   std::vector<Vector3D> grad;
   double qmval;
@@ -2324,6 +2402,8 @@ void QualityMetricTester::test_ideal_element_positive_definite_Hessian(
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles, indices;
   std::vector<Vector3D> grad;
   std::vector<Matrix3D> Hess;
@@ -2365,6 +2445,8 @@ void QualityMetricTester::test_symmetric_Hessian_diagonal_blocks( QualityMetric*
 {
   MsqPrintError err( std::cout );
   PatchData pd;
+  if (mSettings)
+    pd.attach_settings(mSettings);  
   std::vector<size_t> handles, indices;
   std::vector<Vector3D> grad;
   std::vector<Matrix3D> Hess;
@@ -2429,6 +2511,9 @@ void QualityMetricTester::test_gradient_with_fixed_vertex( EntityTopology type,
   PatchData pd;
   if (settings)
     pd.attach_settings(settings);
+  else if (mSettings)
+    pd.attach_settings(mSettings);
+  
   std::vector<size_t> handles, indices, indices_fixed, conn;
   std::vector<Vector3D> grad, grad_fixed;
   double val, val_fixed;
@@ -2482,7 +2567,10 @@ void QualityMetricTester::test_hessian_with_fixed_vertex( EntityTopology type,
 {
   MsqPrintError err( std::cout );
   PatchData pd;
-  if (settings) pd.attach_settings(settings);
+  if (settings) 
+    pd.attach_settings(settings);
+  else if (mSettings)
+    pd.attach_settings(mSettings);
   std::vector<size_t> handles, indices, indices_fixed, conn;
   std::vector<Vector3D> grad, grad_fixed;
   std::vector<Matrix3D> hess, hess_fixed;
@@ -2540,7 +2628,10 @@ void QualityMetricTester::test_diagonal_with_fixed_vertex( EntityTopology type,
 {
   MsqPrintError err( std::cout );
   PatchData pd;
-  if (settings) pd.attach_settings(settings);
+  if (settings) 
+    pd.attach_settings(settings);
+  else if (mSettings)
+    pd.attach_settings(mSettings);
   std::vector<size_t> handles, indices, indices_fixed, conn;
   std::vector<Vector3D> grad, grad_fixed;
   std::vector<SymMatrix3D> hess, hess_fixed;
