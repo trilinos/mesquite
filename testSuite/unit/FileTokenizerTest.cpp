@@ -63,7 +63,7 @@ public:
     std::string temp_name(name1);
     full_path = full_path + temp_name;
     FILE* file = fopen( full_path.c_str(), "w+");
-#elif
+#else
     FILE* file = tmpfile();
 #endif
 
