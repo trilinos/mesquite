@@ -56,6 +56,7 @@
 #include <cmath>
 #include <cfloat>
 #include <climits>
+#include <cstddef>
 #ifdef HAVE_CBRT
 #  include <math.h>
 #endif
