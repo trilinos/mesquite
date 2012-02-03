@@ -25,7 +25,7 @@
   ***************************************************************** */
 
 #ifndef MESQUITE_MESH_IMPL_TAGS_HPP
-#define MSSQUITE_MESH_IMPL_TAGS_HPP
+#define MESQUITE_MESH_IMPL_TAGS_HPP
 
 #include "Mesquite.hpp"
 #include "MeshInterface.hpp"
