@@ -43,6 +43,7 @@
 #include <vector>
 #include <algorithm>
 #include <limits>
+#include <sstream>
 
 namespace MESQUITE_NS {
 
@@ -185,7 +186,11 @@ bool MeshUtil::meshes_are_different(Mesh& mesh1, Mesh& mesh2, MsqError& err, dou
       double dist = Vector3D::distance_between(vert1, vert2);
       double v1 = vert1.length();
       double v2 = vert2.length();
-      if ( dist > 0.5*(v1+v2)*tol ) MDRET("vertices coordinates differ more than tolerance");
+      if ( dist > 0.5*(v1+v2)*tol ) {
+        std::ostringstream ost;
+        ost << "vertices coordinates differ more than tolerance [" << tol << "], vert1= " << vert1 << " vert2= " << vert2;
+        MDRET(ost.str());
+      }
     }
 
   for (unsigned i=0; i < connectivity1.size(); i++)
@@ -196,7 +201,11 @@ bool MeshUtil::meshes_are_different(Mesh& mesh1, Mesh& mesh2, MsqError& err, dou
       double dist = Vector3D::distance_between(vert1, vert2);
       double v1 = vert1.length();
       double v2 = vert2.length();
-      if ( dist > 0.5*(v1+v2)*tol ) MDRET("connectivity coordinates differ more than tolerance");
+      if ( dist > 0.5*(v1+v2)*tol ) {
+        std::ostringstream ost;
+        ost << "connectivity coordinates differ more than tolerance [" << tol << "], vert1= " << vert1 << " vert2= " << vert2;
+        MDRET(ost.str());
+      }
     }
 
   return false;

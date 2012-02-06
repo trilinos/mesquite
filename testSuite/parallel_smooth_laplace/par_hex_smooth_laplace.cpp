@@ -126,6 +126,7 @@ int main( int argc, char* argv[] )
 
   /* do Laplacian smooth */
   LaplaceWrapper optimizer;
+  optimizer.set_vertex_movement_limit_factor(1.e-5);
   optimizer.run_instructions(&parallel_mesh, err);
   if (err) {cerr << err << endl; return 1; }
 
@@ -139,7 +140,7 @@ int main( int argc, char* argv[] )
   if (err) {cerr << err << endl; return 1;}
 
   bool do_print=true;
-  double tol = 1.e-5;
+  double tol = 1.e-4;
   bool diff = MeshUtil::meshes_are_different(mesh, gold, err, tol, do_print);
   if (err) {cerr << err << endl; return 1;}
 

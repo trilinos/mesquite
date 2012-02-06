@@ -111,9 +111,10 @@ const double DEF_SUC_EPS = 1e-4;
 class ParShapeImprover
 {
   int innerIter;
+  double gradNorm;
 public:
 
-  ParShapeImprover(int inner_iterations=100) : innerIter(inner_iterations) {}
+  ParShapeImprover(int inner_iterations=100, double grad_norm=1.e-8) : innerIter(inner_iterations),gradNorm(grad_norm) {}
 
   class ParShapeImprovementWrapper : public Wrapper {
      
@@ -379,7 +380,7 @@ void ParShapeImprover::run(Mesh &mesh, MeshDomain *domain, MsqError& err, bool a
           bool always_smooth_local   = false;
 
           bool do_untangle_only = false;
-          ParShapeImprover::ParShapeImprovementWrapper siw(innerIter);
+          ParShapeImprover::ParShapeImprovementWrapper siw(innerIter,0.0,gradNorm);
           siw.m_do_untangle_only = do_untangle_only;
           if (pmesh)
             siw.run_instructions(pmesh, domain, mErr);
@@ -440,8 +441,9 @@ static int test(std::string filename_prefix, std::string mesh_topology_name, Mes
   int  msq_debug             = 0; // 1,2,3 for more debug info
   bool always_smooth         = true;
   int innerIter = 100;
+  double gradNorm = 1.e-9;
 
-  ParShapeImprover si(innerIter);
+  ParShapeImprover si(innerIter, gradNorm);
   //Mesh *pmesh = &parallel_mesh;
   si.run(parallel_mesh, domain, err, always_smooth, msq_debug);
   if (err) {cerr << err << endl; return 1; }
@@ -459,7 +461,7 @@ static int test(std::string filename_prefix, std::string mesh_topology_name, Mes
 
   //std::cout << "P[ " << rank <<"] read gold, checking mesh diff..." << std::endl;
   bool do_print=true;
-  double tol = 1.e-5;
+  double tol = 1.e-4;
   bool diff = MeshUtil::meshes_are_different(mesh, gold, err, tol, do_print);
   if (err) {cerr << err << endl; return 1;}
   //std::cout << "P[ " << rank <<"] read gold, checking mesh diff...done" << std::endl;
