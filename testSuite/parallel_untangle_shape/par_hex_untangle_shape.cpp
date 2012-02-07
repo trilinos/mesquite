@@ -438,7 +438,7 @@ static int test(std::string filename_prefix, std::string mesh_topology_name, Mes
   //LaplaceWrapper optimizer;
   //optimizer.run_instructions(&parallel_mesh, err);
 
-  int  msq_debug             = 2; // 1,2,3 for more debug info
+  int  msq_debug             = 0; // 1,2,3 for more debug info
   bool always_smooth         = true;
   int innerIter = 100;
   double gradNorm = 1.e-9;
