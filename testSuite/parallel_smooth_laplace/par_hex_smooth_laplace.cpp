@@ -53,6 +53,7 @@ example code shown therein.
 #include "MeshImpl.hpp"
 #include "MeshUtil.hpp"
 #include "MsqTimer.hpp"
+#include "MsqDebug.hpp"
 #include "Mesquite.hpp"
 #include "MsqError.hpp"
 #include "Vector3D.hpp"
@@ -102,7 +103,15 @@ int main( int argc, char* argv[] )
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
-  if (nprocs != 2) { cerr << "parallel_laplace_smooth test can only be run with 2 processors" << std::endl; return 0; }
+  if (nprocs > 2) { cerr << "parallel_laplace_smooth test can only be run with 1 or 2 processors" << std::endl; return 0; }
+
+  const int debug=0;  // 1,2,3 for more debug info
+  if (debug)
+    {
+      MsqDebug::enable(1);
+      if (debug > 1) MsqDebug::enable(2);
+      if (debug > 2) MsqDebug::enable(3);
+    }
 
   /* create processor-specific file names */
   ostringstream in_name, out_name, gold_name;
@@ -126,8 +135,9 @@ int main( int argc, char* argv[] )
 
   /* do Laplacian smooth */
   LaplaceWrapper optimizer;
-  optimizer.set_vertex_movement_limit_factor(1.e-6);
-  optimizer.set_iteration_limit(200);
+  optimizer.set_vertex_movement_limit_factor(1.e-10);
+  optimizer.set_iteration_limit(2000);
+  optimizer.enable_culling(false);
   optimizer.run_instructions(&parallel_mesh, err);
   if (err) {cerr << err << endl; return 1; }
 
