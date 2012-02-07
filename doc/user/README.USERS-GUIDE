@@ -13,7 +13,20 @@ How to build the Mesquite Users Guide (on Unix/Linux)
   Note: "make pdf" will build both a .pdf and postscript (.ps)
      version of the guide.
 
-3. To build only a postscript version:
+  To build only a postscript versioni, enter:
 
      make ps
 
+3. If you plan to generate the user Doxygen docuements, enter:
+
+     ./configure --enable-api-doc=FORMATLIST
+
+    as the second line in Step 2 above.
+
+    Available formats are HTML,PDF,PS,ALL. Default is no docs.
+    Multiple values must be separated by commas.
+
+4. To generate the user Doxygen docs:
+
+     cd to mesquite/doc/user/doxygen
+     enter "doxygen Mesquite-user.dox"
