@@ -126,7 +126,8 @@ int main( int argc, char* argv[] )
 
   /* do Laplacian smooth */
   LaplaceWrapper optimizer;
-  optimizer.set_vertex_movement_limit_factor(1.e-5);
+  optimizer.set_vertex_movement_limit_factor(1.e-6);
+  optimizer.set_iteration_limit(200);
   optimizer.run_instructions(&parallel_mesh, err);
   if (err) {cerr << err << endl; return 1; }
 
