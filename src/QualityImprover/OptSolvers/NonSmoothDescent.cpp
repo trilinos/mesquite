@@ -959,11 +959,11 @@ bool NonSmoothDescent::validity_check(PatchData& pd, MsqError &err)
     }
     else if (dDet < -dEps)
     {
-      valid = false;
+      return false;
     }
     else
     {
-      valid = false;
+      return false;
     }
   }  // end for i=1,numElements
   
