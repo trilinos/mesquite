@@ -763,7 +763,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
                         inner_crit->cull_vertices_global (patch, 
                                                           mesh, domain, settings,
                                                           obj_func, err);
-                        if (MSQ_CHKERR(err)) { MSQ_SETERR(perr)(" cull_vertices_global 2 ", MsqError::INVALID_STATE); PERROR_COND; } //goto ERROR;
+                    if (MSQ_CHKERR(err)) { MSQ_SETERR(perr)(" cull_vertices_global 2 ", MsqError::INVALID_STATE); PERROR_COND; } //goto ERROR;
                       }
         
           patch.update_mesh( err, coord_tag_ptr );
