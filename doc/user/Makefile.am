@@ -40,7 +40,8 @@ UG_SRCS = users-guide.tex \
 	meshqual3d.eps \
         mesquite.bib
 
-EXTRA_DIST = $(UG_SRCS)
+EXTRA_DIST = $(UG_SRCS) \
+	     README.USERS-GUIDE
 
 if WITH_USER_GUIDE_PDF
   pdf_DATA = users-guide.pdf
