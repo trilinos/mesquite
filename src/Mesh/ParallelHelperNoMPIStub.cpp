@@ -19,4 +19,7 @@ int get_parallel_size()
 
 double reduce_parallel_max(double value) {return value;}
 
+void parallel_barrier() {}
+
+
 }

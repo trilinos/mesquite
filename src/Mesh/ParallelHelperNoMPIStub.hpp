@@ -45,7 +45,7 @@ namespace MESQUITE_NS
   int get_parallel_rank();
   int get_parallel_size();
   double reduce_parallel_max(double value);
-  void parallel_barrier() {}
+  void parallel_barrier();
   
 } // namespace
 
