@@ -24,6 +24,14 @@
 
 namespace MESQUITE_NS {
 
+void parallel_barrier()
+{
+  int is_init=0;
+  int err = MPI_Initialized(&is_init);
+  if (MPI_SUCCESS != err) return;
+  if (is_init) MPI_Barrier(MPI_COMM_WORLD);
+}
+
 int get_parallel_rank()
 {
   int rank=0;
@@ -42,6 +50,22 @@ int get_parallel_size()
   if (MPI_SUCCESS != err) return 0;
   if (is_init) MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
   return nprocs;
+}
+
+double reduce_parallel_max(double value)
+{
+  int is_init=0;
+  int err = MPI_Initialized(&is_init);
+  if (MPI_SUCCESS != err) return value;
+  if (!is_init) return value;
+
+  double d_max[1];
+  double d_max_recv[1];
+  d_max[0] = value;
+  int rval = MPI_Allreduce(d_max, d_max_recv, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+  if (MPI_SUCCESS != rval) return value;
+
+  return d_max_recv[0];
 }
 
 static const char* mpi_err_string( int error_code )
@@ -337,6 +361,19 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
   mesh->vertices_get_global_id(ARRPTR(vertices),ARRPTR(gid),num_vertex,err); MSQ_ERRRTN(err);
   mesh->vertices_get_byte(ARRPTR(vertices),ARRPTR(app_fixed),num_vertex,err); MSQ_ERRRTN(err);
   mesh->vertices_get_processor_id(ARRPTR(vertices),ARRPTR(proc_owner),num_vertex,err); MSQ_ERRRTN(err);
+  if (0)
+    {
+      int ncull=0;
+      for (i = 0; i < num_vertex; ++i)
+        {
+          if (app_fixed[i] & MsqVertex::MSQ_CULLED)
+            {
+              ++ncull;
+            }
+        }
+      std::cout << "P[" << rank << "] smoothing_init ncull= " << ncull << " num_vertex= " << num_vertex << std::endl;
+    }
+
   /* only interested in fixed flag from vertex byte? Clear others. */
   // srkenno AT sandia.gov 1/19/12: bug fix: changed from |= which makes all vertices fixed
   for (i = 0; i < num_vertex; ++i)
@@ -1048,6 +1085,20 @@ void ParallelHelperImpl::smoothing_close(MsqError& err)
     mesh->vertices_get_byte(ARRPTR(vertices),ARRPTR(app_fixed),num_vertex,err); MSQ_ERRRTN(err);
     std::vector<int> proc_owner(num_vertex);
     mesh->vertices_get_processor_id(ARRPTR(vertices),ARRPTR(proc_owner),num_vertex,err); MSQ_ERRRTN(err);
+
+    if (0)
+      {
+        int ncull=0;
+        for (i = 0; i < num_vertex; ++i)
+          {
+            if (app_fixed[i] & MsqVertex::MSQ_CULLED)
+              {
+                ++ncull;
+              }
+          }
+        std::cout << "P[" << rank << "] ncull= " << ncull << " num_vertex= " << num_vertex << std::endl;
+      }
+
     /* only interested in fixed flag from vertex byte? Clear others. */
     // srkenno AT sandia.gov 1/19/12: bug fix: changed from |= which makes all vertices fixed
     for (i = 0; i < num_vertex; ++i)

@@ -245,7 +245,7 @@ bool LPtoPTemplate::evaluate_with_Hessian_diagonal( EvalType type,
   
   double QM_val, QM_pow = 1.0;
   double fac1, fac2;
-  const double neg = qm->get_negate_flag();
+  const double negate_flag = qm->get_negate_flag();
   bool qm_bool;
   size_t i;
   short p;
@@ -265,7 +265,7 @@ bool LPtoPTemplate::evaluate_with_Hessian_diagonal( EvalType type,
     if (pVal == 1) {
       QM_pow = 1.0;
       for (i=0; i<nve; ++i) {
-        mDiag[i] *= neg;
+        mDiag[i] *= negate_flag;
         hess_diag[mIndices[i]] += mDiag[i];
       }
       fac1 = 1;
@@ -289,7 +289,7 @@ bool LPtoPTemplate::evaluate_with_Hessian_diagonal( EvalType type,
         op *= fac2;
         mDiag[i] *= fac1;
         op += mDiag[i];
-        op *= neg;
+        op *= negate_flag;
         hess_diag[mIndices[i]] += op;
       }
     } else {
@@ -303,7 +303,7 @@ bool LPtoPTemplate::evaluate_with_Hessian_diagonal( EvalType type,
     // For each vertex in the element ... 
     for (i=0; i<nve; ++i) {
       // ... computes p*q^{p-1}*grad(q) ...
-      mGradient[i] *= fac1*qm->get_negate_flag();
+      mGradient[i] *= fac1*negate_flag;
       // ... and accumulates it in the objective function gradient.
         //also scale the gradient by the scaling factor
       assert (mIndices[i] < pd.num_free_vertices());
@@ -315,7 +315,7 @@ bool LPtoPTemplate::evaluate_with_Hessian_diagonal( EvalType type,
   }
 
   size_t global_count;
-  OF_val = qm->get_negate_flag() 
+  OF_val = negate_flag
          * get_value( OF_val, qmHandles.size(), type, global_count, err );
 //  if (!global_count)
 //    return false;  // invalid mesh
@@ -359,6 +359,7 @@ bool LPtoPTemplate::evaluate_with_Hessian( EvalType type,
 {
   QualityMetric* qm = get_quality_metric();
   qm->get_evaluations( pd, qmHandles, OF_FREE_EVALS_ONLY, err );  MSQ_ERRFALSE(err);
+  double negate_flag = qm->get_negate_flag();
   
     // zero gradient and hessian
   grad.clear();
@@ -391,7 +392,7 @@ bool LPtoPTemplate::evaluate_with_Hessian( EvalType type,
       for (i=0; i<nve; ++i) {
         for (j=i; j<nve; ++j) {
             //negate if necessary
-          mHessian[n] *= qm->get_negate_flag();
+          mHessian[n] *= negate_flag;
           hessian.add( mIndices[i], mIndices[j], mHessian[n], err ); MSQ_ERRFALSE(err);
           ++n;
         }
@@ -419,7 +420,7 @@ bool LPtoPTemplate::evaluate_with_Hessian( EvalType type,
           elem_outer_product *= fac2;
           mHessian[n] *= fac1;
           mHessian[n] += elem_outer_product;
-          mHessian[n] *= qm->get_negate_flag();
+          mHessian[n] *= negate_flag;
           hessian.add( mIndices[i], mIndices[j], mHessian[n], err ); MSQ_ERRFALSE(err);
           ++n;
         }
@@ -435,7 +436,7 @@ bool LPtoPTemplate::evaluate_with_Hessian( EvalType type,
     // For each vertex in the element ... 
     for (i=0; i<nve; ++i) {
       // ... computes p*q^{p-1}*grad(q) ...
-      mGradient[i] *= fac1*qm->get_negate_flag();
+      mGradient[i] *= fac1*negate_flag;
       // ... and accumulates it in the objective function gradient.
         //also scale the gradient by the scaling factor
       assert (mIndices[i] < pd.num_free_vertices());
@@ -447,7 +448,7 @@ bool LPtoPTemplate::evaluate_with_Hessian( EvalType type,
   }
 
   size_t global_count;
-  OF_val = qm->get_negate_flag() 
+  OF_val = negate_flag
          * get_value( OF_val, qmHandles.size(), type, global_count, err );
 //  if (!global_count)
 //    return false;  // invalid mesh

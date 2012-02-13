@@ -17,4 +17,6 @@ int get_parallel_size()
   return nprocs;
 }
 
+double reduce_parallel_max(double value) {return value;}
+
 }

@@ -42,6 +42,7 @@
 #include "PMeanPTemplate.hpp"
 #include "TerminationCriterion.hpp"
 #include "SteepestDescent.hpp"
+#include "ConjugateGradient.hpp"
 #include "QualityAssessor.hpp"
 #include "InstructionQueue.hpp"
 #include "ElementPMeanP.hpp"
@@ -68,6 +69,7 @@ UntangleWrapper::UntangleWrapper()
     maxTime(-1),
     movementFactor( DEFAULT_MOVEMENT_FACTOR ),
     metricConstant( -1 ),
+    maxIterations(-1),
     doCulling(CULLING_DEFAULT),
     doJacobi(JACOBI_DEFAULT)
 {}
@@ -77,6 +79,7 @@ UntangleWrapper::UntangleWrapper(UntangleMetric m)
     maxTime(-1),
     movementFactor( DEFAULT_MOVEMENT_FACTOR ),
     metricConstant( -1 ),
+    maxIterations(-1),
     doCulling(CULLING_DEFAULT),
     doJacobi(JACOBI_DEFAULT)
 {}
@@ -92,6 +95,9 @@ void UntangleWrapper::set_metric_constant( double value )
 
 void UntangleWrapper::set_cpu_time_limit( double seconds )
   { maxTime = seconds; }
+
+void UntangleWrapper::set_outer_iteration_limit( int maxIt )
+  { maxIterations = maxIt; }
 
 void UntangleWrapper::set_vertex_movement_limit_factor( double f )
   { movementFactor = f; }
@@ -123,6 +129,7 @@ void UntangleWrapper::run_wrapper( Mesh* mesh,
     double beta = metricConstant;
     if (beta < 0) 
       beta = (lambda.average()*lambda.average())/20;
+    //std::cout << "beta= " << beta << std::endl;
     mu.reset(new TUntangleBeta( beta ));
   }
   else {
@@ -146,21 +153,24 @@ void UntangleWrapper::run_wrapper( Mesh* mesh,
   
     // define termination criterion
   double eps = movementFactor * (edge_len.average() - edge_len.standard_deviation());
-  TerminationCriterion term, inner;
-  term.add_untangled_mesh();
+  TerminationCriterion inner("<type:untangle_inner>", TerminationCriterion::TYPE_INNER), 
+    outer("<type:untangle_outer>", TerminationCriterion::TYPE_OUTER);
+  outer.add_untangled_mesh();
   if (doCulling) 
     inner.cull_on_absolute_vertex_movement( eps );
   else
-    term.add_absolute_vertex_movement( eps );
+    outer.add_absolute_vertex_movement( eps );
   if (maxTime > 0.0) 
-    term.add_cpu_time( maxTime );
+    outer.add_cpu_time( maxTime );
   inner.add_iteration_limit( NUM_INNER_ITERATIONS );
+  if (maxIterations > 0)
+    outer.add_iteration_limit(maxIterations);
   
     // construct solver
   SteepestDescent solver( &objfunc );
   solver.use_element_on_vertex_patch();
   solver.set_inner_termination_criterion( &inner );
-  solver.set_outer_termination_criterion( &term );
+  solver.set_outer_termination_criterion( &outer );
   if (doJacobi)
     solver.do_jacobi_optimization();
   else

@@ -47,6 +47,7 @@ namespace MESQUITE_NS {
 
 extern int get_parallel_rank();
 extern int get_parallel_size();
+  extern void parallel_barrier();
 
 VertexMover::VertexMover( ObjectiveFunction* OF ) 
   : QualityImprover(),
@@ -217,6 +218,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
     inner_crit_terminated = true;
     all_culled = true;
 
+        int num_patches=0;
       // Loop over each patch
     std::vector<PatchSet::PatchHandle>::iterator p_iter = patch_list.begin();
     while( p_iter != patch_list.end() )
@@ -231,6 +233,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
         } while (patch_elements.empty() && p_iter != patch_list.end()) ;
         
         if (patch_elements.empty()) { // no more non-culled vertices
+                std::cout << "P[" << get_parallel_rank() << "] tmp srk all vertices culled."  << std::endl;
           break;
         }
       
@@ -242,6 +245,8 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
         all_culled = false;
       }
         
+            ++num_patches;
+
         // Initialize for inner iteration
         
       this->initialize_mesh_iteration(patch, err);
@@ -276,6 +281,15 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
         
         inner_crit->cull_vertices( patch, obj_func, err );
         if (MSQ_CHKERR(err)) goto ERROR;
+
+                // FIXME
+                if (0)
+                  {
+                    inner_crit->cull_vertices_global (patch, 
+                                                      mesh, domain, settings,
+                                                      obj_func, err);
+                    if (MSQ_CHKERR(err)) goto ERROR;
+                  }
         
         patch.update_mesh( err, coord_tag_ptr );
         if (MSQ_CHKERR(err)) goto ERROR;
@@ -331,6 +345,23 @@ static void restore_bytes( Mesh* mesh, std::vector<unsigned char>& saved_bytes, 
                            err ); MSQ_ERRRTN(err);
 }
 
+  static void save_or_restore_debug_state(bool save)
+  {
+    static bool debug[3] = {false,false,false};
+    if (save) 
+      {
+        debug[0] = MsqDebug::get(1);
+        debug[1] = MsqDebug::get(2);
+        debug[2] = MsqDebug::get(3);
+      }
+    else
+      {
+        if (debug[0]) MsqDebug::enable(1);
+        if (debug[1]) MsqDebug::enable(2);
+        if (debug[2]) MsqDebug::enable(3);
+      }
+  }
+
 /*! \brief Improves the quality of the MeshSet, calling some
     methods specified in a class derived from VertexMover
 
@@ -348,6 +379,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
   TagHandle* coord_tag_ptr = 0;
   int outer_iter=0;
   int inner_iter=0;
+    bool one_patch = false;
 
     // Clear culling flag, set hard fixed flag, etc on all vertices
   initialize_vertex_byte( mesh, domain, settings, err ); MSQ_ERRZERO(err);
@@ -396,6 +428,11 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
   std::vector<PatchSet::PatchHandle> patch_list;
   patch_set->get_patch_handles( patch_list, err ); MSQ_ERRZERO(err);
   
+    if (patch_list.size() > 1) 
+      inner_crit->set_debug_output_level(3);
+    else
+      one_patch = true;
+
   if (jacobiOpt) {
     coord_tag = get_jacobi_coord_tag(mesh, err);
     MSQ_ERRZERO(err);
@@ -487,6 +524,20 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
     std::sort(fixed_vertices.begin(), fixed_vertices.end());
 
       // Loop over each patch
+        if (0 && MSQ_DBG(2))
+          std::cout << "P[" << get_parallel_rank() << "] tmp srk number of patches = " << patch_list.size() 
+                    << " inner_iter= " << inner_iter << " outer_iter= " << outer_iter 
+                    << " inner.globalInvertedCount = " << inner_crit->globalInvertedCount
+                    << " outer.globalInvertedCount = " << outer_crit->globalInvertedCount
+                    << " inner.patchInvertedCount = " << inner_crit->patchInvertedCount
+                    << " outer.patchInvertedCount = " << outer_crit->patchInvertedCount
+                    << std::endl;
+
+        save_or_restore_debug_state(true);
+        //MsqDebug::disable_all();
+      
+        int num_patches=0;
+
     std::vector<PatchSet::PatchHandle>::iterator p_iter = patch_list.begin();
     while( p_iter != patch_list.end() )
     {
@@ -499,6 +550,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
       } while (patch_elements.empty() && p_iter != patch_list.end()) ;
         
       if (patch_elements.empty()) { // no more non-culled vertices
+              std::cout << "P[" << get_parallel_rank() << "] tmp srk all vertices culled."  << std::endl;
 	break;
       }
 
@@ -517,6 +569,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
 	continue;
       }
 
+            ++num_patches;
       all_culled = false;
       patch.set_mesh_entities( patch_elements, free_vertices, err );
       if (MSQ_CHKERR(err)) goto ERROR;
@@ -542,9 +595,12 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
       if (!inner_crit->terminate())
       {
         inner_crit_terminated = false;
-        ++inner_iter;
+        if (one_patch) ++inner_iter;
 
           // Call optimizer - should loop on inner_crit->terminate()
+                size_t num_vert=patch.num_free_vertices();
+                //std::cout << "P[" << get_parallel_rank() << "] tmp srk VertexMover num_vert= " << num_vert << std::endl;
+              
         this->optimize_vertex_positions( patch, err );
         if (MSQ_CHKERR(err)) goto ERROR;
       
@@ -556,11 +612,21 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
         
         inner_crit->cull_vertices( patch, obj_func, err );
         if (MSQ_CHKERR(err)) goto ERROR;
+
+                // experimental...
+                if (0)
+                  {
+                    inner_crit->cull_vertices_global (patch, 
+                                                      mesh, domain, settings,
+                                                      obj_func, err);
+                    if (MSQ_CHKERR(err)) goto ERROR;
+                  }
         
         patch.update_mesh( err, coord_tag_ptr );
         if (MSQ_CHKERR(err)) goto ERROR;
       }
     }
+        save_or_restore_debug_state(false);
 
     /// srkenno@sandia.gov save vertex bytes since boundary smoothing changes them
     std::vector<unsigned char> saved_bytes;
@@ -571,12 +637,15 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
     if (MSQ_CHKERR(err)) goto ERROR;
 
     ///*** smooth the boundary ***////
+        save_or_restore_debug_state(true);
+        MsqDebug::disable_all();
 
     while (helper->compute_next_independent_set())
     {
       // Loop over all boundary elements
       while(helper->get_next_partition_boundary_vertex(vertex_handle))
       {
+
 	patch_vertices.clear();
 	patch_vertices.push_back(vertex_handle);
 	patch_elements.clear(); 
@@ -624,6 +693,15 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
 	  
 	  inner_crit->cull_vertices( patch, obj_func, err );
 	  if (MSQ_CHKERR(err)) goto ERROR;
+
+                    // FIXME
+                    if (0)
+                      {
+                        inner_crit->cull_vertices_global (patch, 
+                                                          mesh, domain, settings,
+                                                          obj_func, err);
+                        if (MSQ_CHKERR(err)) goto ERROR;
+                      }
         
           patch.update_mesh( err, coord_tag_ptr );
 	  if (MSQ_CHKERR(err)) goto ERROR;
@@ -631,7 +709,12 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
       }
       helper->communicate_next_independent_set(err);
       if (MSQ_CHKERR(err)) goto ERROR;
-    }
+     } // while(helper->compute_next_independent_set())
+ 
+    save_or_restore_debug_state(false);
+ 
+    //if (!get_parallel_rank())
+    //std::cout << "P[" << get_parallel_rank() << "] tmp srk num_patches= " << num_patches << std::endl;
 
     /// srkenno@sandia.gov restore vertex bytes since boundary smoothing changes them
     restore_bytes(mesh, saved_bytes, err);
@@ -648,6 +731,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
   }
 
 ERROR: 
+
   if (MSQ_CHKERR(err)) {
     std::cout << "P[" << get_parallel_rank() << "] VertexMover::loop_over_mesh error = " << err.error_message() << std::endl;
   }
