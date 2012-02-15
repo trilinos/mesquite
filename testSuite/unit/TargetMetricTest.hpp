@@ -386,8 +386,8 @@ TMETRIC_FUNC::test_inverted()
 }
   
 TMETRIC_FUNC::test_non_ideal( bool sensitive,
-                              MAT_TYPE J,
-                              MAT_TYPE W )
+                              Matrix J,
+                              Matrix W )
 {
   MsqPrintError err(std::cerr);
   MsqMatrix<DIM,DIM> g;

@@ -355,7 +355,7 @@ void TargetCalculatorTest::test_factor_2D()
   ASSERT_MATRICES_EQUAL( W2, W, EPS );
   
   // try a more elaborate test
-  const double e = exp(1);
+  const double e = exp((double)1);
   MsqMatrix<2,2> Z45(V2D_Z45.data()); // copy first two rows
   W2 = e * Z45 * Q2D_45 * D2D_21;
   valid = TargetCalculator::factor_2D( W2, lambda, V, Q, delta, err );
@@ -433,7 +433,7 @@ void TargetCalculatorTest::test_factor_surface()
   ASSERT_MATRICES_EQUAL( W2, W, EPS );
   
   // try a more elaborate test
-  const double e = exp(1);
+  const double e = exp((double)1);
   W2 = e * V2D_Z45 * Q2D_45 * D2D_21;
   valid = TargetCalculator::factor_surface( W2, lambda, V, Q, delta, err );
   CPPUNIT_ASSERT( valid && !err );
@@ -510,7 +510,7 @@ void TargetCalculatorTest::test_factor_3D()
   ASSERT_MATRICES_EQUAL( W2, W, EPSBIG );
   
   // try a more elaborate test
-  const double e = exp(1);
+  const double e = exp((double)1);
   W2 = e * V3D_Z45 * Q3D_45 * D3D_123;
   valid = TargetCalculator::factor_3D( W2, lambda, V, Q, delta, err );
   CPPUNIT_ASSERT( valid && !err );
