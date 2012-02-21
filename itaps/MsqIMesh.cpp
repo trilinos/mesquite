@@ -644,6 +644,7 @@ void MsqIMesh::vertices_get_attached_elements(
         elements[write_idx++] = elements[read_idx];
     }
     *offset_iter = write_idx;
+    elements.resize(write_idx);    
   }
 }
 
