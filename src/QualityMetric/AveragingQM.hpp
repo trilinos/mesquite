@@ -59,6 +59,8 @@ namespace MESQUITE_NS
      MESQUITE_EXPORT AveragingQM( QualityMetric::AveragingMethod method ) :
        avgMethod(method)
      {}
+
+     MESQUITE_EXPORT virtual ~AveragingQM() {}
      
        /*!Set the averaging method for the quality metric. */
      MESQUITE_EXPORT inline 
