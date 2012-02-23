@@ -53,6 +53,29 @@ Alternatively you can turn any existing mesh of type \texttt{Mesquite::Mesh} int
 \texttt{Mesquite::ParallelMesh} by using the \texttt{Mesquite::ParallelMeshImpl} 
 \end{center} \vspace{-5 pt}implementation we provide. On creation it needs a pointer to an object of type \texttt{Mesquite::Mesh} and the names of two tags. It is expected that every vertex is properly tagged with the processor ID tag being of type INT and the global ID tag being of type HANDLE.
 
+
+\subsection{ParallelMesh Implementation Requirements}
+%%(this text needs to be added where GLOBAL_ID etc is discussed)
+
+In addition to global and processor ID's, a tag named \texttt{LOCAL\_ID}, with type \texttt{INT}, must be provided in
+your ParallelMesh implementation.  In summary, here are the tags and
+their types required by Parallel Mesquite:
+
+\begin{tabular}{ | l | l | l | }
+  \hline                        
+  Concept name & Typical/required code string &  Mesquite type \\
+\hline
+ vertex processor owner id & \texttt{PROCESSOR\_ID} (typical, implementation-dependent) & INT \\
+ vertex global unique id & \texttt{GLOBAL\_ID} (typical,  implementation-dependent) & HANDLE \\
+ vertex local id (internal use) & \texttt{LOCAL\_ID} (required) & INT \\
+  \hline  
+\end{tabular}
+
+If you obtained Mesquite from the Trilinos site, you can see a sample
+imlementation of ParallelMesh in the stk\_percept package, at
+
+\texttt{Trilinos/packages/stk/stk\_percept/stk\_percept/mesh/mod/mesquite-interface/PerceptMesquiteMesh.*pp.}
+
 \section{ITAPS iMeshP Interface}
 
 The MsqIMeshP class is an alternate implementation of the \texttt{ParallelMesh} interface that can be used to provide Mesquite with callbacks to access mesh and related parallel properties.  The ITAPS Working Group has defined a standard API for exchange of parallel mesh data between applications. The \texttt{Mesquite::MsqIMeshP} class declared in \texttt{MsqIMeshP.hpp} is an ``adaptor'':  it presents the iMeshP interface as the \texttt{Mesquite::ParallelMesh} interface.  
@@ -126,6 +149,62 @@ int main( int argc, char* argv[] )
   return 0;
 }
 \end{verbatim}
+
+\subsubsection{Implementation of Example \ref{sec:parallel-example-1} }
+
+In your Mesquite distribution, there is an implementation of the
+example code for Lapalace smoothing in parallel, in the file
+\texttt{mesquite/testSuite/parallel\_smooth\_laplace/par\_hex\_smooth\_laplace.cpp}.
+This code reads in a serial or parallel-split set of VTK files and
+smooths the mesh, then compares the result to a "gold" copy, which is
+useful for regression testing (see \ref{sec:RegressionTesting}).
+
+\subsubsection{Parallel Regression Tests}
+
+In addition to the Laplace example, see \\
+\texttt{mesquite/testSuite/parallel\_untangle\_shape/par\_hex\_untangle\_shape.cpp} \\
+for example use of parallel mesh untangling and shape improvement, and
+the associated files:\\
+\texttt{meshFiles/{2D,3D}/VTK/par\_*}
+
+For example, an initial, tangled quadrilateral mesh is shown in
+\ref{fig:par_quad_orig} 
+while the result of untangling and smoothing is shown in
+\ref{fig:par_quad_smoothed}.  A similar example with hexahedra is
+shown in figures 
+\ref{fig:par_hex_orig}  and \ref{fig:par_hex_smoothed}.
+
+\begin{figure*}[htpb]
+\begin{center}
+\includegraphics[width=4in]{par-quad-orig.eps}
+\caption{Initial, tangled quadrilateral mesh.}
+\label{fig:par_quad_orig}
+\end{center}
+\end{figure*}
+
+\begin{figure*}[htpb]
+\begin{center}
+\includegraphics[width=4in]{par-quad-smoothed.eps}
+\caption{Untangled and smoothed quadrilateral mesh.}
+\label{fig:par_quad_smoothed}
+\end{center}
+\end{figure*}
+
+\begin{figure*}[htpb]
+\begin{center}
+\includegraphics[width=4in]{par-hex-orig.eps}
+\caption{Initial, tangled hexahedra mesh.}
+\label{fig:par_hex_orig}
+\end{center}
+\end{figure*}
+
+\begin{figure*}[htpb]
+\begin{center}
+\includegraphics[width=4in]{par-hex-smoothed.eps}
+\caption{Untangled and smoothed hexahedral mesh.}
+\label{fig:par_hex_smoothed}
+\end{center}
+\end{figure*}
 
 \subsection{Example: Using \texttt{Mesquite::Mesquite::MsqIMeshP}}
 

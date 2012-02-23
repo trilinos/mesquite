@@ -338,3 +338,18 @@ quality assessor output:
     \label{fig:hole}
 \end{center}
 \end{figure*}
+
+
+%%... section on testing ...
+
+\subsection{Regression Testing}
+\label{sec:RegressionTesting}
+Regression testing encompasses
+running unit tests as well as comparing results data against "blessed"
+or "gold" data.  An example of comparing results of a smoothed mesh
+against a gold version is in
+\texttt{mesquite/testSuite/parallel\_smooth\_laplace/par\_hex\_smooth\_laplace.cpp}.
+This utilizes a function in \texttt{MeshUtil}, \texttt{meshes\_are\_different}, to compare
+two \texttt{MeshImpl} objects (within a specified numerical tolerance).  It is
+recommended that both unit testing and gold-comparison testing be
+included in your test code development.
