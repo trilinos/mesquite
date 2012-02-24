@@ -139,7 +139,7 @@ void SphericalDomainTest::test_fit_vertices()
     CPPUNIT_ASSERT_DOUBLES_EQUAL( rad, (pt-cen).length(), 1e-6 );
   }
   
-  std::vector<int> fixed(num_pt, 0.0);
+  std::vector<int> fixed(num_pt, 0);
   ArrayMesh mesh( 3, num_pt, coords, arrptr(fixed), 0, TRIANGLE, 0 );
   SphericalDomain sph;
   MsqError err;
