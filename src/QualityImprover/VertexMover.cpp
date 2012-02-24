@@ -691,11 +691,6 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
     checkpoint_bytes(mesh, saved_bytes, err); 
     if (MSQ_CHKERR(err)) { MSQ_SETERR(perr)("checkpoint_bytes ", MsqError::INVALID_STATE); PERROR_COND; } //goto ERROR;
 
-    /// srkenno@sandia.gov save vertex bytes since boundary smoothing changes them
-    std::vector<unsigned char> saved_bytes;
-    checkpoint_bytes(mesh, saved_bytes, err); 
-    if (MSQ_CHKERR(err)) goto ERROR;
-
     helper->communicate_first_independent_set(err); 
     if (MSQ_CHKERR(err)) { MSQ_SETERR(perr)("communicate_first_independent_set ", MsqError::INVALID_STATE); PERROR_COND; } //goto ERROR;
 
@@ -763,7 +758,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
                         inner_crit->cull_vertices_global (patch, 
                                                           mesh, domain, settings,
                                                           obj_func, err);
-                    if (MSQ_CHKERR(err)) { MSQ_SETERR(perr)(" cull_vertices_global 2 ", MsqError::INVALID_STATE); PERROR_COND; } //goto ERROR;
+                        if (MSQ_CHKERR(err)) { MSQ_SETERR(perr)(" cull_vertices_global 2 ", MsqError::INVALID_STATE); PERROR_COND; } //goto ERROR;
                       }
         
           patch.update_mesh( err, coord_tag_ptr );
@@ -782,10 +777,6 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
     /// srkenno@sandia.gov restore vertex bytes since boundary smoothing changes them
     restore_bytes(mesh, saved_bytes, err);
     if (MSQ_CHKERR(err)) { MSQ_SETERR(perr)(" restore_bytes", MsqError::INVALID_STATE); PERROR_COND; } //goto ERROR;
-
-    /// srkenno@sandia.gov restore vertex bytes since boundary smoothing changes them
-    restore_bytes(mesh, saved_bytes, err);
-    if (MSQ_CHKERR(err)) goto ERROR;
 
     if (jacobiOpt)
       commit_jacobi_coords( coord_tag, mesh, err );
