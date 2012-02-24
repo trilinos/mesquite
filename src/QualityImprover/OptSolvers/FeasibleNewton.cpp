@@ -47,7 +47,6 @@
 // DESCRIP-END.
 //
 
-
 #include "FeasibleNewton.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 #include "MsqDebug.hpp"
@@ -367,7 +366,8 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   }
   else
   {
-    MSQ_PRINT(1)("WARNING: Feasible Newton optimization not supported for surface meshes.\n Try a different solver such as Steepest Descent,\n");
+    std::cout << "WARNING: Feasible Newton optimization not supported for surface meshes."
+      << std::endl << "Try a different solver such as Steepest Descent." << std::endl;
   }
 }
 

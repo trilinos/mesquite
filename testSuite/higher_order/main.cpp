@@ -65,7 +65,7 @@ using std::endl;
 #include "ConditionNumberQualityMetric.hpp"
 #include "LPtoPTemplate.hpp"
 #include "LInfTemplate.hpp"
-#include "FeasibleNewton.hpp"
+#include "SteepestDescent.hpp"
 #include "ConjugateGradient.hpp"
 
 #include "PlanarDomain.hpp"
@@ -114,7 +114,7 @@ const char HOUR_INPUT_FILE_NAME[]         = SRCDIR "hour-quad8.vtk";
 const char OUTPUT_FILE_NAME[]             = "smoothed_qudratic_mesh.vtk";
 const unsigned NUM_CORNER_VERTICES = 16;
 const unsigned NUM_MID_NODES = 24;
-const double SPATIAL_COMPARE_TOLERANCE = 1e-6;
+const double SPATIAL_COMPARE_TOLERANCE = 4e-6;
 
 
 void compare_nodes( size_t start_index,
@@ -220,7 +220,7 @@ InstructionQueue* create_instruction_queue(MsqError& err)
   
   // creates the optimization procedures
 //   ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
-  FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
+  SteepestDescent* pass1 = new SteepestDescent( obj_func );
 
   //perform optimization globally
   pass1->use_global_patch();
