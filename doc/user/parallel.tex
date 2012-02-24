@@ -71,6 +71,11 @@ their types required by Parallel Mesquite:
   \hline  
 \end{tabular}
 
+If you obtained Mesquite from the Trilinos site, you can see a sample
+imlementation of ParallelMesh in the stk\_percept package, at
+
+\texttt{Trilinos/packages/stk/stk\_percept/stk\_percept/mesh/mod/mesquite-interface/PerceptMesquiteMesh.*pp.}
+
 \section{ITAPS iMeshP Interface}
 
 The MsqIMeshP class is an alternate implementation of the \texttt{ParallelMesh} interface that can be used to provide Mesquite with callbacks to access mesh and related parallel properties.  The ITAPS Working Group has defined a standard API for exchange of parallel mesh data between applications. The \texttt{Mesquite::MsqIMeshP} class declared in \texttt{MsqIMeshP.hpp} is an ``adaptor'':  it presents the iMeshP interface as the \texttt{Mesquite::ParallelMesh} interface.  
