@@ -125,6 +125,7 @@ public:
     TAG_ALREADY_EXISTS,    /**< Attempt to create tag that already exists */
     TAG_NOT_FOUND,         /**< Specified tag does not exist */
     UNSUPPORTED_ELEMENT,   /**< the element type is not supported. */
+    PARALLEL_ERROR,        /**< an error occurred in parallel > */
     LAST_ERROR_CODE
   };
   
