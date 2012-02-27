@@ -61,6 +61,7 @@ public:
 	   const iBase_TagHandle* slaved_tag= 0 );
   
   MsqIMeshP(iMesh_Instance imesh, iMeshP_PartitionHandle partition,
+            iBase_EntityType element_dimension, 
             MsqError& err,
 	    const iBase_TagHandle* fixed_tag = 0,
 	    const iBase_TagHandle* slaved_tag= 0 );
