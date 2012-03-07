@@ -3,6 +3,73 @@
 This chapter provides a brief overview of some of the tools provided in Mesquite for assisting with the analyze and visualization of the Mesquite optimization process.  The tools discussed in this section can be used to provide additional
 output.  External tools such as Paraview, VisIt, or GNU Plot must be used to visualize the data.
 
+\section{Assessing Quality}
+
+  The QualityAssessor class provides a summary of the mesh quality.  An instance of QualityAssessor may be inserted in the InstructionQueue at any point to print a summary of the mesh quality at that time during the optimization.  Instances of the QualityMetric class can be created and passed to the QualityAssessor class to be used to assess the mesh quality.  If no QualityMetrics are specified, the only assessment that will be performed is a simple count of inverted elements.
+
+  A number of constructors are provided by the QualityAssessor class.  Each allows the specification of a different set paramaters to control the quality assement.  The parameters are described below including default values, if any. Note that all paramaters are not used in each constructor.
+
+\label{QA_params}
+Parmaters used by QualityAssesor constructors:
+\begin{description}
+\item[metric:]   QualtiyMetric to register for use in assessing mesh quality.  Will also be used as the "stopping assessment".
+
+\item[historgram\_intervals:]   If non-zero, a histogram of quality metric values composed of the specified number of intervals will be generated.  Default is zero.
+\item[power\_mean:] If non-zero, in addition to the normal summary statistics for the quality metric, an additional general power mean with the specified power will be calculated.  Default is zero.
+
+\item[free\_elements\_only:] If true, only quality values that depend on at least one free vertex will be used. Default is true.
+
+\item[inverted\_element\_tag\_name:] If a non-null value is specified, an integer tag with the specified name will be used to store a value of 0 for normal elements and 1 for inverted elements.  Default is null value.
+
+\item[metric\_value\_tag\_name:] If a non-null value is specified, a tag with the specified name will be populated with quality values for individual elements or vertices if metric is an element-based or vertex-based metric.  If metric is not element-based or vertex-based, this argument has no effect.  Default is null value.
+
+\item[print\_summary\_to\_std\_out:] If true, summary of mesh quality will be written to std::out.  If false, quality assessment will be available via the get\_results and get\_all\_results methods, but will not be printed.  Default is true.
+
+\item[output\_stream IO:] stream to which to write a summary of the mesh quality.
+
+\item[name:] Name to include in output.  Useful if several QualityAssessors are in use at the same time.
+\end{description}
+
+  After the QualityAssessor instance is created, any of a number of methods 
+can be used to set individual characteristics of the QualityAssessor object.
+
+  Once setup for the QualityAssessor object  is complete, the actual assement is preformed by calling "loop\_over\_mesh".  After it terminates, results can be obtained using various methods supplied by the QualityAssessor class.
+
+
+A simple example using the QualityAssessor class:
+\begin{lstlisting}[frame=single]
+  MsqError err;
+  MeshImpl meshToAssess;
+  PlanarDomain myDomain;
+  Settings mySettings;
+
+  meshToAssess.clear();
+
+    // read in mesh
+  const char* filename = "meshToAssess.vtk";
+  meshToAssess.read_vtk( filename, err);
+
+    // create metric instance
+  ConditionNumberQualityMetric metric;
+
+    // create QualityAssessor instance accepting default values
+  QualityAssessor qa( &metric );
+
+    // change some of the default paramaters
+  qa.measure_free_samples_only( false );
+  qa.disable_printing_results();
+
+    // run the QualityAssessor
+  qa.loop_over_mesh( &meshToAssess, &myDomain, &mySettings, err  );
+
+    // get results
+  const QualityAssessor::Assessor* results = qa.get_results( &metric );
+  int invalid_element_count = results->get_invalid_element_count();
+  if ( invalid_element_count != 0 )
+    std::cout << "Warning: " << invalid_element_count 
+                        << " invalid elements found." << std::endl;
+\end{lstlisting}
+
 \section{Debug Output}
 
 Mesquite contains a mechanism to send status and debug messages to an output stream (e.g. {\texttt stdout} or {\texttt std::cout}).  Debug messages are grouped into logical categories identified by an integer number.  For example debug flag 1 refers to warnings.  Debug flag 2 is used for status information about the outer optimization loop, and debug flag 3 is used for status of the inner optimization loop. 
@@ -131,6 +198,8 @@ The {\texttt QualityAssessor} class has the ability to store mesh quality values
 \end{center}
 \end{figure}
 
+\newpage
+\begin{samepage}
 \begin{lstlisting}[frame=single]
 MsqError err;
 MeshImpl mesh;
@@ -147,6 +216,7 @@ queue.run_instructions( &mesh, &plane, err );
 
 mesh.write_vtk( "meshqual.vtk", err );
 \end{lstlisting}
+\end{samepage}
 
 \begin{figure}[htb!]
 \begin{center}
@@ -157,6 +227,7 @@ mesh.write_vtk( "meshqual.vtk", err );
 
 Figure \ref{fig:meshqual3d} is a Paraview plot showing the inverted elements in a quadratic tetrahedral mesh.  The mesh is plotted twice: once as a simple wireframe of the mesh boundary and a second time as solid mesh with a threshold filter on the inverted flag exported by Mesquite.  The listing below shows how the {\texttt QualityAssessor} class can be instructed to flag inverted elements:
 
+\newpage
 \begin{lstlisting}[frame=single]
 MsqError err;
 MeshImpl mesh;
