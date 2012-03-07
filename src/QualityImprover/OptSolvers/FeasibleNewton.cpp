@@ -50,6 +50,7 @@
 #include "FeasibleNewton.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 #include "MsqDebug.hpp"
+#include "PlanarDomain.hpp"
 
 using namespace Mesquite;
 
@@ -88,8 +89,22 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 {
   MSQ_FUNCTION_TIMER( "FeasibleNewton::optimize_vertex_positions" );
   MSQ_DBGOUT(2) << "\no  Performing Feasible Newton optimization.\n";
+  
+  //
+  // the only valid 2D meshes that FeasibleNewton works for are truly planar which 
+  // lie in the X-Y coordinate plane.
+  //
 
-  if (!pd.domain_set())  // only optimize if input mesh is a volume
+  PlanarDomain *thePlanarDomainPtr = dynamic_cast<PlanarDomain*>(pd.get_domain());
+
+  Vector3D xyNormal(0.0,0.0,1.0),origin(0.0,0.0,0.0);
+  double deviationFromXY = Vector3D::distance_between(xyNormal, thePlanarDomainPtr->get_normal());
+  double deviationFromOrigin = fabs( origin[2]-(thePlanarDomainPtr->get_origin())[2]);
+
+  bool validPlanarDomain = (thePlanarDomainPtr !=NULL) && (deviationFromXY<1.0e-8)
+    && (deviationFromOrigin<1.0e-8);
+
+  if (!pd.domain_set() || validPlanarDomain )  // only optimize if input mesh is a volume or truly 2D planar mesh
   {
     const double sigma   = 1e-4;
     const double beta0   = 0.25;
