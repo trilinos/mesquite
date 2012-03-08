@@ -50,6 +50,7 @@
 #include "FeasibleNewton.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 #include "MsqDebug.hpp"
+#include "XYPlanarDomain.hpp"
 
 using namespace Mesquite;
 
@@ -89,7 +90,9 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   MSQ_FUNCTION_TIMER( "FeasibleNewton::optimize_vertex_positions" );
   MSQ_DBGOUT(2) << "\no  Performing Feasible Newton optimization.\n";
 
-  if (!pd.domain_set())  // only optimize if input mesh is a volume
+  XYPlanarDomain *xyPlanarDomainPtr = dynamic_cast<XYPlanarDomain*>(pd.get_domain());
+    // only optimize if input mesh is a volume or an XYPlanarDomain
+  if (!pd.domain_set() || xyPlanarDomainPtr != NULL)  
   {
     const double sigma   = 1e-4;
     const double beta0   = 0.25;

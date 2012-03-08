@@ -34,6 +34,7 @@ MSQ_SRCS += \
 	$(SRC_MISC_DIR)/SphericalDomain.cpp \
 	$(SRC_MISC_DIR)/Vector3D.cpp \
 	$(SRC_MISC_DIR)/VtkTypeInfo.cpp \
+	$(SRC_MISC_DIR)/XYPlanarDomain.cpp \
 	$(SRC_MISC_DIR)/XYRectangle.cpp \
         $(MSQ_ITAPS_COMMON_SRC)
 
@@ -64,5 +65,6 @@ MSQ_HDRS += \
 	$(SRC_MISC_DIR)/SymMatrix3D.hpp \
 	$(SRC_MISC_DIR)/Vector3D.hpp \
 	$(SRC_MISC_DIR)/VtkTypeInfo.hpp \
+	$(SRC_MISC_DIR)/XYPlanarDomain.hpp \
 	$(SRC_MISC_DIR)/XYRectangle.hpp
 

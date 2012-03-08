@@ -257,6 +257,7 @@ APPEND_SET(HEADERS
   Misc/SymMatrix3D.hpp
   Misc/Vector3D.hpp
   Misc/VtkTypeInfo.hpp
+  Misc/XYPlanarDomain.hpp
   Misc/XYRectangle.hpp
   )
 
@@ -285,6 +286,7 @@ APPEND_SET(SOURCES
   Misc/SphericalDomain.cpp
   Misc/Vector3D.cpp
   Misc/VtkTypeInfo.cpp
+  Misc/XYPlanarDomain.cpp
   Misc/XYRectangle.cpp
   )
 IF(IMESH_DEFS OR IGEOM_DEFS OR IREL_DEFS)
