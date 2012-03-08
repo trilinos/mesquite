@@ -95,14 +95,18 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   // lie in the X-Y coordinate plane.
   //
 
-  PlanarDomain *thePlanarDomainPtr = dynamic_cast<PlanarDomain*>(pd.get_domain());
+  bool validPlanarDomain = false;
+  if( pd.domain_set() )
+  {
+    PlanarDomain *thePlanarDomainPtr = dynamic_cast<PlanarDomain*>(pd.get_domain());
+    
+    Vector3D xyNormal(0.0,0.0,1.0),origin(0.0,0.0,0.0);
+    double deviationFromXY = Vector3D::distance_between(xyNormal, thePlanarDomainPtr->get_normal());
+    double deviationFromOrigin = fabs( origin[2]-(thePlanarDomainPtr->get_origin())[2]);
 
-  Vector3D xyNormal(0.0,0.0,1.0),origin(0.0,0.0,0.0);
-  double deviationFromXY = Vector3D::distance_between(xyNormal, thePlanarDomainPtr->get_normal());
-  double deviationFromOrigin = fabs( origin[2]-(thePlanarDomainPtr->get_origin())[2]);
-
-  bool validPlanarDomain = (thePlanarDomainPtr !=NULL) && (deviationFromXY<1.0e-8)
-    && (deviationFromOrigin<1.0e-8);
+    validPlanarDomain = (thePlanarDomainPtr !=NULL) && (deviationFromXY<1.0e-8)
+      && (deviationFromOrigin<1.0e-8);
+  }
 
   if (!pd.domain_set() || validPlanarDomain )  // only optimize if input mesh is a volume or truly 2D planar mesh
   {
