@@ -100,6 +100,12 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   {
     PlanarDomain *thePlanarDomainPtr = dynamic_cast<PlanarDomain*>(pd.get_domain());
     
+    if( thePlanarDomainPtr == NULL)
+    {
+      MSQ_SETERR(err)("invalid Domain for FeasibleNewton, not XY planar.", MsqError::INTERNAL_ERROR);
+      MSQ_ERRRTN(err);
+    }
+
     Vector3D xyNormal(0.0,0.0,1.0),origin(0.0,0.0,0.0);
     double deviationFromXY = Vector3D::distance_between(xyNormal, thePlanarDomainPtr->get_normal());
     double deviationFromOrigin = fabs( origin[2]-(thePlanarDomainPtr->get_origin())[2]);
