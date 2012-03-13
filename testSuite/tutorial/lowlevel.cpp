@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
     // sets the objective function template
   LPtoPTemplate obj_func(&inverse_mean_ratio, 2, err);
     // creates the optimization procedures
-  FeasibleNewton f_newton(&obj_func);
+  SteepestDescent f_newton(&obj_func);
     //performs optimization globally
   f_newton.use_global_patch();
     // creates a termination criterion and

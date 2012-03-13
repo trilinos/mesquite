@@ -369,8 +369,9 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   }
   else
   {
-    std::cout << "WARNING: Feasible Newton optimization not supported for surface meshes."
-      << std::endl << "Try a different solver such as Steepest Descent." << std::endl;
+    std::cout << "WARNING: Feasible Newton optimization only supported for volume meshes"
+        << std::endl <<  "   and XYPlanarDomain surface meshes." << std::endl
+        << std::endl << "Try a different solver such as Steepest Descent." << std::endl;
   }
 }
 

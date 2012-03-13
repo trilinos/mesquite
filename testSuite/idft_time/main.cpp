@@ -51,7 +51,7 @@ using std::endl;
 
 #include "IdealShapeTarget.hpp"
 #include "PMeanPTemplate.hpp"
-#include "FeasibleNewton.hpp"
+#include "SteepestDescent.hpp"
 #include "ConjugateGradient.hpp"
 #include "QuasiNewton.hpp"
 
@@ -75,7 +75,7 @@ void usage( const char* argv0 = 0, bool err = true )
   if (err)
     exit(1);
 
-  s << "  -n : Use FeasibleNewton solver (default)" << endl
+  s << "  -n : Use SteepestDescent solver (default)" << endl
     << "  -c : Use ConjugateGradient solver" << endl
     << "  -q : Use QuasiNewton solver" << endl
     << "  -e : Test IdealWeightInverseMeanRatio metric" << endl
@@ -96,7 +96,7 @@ const char* eps_file = 0; /* eps output file name */
 const char* gpt_file = 0; /* GNUPlot output file name */
 const char* plot_file = 0; /* Time-dependent plot of solver data */
 
-enum Solver { FEAS_NEWT, CONJ_GRAD, QUASI_NEWT };
+enum Solver { STEEP_DESCENT, CONJ_GRAD, QUASI_NEWT };
 
 /* Run an optimization: returns average quality of final mesh */
 double run( QualityMetric* metric, 
@@ -213,7 +213,7 @@ const double CompareMetric::epsilon = 5e-2;
 /* Parse command line options and call 'run' */
 int main( int argc, char* argv[] )
 {
-  Solver solver = FEAS_NEWT;
+  Solver solver = STEEP_DESCENT;
   bool do_non_target_metric = false;
   bool do_new_target_metric = false;
   bool do_new_target_average = false;
@@ -227,7 +227,7 @@ int main( int argc, char* argv[] )
     if (argv[i][0] == '-' && !no_more_flags) {
       for (int k = 1; argv[i][k]; ++k) {
         switch (argv[i][k]) {
-          case 'n': solver = FEAS_NEWT; break;
+          case 'n': solver = STEEP_DESCENT; break;
           case 'c': solver = CONJ_GRAD; break;
           case 'q': solver = QUASI_NEWT; break;
           case 'e': do_non_target_metric = true; break;
@@ -337,12 +337,12 @@ double run( QualityMetric* metric,
   QualityAssessor qa( &qa_metric );
   qa.add_quality_assessment( metric );
   InstructionQueue q;
-  FeasibleNewton newt(&of);
+  SteepestDescent steep(&of);
   QuasiNewton quasi(&of);
   ConjugateGradient conj(&of);
   VertexMover* solver = 0;
   switch (solver_type) {
-    case FEAS_NEWT: solver = &newt; break;
+    case STEEP_DESCENT: solver = &steep; break;
     case QUASI_NEWT:solver = &quasi;break;
     case CONJ_GRAD: solver = &conj; break;
   }

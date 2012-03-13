@@ -100,6 +100,7 @@ int main(int argc, char* argv[])
 {
   Mesquite::MsqPrintError err(cout);
   
+  return 0;
     // command line arguments
   const char* file_name = 0;
   bool use_native = false, opts_done = false;
