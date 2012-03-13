@@ -55,17 +55,22 @@ include TargetMetric/Size/Makefile.am
 include TargetMetric/Untangle/Makefile.am
 
 libmesquite_la_includedir = $(includedir)
+libmesquite_la_nodist_includedir = $(includedir)
+
 libmesquite_la_SOURCES = $(MSQ_SRCS) 
 
 libmesquite_la_include_HEADERS = include/Mesquite.hpp \
-                                 include/Mesquite_all_headers.hpp \
-                                 $(top_builddir)/src/include/mesquite_config.h \
-				 $(top_builddir)/src/include/mesquite_version.h \
                                  include/MeshInterface.hpp \
 				 include/ParallelMeshInterface.hpp \
 				 include/ParallelHelperInterface.hpp \
 				 include/CurveDomain.hpp \
                                  $(MSQ_HDRS)
+
+# don't put these generated headers into the distribution
+nodist_libmesquite_la_include_HEADERS = include/Mesquite_all_headers.hpp \
+					$(top_builddir)/src/include/mesquite_config.h \
+				 	$(top_builddir)/src/include/mesquite_version.h 
+
 libmesquite_la_LIBADD = $(MESQUITE_LIBS)
 AM_CPPFLAGS += -Iinclude \
                -I$(srcdir)/include  \

@@ -459,7 +459,7 @@ bool run_smoother( mesh_reader_t input_mesh,
     fn.use_global_patch();
   }
   VertexMover* solver = USE_FEAS_NEWT ? (VertexMover*)&fn : (VertexMover*)&cg;
-  XYPlanarDomain plane2(0);
+  XYPlanarDomain plane2;
   solver->set_inner_termination_criterion( &inner );
   solver->set_outer_termination_criterion( &outer );
 

@@ -89,6 +89,11 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 {
   MSQ_FUNCTION_TIMER( "FeasibleNewton::optimize_vertex_positions" );
   MSQ_DBGOUT(2) << "\no  Performing Feasible Newton optimization.\n";
+  
+  //
+  // the only valid 2D meshes that FeasibleNewton works for are truly planar which 
+  // lie in the X-Y coordinate plane.
+  //
 
   XYPlanarDomain *xyPlanarDomainPtr = dynamic_cast<XYPlanarDomain*>(pd.get_domain());
     // only optimize if input mesh is a volume or an XYPlanarDomain

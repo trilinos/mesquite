@@ -53,23 +53,10 @@ namespace MESQUITE_NS
   {
   public:
    
-    inline XYPlanarDomain(int dummy)
-    {
-      Vector3D normal(0,0,1), point(0,0,0);
-        // set_plane
-      mNormal = normal;
-      mNormal.normalize();
-      mCoeff = -(mNormal % point);
-    }
+    XYPlanarDomain() {};
     
     virtual ~XYPlanarDomain();
       
-    const Vector3D& get_normal() const { return mNormal; }
-    
-    double get_coeff() { return mCoeff; }
-    
-    Vector3D get_origin() const { return -mCoeff * mNormal; }
-    
     virtual void snap_to(Mesh::VertexHandle entity_handle,
                          Vector3D &coordinate) const;
     
@@ -95,9 +82,6 @@ namespace MESQUITE_NS
                              size_t num_vertices,
                              MsqError& err ) const;
 
-  private:
-    Vector3D mNormal;
-    double mCoeff;
   };
 }
 
