@@ -1,40 +1,78 @@
 \chapter{Analyzing Optimizer Behavior}
 
-This chapter provides a brief overview of some of the tools provided in Mesquite for assisting with the analyze and visualization of the Mesquite optimization process.  The tools discussed in this section can be used to provide additional
-output.  External tools such as Paraview, VisIt, or GNU Plot must be used to visualize the data.
+This chapter provides a brief overview of some of the tools provided in Mesquite for assisting with the analysis and visualization of the Mesquite optimization process.  The tools discussed in this section can be used to provide additional output.  External tools such as Paraview, VisIt, or GNU Plot must be used to visualize the data.
 
 \section{Assessing Quality}
 
-  The QualityAssessor class provides a summary of the mesh quality.  An instance of QualityAssessor may be inserted in the InstructionQueue at any point to print a summary of the mesh quality at that time during the optimization.  Instances of the QualityMetric class can be created and passed to the QualityAssessor class to be used to assess the mesh quality.  If no QualityMetrics are specified, the only assessment that will be performed is a simple count of inverted elements.
+  The QualityAssessor class provides a summary of the mesh quality. It can be used with Non Target-paradigm metrics (QualityMetric classes) as well as Target-paradigm metrics (TMetric classes). For simplicity, the following discussion refers to the QualityMetrics classes but the concepts apply to the TMetric classes as well.  The QualityAssessor class can be used in a direct fashion as shown in the example below or via the InstructionQue class as described in Section \ref{sec:tutDetailedAPI}.  An instance of the QualityMetric class can be specified for the QualityAssessor instance at creation to be used to assess the mesh quality.  Additional QualityMetric instances can be added to a QualityAssessor using the "add\_quality\_assessment" method.  If no QualityMetrics are specified, the only assessment that will be performed is a simple count of inverted elements. One or more instances of the QualityAssessor class may be inserted in the InstructionQueue at any point to print a summary of the mesh quality at that time during the optimization.
 
-  A number of constructors are provided by the QualityAssessor class.  Each allows the specification of a different set paramaters to control the quality assement.  The parameters are described below including default values, if any. Note that all paramaters are not used in each constructor.
+\subsection{Stopping Assessement}
+
+A stopping assessment can be specified for each QualityAssessor instance.  The stopping assessment consists of a power mean value used to calculate a number representing the quality of the refined mesh. This number becomes the return value of the loop\_over\_mesh call.  If no power mean is specified for a QualityAssessor instance, a simple average of all metric values calculated during the assessment is returned.  Only one stopping assessment can be specified for a particular QualityAssessor instance.  There are three different ways to specify a stopping assessment: when the QualityAssessor instance is created using a constructor, when a quality assessment is added via the add\_quality\_assessment () method, and directly with the set\_stopping\_assessment() method.  Since only one stopping assessment can be defined for a each instance of QualityAssessor, the last action that causes the stopping assessment to be set will be the one used for the assessment no matter how many metrics have been included.
+
+\subsection{Using the Quality Assessor}
+
+  The QualityAssessor class provides a number of constructors.  Each allows the specification of a different set parameters to control the quality assessment.  The parameters are described below including default values, if any. Note that all parameters are not used in each constructor.
 
 \label{QA_params}
-Parmaters used by QualityAssesor constructors:
+Parameters used by QualityAssesor constructors:
 \begin{description}
-\item[metric:]   QualtiyMetric to register for use in assessing mesh quality.  Will also be used as the "stopping assessment".
+\item[metric:]   QualityMetric to register for use in assessing mesh quality.  Will also be used in the setting of the stopping assessment.
 
 \item[historgram\_intervals:]   If non-zero, a histogram of quality metric values composed of the specified number of intervals will be generated.  Default is zero.
-\item[power\_mean:] If non-zero, in addition to the normal summary statistics for the quality metric, an additional general power mean with the specified power will be calculated.  Default is zero.
+\item[power\_mean:] If non-zero, in addition to the normal summary statistics for the quality metric, an additional general power mean with the specified power will be calculated.  Is used as the value set for the stopping assessment.  Default is zero.
 
-\item[free\_elements\_only:] If true, only quality values that depend on at least one free vertex will be used. Default is true.
+\item[free\_elements\_only:] When this option is TRUE, summary statistics are only computed over the set of elements which contain free vertices. If an element in the mesh does not contain a free vertex, its quality is not included in the summary.  If an element in the mesh does not contain a free vertex, it's quality cannot be improved by Mesquite.  To compute the quality of all mesh elements, regardless of whether Mesquite can improve them, set this option to FALSE.  Default is TRUE.
 
 \item[inverted\_element\_tag\_name:] If a non-null value is specified, an integer tag with the specified name will be used to store a value of 0 for normal elements and 1 for inverted elements.  Default is null value.
 
 \item[metric\_value\_tag\_name:] If a non-null value is specified, a tag with the specified name will be populated with quality values for individual elements or vertices if metric is an element-based or vertex-based metric.  If metric is not element-based or vertex-based, this argument has no effect.  Default is null value.
 
-\item[print\_summary\_to\_std\_out:] If true, summary of mesh quality will be written to std::out.  If false, quality assessment will be available via the get\_results and get\_all\_results methods, but will not be printed.  Default is true.
+\item[print\_summary\_to\_std\_out:] If TRUE, summary of mesh quality will be written to std::out.  If FALSE, quality assessment will be available via the get\_results and get\_all\_results methods, but will not be printed.  Default is TRUE.
 
 \item[output\_stream IO:] stream to which to write a summary of the mesh quality.
 
 \item[name:] Name to include in output.  Useful if several QualityAssessors are in use at the same time.
 \end{description}
 
-  After the QualityAssessor instance is created, any of a number of methods 
-can be used to set individual characteristics of the QualityAssessor object.
+  After the QualityAssessor instance is created, any of a number of methods can be used to set individual characteristics of the QualityAssessor object.
 
-  Once setup for the QualityAssessor object  is complete, the actual assement is preformed by calling "loop\_over\_mesh".  After it terminates, results can be obtained using various methods supplied by the QualityAssessor class.
+  Once setup for the QualityAssessor object  is complete, the actual assessment is preformed by calling "loop\_over\_mesh".  After it terminates, results can be obtained using various methods supplied by the QualityAssessor class.
 
+\subsection{Summary and Histogram}
+
+For each instance of the QualityAssessor, a summary of the results will be printed after the assessments have been completed. Display of the summary can be turned off by calling disable\_printing\_results() before the assessment is started.  The summary will include data for each of the metric assessments run by the Assessor.  The printed data includes the metric name, the minimum and maximum values, the average value, the rms (root mean square), and the standard deviation.  If a power mean was specified for the assessment, an additional column will display the resultant value under a header containing the power mean value used in the calculation.   All values in the QualityAssessor summary table are per mesh element.  Any requested histograms are then displayed.  The number of values in the histogram is dependant upon the type of metric performed.  For element-based metrics, the histogram contains one value per element.  For vertex-based metrics, it will contain the number of target sample points per element times the number of elements.
+
+  Below is an example of a summary and histogram for an eight element, vertex-based mesh for two different metrics, one that included a power mean of 1.5.
+
+
+\begin{verbatim}
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 8 elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+          metric     minimum     average   1.5-mean          rms     maximum    std.dev.
+Condition Number     1.05817     1.14257                  1.1469     1.35948   0.0995044
+        TSquared        1.18        2.23     2.28262     2.33533        3.77    0.693433
+
+   TSquared histogram:
+              1:  3: ======================
+            1.3:  4: ==============================
+            1.6:  4: ==============================
+            1.9:  9: ====================================================================
+            2.2:  2: ===============
+            2.5:  4: ==============================
+            2.8:  1: =======
+            3.1:  3: ======================
+            3.4:  1: =======
+            3.7:  1: =======
+
+\end{verbatim}
+
+\subsection{Code Example}
 
 A simple example using the QualityAssessor class:
 \begin{lstlisting}[frame=single]
@@ -55,8 +93,15 @@ A simple example using the QualityAssessor class:
     // create QualityAssessor instance accepting default values
   QualityAssessor qa( &metric );
 
-    // change some of the default paramaters
-  qa.measure_free_samples_only( false );
+    // change some of the default parameters
+  qa.measure_free_samples_only( fs option is TRUE, summary statistics are only computed
+            over the set of elements which contain free vertices. If an
+            element in the mesh does not contain a free vertex, its quality
+            is not included in the summary.  If an element in the mesh does
+            not contain a free vertex, it's quality cannot be improved by
+            Mesquite.  To compute the quality of all mesh elements, regardless
+            of whether Mesquite can improve them, set this option to FALSE.
+alse );
   qa.disable_printing_results();
 
     // run the QualityAssessor
@@ -260,6 +305,7 @@ The command to request an animation of the mesh optimization in a format suitabl
 tc.write_mesh_steps( "anim", TerminationCriterion::GNUPLOT );
 \end{lstlisting}
 This will produce a sequence of files named ``anim.1'', ``anim.2'', etc.  It will also export a file named ``anim'' that contains the necessary GNU Plot commands to display the animation.
+
 
 
 
