@@ -54,16 +54,29 @@ Mesquite can access mesh domain data through the \emph{iGeom} and \emph{iRel} in
 \section{Simple Geometric Domains} \label{sec:MsqGeom}
 
 Mesquite provides several implementations of the
-\texttt{Mesquite::MeshDomain} interface for simple geometric primitives.  These
-include
+\texttt{Mesquite::MeshDomain} interface for simple geometric primitives. All MeshDomains in Mesquite represent surface meshes. By definition, volumes in Mesquite have no associated MeshDomain.  The domains available in Mesquite include:
 \begin{itemize}
 \item \texttt{PlanarDomain}: An unbounded planar domain.
+\item \texttt{XYPlanarDomain}: An unbounded planar domain that exists in the XY-plane.
 \item \texttt{SphericalDomain}: A closed spherical domain.
 \item \texttt{CylinderDomain}: An unbounded cylindrical domain.
 \item \texttt{BoundedCylinderDomain}: A bounded cylindrical domain.
+\item \texttt{ConicDomain}: An unbounded cone with a circular cross-section.
+\item \texttt{XYRectangle}: An bounded rectangular domain in the XY-Plane.
 \end{itemize}
+
 The \texttt{PlanarDomain} is often used to map $\mathbb{R}^{2}$ optimization
 problems to $\mathbb{R}^{3}$.  The others are used primarily for testing
-purposes.  The \texttt{BoundedCylinderDomain} provides some simplistic
+purposes.  
+
+\medskip
+\noindent Notes about Domains:
+\begin{itemize}
+\item The \texttt{BoundedCylinderDomain} provides some simplistic
 mesh-geometry classification capabilities.  The others do not provide any
-classification functionality.  
+classification functionality. 
+\item The \texttt{ConicDomain} is not bounded at the apex.
+It extends infinitely in  both directions.
+\item The \texttt{XYPlanarDomain} is the only MeshDomain type that can be used with FeasibleNewton optimization.  FeasibleNewton also operates on volume meshes. 
+\item The \texttt{XYRectangle} domain is a simple 2D domain used for free-smooth testing.
+\end{itemize}
