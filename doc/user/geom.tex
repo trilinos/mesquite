@@ -54,13 +54,13 @@ Mesquite can access mesh domain data through the \emph{iGeom} and \emph{iRel} in
 \section{Simple Geometric Domains} \label{sec:MsqGeom}
 
 Mesquite provides several implementations of the
-\texttt{Mesquite::MeshDomain} interface for simple geometric primitives. All MeshDomains in Mesquite represent surface meshes. By definition, volumes in Mesquite have no associated MeshDomain.  The domains available in Mesquite include:
+\texttt{Mesquite::MeshDomain} interface for simple geometric primitives. All MeshDomains in Mesquite are geometric surfaces upon which meshes consisting of triangles and/or quadrilaterals can exist. Mesquite does not have any implementations of 3D geometric regions. The domains available in Mesquite include:
 \begin{itemize}
-\item \texttt{PlanarDomain}: An unbounded planar domain.
-\item \texttt{XYPlanarDomain}: An unbounded planar domain that exists in the XY-plane.
-\item \texttt{SphericalDomain}: A closed spherical domain.
-\item \texttt{CylinderDomain}: An unbounded cylindrical domain.
-\item \texttt{BoundedCylinderDomain}: A bounded cylindrical domain.
+\item \texttt{PlanarDomain}: An unbounded planar surface.
+\item \texttt{XYPlanarDomain}: An unbounded planar surface that exists in the XY-plane.
+\item \texttt{SphericalDomain}: A closed spherical surface.
+\item \texttt{CylinderDomain}: An unbounded cylindrical surface.
+\item \texttt{BoundedCylinderDomain}: A bounded cylindrical surface.
 \item \texttt{ConicDomain}: An unbounded cone with a circular cross-section.
 \item \texttt{XYRectangle}: An bounded rectangular domain in the XY-Plane.
 \end{itemize}
@@ -72,12 +72,9 @@ purposes.
 \medskip
 \noindent Notes about Domains:
 \begin{itemize}
-\item The \texttt{BoundedCylinderDomain} provides some simplistic
-mesh-geometry classification capabilities.  The others do not provide any
-classification functionality. 
-\item The \texttt{ConicDomain} is not bounded at the apex.
-It extends infinitely in  both directions.
+\item The \texttt{BoundedCylinderDomain} provides some simplistic mesh-geometry classification capabilities.  The others do not provide any classification functionality.  Creating a bounded Cylinder is a two-step process. First, a cylinder is created via the constructor by specifying a radius, a vector defining the direction of the axis, and a point through which the axis passes.  Second, the bounding part is specified by calling one of the two overloaded methods "create\_curve()".  Both versions accept a distance from the axis where the circular curve to act at the bounding box will be placed along with vertices to be considered bound to the curve.  The vertices are specified by either a list or a mesh depending on which version of the method is used.
+\item The \texttt{ConicDomain} is not bounded at the apex.  It extends infinitely in  both directions.
 \item The \texttt{XYPlanarDomain} is the only MeshDomain type that can be used with FeasibleNewton optimization.  FeasibleNewton also operates on volume meshes. 
-\item The \texttt{XYRectangle} domain is a simple 2D domain used for free-smooth testing.
+\item The \texttt{XYRectangle} domain is a simple 2D domain used for free-smooth testing. The specified rectangle can be in the XY, YZ, or ZX plane.   The constructor takes as input a point (x,y,z), a height and width, and a plane.  A cooresponding bounding box is then created in the specified plane. The method "setup(iMesquite::Mesh* mesh, Mesquite::MsqError\& err)" can then be used to determine if a particular mesh lies completely in the defined bounded rectangle. If any of the vertices of the mesh lie outside the rectangle a non-zero err value will be returned.
 \end{itemize}
    
