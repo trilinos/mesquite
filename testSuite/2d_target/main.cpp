@@ -152,14 +152,16 @@ static int do_smoother( const char* input_file,
   solver.use_global_patch();
   
   ConditionNumberQualityMetric qm_metric;
-  QualityAssessor assessor;
-  assessor.add_quality_assessment( metric, 10 );
-  assessor.add_quality_assessment( &qm_metric );
+  QualityAssessor before_assessor;
+  QualityAssessor after_assessor;
+  before_assessor.add_quality_assessment( metric, 10);
+  before_assessor.add_quality_assessment( &qm_metric );
+  after_assessor.add_quality_assessment( metric, 10 );
 
   InstructionQueue q;
-  q.add_quality_assessor( &assessor, err );
+  q.add_quality_assessor( &before_assessor, err );
   q.set_master_quality_improver( &solver, err );
-  q.add_quality_assessor( &assessor, err );
+  q.add_quality_assessor( &after_assessor, err );
   
   MeshImpl mesh;
   mesh.read_vtk( input_file, err );
@@ -171,6 +173,8 @@ static int do_smoother( const char* input_file,
   mesh.write_vtk( output_file, err );
   if (MSQ_CHKERR(err)) return 2;
   cout << "Wrote: " << output_file << endl;
+
+  before_assessor.scale_histograms(&after_assessor);
   
   return 0;
 }

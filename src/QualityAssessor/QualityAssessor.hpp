@@ -42,8 +42,6 @@ Header file for the Mesquite::QualityAssessor class
 #ifndef MSQ_QUALITYASSESSOR_HPP
 #define MSQ_QUALITYASSESSOR_HPP
 
-#include <math.h>
-
 #include "Mesquite.hpp"
 #include "Instruction.hpp"
 #include "MeshInterface.hpp"
@@ -367,6 +365,16 @@ namespace MESQUITE_NS
     
       //! Reset calculated data 
     MESQUITE_EXPORT void reset_data();
+
+      //! Produces two historgrams on a single scale from a before
+      //! optimization histogram and an after optimization histogram.
+      //! The histogram intervals are adjusted to include the enitre
+      //! range of both histograms, the horizontal interval value bars 
+      //! are adjusted to be on the same scale, and the metric quality 
+      //! values are placed in the correct quality value 'bin' based
+      //! on the new interval scale.
+
+    MESQUITE_EXPORT void scale_histograms(QualityAssessor* optimal);
     
     MESQUITE_EXPORT void tag_inverted_elements( std::string tagname ) 
       { invertedTagName = tagname; }
@@ -381,7 +389,7 @@ namespace MESQUITE_NS
       { fixedTagName.clear(); }
     MESQUITE_EXPORT bool tagging_fixed_elements() const
       { return !fixedTagName.empty(); }
-    
+                                                      
     /** \brief Per-metric QualityAssessor data
      *
      * The Assessor class holds QualityAssessor data for
@@ -466,7 +474,8 @@ namespace MESQUITE_NS
           { return stoppingFunction; }
         
         MESQUITE_EXPORT double stopping_function_value() const;
-        
+
+       
       private:
       
         friend class QualityAssessor;
@@ -504,7 +513,8 @@ namespace MESQUITE_NS
         bool stoppingFunction;
         
         int referenceCount;
-    };    
+
+     };    
         
     typedef std::list<Assessor*> list_type;
         
@@ -600,6 +610,8 @@ namespace MESQUITE_NS
         the width of that terminal.  Returns zero if width cannot
         be determined. */
     int get_terminal_width() const;
+
+    static std::string element_name_as_string(int enum_name);
    
     /** Name */
     std::string qualityAssessorName;  
@@ -615,6 +627,9 @@ namespace MESQUITE_NS
     std::string invertedTagName, fixedTagName;
     
     bool skipFixedSamples;
+
+    int elementTypeCount[MIXED - POLYGON+1];
+
   };
 
   

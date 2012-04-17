@@ -50,6 +50,7 @@
 #include <fstream>
 #include <iomanip>
 #include <set>
+#include <math.h>
 
 #ifdef HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
@@ -85,6 +86,9 @@ QualityAssessor::QualityAssessor( bool print_summary,
     
   if (qualityAssessorName.empty()) 
     qualityAssessorName = default_name( free_only );
+
+  for (int i=POLYGON; i <= MIXED; i++)
+    elementTypeCount[i - POLYGON] = 0;
 }
 
 QualityAssessor::QualityAssessor( std::ostream& stream,
@@ -102,6 +106,9 @@ QualityAssessor::QualityAssessor( std::ostream& stream,
     
   if (qualityAssessorName.empty()) 
     qualityAssessorName = default_name( free_only );
+
+  for (int i=POLYGON; i <= MIXED; i++)
+    elementTypeCount[i - POLYGON] = 0;
 }
 
 QualityAssessor::QualityAssessor( std::ostream& output_stream,
@@ -123,8 +130,11 @@ QualityAssessor::QualityAssessor( std::ostream& output_stream,
     
   if (qualityAssessorName.empty()) 
     qualityAssessorName = default_name( free_only );
-    
+
   set_stopping_assessment( metric, histogram_intervals, power_mean, metric_value_tag_name );
+
+  for (int i=POLYGON; i <= MIXED; i++)
+    elementTypeCount[i - POLYGON] = 0;
 }
 
 QualityAssessor::QualityAssessor( QualityMetric* metric, 
@@ -148,6 +158,9 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
     qualityAssessorName = default_name( free_only );
     
   set_stopping_assessment( metric, histogram_intervals, power_mean, metric_value_tag_name );
+
+  for (int i=POLYGON; i <= MIXED; i++)
+    elementTypeCount[i - POLYGON] = 0;
 }
 
 QualityAssessor::QualityAssessor( const QualityAssessor& copy ) :
@@ -159,11 +172,15 @@ QualityAssessor::QualityAssessor( const QualityAssessor& copy ) :
   invertedTagName(copy.invertedTagName),
   fixedTagName(copy.fixedTagName),
   skipFixedSamples(copy.skipFixedSamples)
+
 {
   list_type::iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter) 
     (*iter)->referenceCount++;
   myData->referenceCount++;
+
+ for (int i=POLYGON; i <= MIXED; i++)
+   elementTypeCount[i - POLYGON] = copy.elementTypeCount[i - POLYGON];
 }
 
 QualityAssessor& QualityAssessor::operator=( const QualityAssessor& copy )
@@ -186,6 +203,9 @@ QualityAssessor& QualityAssessor::operator=( const QualityAssessor& copy )
   for (iter = assessList.begin(); iter != assessList.end(); ++iter) 
     (*iter)->referenceCount++;
   myData->referenceCount++;
+
+  for (int i=POLYGON; i <= MIXED; i++)
+    elementTypeCount[i - POLYGON] = copy.elementTypeCount[i - POLYGON];
     
   return *this;
 }  
@@ -539,7 +559,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
       //the end of this loop
     for (p = patches.begin(); p != patches.end(); ++p) {
       elem_patches.get_patch( *p, patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
- 
+
       if (helper) {
         bool ours = helper->is_our_element( patch_elems[0], err );
         MSQ_ERRZERO(err);
@@ -550,6 +570,17 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
       }
       patch.set_mesh_entities( patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
       
+      if (first_pass)
+      {
+          // record element type for use in print_summary
+        for (size_t i=0; i < patch.num_elements(); i++)
+        {
+          const MsqMeshEntity* elem = &patch.element_by_index(i);
+          EntityTopology topo = elem->get_element_type();  
+          elementTypeCount[topo - POLYGON]++;
+        }
+      }
+
       if (0 == patch.num_free_vertices()) {
         if (tagging_fixed_elements()) {
           Mesh::ElementHandle h = patch.get_element_handles_array()[0];
@@ -766,6 +797,336 @@ void QualityAssessor::reset_data()
     (*iter)->reset_data();
   myData->invertedElementCount = -1;
   myData->invertedSampleCount = -1;
+
+  for (int i=POLYGON; i <= MIXED; i++)
+    elementTypeCount[i - POLYGON] = 0;
+}
+
+void QualityAssessor::scale_histograms(QualityAssessor* optimized)
+{
+    // find the histograms to scale
+  list_type::iterator iter;
+  list_type::iterator initial;
+  list_type::iterator optimal;
+  bool initial_found = false, optimal_found = false;
+  for (iter = assessList.begin(); iter != assessList.end(); ++iter)
+  {
+    if ((*iter)->histogram.size() > 0)
+    {
+      if (initial_found == false)
+      {
+        initial = iter;
+        initial_found = true;
+        break;
+      }
+    }
+  }
+  for (iter = optimized->assessList.begin(); iter != optimized->assessList.end(); ++iter)
+  {
+    if ((*iter)->histogram.size() > 0)
+    {
+      optimal = iter;
+      optimal_found = true;
+      break;
+    }
+  }
+  if (!initial_found || !optimal_found)
+  {
+      // issue warning: orig histograms not found
+    if (!initial_found)
+      outputStream << "WARNING: 'before' histogram not found" << std::endl;
+    else
+      outputStream << "WARNING: 'after' histogram not found" << std::endl;
+    return;
+  }
+
+    // check number of intervals (bins) for each histogram
+  int num_intervals = (*initial)->histogram.size()-2;
+  if (num_intervals != (*optimal)->histogram.size()-2)
+  {
+       // issue warning: number of intervals not the same   
+    outputStream << "WARNING: histogram intervals are not the same" << std::endl;
+    return;
+  }
+
+    // calculate new max and min values
+  double combined_min, combined_max;  
+  if ((*initial)->histMin < (*optimal)->histMin)
+    combined_min = (*initial)->histMin;
+  else
+    combined_min = (*optimal)->histMin;
+
+  if ((*initial)->histMax > (*optimal)->histMax)
+    combined_max = (*initial)->histMax;
+  else
+    combined_max = (*optimal)->histMax;
+
+    // put the before quality values into the correct new bins
+
+    // First and last values in array are counts of valuesnum_intervals+1
+    // outside the user-specified range of the histogram
+    // (below and above, respectively.)
+  std::vector<int> new_initial_histogram;    
+  new_initial_histogram.resize((*initial)->histogram.size(), 0);
+  new_initial_histogram[0] = (*initial)->histogram[0];
+  new_initial_histogram[new_initial_histogram.size()-1] = 
+                  (*initial)->histogram[(*initial)->histogram.size()-1];
+  
+    // Re-calculate which interval the value is in.  Add one
+    // because first entry is for values below user-specifed
+    // minimum value for histogram.
+  double combined_range = combined_max - combined_min;
+  double initial_min = (*initial)->histMin;
+  double optimal_min = (*optimal)->histMin;
+  double initial_range = (*initial)->histMax - (*initial)->histMin;
+  double optimal_range = (*optimal)->histMax - (*optimal)->histMin;
+  double combined_step = combined_range / num_intervals;
+  double initial_step = initial_range / num_intervals;
+  double optimal_step = optimal_range / num_intervals;
+
+
+    // populate initial histogram
+  if (initial_range == combined_range)
+  {
+      // just copy histogram
+    new_initial_histogram = (*initial)->histogram;
+  }
+  else
+  {
+    for (size_t i=1 ; i < new_initial_histogram.size()-1; i++)
+    {
+      double combined_bin_value = combined_min + (combined_step * (i-1));
+      for (size_t j=1; j < new_initial_histogram.size()-1; j++)
+      {
+        double initial_bin_value = initial_min + (initial_step * (j-1));
+        if ( initial_bin_value >= combined_bin_value &&
+             initial_bin_value < combined_bin_value + combined_step)
+        {
+          new_initial_histogram[i] += (*initial)->histogram[j];
+        }
+      }
+    }
+  }
+
+    // put the optimal quality values into the correct new bins
+  std::vector<int> new_optimal_histogram; 
+  new_optimal_histogram.resize((*optimal)->histogram.size(), 0);
+  new_optimal_histogram[0] = (*optimal)->histogram[0];
+  new_optimal_histogram[new_optimal_histogram.size()-1] = 
+                (*optimal)->histogram[(*optimal)->histogram.size()-1];
+
+    // populate optimal histogram
+  if (optimal_range == combined_range)
+  {
+      // just copy histogram
+    new_optimal_histogram = (*optimal)->histogram;
+  }
+  else
+  {
+    for (size_t i=1 ; i < new_optimal_histogram.size()-1; i++)
+    {
+      double combined_bin_value = combined_min + (combined_step * (i-1));
+      for (size_t j=1; j < new_optimal_histogram.size()-1; j++)
+      {
+        double optimal_bin_value = optimal_min + (optimal_step * (j-1));
+        if (optimal_bin_value >= combined_bin_value &&
+            optimal_bin_value < combined_bin_value + combined_step)
+        {
+          new_optimal_histogram[i] += (*optimal)->histogram[j];
+        }
+      }
+    }
+  }
+
+    // determine largest number of values in a 'bin' for both histograms
+  unsigned i;
+  int max_interval_num = 1;
+  for (i = 0; i < new_initial_histogram.size(); ++i)
+  {
+    if (new_initial_histogram[i] > max_interval_num)
+      max_interval_num = new_initial_histogram[i];
+  }
+  int initial_max_interval = max_interval_num;
+  for (i = 0; i < new_optimal_histogram.size(); ++i)
+  {
+    if (new_optimal_histogram[i] > max_interval_num)
+      max_interval_num = new_optimal_histogram[i];
+  }
+
+    // calculate how many bar graph characters will represent the 
+    // largest 'bin' value.
+    // create the 'before' histogram
+  int termwidth = get_terminal_width();
+  const char indent[] = "   ";
+  const char GRAPH_CHAR = '=';  // Character used to create bar graphs
+  const int TOTAL_WIDTH = termwidth > 30 ? termwidth : 70;   // Width of histogram
+  int GRAPHW = TOTAL_WIDTH - sizeof(indent);
+
+  if (0 == max_interval_num)
+    return; // no data 
+  
+    // Calculate width of field containing counts for 
+    // histogram intervals (log10(max_interval)).
+  int num_width = 1;
+  for (int temp = max_interval_num; temp > 0; temp /= 10)
+    ++num_width;
+  GRAPHW -= num_width;
+
+     // Create an array of bar graph characters for use in output
+  std::vector<char> graph_chars(GRAPHW+1, GRAPH_CHAR);
+  
+    // Check if bar-graph should be linear or log10 plot
+    // Do log plot if standard deviation is less that 1.5
+    // histogram intervals.
+
+  bool log_plot = false;
+  double stddev = (*initial)->get_stddev();
+  if (stddev > 0 && stddev < 2.0*combined_step)
+  {
+    int new_interval = (int)(log10((double)(1+max_interval_num)));
+    if (new_interval > 0) {
+      log_plot = true;
+      max_interval_num = new_interval;
+    }
+  }
+    // output the 'before' histogram
+
+    // Write title
+   outputStream << std::endl 
+                << "************** Common-scale Histograms **************" 
+                << std::endl << std::endl;
+   outputStream << indent << (*initial)->get_label() << " histogram (initial mesh):";
+  if (log_plot)
+    outputStream << " (log10 plot)";
+  outputStream << std::endl;
+
+    // Calculate width of a single quality interval value
+  double interval_value = 0.0;
+  int max_interval_width = 0;
+  std::stringstream str_stream;
+  std::string interval_string; 
+  for (i = 0; i < new_initial_histogram.size(); ++i)
+  {
+    interval_value = combined_min + (i)*combined_step;
+    str_stream.clear();
+    str_stream.str(""); 
+    interval_string = "";
+    str_stream << interval_value;
+    interval_string = str_stream.str();
+    if (interval_string.length() >  (size_t)max_interval_width)
+      max_interval_width = interval_string.length();
+  }
+
+    // adjust graph width for actual size of interval values
+  GRAPHW = GRAPHW - (max_interval_width*2) - 5; 
+
+    // For each interval of histogram
+  for (i = 0; i < new_initial_histogram.size(); ++i)
+  {
+      // First value is the count of the number of values that
+      // were below the minimum value of the histogram.
+    if (0 == i)
+    {
+      if (0 == new_initial_histogram[i])
+        continue;
+      outputStream << indent << std::setw(max_interval_width) << "under min";
+    }
+      // Last value is the count of the number of values that
+      // were above the maximum value of the histogram.
+    else if (i+1 == new_initial_histogram.size())
+    {
+      if (0 == new_initial_histogram[i])
+        continue;
+      outputStream << indent << std::setw(max_interval_width) << "over max";
+    }
+      // Anything else is a valid interval of the histogram.
+      // Print the range for each interval.
+    else
+    {
+      outputStream << indent << "(" << std::setw(max_interval_width) << std::right 
+             << combined_min + (i-1)*combined_step << "-" << std::setw(max_interval_width) 
+             << std::left << combined_min + (i)*combined_step << ") |";
+    }
+
+      // Print bar graph
+    
+      // First calculate the number of characters to output
+    int num_graph;
+    if (log_plot)
+      num_graph = GRAPHW * (int)log10((double)(1+new_initial_histogram[i])) / max_interval_num;
+    else
+      num_graph = GRAPHW * new_initial_histogram[i] / max_interval_num;
+      
+      // print num_graph characters using array of fill characters.
+    graph_chars[num_graph] = '\0';
+    outputStream << arrptr(graph_chars);
+    graph_chars[num_graph] = GRAPH_CHAR;
+
+      // Print interval count.
+    outputStream << new_initial_histogram[i] << std::endl;
+  }
+  
+   outputStream << "  metric was evaluated " << (*initial)->count << " times." 
+                << std::endl << std::endl;
+
+    // output the 'after' histogram
+   outputStream << std::endl << indent << (*optimal)->get_label() << " histogram (optimal mesh):";
+  if (log_plot)
+    outputStream << " (log10 plot)";
+  outputStream << std::endl;
+
+    // For each interval of histogram
+  for (i = 0; i < new_optimal_histogram.size(); ++i)
+  {
+      // First value is the count of the number of values that
+      // were below the minimum value of the histogram.
+    if (0 == i)
+    {
+      if (0 == new_optimal_histogram[i])
+        continue;
+      outputStream << indent << std::setw(max_interval_width) << "under min";
+    }
+      // Last value is the count of the number of values that
+      // were above the maximum value of the histogram.
+    else if (i+1 == new_optimal_histogram.size())
+    {
+      if (0 == new_optimal_histogram[i])
+        continue;
+      outputStream << indent << std::setw(max_interval_width) << "over max";
+    }
+      // Anything else is a valid interval of the histogram.
+      // Print the range for each interval.
+    else
+    {
+      outputStream << indent << "(" << std::setw(max_interval_width) << std::right 
+             << combined_min + (i-1)*combined_step << "-" << std::setw(max_interval_width) 
+             << std::left << combined_min + (i)*combined_step << ") |";
+    }
+
+      // Print bar graph
+    
+      // First calculate the number of characters to output
+    int num_graph;
+    if (log_plot)
+      num_graph = GRAPHW * (int)log10((double)(1+new_optimal_histogram[i])) / max_interval_num;
+    else
+      num_graph = GRAPHW * new_optimal_histogram[i] / max_interval_num;
+      
+      // print num_graph characters using array of fill characters.
+    graph_chars[num_graph] = '\0';
+    outputStream << arrptr(graph_chars);
+    graph_chars[num_graph] = GRAPH_CHAR;
+
+      // Print interval count.
+    outputStream << new_optimal_histogram[i] << std::endl;
+    
+  }
+  
+   outputStream << "  metric was evaluated " << (*optimal)->count << " times." 
+                << std::endl << std::endl;
+
+
+  return;
 }
 
 QualityAssessor::Assessor::Assessor( QualityMetric* metric, const char* label )
@@ -889,6 +1250,7 @@ void QualityAssessor::Assessor::add_hist_value( double metric_value )
   }
 }
 
+
 void QualityAssessor::Assessor::calculate_histogram_range()
 {
   double step = (maximum - minimum) / (histogram.size() - 2);
@@ -921,6 +1283,20 @@ void QualityAssessor::print_summary( std::ostream& stream ) const
   else
     stream << "  Evaluating quality for " << myData->elementCount 
            << " elements." << std::endl;
+
+    // Print element type totals
+  std::string str_value = "";
+  for (int i=POLYGON; i <= MIXED; i++)
+  {
+    if ( elementTypeCount[i - POLYGON] )
+    {
+      str_value = element_name_as_string(i);
+      if (str_value != "")
+        stream << "  This mesh had " 
+               << elementTypeCount[i - POLYGON]
+               << " " << str_value << " elements." << std::endl;
+    }
+  }
   
   if (myData->invertedElementCount) {
     stream << "  THERE ARE "
@@ -1067,9 +1443,8 @@ void QualityAssessor::Assessor::print_histogram( std::ostream& stream,
   
   const char indent[] = "   ";
   const char GRAPH_CHAR = '=';  // Character used to create bar graphs
-  const int FLOATW = 12;        // Width of floating-point output
   const int TOTAL_WIDTH = termwidth > 30 ? termwidth : 70;   // Width of histogram
-  int GRAPHW = TOTAL_WIDTH - FLOATW - 4 - sizeof(indent);
+  int GRAPHW = TOTAL_WIDTH - sizeof(indent);
   
     // range is either user-specified (histMin & histMax) or
     // calculated (minimum & maximum)
@@ -1120,7 +1495,26 @@ void QualityAssessor::Assessor::print_histogram( std::ostream& stream,
     stream << " (log10 plot)";
   stream << std::endl;
 
-  
+    // Calculate width of a single quality interval value
+  double interval_value = 0.0;
+  int max_interval_width = 0;
+  std::stringstream str_stream;
+  std::string interval_string; 
+  for (i = 0; i < histogram.size(); ++i)
+  {
+    interval_value = min + (i)*step;
+    str_stream.clear();
+    str_stream.str(""); 
+    interval_string = "";
+    str_stream << interval_value;
+    interval_string = str_stream.str();
+    if (interval_string.length() >  (size_t)max_interval_width)
+      max_interval_width = interval_string.length();
+  }
+
+    // adjust graph width for actual size of interval values
+  GRAPHW = GRAPHW - (max_interval_width*2) - 5; 
+
     // For each interval of histogram
   for (i = 0; i < histogram.size(); ++i)
   {
@@ -1130,7 +1524,7 @@ void QualityAssessor::Assessor::print_histogram( std::ostream& stream,
     {
       if (0 == histogram[i])
         continue;
-      stream << indent << std::setw(FLOATW) << "under min";
+      stream << indent << std::setw(max_interval_width) << "under min";
     }
       // Last value is the count of the number of values that
       // were above the maximum value of the histogram.
@@ -1138,18 +1532,17 @@ void QualityAssessor::Assessor::print_histogram( std::ostream& stream,
     {
       if (0 == histogram[i])
         continue;
-      stream << indent << std::setw(FLOATW) << "over max";
+      stream << indent << std::setw(max_interval_width) << "over max";
     }
       // Anything else is a valid interval of the histogram.
-      // Print the lower bound for each interval.
+      // Print the range for each interval.
     else
     {
-      stream << indent << std::setw(FLOATW) << min + (i-1)*step;
+      stream << indent << "(" << std::setw(max_interval_width) << std::right 
+             << min + (i-1)*step << "-" << std::setw(max_interval_width) 
+             << std::left << min + (i)*step << ") |";
     }
-    
-      // Print interval count.
-    stream << ": " << std::setw(num_width) << histogram[i] << ": ";
-    
+
       // Print bar graph
     
       // First calculate the number of characters to output
@@ -1161,11 +1554,16 @@ void QualityAssessor::Assessor::print_histogram( std::ostream& stream,
       
       // print num_graph characters using array of fill characters.
     graph_chars[num_graph] = '\0';
-    stream << arrptr(graph_chars) << std::endl;
+    stream << arrptr(graph_chars);
     graph_chars[num_graph] = GRAPH_CHAR;
+
+      // Print interval count.
+    stream << histogram[i] << std::endl;
+    
   }
-  
-  stream << std::endl;
+
+  stream << "  metric was evaluated " << count << " times." 
+    << std::endl << std::endl;
 }
 
 #ifdef _MSC_VER
@@ -1192,6 +1590,26 @@ int QualityAssessor::get_terminal_width() const
 #endif
 
   return 0;
+}
+
+std::string QualityAssessor::element_name_as_string(int enum_name)
+{
+  std::string str_value = "";
+
+  switch (enum_name)
+  {
+    case POLYGON:       str_value.assign("polygon"); break;
+    case TRIANGLE:      str_value.assign("triangle"); break;
+    case QUADRILATERAL: str_value.assign("quadrilateral"); break;
+    case POLYHEDRON:    str_value.assign("polyhedron"); break;
+    case TETRAHEDRON:   str_value.assign("tetrahedron"); break;
+    case HEXAHEDRON:    str_value.assign("hexahedron"); break;
+    case PRISM:         str_value.assign("prism"); break;
+    case SEPTAHEDRON:   str_value.assign("septahedron"); break;
+    case MIXED:         str_value.assign("mixed"); break;
+  }
+
+  return str_value;
 }
 
 double QualityAssessor::Assessor::stopping_function_value() const
