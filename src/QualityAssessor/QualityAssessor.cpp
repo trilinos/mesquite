@@ -883,7 +883,13 @@ void QualityAssessor::scale_histograms(QualityAssessor* optimized)
   double combined_step = combined_range / num_intervals;
   double initial_step = initial_range / num_intervals;
   double optimal_step = optimal_range / num_intervals;
-
+    // round steps to 3 significant digits
+  if (combined_step >= 0.001)
+    combined_step = round_to_3_significant_digits(combined_step);
+  if (initial_step >= 0.001)
+    initial_step = round_to_3_significant_digits(initial_step);
+  if (optimal_step >= 0.001)
+    optimal_step = round_to_3_significant_digits(optimal_step);
 
     // populate initial histogram
   if (initial_range == combined_range)
@@ -946,7 +952,7 @@ void QualityAssessor::scale_histograms(QualityAssessor* optimized)
     if (new_initial_histogram[i] > max_interval_num)
       max_interval_num = new_initial_histogram[i];
   }
-  int initial_max_interval = max_interval_num;
+  int initial_max_interval_num = max_interval_num;
   for (i = 0; i < new_optimal_histogram.size(); ++i)
   {
     if (new_optimal_histogram[i] > max_interval_num)
@@ -1008,6 +1014,8 @@ void QualityAssessor::scale_histograms(QualityAssessor* optimized)
   for (i = 0; i < new_initial_histogram.size(); ++i)
   {
     interval_value = combined_min + (i)*combined_step;
+    if (combined_step >= .001)
+      interval_value = round_to_3_significant_digits(interval_value);
     str_stream.clear();
     str_stream.str(""); 
     interval_string = "";
@@ -1043,9 +1051,18 @@ void QualityAssessor::scale_histograms(QualityAssessor* optimized)
       // Print the range for each interval.
     else
     {
+      double start_value = combined_min + (i-1)*combined_step;
+      double end_value = combined_min + (i)*combined_step;
+
+      if (combined_step >= 0.001)
+      {
+        start_value = round_to_3_significant_digits(start_value);
+        end_value = round_to_3_significant_digits(end_value);
+      }
+
       outputStream << indent << "(" << std::setw(max_interval_width) << std::right 
-             << combined_min + (i-1)*combined_step << "-" << std::setw(max_interval_width) 
-             << std::left << combined_min + (i)*combined_step << ") |";
+                   << start_value << "-" << std::setw(max_interval_width) 
+                   << std::left << end_value << ") |";
     }
 
       // Print bar graph
@@ -1098,9 +1115,19 @@ void QualityAssessor::scale_histograms(QualityAssessor* optimized)
       // Print the range for each interval.
     else
     {
+      double start_value = combined_min + (i-1)*combined_step;
+      double end_value = combined_min + (i)*combined_step;
+
+      if (combined_step >= 0.001)
+      {
+        start_value = round_to_3_significant_digits(start_value);
+        end_value = round_to_3_significant_digits(end_value);
+      }
+
       outputStream << indent << "(" << std::setw(max_interval_width) << std::right 
-             << combined_min + (i-1)*combined_step << "-" << std::setw(max_interval_width) 
-             << std::left << combined_min + (i)*combined_step << ") |";
+                   << start_value << "-" << std::setw(max_interval_width) 
+                   << std::left << end_value << ") |";
+
     }
 
       // Print bar graph
@@ -1453,21 +1480,24 @@ void QualityAssessor::Assessor::print_histogram( std::ostream& stream,
   max = histMax;
     // Witdh of one interval of histogram
   double step = (max - min) / (histogram.size()-2);
+    // round step to 3 significant digits
+  if (step >= 0.001)
+    step = round_to_3_significant_digits(step);
   
-    // Find maximum value for an interval of the histogram
+    // Find maximum value for an interval bin of the histogram
   unsigned i;
-  int max_interval = 1;
+  int max_bin_value = 1;
   for (i = 0; i < histogram.size(); ++i)
-    if (histogram[i] > max_interval)
-      max_interval = histogram[i];
+    if (histogram[i] > max_bin_value)
+      max_bin_value = histogram[i];
   
-  if (0 == max_interval)
+  if (0 == max_bin_value)
     return; // no data 
   
     // Calculate width of field containing counts for 
-    // histogram intervals (log10(max_interval)).
+    // histogram intervals (log10(max_bin_value)).
   int num_width = 1;
-  for (int temp = max_interval; temp > 0; temp /= 10)
+  for (int temp = max_bin_value; temp > 0; temp /= 10)
     ++num_width;
   GRAPHW -= num_width;
 
@@ -1481,13 +1511,12 @@ void QualityAssessor::Assessor::print_histogram( std::ostream& stream,
   double stddev = get_stddev();
   if (stddev > 0 && stddev < 2.0*step)
   {
-    int new_interval = (int)(log10((double)(1+max_interval)));
+    int new_interval = (int)(log10((double)(1+max_bin_value)));
     if (new_interval > 0) {
       log_plot = true;
-      max_interval = new_interval;
+      max_bin_value = new_interval;
     }
   }
-
   
     // Write title
   stream << std::endl << indent << get_label() << " histogram:";
@@ -1503,6 +1532,8 @@ void QualityAssessor::Assessor::print_histogram( std::ostream& stream,
   for (i = 0; i < histogram.size(); ++i)
   {
     interval_value = min + (i)*step;
+    if (step >= 0.001)
+      interval_value = round_to_3_significant_digits(interval_value);
     str_stream.clear();
     str_stream.str(""); 
     interval_string = "";
@@ -1538,9 +1569,17 @@ void QualityAssessor::Assessor::print_histogram( std::ostream& stream,
       // Print the range for each interval.
     else
     {
+      double start_value = min + (i-1)*step;
+      double end_value = min + (i)*step;
+      if (step >= 0.001)
+      {
+        start_value = round_to_3_significant_digits(start_value);
+        end_value = round_to_3_significant_digits(end_value);
+      }
+
       stream << indent << "(" << std::setw(max_interval_width) << std::right 
-             << min + (i-1)*step << "-" << std::setw(max_interval_width) 
-             << std::left << min + (i)*step << ") |";
+             << start_value << "-" << std::setw(max_interval_width) 
+             << std::left << end_value << ") |";
     }
 
       // Print bar graph
@@ -1548,9 +1587,9 @@ void QualityAssessor::Assessor::print_histogram( std::ostream& stream,
       // First calculate the number of characters to output
     int num_graph;
     if (log_plot)
-      num_graph = GRAPHW * (int)log10((double)(1+histogram[i])) / max_interval;
+      num_graph = GRAPHW * (int)log10((double)(1+histogram[i])) / max_bin_value;
     else
-      num_graph = GRAPHW * histogram[i] / max_interval;
+      num_graph = GRAPHW * histogram[i] / max_bin_value;
       
       // print num_graph characters using array of fill characters.
     graph_chars[num_graph] = '\0';
@@ -1611,6 +1650,37 @@ std::string QualityAssessor::element_name_as_string(int enum_name)
 
   return str_value;
 }
+
+double QualityAssessor::round_to_3_significant_digits(double number)
+{
+  double result = number;
+  double p=1.0;
+
+  if (number > 0 && number < 1000)
+  {
+    if ( number < 1000 )
+    {
+      while ( number <100 ) 
+      {
+        number *= 10;
+        p *= 10;
+      }
+    }
+    else 
+    {
+      while ( number >= 1000 )
+      {
+        number /= 10;
+        p /= 10;
+      }
+    }
+    int z = number + 0.5;
+    result = z / p;
+  }
+
+  return result;
+}
+
 
 double QualityAssessor::Assessor::stopping_function_value() const
 {

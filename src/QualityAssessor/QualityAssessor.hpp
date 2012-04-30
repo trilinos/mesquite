@@ -612,7 +612,10 @@ namespace MESQUITE_NS
     int get_terminal_width() const;
 
     static std::string element_name_as_string(int enum_name);
-   
+ 
+    static double round_to_3_significant_digits(double number);
+
+
     /** Name */
     std::string qualityAssessorName;  
     

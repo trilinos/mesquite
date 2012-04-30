@@ -233,7 +233,8 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
         } while (patch_elements.empty() && p_iter != patch_list.end()) ;
         
         if (patch_elements.empty()) { // no more non-culled vertices
-                std::cout << "P[" << get_parallel_rank() << "] tmp srk all vertices culled."  << std::endl;
+                if (0)
+                  std::cout << "P[" << get_parallel_rank() << "] tmp srk all vertices culled."  << std::endl;
           break;
         }
       
@@ -581,7 +582,8 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
       } while (patch_elements.empty() && p_iter != patch_list.end()) ;
         
       if (patch_elements.empty()) { // no more non-culled vertices
-              std::cout << "P[" << get_parallel_rank() << "] tmp srk all vertices culled."  << std::endl;
+              if (0)
+                std::cout << "P[" << get_parallel_rank() << "] tmp srk all vertices culled."  << std::endl;
 	break;
       }
 
@@ -677,7 +679,8 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
 
         if (pdone_inner)
           {
-            std::cout << "P[" << get_parallel_rank() << "] tmp srk found parallel error, quitting... pdone_inner= " << pdone_inner << std::endl;
+             if (0)
+              std::cout << "P[" << get_parallel_rank() << "] tmp srk found parallel error, quitting... pdone_inner= " << pdone_inner << std::endl;
             MSQ_SETERR(err)("PARALLEL ERROR", MsqError::PARALLEL_ERROR);
             break;
           }
