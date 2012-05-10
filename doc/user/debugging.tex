@@ -359,7 +359,7 @@ The following is a sample output file:
 
 \begin{lstlisting}[basicstyle=\small,language=make]
 #Iter	CPU	ObjFunc GradL2	GradInf Movement	Inverted
-0	0	1.47419 0	0	0	0
+0	0	1.47419 0	0	0	        0
 1	0	1.147	0	0	0.657155	0
 2	0	1.04779 0	0	0.402173	0
 3	0	1.00572 0	0	0.357444	0
@@ -501,7 +501,7 @@ mesh.write_vtk( "meshqual.vtk", err );
 
 \section{Mesh Optimization Visualization}
 
-The Mesquite {\texttt TerminationCriterion} class can write the complete mesh after each iteration as either VTK or GNU Plot data suitable for viewing as an animation.	 Similar to requesting plot data as described in Section {\ref sec:optplot}, it is important to request this feature from the appropriate termination criterion instance.  If doing a global optimization, the feature should be activated for the {\em inner} termination criterion.  Otherwise the feature should almost always be activated for the {\em outer} termination criterion.
+The Mesquite {\texttt TerminationCriterion} class can write the complete mesh after each iteration as either VTK or GNU Plot data suitable for viewing as an animation.	 Similar to requesting plot data as described in Section \ref {sec:optplot}, it is important to request this feature from the appropriate termination criterion instance.  If doing a global optimization, the feature should be activated for the {\em inner} termination criterion.  Otherwise the feature should almost always be activated for the {\em outer} termination criterion.
 
 The command to request an animation of the mesh optimization in the VTK format is:
 \begin{lstlisting}

@@ -12,7 +12,7 @@ and details of defining geometric domains (see Chapter \ref{sec:geom}) are not
 given in this section.
 
 First, we write a small program using Mesquite's simplified API, or
-wrappers, to show the fastest way deploy Mesquite functionality to
+wrappers, to show the fastest way to deploy Mesquite functionality to
 improve a mesh.  The wrapper concept, as well as details about the
 different wrappers available, are described in section
 \ref{sec:tutWrapper}.  Following this first example, we set up customized mesh
@@ -24,7 +24,7 @@ are described in section \ref{sec:tutDetailedAPI}.
 
 To create and link a driver code, the Mesquite library must be
 installed per the instructions of section \ref{sec:compiling}. 
-This commands and file names specified in this section are relative 
+The commands and file names specified in this section are relative 
 to the installed \texttt{testsuite/tutorial} directory.  It 
 is assumed that that is the working diretory.
 This tutorial begins with the file \texttt{tutorial.cpp}, 
@@ -285,6 +285,7 @@ The left image in figure \ref{fig:hole} shows a mesh that has
 been degraded by moving the disk from the right side of the square to
 the left while keeping the mesh topology fixed.
 The mesh file
+\newline
 \texttt{mesquite/meshFiles/2D/VTK/hole\_in\_square.vtk} contains the
 information for this mesh.  If you plan to run this example, note that
 the normal direction that defines the geometry is now $(0,0,-1)$.

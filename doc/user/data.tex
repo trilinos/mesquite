@@ -12,7 +12,7 @@ In this chapter we will assume that the only constraint available for vertex mov
 The mesh data expected as input to Mesquite is a set of vertices and elements.  Each vertex has associated with it a fixed flag, a ``byte'', and x, y, and z coordinate values.  The fixed flag is used as input only.  It indicates whether or not the corresponding vertex position should be fixed (i.e., coordinates not allowed to change) during the optimization.  The ``byte'' is one byte of Mesquite-specific working data associated with each vertex (currently only used for vertex culling.)   The coordinate values for each vertex serve as both input and output: as input they are the initial positions of the vertices and as output they are the optimized positions.  
 
 Each element of the input mesh has associated with it a type and a list of vertices.  The type is one of the values defined in \texttt{Mesquite::EntityTopology} (\texttt{Mesquite.hpp}).  It species the topology (type of shape) of the element. Currently supported element types are triangles, quadrilaterals, 
-tetrahedra, hexahedra, triangular wedges, and pyramids.  The list of vertices (commonly referred to as the ``connectivity'') define the geometry (location and variation of shape) for the element.  The vertices are expected to be occur in a pre-defined order specific to the element topology. Mesquite uses the canonical ordering defined in the ExodusII specification\cite{exodus}.
+tetrahedra, hexahedra, triangular wedges, and pyramids.  The list of vertices (commonly referred to as the ``connectivity'') define the geometry (location and variation of shape) for the element.  The vertices are expected to be in a pre-defined order specific to the element topology. Mesquite uses the canonical ordering defined in the ExodusII specification\cite{exodus}.
 
 For some more advanced capabilities, Mesquite may require the ability to attach arbitrary pieces of data (called ``tags'') to mesh elements or vertices.
 
@@ -101,7 +101,7 @@ Mesquite a mesh containing four quadrilateral elements.
                    1, 2, 5, 4,
                    3, 4, 7, 6,
                    4, 5, 8, 7 };
-    /* all vertices except the center on are fixed */
+    /* all vertices except the center one are fixed */
   int fixed[] = { 1, 1, 1,
                   1, 0, 1,
                   1, 1, 1 };
