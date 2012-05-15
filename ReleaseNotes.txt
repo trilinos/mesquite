@@ -33,7 +33,12 @@
   - Fix bug in PaverMinEdgeLengthWrapper where user-specified termination
       criteria were not used.
   - Fix tarball missing files for Windows/CMake build
-  - Fix Windows DLL build issues (backport from main branch)
+  - Fix Windows DLL build issues (backport from main branch)dded
+    XYPlanarDomain type
+    - Updated Histogram to a more intuitive format.
+    - Added Scaled Histograms feature to QualityAssessor Summary code.
+    - Significant updates to Users Guide.
+    - Various bug fixes.
   - Export more symbols for Windows DLL
   - Disable CMake build of unit tests if CppUnit is not found
   - Fix installation of documentation
@@ -58,3 +63,22 @@
 2.1.5:
   - Fix broken patch culling functionality
   - Update for ITAPS 1.3 release candidate APIs
+  - Added XYPlanarDomain type
+  - Modified FeasibleNewton to only work on surfaces meshes in the XY-Plane.
+  - Updated Histogram to a more intuitive format.
+  - Added Scaled Histograms feature to QualityAssessor Summary code.
+  - Significant updates to Users Guide.
+  - Fixed QualityMetricTester utility class problem reported by Jason.
+  - Fixed typo in header include guards reported by Jason.
+  - Fixed compiler errors using gcc/g++ 4.6 on Linux, Bug 5294.
+  - Fixed the errors in the MPI_DEBUG version of the check-in script on Linux.
+  - Updated constructors in MsqImeshP.*pp to match those of parent class
+      MsqIMesh.
+  - Added parallel error handling to parallel Mesquite/VertexMover
+  - Fixed std::vector not being resized after number of elements in 
+      it was reduced.
+  - Added Windows code to replace tmp_File() function that does not work on
+      Windows 7. 
+  - Fixed non-unique cmake global name issue.
+  - Added code for Windows using srand().  Fix for bug #5351.
+
