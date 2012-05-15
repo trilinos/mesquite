@@ -842,7 +842,7 @@ void QualityAssessor::scale_histograms(QualityAssessor* optimized)
 
     // check number of intervals (bins) for each histogram
   int num_intervals = (*initial)->histogram.size()-2;
-  if (num_intervals != (*optimal)->histogram.size()-2)
+  if (num_intervals != int((*optimal)->histogram.size()-2))
   {
        // issue warning: number of intervals not the same   
     outputStream << "WARNING: histogram intervals are not the same" << std::endl;
@@ -952,7 +952,6 @@ void QualityAssessor::scale_histograms(QualityAssessor* optimized)
     if (new_initial_histogram[i] > max_interval_num)
       max_interval_num = new_initial_histogram[i];
   }
-  int initial_max_interval_num = max_interval_num;
   for (i = 0; i < new_optimal_histogram.size(); ++i)
   {
     if (new_optimal_histogram[i] > max_interval_num)
@@ -1674,7 +1673,7 @@ double QualityAssessor::round_to_3_significant_digits(double number)
         p /= 10;
       }
     }
-    int z = number + 0.5;
+    int z = int(number + 0.5);
     result = z / p;
   }
 
