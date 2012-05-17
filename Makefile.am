@@ -18,5 +18,6 @@ EXTRA_DIST = lgpl.txt \
              $(OLD_AM_EXTRA_CONFIG) \
              $(INCLUDED_MAKEFILES) \
              $(srcdir)/cmake/*.cmake \
-	     CMakeLists.txt
+	     CMakeLists.txt \
+             ReleaseNotes.txt
 
