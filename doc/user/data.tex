@@ -14,7 +14,157 @@ The mesh data expected as input to Mesquite is a set of vertices and elements.  
 Each element of the input mesh has associated with it a type and a list of vertices.  The type is one of the values defined in \texttt{Mesquite::EntityTopology} (\texttt{Mesquite.hpp}).  It species the topology (type of shape) of the element. Currently supported element types are triangles, quadrilaterals, 
 tetrahedra, hexahedra, triangular wedges, and pyramids.  The list of vertices (commonly referred to as the ``connectivity'') define the geometry (location and variation of shape) for the element.  The vertices are expected to be in a pre-defined order specific to the element topology. Mesquite uses the canonical ordering defined in the ExodusII specification\cite{exodus}.
 
+\section{Tags} \label{sec:tags_section}
+
+\subsection{Using Tags}
+
 For some more advanced capabilities, Mesquite may require the ability to attach arbitrary pieces of data (called ``tags'') to mesh elements or vertices.
+
+Assigning tag data to a vertex or element is a two step process.  First, the tag itself is created to describe the tag name, type, and size.  Second, the actual data value is associated with the vertex or element using the tag as a descriptor.
+
+When a tag itself is created, it is given a name and associated data type.  Valid Mesquite Tag Types are: BYTE, BOOL, INT, DOUBLE, and HANDLE. Tags are created using the method MeshImpl::tag\_create() or one of it derived forms.
+
+Once the tag is created, it is used to associate data to a vertex or element mesh entity using the methods MeshImpl::tag\_set\_vertex\_data() or MeshImpl::tag\_set\_element\_data().  Tagged data is recovered via MeshImpl::tag\_get\_vertex\_data() or MeshImpl::tag\_get\_element\_data().
+
+
+\subsection{Vector Example}
+
+The following is a simple example of using tags to associate vectors with elements of a mesh. It creates a simple mesh of two quads then creates a single tag consisting of 3 doubles to represent the vector. After creating the values for the two vectors, it associates the vectors with the elements of the mesh via a call to tag\_set\_element\_data().
+
+\begin{lstlisting}
+#include "Mesquite.hpp"
+#include "MeshImpl.hpp"
+#include "MsqError.hpp"
+
+int main(int argc, char* argv[])
+{
+
+  const double vertices[] = { 0, 0, 0,
+                              0, 1, 0,
+                              1, 0, 0,
+                              1, 1, 0,
+                              2, 1, 0,
+                              2, 0, 0};
+  const int conn[] = {0, 1, 3, 2, 1, 5, 4, 3 };
+
+  bool fixed[] = {true, true, true, true, true, true};
+  Mesquite::MsqError err;
+  std::vector<Mesquite::Mesh::ElementHandle>elements;
+
+    // Create the mesh
+  Mesquite::MeshImpl mesh(6, 2, Mesquite::QUADRILATERAL, fixed, vertices, conn);
+  mesh.get_all_elements(elements, err);
+
+  std::vector<double> v_tags(elements.size() * 3);
+
+    // Create tag
+  Mesquite::TagHandle v_tag = 
+                mesh.tag_create("VECTOR", Mesquite::Mesh::DOUBLE, 3, NULL, err);
+
+  std::vector<double> v_coords(6);
+  v_coords[0] = 0.0;
+  v_coords[1] = 0.0;
+  v_coords[2] = -1.0;
+  v_coords[3] = 0.0;
+  v_coords[4] = 0.0;
+  v_coords[5] = 1.0;
+
+     // Associate vectors with elements
+  mesh.tag_set_element_data(v_tag, elements.size(), 
+                   mesquite::arrptr(elements), Mesquite::arrptr(v_coords) ,err);
+  return 0;
+}
+\end{lstlisting}
+
+\subsection{2x2 Matrix on vertices using Tags Example}
+
+The follow code example shows another way tags can be used in Mesquite.  It attaches a 2x2 matrix to each vertex in a mesh by creating four tags and four arrays of doubles. The value for the matrices are stored in the arrays with each array representing one value of the matrix. Then the four tags are associated with the four arrays to create tagged data for each vertex representing the 2x2 matrix for it.
+
+
+\begin{lstlisting}
+int main(int argc, char* argv[])
+{
+  //  2 +-----+ 3
+  //    |\    |
+  //    | \   |
+  //    |  \  |
+  //    |   \ |
+  //    |    \|
+  //  0 +-----+ 1
+ double tri_verts[] = { 0.0, 0.0, 0.0,
+                        1.0, 0.0, 0.0,
+                        0.0, 1.0, 0.0,
+                        1.0, 1.0, 0.0 };
+
+  const int tri_elems[] = { 0, 1, 2,
+                            3, 2, 1 };
+
+  bool fixed[] = {true, true, true, true};
+  Mesquite::MsqError err;
+  std::vector<Mesquite::Mesh::ElementHandle>elements;
+
+    // Create the mesh
+  Mesquite::MeshImpl mesh(4, 2, Mesquite::TRIANGLE, fixed, tri_verts, tri_elems);
+  mesh.get_all_elements(elements, err);
+
+  std::vector<double> lid1(elements.size());
+  std::vector<double> lid2(elements.size());
+  std::vector<double> lid3(elements.size());
+  std::vector<double> lid4(elements.size());
+
+  double adTestOri[4] = {0.0,0.0,0.0,0.0};
+  for (unsigned int i=0; i < elements.size(); i++)
+  {
+    /****************************************************************
+     Compute eigenvectors and eigenvalues to be used to set the Target
+     (actual steps left out for simplicity of example)
+    ****************************************************************/
+
+    if (adTestOri[1]*adTestOri[1]+adTestOri[3]*adTestOri[3] >
+        adTestOri[0]*adTestOri[0]+adTestOri[2]*adTestOri[2])
+          {
+      lid1[i] = -adTestOri[1];
+      lid2[i] = adTestOri[0];
+      lid3[i] = -adTestOri[3];
+      lid4[i] = adTestOri[2];
+    }
+    else
+    {
+      lid1[i] = adTestOri[0];
+      lid2[i] = adTestOri[1];
+      lid3[i] = adTestOri[2];
+      lid4[i] = adTestOri[3];
+    }
+  }
+
+  const char LOCAL_ID_NAME1[] = "LOCAL_ID1";
+  const char LOCAL_ID_NAME2[] = "LOCAL_ID2";
+  const char LOCAL_ID_NAME3[] = "LOCAL_ID3";
+  const char LOCAL_ID_NAME4[] = "LOCAL_ID4";
+
+    // Create tags
+  Mesquite::TagHandle lid_tag1 =
+        mesh.tag_create(LOCAL_ID_NAME1, Mesquite::Mesh::DOUBLE, 1, NULL, err);
+  Mesquite::TagHandle lid_tag2 =
+        mesh.tag_create(LOCAL_ID_NAME2, Mesquite::Mesh::DOUBLE, 1, NULL, err);
+  Mesquite::TagHandle lid_tag3 =
+        mesh.tag_create(LOCAL_ID_NAME3, Mesquite::Mesh::DOUBLE, 1, NULL, err);
+  Mesquite::TagHandle lid_tag4 =
+        mesh.tag_create(LOCAL_ID_NAME4, Mesquite::Mesh::DOUBLE, 1, NULL, err);
+  size_t num_cells=(elements.size());
+
+    // Associate arrays representing 2x2 matricies to verticies
+  mesh.tag_set_vertex_data(
+      lid_tag1,num_cells,Mesquite::arrptr(elements),Mesquite::arrptr(lid1),err);
+  mesh.tag_set_vertex_data(
+      lid_tag2,num_cells,Mesquite::arrptr(elements),Mesquite::arrptr(lid2),err);
+  mesh.tag_set_vertex_data(
+      lid_tag3,num_cells,Mesquite::arrptr(elements),Mesquite::arrptr(lid3),err);
+  mesh.tag_set_vertex_data(
+      lid_tag4,num_cells,Mesquite::arrptr(elements),Mesquite::arrptr(lid4),err);
+
+  return 0;
+\end{lstlisting}
 
 \section{The \texttt{Mesquite::Mesh} Interface} \label{sec:MeshData}
 
@@ -214,7 +364,7 @@ An implementation should provide complete implementations of all of these method
 
 \subsection{Volume Example}
 
-The following example demonstrates the use of the \texttt{ShapeImprover} wrapper with an implementation of the iMesh interface.  It is assumed that the application has implemented the iMesh interface to provide access to its own data or is using an existing implementation of the iMesh interface to store its mesh data.  The example illustrates the setup necessary to correctly pass a subset of a mesh to mesquite and how to designate boundary verices as fixed using the ``fixed tag''.  The input to the example function is the \texttt{iMesh\_Instance} handle and an \texttt{iBase\_EntitySetHandle} specifying both the elements for which to improve the quality and the free vertices.  The example code uses this application-supplied designation of which vertices are fixed to initalize the ``fixed tag''.
+The following example demonstrates the use of the \texttt{ShapeImprover} wrapper with an implementation of the iMesh interface.  It is assumed that the application has implemented the iMesh interface to provide access to its own data or is using an existing implementation of the iMesh interface to store its mesh data.  The example illustrates the setup necessary to correctly pass a subset of a mesh to mesquite and how to designate boundary verices as fixed using the ``fixed tag''.  The input to the example function is the \texttt{iMesh\_Instance} handle and an \texttt{iBase\_EntitySetHandle} specifying both the elements for which to improve the quality and the free vertices.  The example code uses this application-supplied designation of which vertices are fixed to initialize the ``fixed tag''.
 
 \begin{lstlisting}
 
@@ -430,4 +580,5 @@ int shape_improve_2D( iMesh_Instance mesh_instance,
   return 0;
 }
 \end{lstlisting}
+
 

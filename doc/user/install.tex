@@ -19,8 +19,7 @@ configure script should work on any Unix-like platform using the build tools
 compiler are a Bourne shell (typically \texttt{/bin/sh}) implementation and
 a minimal corresponding command environment and an implementation of the \texttt{make} utility.
 
-Support for building Mesquite with Microsoft Visual Studio is no longer
-available as of Mesquite version 2.0.  
+Support for building Mesquite with Microsoft Visual Studio is no longer available as of Mesquite version 2.0.  Mesquite can still be built with Visual Studio but features added since the 2.0 release, such as building the iMeshP (Parallel) version, is not supported via CMake.
 
 %Mesquite is regularly compiled and tested on GNU/Linux with g++ 3.2 or later %and Sun with the Sun Forte C++ compiler.  
 
@@ -34,6 +33,29 @@ to compile and run these test.  It is available at this URL:
 \begin{center}
 \url{http://cppunit.sourceforge.net}
 \end{center}
+
+To run the unit tests on Unix-like platforms:
+\begin{verbatim}
+  - build and install CppUnit.
+  - If using CMake:
+      o Set Mesquite_ENABLE_TEST to ON
+      o search for 'cppunit' in CMake.
+      o set CPPUNIT_INCLUDES to '<cppunit_install_dir>/include'  
+      o set CPPUNIT_LIBRARY to '<cppunit_install_dir>/lib/libcppunit.so' 
+      o Congigure and then Generate to produce CMake files
+      o After generation, exit CMake and cd to the build directory specified
+        in CMake.  
+      o Enter:
+           $ make
+           $ ctest
+
+  - If using GNU Autotools:
+      o From the top-level mesquite directory, Enter:
+           $ ./configure --with-cppunit=<cppunit_install_dir>
+           $ make
+           $ make check
+
+\end{verbatim}
 \item ExodusII support:  To enable support for reading or writing ExodusII files in Mesquite, the header files for the ExodusII library must be available.  To link an application with a Mesquite library supporting ExodusII, the ExodusII library and possibly the NetCDF library must be available.  To obtain the ExodusII library, contact:
 \begin{verbatim}
 Marilyn K. Smith
@@ -46,12 +68,11 @@ Phone: (505) 844-3082
 FAX:   (505) 844-8251
 Email: mksmith@sandia.gov
 \end{verbatim}
-The NetCDF library can be obained at the following URL:
+The NetCDF library can be obtained at the following URL:
 \begin{center}
 \begin{small}\url{http://www.unidata.ucar.edu/downloads/netcdf/index.jsp}\end{small}
 \end{center}
 \end{itemize}
-
 
 \section{Building Mesquite}
 \label{sec:compiling}
@@ -81,6 +102,9 @@ fine-grained control of installation locations.
 \end{enumerate}
 If the configure step failed, please consult the following section describing 
 some of the optional arguments to the \texttt{./configure} script. 
+
+CMake can also be used to build Mesquite on Unix-like systems.  With a version of CMake in your path, the command \texttt{ccmake} will invoke a text-based version of CMake, the command \texttt{cmake-gui} runs a graphical version. Instructions for configuring with CMake are found in Section \ref{windows_build}.  After generating the make files, exit CMake and cd to the specified build directory and enter the command: \texttt{make}.  
+
 \subsection{Options for Unix-like systems}
 This section describes the options available for customizing the build
 system and the resulting Mesquite library.  An brief description of these
@@ -91,7 +115,7 @@ The following values may be specified as environmental variables, as arguments
 to the configure script using the NAME=VALUE syntax, or as arguments to \texttt{make}
 using the NAME=VALUE syntax.  The value of these variables (if set) during the
 configure step will become the default for the compile step.  The value of any
-of these variables will override the the default if specified during the compile
+of these variables will override the default if specified during the compile
 step.
 \begin{description}
 \item[CXX]       The C++ compiler command
@@ -116,51 +140,76 @@ Only the positive form of each option is stated in the description below.
 \label{config_options}
 The following general build and debug options may be specified during the configure step:
 \begin{description}
-\item[--enable-debug]  Select a subset of the following options that
-make the most sense for developers of Mesquite.
+\item[\texttt{--}enable-debug]  Select a subset of the following options that
+make the most sense for developers of Mesquite, implies: \texttt{--}enable-debug-symbols, \texttt{--}enable-debug-output=1,2, \texttt{--}enable-trap-fpe,
+                          \texttt{--}enable-silent-rules
+
 \item[--enable-release]  This is the default behavior unless 
 --enable-debug is specified.  It selects a subset of the following options that
 typically work best for using Mesquite in a production application.
-\item[--enable-compile-optimized] Compile with the available 
+\item[\texttt{--}enable-compile-optimized] Compile with the available 
 optimizations that improve performance without any significant drawbacks 
 (the -O2 compiler flag.)
-\item[--enable-debug-symbols] Include debugging information in
-the compiled \\ Mesquite objects (the -g compiler flag).
-\item[--enable-debug-assertions]  Include internal consistancy 
+\item[\texttt{--}enable-debug-symbols] Include debugging information in
+the compiled Mesquite objects (the -g compiler flag).
+\item[\texttt{--}enable-debug-assertions]  Include internal consistancy 
 checks that abort when an error is detected.
-\item[--enable-debug-output=n,m,...]  Enable the output of
+\item[\texttt{--}enable-debug-output=n,m,...]  Enable the output of
 debug and status messages to file descriptor 1 (stdout).  An 
 list of integer debug flags for which to enable output may be specified 
 as a comma-separated list of values.  The default is to enable debug
-flags 1 and 2 if this option is specified without any explict debug
+flags 1 and 2 if this option is specified without any explicit debug
 flag values.
-\item[--enable-function-timers]  Enable time-profiling of
+\item[\texttt{--}enable-function-timers]  Enable time-profiling of
 some portions of Mesquite.
 \item[--enable-trap-fpe]  Enable generation of a floating-point
-exception signal for arithmatic errors (e.g. division by zero.)  This is
+exception signal for arithmetic errors (e.g. division by zero.)  This is
 an option intended for Mesquite developers.  Enabling this will typically cause
 the application using Mesquite to abort when such an error is encountered.
-\item[--enable-namespace]  Specify an alternate namespace so as to avoid
+\item[\texttt{--}enable-namespace=NAME]  Specify an alternate namespace so as to avoid
 symbol conflicts between multiple versions of Mesquite.  See Section \ref{namespace_mangling}.
+\item[\texttt{--}disable-option-checking]  Ignore unrecognized \texttt{--}enable\/\texttt{--}with options.
+\item[\texttt{--}enable-shared[=PKGS]]  Build shared libraries [default=no]
+\item[\texttt{--}enable-static[=PKGS]]  Build static libraries [default=yes] 
+\item[\texttt{--}enable-silent-rules]  Less verbose build output (undo: `make V=1')
+\item[\texttt{--}disable-silent-rules]  Verbose build output (undo: `make V=0') 
+\item[\texttt{--}enable-fast-native]  Compile with fast math options, target build CPU, etc. 
+\item[\texttt{--}enable-quiet-make]  Much less verbose output during build. Default is no unless \texttt{--}enable-debug was specified.
+\item[\texttt{--}enable-32bit]  Force 32-bit object code.
+\item[\texttt{--}enable-64bit]  Force 64-bit object code.
+\item[\texttt{--}disable-dependency-tracking] Speeds up one-time build.
+\item[\texttt{--}enable-dependency-tracking]  Do not reject slow dependency extractors. 
+\item[\texttt{--}disable-libtool-lock]  Avoid locking (might break parallel builds) 
+\item[\texttt{--}enable-api-doc=FORMATLIST]  Generate Doxygen docs for the API. Available formats are 
+HTML, PDF, PS, ALL. Default is no docs. Multiple values must be separated by commas with no spaces. When the 'make' command is entered after configuring for api docs, the requested documents will be created in the mesquite/doc/user/doxygen directory.
+\item[\texttt{--}enable-user-guide=FORMATLIST]   Generate Mesquite Users Guide. Available formats are PDF ,PS, ALL. Default is no docs. Multiple values must be separated by commas with no spaces.  When the 'make' command is entered after configuring for the users guide, the requested documents will be created in the mesquite/doc/user directory.
 \end{description}
+
 
 The following options specify optional Mesquite components and the location 
 of the corresponding dependencies.
 \begin{description}
-\item[--with-cppunit=DIR]  The CppUnit library is required to compile
+\item[\texttt{--}with-cppunit=DIR]  The CppUnit library is required to compile
 and run the tests to verify that a particular build of the Mesquite library
-is working correctly.  If the CppUnit library is not installed in a default location
-where the ./configure script can find it, this option may be used to specify
+is working correctly.  If the CppUnit library is not installed in a default location where the ./configure script can find it, this option may be used to specify
 the location.
-\item[--with-exodus=DIR]  Enable support for reading and writing
+\item[\texttt{--}with-exodus=DIR]  Enable support for reading and writing
 ExodusII files, and optionally specify the location where the ExodusII library
 and headers required for this option are installed.
-\item[--with-netcdf=DIR]  Specify the location of the NetCDF library
+\item[\texttt{--}without-cppunit]  Disable CppUnit tests.
+\item[\texttt{--}without-exodus]  Disable exodusII support (default).
+\item[\texttt{--}with-netcdf=DIR]  Specify the location of the NetCDF library
 required by the ExodusII library.  The default is to look in the ExodusII
 directory.
+\item[\texttt{--}without-netcdf]  Skip NetCDF check.
+\item[\texttt{--}with-mpi=DIR]  Enable parallel support.
+\item[\texttt{--}with-pic]  Try to use only PIC/non-PIC objects [default=use both].
+\item[\texttt{--}with-gnu-ld]  Assume the C compiler uses GNU ld [default=no]. 
+\item[\texttt{--}with-imesh=PATH]  Path to iMesh-Defs.inc (enable iMesh).
+\item[\texttt{--}with-imeshp=PATH]  Path to iMeshP-Defs.inc (enable iMeshP).
 \end{description}
 
-\subsection{Compiling on Microsoft Windows (CMake build)}
+\subsection{Compiling on Microsoft Windows (CMake build) \label{windows_build} }
 
 The Mesquite source includes the necessary input files to generate Microsoft
 Visual Studio project files using the CMake utility.  You will need to 
@@ -169,9 +218,102 @@ download and install the CMake utility for Windows if you have not already done 
  \url{http://www.cmake.org/cmake/resources/software.html}
 \end{center}
 
-Using the graphical verison of the CMake utility, select the folder containing the Mesquite source and enter a folder in which you would like the CMake output and compiled code to be stored.  Select the \texttt{Configure} button.  You will be presented with a group of configuration options.  Modify any desired options and click the \texttt{Configure} button again.  Each time you change one or more configuration options, you must click the \texttt{Configure} button to update the list of available options.  When you have finished changing build options, click the \texttt{Generate} button to generate Visual Studio input files and exit the CMake utility.
+Using the graphical version of the CMake utility, select the folder containing the Mesquite source and enter a folder in which you would like the CMake output and compiled code to be stored.  Select the \texttt{Configure} button.  You will be presented with a group of configuration options.  Modify any desired options and click the \texttt{Configure} button again.  Each time you change one or more configuration options, you must click the \texttt{Configure} button to update the list of available options.  When you have finished changing build options, click the \texttt{Generate} button to generate Visual Studio input files and exit the CMake utility.
 
 The build folder you specified in the CMake utility should now contain the necessary input files to build Mesquite using Microsoft Visual C++.  
+
+\section{Building Trilinos Mesquite from Scratch on a Mac}
+\subsection{Installation}
+
+Trilinos depends on git and cmake.
+macports is a tool for downloading and installing software on macs.
+At Sandia, downloads to macs are done through portal 80.
+in /opt/local/etc/macports/macports.conf set 
+\begin{verbatim}
+proxy_http        wwwproxy.sandia.gov:80
+proxy_https       wwwproxy.sandia.gov:80
+proxy_ftp         wwwproxy.sandia.gov:80
+\end{verbatim}
+However leave proxy\_rsync undefined.
+
+
+First install macports.  Type {\tt macports} into google, and follow links to download and install.
+macports  installs to /opt/local/bin  and /opt/local/lib.
+To verify that macports is correctly installed,  first  type {\tt which port},  then go on to step 2.
+Also if an install fails for some indiscernible reason, 
+first try simply repeating the install command.
+
+\begin{verbatim}
+sudo port selfupdate   
+sudo port search git-core
+sudo port install git-core +bash_completion
+sudo port search cmake
+sudo port install cmake   
+\end{verbatim}
+The build of Mesquite with automake and autotools depends on  libtoolize, which can be downloaded similarly.
+
+Check Trilinos (and test that git has been ported successfully) by entering:
+
+\begin{center}
+ {\tt git clone software.sandia.gov:/space/git/Trilinos}.
+\end{center}
+
+Download clang from {\tt "http://llvm.org/releases/download.html". } Select {\tt "Clang Binaries for MacOS X/x86-64"} and install it (unpack the .tar.gz file).
+
+This usually puts the downloaded tarball into HOME/Downloads, though you can specify a different download directory if you've configured your web browser that way.  Choose a place to put the directory of binaries, such as  HOME/pkg,
+\begin{verbatim}
+mkdir ~/pkg
+mv clang+llvm-3.0-x86_64-apple-darwin11.tar.gz ~/pkg
+tar xvzf clang+llvm-3.0-x86_64-apple-darwin11.tar.gz
+\end{verbatim}
+This creates a {\tt clang+llvm-3.0-x86\_64-apple-darwin11} directory.  
+The bin subdirectory has the C and C++ compiler front ends (clang resp. clang++).
+\subsection{Building}
+Create a build directory for Trilinos.
+\begin{verbatim}
+cd Trilinos
+mkdir Serial
+cd Serial
+\end{verbatim}
+Write a do-configure script for building Trilinos that uses the C and C++ compiler front ends, such as:
+\begin{verbatim}
+EXTRA_ARGS=$@
+
+CC=$HOME/pkg/clang+llvm-3.0-x86_64-apple-darwin11/bin/clang
+CXX=$HOME/pkg/clang+llvm-3.0-x86_64-apple-darwin11/bin/clang++
+
+#rm -f CMakeCache.txt
+
+cmake \
+-D CMAKE_BUILD_TYPE:STRING=DEBUG \
+-D HAVE_GCC_ABI_DEMANGLE:BOOL=ON \
+-D DART_TESTING_TIMEOUT:STRING=600 \
+-D Trilinos_ENABLE_Fortran:BOOL=OFF \
+-D CMAKE_CXX_COMPILER:FILEPATH="$CXX" \
+-D CMAKE_C_COMPILER:FILEPATH="$CC" \
+-D Trilinos_ENABLE_DEBUG:BOOL=ON \
+-D Trilinos_ENABLE_TESTS:BOOL=ON \
+-D Trilinos_ENABLE_ALL_PACKAGES:BOOL=OFF \
+-D Trilinos_ENABLE_Mesquite:BOOL=ON \
+-D Tpetra_ENABLE_TESTS:BOOL=ON 
+$EXTRA_ARGS \
+..
+\end{verbatim}
+Make the script executable, {\tt chmod a+x do-configure}, and then run it to configure Trilinos.
+
+It is also possible to build Mesquite on a Mac using the graphical version of CMake. Just follow the instructions in Section \ref{windows_build} (downloading the Mac version instead of the Windows version of course).
+
+Next build Trilinos with $make$.
+
+It is possible to build OpenMPI (e.g. 1.4.5) with clang and clang++.  It is necessary to to turn off generation of the Fortran MPI bindings.  
+OpenMPI is built in a directory completely separate from the OpenMPI source tree.
+ Here is a configure line for building OpenMPI with Clang:
+ \begin{verbatim}
+$ CC=$HOME/pkg/clang+llvm-3.0-x86_64-apple-darwin11/bin/clang 
+CXX=$HOME/pkg/clang+llvm-3.0-x86_64-apple-darwin11/bin/clang++
+ ../openmpi-1.4.5/configure --prefix=$HOME/pkg/openmpi-1.4.5
+  --disable-mpi-f77 --disable-mpi-f90
+\end{verbatim}
 
 \subsection{Linking Multiple Versions of Mesquite \label{namespace_mangling} }
 
@@ -182,10 +324,11 @@ name conflicts such a situation will often result in surprising, strange, and
 difficult to diagnose runtime errors.  
 
 Mesquite provides the ability to specify an alternate namespace and a standard
-namespace alias to assist with addressing such situations.  The ``namespace'' \texttt{Mesquite} is typcially an alias to the true internal C++ namespace containing all Mesquite code.  Applications can and should use that alias rather than the internal namespace to avoid the need to modify application code whenever the internal namespace changes.  
+namespace alias to assist with addressing such situations.  The ``namespace'' \texttt{Mesquite} is typically an alias to the true internal C++ namespace containing all Mesquite code.  Applications can and should use that alias rather than the internal namespace to avoid the need to modify application code whenever the internal namespace changes.  
 
-The internal namespace can be changed with the configure option \texttt{--enable-namespace=MyNS} or the cmake option \texttt{Mesqutie\_NAMESPACE}, where the value ``MyNS'' can be replaced with any string that is an acceptable C++ namespace label.  The default namespace is \texttt{MesquiteN}, with the Mesquite major version subtitited for \texttt{N}.  Specifying an alternate internal namespace results in different mangled symbol names in the compiled library, thus avoiding symbol name conflicts.
+The internal namespace can be changed with the configure option \texttt{--enable-namespace=MyNS} or the cmake option \texttt{Mesqutie\_NAMESPACE}, where the value ``MyNS'' can be replaced with any string that is an acceptable C++ namespace label.  The default namespace is \texttt{MesquiteN}, with the Mesquite major version substituted for \texttt{N}.  Specifying an alternate internal namespace results in different mangled symbol names in the compiled library, thus avoiding symbol name conflicts.
 
 If the requested namespace is anything other than ``Mesquite'', then Mesquite will always provide the alias \texttt{namespace Mesquite = MESQUITE\_NS;} so that application code may always use the \texttt{Mesquite} namespace.
+
 
 
