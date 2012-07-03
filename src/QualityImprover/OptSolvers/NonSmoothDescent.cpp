@@ -843,8 +843,8 @@ void NonSmoothDescent::find_active_set( const std::vector<double>& function,
                                         ActiveSet& active_set )
 { 
   // local parameter initialization
-  const double activeEpsilon = .00003;
-  //  activeEpsilon = .000000003;
+  const double activeEpsilon = .3e-4;
+  //  activeEpsilon = .3e-8;
 
     double      function_val;
     double      active_value0;
@@ -868,9 +868,9 @@ void NonSmoothDescent::find_active_set( const std::vector<double>& function,
 	active_value0 = function[active_set.active_ind[0]];
 	temp = fabs(function_val - active_value0);
 	//        MSQ_DEBUG_ACTION(3,{fprintf(stdout,"  function value[%d]: %g\n",i,function[i]);});
-	if ( function_val > active_value0 ) {
+	if ( function_val > active_value0 ) {  // seek max_i function[i]
 	    if ( temp >= activeEpsilon) {
-                active_set.set( i );
+                active_set.set( i );   // new max
 	    } 
             else {
                 active_set.add( i, fabs(function_val - active_value0) < EPSILON );
