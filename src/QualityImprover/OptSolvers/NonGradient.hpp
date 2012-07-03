@@ -25,19 +25,17 @@
    
   ***************************************************************** */
 /*!
-  \file   SteepestDescent.hpp
+  \file   NonGradient.hpp
   \brief  
 
-  The SteepestDescent Class implements the steepest descent algorithm in
+  The NonGradient Class implements the steepest descent algorithm in
   order to move a free vertex to an optimal position given an
   ObjectiveFunction object and a QualityMetric object.
 
-  \author Thomas Leurent
-  \date   2002-06-13
 */
 
-#ifndef Mesquite_SteepestDescent_hpp 
-#define Mesquite_SteepestDescent_hpp
+#ifndef Mesquite_NonGradient_hpp 
+#define Mesquite_NonGradient_hpp
 
 #include "Mesquite.hpp"
 #include "VertexMover.hpp"
@@ -47,19 +45,19 @@ namespace MESQUITE_NS
 {
   class ObjectiveFunction;
 
-  /*! \class SteepestDescent
+  /*! \class NonGradient
 
-      This is a very basic implementation of the steepest descent optimization algorythm.
-      It works on patches of any size but the step size is hard-wired.
-      Obvisouly, this is for testing purposed only. */ 
-  class SteepestDescent : public VertexMover, public PatchSetUser
+      This is a basic implementation of the steepest descent optimization algorithm.
+      It works on patches of any size.  The step size is hard-wired.
+      This is only for testing purposes. */ 
+  class NonGradient : public VertexMover, public PatchSetUser
   {
   public:
     MESQUITE_EXPORT 
-    SteepestDescent(ObjectiveFunction* of);
+    NonGradient(ObjectiveFunction* of);
 
     MESQUITE_EXPORT virtual
-    ~SteepestDescent() { }
+    ~NonGradient() { }
     
     MESQUITE_EXPORT virtual
     std::string get_name() const;
@@ -74,13 +72,46 @@ namespace MESQUITE_NS
     MESQUITE_EXPORT
     void project_gradient( bool yesno ) 
       { projectGradient = yesno; }
-    
-    //bool cosine_projection_step() const 
-    //  { return cosineStep; }
-    //
-    //void cosine_projection_step( bool yesno ) 
-    //  { cosineStep = yesno; }
-    
+
+  int getDimension()
+  { 
+    return(mDimension);
+  }
+  double getThreshold()
+  { 
+    return(mThreshold);
+  }
+  double getTolerance()
+  { 
+    return(mTolerance);
+  }
+  int getMaxNumEval()
+  { 
+    return(mMaxNumEval);
+  }
+  void setDimension(int dimension)
+  { 
+    mDimension = dimension;
+  }
+  void setThreshold(double threshold)
+  { 
+    mThreshold = threshold;
+  }
+  void setTolerance(double ftol)
+  { 
+    mTolerance = ftol;
+  }
+  void setMaxNumEval(int maxNumEval)
+  { 
+    mMaxNumEval = maxNumEval;
+  }
+  void getRowSum( int numRow, int numCol, std::vector<double>& matrix, std::vector<double>& rowSum);
+  bool testRowSum( int numRow, int numCol, double* matrix, double* rowSum);
+  double evaluate( double localArray[], PatchData &pd, MsqError &err );
+  int initSimplex(double edgeLength); // edgeLenght is a length scale for the initial polytope.
+  std::vector<double> simplex; // matrix stored by column as a std::vector
+  std::vector<double> height; 
+
   protected:
     MESQUITE_EXPORT virtual
     void initialize( PatchData &pd, MsqError &err );
@@ -92,13 +123,16 @@ namespace MESQUITE_NS
     void terminate_mesh_iteration( PatchData &pd, MsqError &err );
     MESQUITE_EXPORT virtual
     void cleanup();
-  
   private:
     bool projectGradient;
-    //bool cosineStep;
-    SteepestDescent(const SteepestDescent &pd); //disable copying
-    SteepestDescent& operator=(const SteepestDescent &pd);  //disable assignment
-
+    int mDimension;
+    double mThreshold;// stop if       2(heightMax-heightMin)
+    double mTolerance;//          ---------------------------------- < mTolerance
+    int mMaxNumEval;  //          |heightMax|+|heightMin|+mThreshold
+                      //      or numEval >= mMaxNumEval
+    double amotry(std::vector<double>&, std::vector<double>& , double* , int , double, PatchData&, MsqError &err );
+    NonGradient(const NonGradient &pd); //disable copying
+    NonGradient& operator=(const NonGradient &pd);  //disable assignment
   };
   
 }

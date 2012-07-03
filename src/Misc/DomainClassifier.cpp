@@ -878,7 +878,7 @@ void DomainClassifier::test_valid_classification( Mesh* mesh,
         surfaces.push_back( it->first );
         break;
       default:
-        MSQ_SETERR(err)(MsqError::INVALID_STATE, "Invalid domain dimension: %hu\n", it->second);
+        MSQ_SETERR(err)(MsqError::INVALID_STATE, "Invalid domain dimension: %d\n", it->second);
         break;
     }
   }

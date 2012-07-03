@@ -371,6 +371,7 @@ APPEND_SET(HEADERS
   QualityImprover/OptSolvers/NonSmoothDescent.hpp
   QualityImprover/OptSolvers/QuasiNewton.hpp
   QualityImprover/OptSolvers/SteepestDescent.hpp
+  QualityImprover/OptSolvers/NonGradient.hpp
   QualityImprover/OptSolvers/TrustRegion.hpp
   )
 
@@ -378,8 +379,9 @@ APPEND_SET(SOURCES
   QualityImprover/OptSolvers/ConjugateGradient.cpp
   QualityImprover/OptSolvers/FeasibleNewton.cpp
   QualityImprover/OptSolvers/NonSmoothDescent.cpp
-  QualityImprover/OptSolvers/SteepestDescent.cpp
   QualityImprover/OptSolvers/QuasiNewton.cpp
+  QualityImprover/OptSolvers/SteepestDescent.cpp
+  QualityImprover/OptSolvers/NonGradient.cpp
   QualityImprover/OptSolvers/TrustRegion.cpp
   )
 

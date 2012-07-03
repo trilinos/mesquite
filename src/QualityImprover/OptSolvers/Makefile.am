@@ -7,6 +7,7 @@ MSQ_SRCS += $(SRC_OPTSOLVER_DIR)/ConjugateGradient.cpp \
 	    $(SRC_OPTSOLVER_DIR)/NonSmoothDescent.cpp \
 	    $(SRC_OPTSOLVER_DIR)/QuasiNewton.cpp \
 	    $(SRC_OPTSOLVER_DIR)/SteepestDescent.cpp \
+	    $(SRC_OPTSOLVER_DIR)/NonGradient.cpp \
 	    $(SRC_OPTSOLVER_DIR)/TrustRegion.cpp
 
 MSQ_HDRS += $(SRC_OPTSOLVER_DIR)/ConjugateGradient.hpp \
@@ -14,4 +15,5 @@ MSQ_HDRS += $(SRC_OPTSOLVER_DIR)/ConjugateGradient.hpp \
 	    $(SRC_OPTSOLVER_DIR)/NonSmoothDescent.hpp \
 	    $(SRC_OPTSOLVER_DIR)/QuasiNewton.hpp \
 	    $(SRC_OPTSOLVER_DIR)/SteepestDescent.hpp \
+	    $(SRC_OPTSOLVER_DIR)/NonGradient.hpp \
 	    $(SRC_OPTSOLVER_DIR)/TrustRegion.hpp 
