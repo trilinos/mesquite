@@ -56,6 +56,9 @@ namespace MESQUITE_NS
     MESQUITE_EXPORT 
     NonGradient(ObjectiveFunction* of);
 
+    MESQUITE_EXPORT 
+    NonGradient(ObjectiveFunction* of, MsqError& err );
+
     MESQUITE_EXPORT virtual
     ~NonGradient() { }
     
@@ -73,44 +76,53 @@ namespace MESQUITE_NS
     void project_gradient( bool yesno ) 
       { projectGradient = yesno; }
 
-  int getDimension()
-  { 
-    return(mDimension);
-  }
-  double getThreshold()
-  { 
-    return(mThreshold);
-  }
-  double getTolerance()
-  { 
-    return(mTolerance);
-  }
-  int getMaxNumEval()
-  { 
-    return(mMaxNumEval);
-  }
-  void setDimension(int dimension)
-  { 
-    mDimension = dimension;
-  }
-  void setThreshold(double threshold)
-  { 
-    mThreshold = threshold;
-  }
-  void setTolerance(double ftol)
-  { 
-    mTolerance = ftol;
-  }
-  void setMaxNumEval(int maxNumEval)
-  { 
-    mMaxNumEval = maxNumEval;
-  }
-  void getRowSum( int numRow, int numCol, std::vector<double>& matrix, std::vector<double>& rowSum);
-  bool testRowSum( int numRow, int numCol, double* matrix, double* rowSum);
-  double evaluate( double localArray[], PatchData &pd, MsqError &err );
-  int initSimplex(double edgeLength); // edgeLenght is a length scale for the initial polytope.
-  std::vector<double> simplex; // matrix stored by column as a std::vector
-  std::vector<double> height; 
+    int getDimension()
+    { 
+      return(mDimension);
+    }
+    double getThreshold()
+    { 
+      return(mThreshold);
+    }
+    double getTolerance()
+    { 
+      return(mTolerance);
+    }
+    int getMaxNumEval()
+    { 
+      return(mMaxNumEval);
+    }
+    void setDimension(int dimension)
+    { 
+      mDimension = dimension;
+    }
+    void setThreshold(double threshold)
+    { 
+      mThreshold = threshold;
+    }
+    void setTolerance(double ftol)
+    { 
+      mTolerance = ftol;
+    }
+    void setMaxNumEval(int maxNumEval)
+    { 
+      mMaxNumEval = maxNumEval;
+    }
+    void getRowSum( int numRow, int numCol, std::vector<double>& matrix, std::vector<double>& rowSum);
+    bool testRowSum( int numRow, int numCol, double* matrix, double* rowSum);
+    double evaluate( double localArray[], PatchData &pd, MsqError &err );
+    //! edgeLenght is a length scale for the initial polytope.
+    int initSimplex(double edgeLength); 
+    //! matrix stored by column as a std::vector
+    std::vector<double> simplex; 
+    std::vector<double> height; 
+    void printPatch( const PatchData &pd, MsqError &err );
+    //! Obtain diagnostic data during optimization
+    //! off=level 0, ... level 3 = maximal
+    MESQUITE_EXPORT void set_debugging_level(int level)
+    {
+      mNonGradDebug=level;
+    }
 
   protected:
     MESQUITE_EXPORT virtual
@@ -131,6 +143,8 @@ namespace MESQUITE_NS
     int mMaxNumEval;  //          |heightMax|+|heightMin|+mThreshold
                       //      or numEval >= mMaxNumEval
     double amotry(std::vector<double>&, std::vector<double>& , double* , int , double, PatchData&, MsqError &err );
+    int mNonGradDebug;
+
     NonGradient(const NonGradient &pd); //disable copying
     NonGradient& operator=(const NonGradient &pd);  //disable assignment
   };
