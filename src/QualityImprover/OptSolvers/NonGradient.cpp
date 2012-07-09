@@ -36,6 +36,7 @@
 #include "MsqFreeVertexIndexIterator.hpp"
 #include "MsqTimer.hpp"
 #include "MsqDebug.hpp"
+//#include "MsqError.hpp"
 #include <cmath>
 #include <iostream>
 #include "../../ObjectiveFunction/ObjectiveFunction.hpp"
@@ -127,35 +128,25 @@ NonGradient::getRowSum( int numRow, int numCol, std::vector<double>& matrix, std
 double 
 NonGradient::evaluate( double *point,  PatchData &pd, MsqError &err )
 {
-  double value;
   if( pd.num_free_vertices() > 1 )
   {
     MSQ_SETERR(err)("Only one free vertex per patch implemented", MsqError::NOT_IMPLEMENTED);
   }
-
-  size_t vertexIndex = 0; // fix c.f. freeVertexIndex
-  Vector3D originalVec = pd.vertex_by_index(vertexIndex);  //[dim]
+  const size_t vertexIndex = 0; 
+  Vector3D originalVec = pd.vertex_by_index(vertexIndex);
   Vector3D pointVec;
-  for( int dim = 0; dim<3; dim++)
+  for( int index = 0; index<3; index++)
   {
-    pointVec[dim] = point[dim];
+    pointVec[index] = point[index];
   }
   pd.set_vertex_coordinates( pointVec, vertexIndex, err ); 
+  pd.snap_vertex_to_domain( vertexIndex, err );  //MSQ_ERRRTN(err);
   OFEvaluator& obj_func = get_objective_function_evaluator();
+  double value;
   bool feasible = obj_func.evaluate( pd, value, err ); MSQ_ERRZERO(err);
   pd.set_vertex_coordinates( originalVec, vertexIndex, err ); 
-  if( !feasible ) 
-  {
-    if( value != 0.0 )
-    {
-      if( mNonGradDebug >= 3 ) 
-      {      
-         std::cout << "NonGradient::evaluate infeasible value is " << value <<  std::endl;
-      }      
-      // MSQ_PRINT(3)("NonGradient::evaluate infeasible value is  %22.15e\n", value);
-    }
-    // Esque barrierTarget tousjours returne 0 pour infeasible?
-    // todo: this is incompatible with untangling, and will need to be fixed.
+  if( !feasible )  
+  { // "value" undefined
     double ensureFiniteRtol= .25;
     value = DBL_MAX * ensureFiniteRtol;
   }
@@ -457,6 +448,7 @@ void NonGradient::optimize_vertex_positions(PatchData &pd,
   Vector3D newPoint( &simplex[0] ); 
   size_t vertexIndex = 0; // fix c.f. freeVertexIndex
   pd.set_vertex_coordinates( newPoint, vertexIndex, err ); 
+  pd.snap_vertex_to_domain( vertexIndex, err );
   if( numEval >= maxNumEval)
   {
     if( mNonGradDebug >= 1 ) 
