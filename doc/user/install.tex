@@ -5,7 +5,7 @@
 \subsection{Downloading Mesquite}
 The Mesquite distribution (in source form) may be obtained at the following URL:
 \begin{center}
-\url{http://www.cs.sandia.gov/~web1400/1400_download.html}
+\url{http://www.cs.sandia.gov/~web1400/1400\_download.html}
 \end{center}
 
 \subsection{Supported Platforms and Build Requirements}
@@ -222,6 +222,21 @@ Using the graphical version of the CMake utility, select the folder containing t
 
 The build folder you specified in the CMake utility should now contain the necessary input files to build Mesquite using Microsoft Visual C++.  
 
+\subsection{Linking Multiple Versions of Mesquite \label{namespace_mangling} }
+
+Sometimes it is necessary to have multiple different versions of a library 
+such as Mesquite linked into the same application.  This situation typically
+arises when an application needs both Mesquite and some other library that depends on an older version of Mesquite.  Without taking steps to avoid symbol
+name conflicts such a situation will often result in surprising, strange, and
+difficult to diagnose runtime errors.  
+
+Mesquite provides the ability to specify an alternate namespace and a standard
+namespace alias to assist with addressing such situations.  The ``namespace'' \texttt{Mesquite} is typically an alias to the true internal C++ namespace containing all Mesquite code.  Applications can and should use that alias rather than the internal namespace to avoid the need to modify application code whenever the internal namespace changes.  
+
+The internal namespace can be changed with the configure option \texttt{--enable-namespace=MyNS} or the cmake option \texttt{Mesqutie\_NAMESPACE}, where the value ``MyNS'' can be replaced with any string that is an acceptable C++ namespace label.  The default namespace is \texttt{MesquiteN}, with the Mesquite major version substituted for \texttt{N}.  Specifying an alternate internal namespace results in different mangled symbol names in the compiled library, thus avoiding symbol name conflicts.
+
+If the requested namespace is anything other than ``Mesquite'', then Mesquite will always provide the alias \texttt{namespace Mesquite = MESQUITE\_NS;} so that application code may always use the \texttt{Mesquite} namespace.
+
 \section{Building Trilinos Mesquite from Scratch on a Mac}
 \subsection{Installation}
 
@@ -315,20 +330,6 @@ CXX=$HOME/pkg/clang+llvm-3.0-x86_64-apple-darwin11/bin/clang++
   --disable-mpi-f77 --disable-mpi-f90
 \end{verbatim}
 
-\subsection{Linking Multiple Versions of Mesquite \label{namespace_mangling} }
-
-Sometimes it is necessary to have multiple different versions of a library 
-such as Mesquite linked into the same application.  This situation typically
-arises when an application needs both Mesquite and some other library that depends on an older version of Mesquite.  Without taking steps to avoid symbol
-name conflicts such a situation will often result in surprising, strange, and
-difficult to diagnose runtime errors.  
-
-Mesquite provides the ability to specify an alternate namespace and a standard
-namespace alias to assist with addressing such situations.  The ``namespace'' \texttt{Mesquite} is typically an alias to the true internal C++ namespace containing all Mesquite code.  Applications can and should use that alias rather than the internal namespace to avoid the need to modify application code whenever the internal namespace changes.  
-
-The internal namespace can be changed with the configure option \texttt{--enable-namespace=MyNS} or the cmake option \texttt{Mesqutie\_NAMESPACE}, where the value ``MyNS'' can be replaced with any string that is an acceptable C++ namespace label.  The default namespace is \texttt{MesquiteN}, with the Mesquite major version substituted for \texttt{N}.  Specifying an alternate internal namespace results in different mangled symbol names in the compiled library, thus avoiding symbol name conflicts.
-
-If the requested namespace is anything other than ``Mesquite'', then Mesquite will always provide the alias \texttt{namespace Mesquite = MESQUITE\_NS;} so that application code may always use the \texttt{Mesquite} namespace.
 
 
 

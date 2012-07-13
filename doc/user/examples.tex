@@ -138,7 +138,7 @@ shifted five units in the z-direction:
 The simplest way to use a Mesquite mesh quality improvement
 procedure is to instantiate one of the wrapper classes described in Chapter 
 \ref{sec:wrappers}. Here, we will instantiate the
-\texttt{ShapeImprovement} wrapper and use it to improve 
+\texttt{LaplacianSmoother} wrapper and use it to improve 
 the Mesh we created earlier.  Mesquite can optimize the mesh
 without further input from the user by utilizing preset, default
 values.  If some customization is desired, the wrapper classes also
@@ -146,7 +146,7 @@ allow users to set the most important parameters of the underlying
 algorithms and metrics (see Chapter 
 \ref{sec:wrappers} for details).
 \begin{verbatim}
-Mesquite::ShapeImprover mesh_quality_algorithm;
+Mesquite::LaplaceWrapper mesh_quality_algorithm;
 mesh_quality_algorithm.run_instructions(&my_mesh,
                                         &my_mesh_plane,  err);
 //Should check the error object after the instruction is ran
@@ -178,38 +178,34 @@ and improved\_mesh.vtk in the current directory.  These two meshes, the
 original and the optimized, are
 shown in figure \ref{fig:square_rand}.  The text output of the code,
 shown below, reports the inverse mean ratio quality metric statistics for
-the mesh at three stages:  the original mesh, the mesh at an intermediate
-step of the optimization, and the final mesh.  The optimized mesh consists
+the orginal mesh before optimization and the final mesh after optimization.
+The optimized mesh consists
 of square quadrilaterals which have an inverse mean ratio value of 1.0.
 \begin{verbatim}
-************** QualityAssessor Summary **************
+************** QualityAssessor(free only) Summary **************
 
+  Evaluating quality for 100 elements.
+  This mesh had 100 quadrilateral elements.
   There were no inverted elements detected. 
   No entities had undefined values for any computed metric.
 
-             metric    minimum    average        rms    maximum
- Inverse Mean Ratio    1.01013    1.16655     1.1738    1.79134
+            metric     minimum     average         rms     maximum    std.dev.
+Inverse Mean Ratio     1.01013     1.16655      1.1738     1.79134    0.130322
 
-************** QualityAssessor Summary **************
+************** QualityAssessor(free only) Summary **************
 
+  Evaluating quality for 100 elements.
+  This mesh had 100 quadrilateral elements.
   There were no inverted elements detected. 
   No entities had undefined values for any computed metric.
 
-             metric    minimum    average        rms    maximum
- Inverse Mean Ratio    1.01013    1.16655     1.1738    1.79134
-
-************** QualityAssessor Summary **************
-
-  There were no inverted elements detected. 
-  No entities had undefined values for any computed metric.
-
-             metric    minimum    average        rms    maximum
- Inverse Mean Ratio          1          1          1          1
+            metric     minimum     average         rms     maximum    std.dev.
+Inverse Mean Ratio           1           1           1     1.00001 2.20663e-06
 \end{verbatim}
 \begin{figure*}[htbp]
 \begin{center}
-    \includegraphics[height=50mm]{square_rand.eps}
-    \caption{square\_quad\_10\_rand.vtk mesh. The original mesh is on the left, the mesh smoothed with \texttt{ShapeImprover} is shown on the right.}
+    \includegraphics[height=80mm]{square_rand.eps}
+    \caption{square\_quad\_10\_rand.vtk mesh. The original mesh is on the left, the mesh smoothed with the \texttt{LaplacianSmoother} is shown on the right.}
     \label{fig:square_rand}
 \end{center}
 \end{figure*}
@@ -339,7 +335,7 @@ Inverse Mean Ratio     1.01896     1.83479     1.91775     3.36336    0.557969
 \end{verbatim}
 \begin{figure*}[htbp]
 \begin{center}
-    \includegraphics{hole_in_square.ps}
+    \includegraphics[height=80mm]{hole_in_square.eps}
     \caption{hole\_in\_square.vtk mesh. The original mesh is on the left, the mesh smoothed with
     Mesquite is shown on the right.}
     \label{fig:hole}
