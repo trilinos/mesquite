@@ -232,8 +232,6 @@ TRIBITS_EXCLUDE_FILES(
   meshFiles/2D/VTK/copy-morph-for-ricoh.cub.vtk
   meshFiles/2D/VTK/four_more_quads.vtk
   meshFiles/2D/VTK/halfCirc.vtk
-  meshFiles/2D/VTK/hole_in_square_tanglap.vtk
-  meshFiles/2D/VTK/hole_in_square.vtk
   meshFiles/2D/VTK/hole_scheme_opp_bias.vtk
   meshFiles/2D/VTK/hole_scheme.vtk
   meshFiles/2D/VTK/horse20x10_2_4.vtk
@@ -284,7 +282,6 @@ TRIBITS_EXCLUDE_FILES(
   meshFiles/3D/VTK/cub_wedge_like.vtk
   meshFiles/3D/VTK/hex_2_with_bound.vtk
   meshFiles/3D/VTK/hex_5_tangled.vtk
-  meshFiles/3D/VTK/mixed-hex-pyr-tet.vtk
   meshFiles/3D/VTK/pave1.e.vtk
   meshFiles/3D/VTK/pave2.e.vtk
   meshFiles/3D/VTK/pave3.e.vtk
