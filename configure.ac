@@ -741,6 +741,7 @@ AC_CONFIG_FILES([Makefile
                  testSuite/imesh/Makefile
                  testSuite/jacobi/Makefile
                  testSuite/laplacian_test/Makefile
+                 testSuite/laplacian_polygon_test/Makefile
                  testSuite/pyramid/Makefile
                  testSuite/simple_hybrid_test/Makefile
                  testSuite/test_1/Makefile

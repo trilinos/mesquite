@@ -427,7 +427,8 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
    
       // If necessary, convert from Exodus to VTK node-ordering.
     const VtkTypeInfo* info = VtkTypeInfo::find_type( topo, conn.size(), err ); MSQ_ERRRTN(err);
-    info->mesquiteToVtkOrder( conn );
+    if (info->msqType != POLYGON)
+      info->mesquiteToVtkOrder( conn );
     
     file << conn.size();
     for (i = 0; i < conn.size(); ++i)
@@ -1934,7 +1935,7 @@ void MeshImpl::vtk_read_unstructured_grid( FileTokenizer& tokens, MsqError& err 
 
       // Check if type is a valid value
     const VtkTypeInfo* info = VtkTypeInfo::find_type( type, err );   
-    if (err || !info || !info->numNodes)
+    if (err || !info || (!info->numNodes && type != POLYGON) )
     {
       MSQ_SETERR(err)( MsqError::PARSE_ERROR,
                        "Invalid cell type %ld at line %d.",

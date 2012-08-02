@@ -643,20 +643,43 @@ void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
       // If a higher-order node, return corners of side/face
       // that node is in the center of.
     EntityTopology type = e->get_element_type();
-    if (conn_idx >= TopologyInfo::corners(type)) {
+    if (conn_idx >= TopologyInfo::corners(type) && type != POLYGON ) {
       unsigned dim, id;
       TopologyInfo::side_from_higher_order( type, e->node_count(), conn_idx,
                                             dim, id, err ); MSQ_ERRRTN(err);
       adj = TopologyInfo::side_vertices( type, dim, id, num_adj );
     }
     else {
-      adj = TopologyInfo::adjacent_vertices( e->get_element_type(), conn_idx, num_adj );
-    }
-    for (i = 0; i < num_adj; ++i) {
-      curr_vtx_idx = conn[ adj[i] ]; // get index into patch vertex list
-      if (!bitMap[curr_vtx_idx]) {
-        vert_indices.push_back( curr_vtx_idx );
-        bitMap[curr_vtx_idx] = true;
+      EntityTopology topo = e->get_element_type();
+      if (topo == POLYGON)
+      {
+        unsigned number_of_nodes = e->node_count();
+        num_adj = 2;                      // always 2 for a polygon
+        unsigned vert_adj[2];
+        vert_adj[0] = (conn_idx+1)%number_of_nodes;
+        vert_adj[1] = (conn_idx + number_of_nodes-1)%number_of_nodes;
+        for (i = 0; i < num_adj; ++i) 
+        {
+          curr_vtx_idx = conn[ vert_adj[i] ]; // get index into patch vertex list
+          if (!bitMap[curr_vtx_idx]) 
+          {
+            vert_indices.push_back( curr_vtx_idx );
+            bitMap[curr_vtx_idx] = true;  
+          }
+        }
+      }
+      else
+      {
+        adj = TopologyInfo::adjacent_vertices( topo, conn_idx, num_adj );
+        for (i = 0; i < num_adj; ++i) 
+        {
+          curr_vtx_idx = conn[ adj[i] ]; // get index into patch vertex list
+          if (!bitMap[curr_vtx_idx]) 
+          {
+            vert_indices.push_back( curr_vtx_idx );
+            bitMap[curr_vtx_idx] = true;
+          }
+        }
       }
     }
   }
@@ -1877,7 +1900,8 @@ void PatchData::set_mesh_entities(
                           std::vector<Mesh::VertexHandle>& free_vertices,
                           MsqError& err )
 {
-  if (!get_mesh()) {
+  Mesh* current_mesh = get_mesh();
+  if (!current_mesh) {
     MSQ_SETERR(err)("No Mesh associated with PatchData.", MsqError::INVALID_STATE );
     return;
   }

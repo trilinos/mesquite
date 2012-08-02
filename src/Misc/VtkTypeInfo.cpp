@@ -129,7 +129,11 @@ const VtkTypeInfo* VtkTypeInfo::find_type( EntityTopology msq_type,
     return &typeInfoList[ reverseIndexList[msq_type][1] ];
   else if ( typeInfoList[ reverseIndexList[msq_type][2] ].numNodes == num_nodes )
     return &typeInfoList[ reverseIndexList[msq_type][2] ];
-  
+ 
+  if (msq_type == POLYGON && num_nodes >= 3 && num_nodes <= 12)
+    return &typeInfoList[ reverseIndexList[msq_type][0] ];
+
+
   MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT, "VTK file does not support element type %d with %u nodes", (int)msq_type, num_nodes  );
   return 0;
 }

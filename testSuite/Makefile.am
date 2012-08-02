@@ -43,6 +43,7 @@ SUBDIRS = test_1 \
 	  $(IMESH_TEST) \
 	  jacobi \
 	  laplacian_test\
+	  laplacian_polygon_test\
 	  $(PARALLEL_SMOOTH_LAPLACE) \
 	  $(PARALLEL_UNTANGLE_SHAPE) \
 	  pyramid \

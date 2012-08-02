@@ -78,7 +78,7 @@ void Instruction::initialize_vertex_byte( Mesh* mesh,
       verts.clear();
       junk.clear();
       mesh->elements_get_attached_vertices( &elems[i], 1, verts, junk, err ); MSQ_ERRRTN(err);
-      if (ncorner < verts.size())
+      if (ncorner < verts.size() && type != POLYGON)
         use_existing_slaved_flag = true;
       
       bytes.clear();
