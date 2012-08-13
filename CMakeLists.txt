@@ -222,6 +222,7 @@ ADD_SUBDIRECTORY(itaps)
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(utils)
 
+IF(NOT WIN32 AND NOT WIN64)
 TRIBITS_EXCLUDE_FILES(
   meshFiles/5D/CUBIT/bad_circle.cbt
   meshFiles/2D/CUBIT/bad_circle.g
@@ -303,7 +304,7 @@ TRIBITS_EXCLUDE_FILES(
   meshFiles/3D/VTK/quadratic/sphereCylinder_22492_inv.vtk
   meshFiles/3D/VTK/quadratic/sphereCylinder_22492.vtk
   )
-
+ENDIF()
 
 IF (${PACKAGE_NAME}_ENABLE_TESTS)
   IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
