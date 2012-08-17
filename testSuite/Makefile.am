@@ -34,6 +34,7 @@ SUBDIRS = test_1 \
 	  ActiveSetTest \
 	  algorithm_test\
 	  analytical_grad_3D \
+          baseline_timing_tests \
           $(EXO_TEST) \
 	  headers \
           high_aspect_ratio \
