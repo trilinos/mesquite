@@ -116,6 +116,10 @@ const double HD = 4.5;
 int main(int argc, char* argv[])
 {
 
+  std::cout << std::endl << "********* Wrappers Timing Tests **********" 
+            << std::endl << "Version "  << version_string(true) 
+            << std::endl << std::endl;
+
   Mesquite::MsqPrintError err(cout);
   Mesquite::MeshImpl mesh;
 
@@ -170,9 +174,22 @@ int main(int argc, char* argv[])
   t.reset();
   lp_wrapper.run_instructions(&mesh, &msq_geom2, err); 
   if (err) return 1;
-  double lp_l_secs = t.since_birth();
-  std::cout << std::endl << "LaplacianWrapper large file optimization completed in " 
-            << lp_l_secs << " seconds" << std::endl;
+  double lp_l1_secs = t.since_birth();
+  std::cout << std::endl << "LaplacianWrapper large file (term crit=0.001) completed in " 
+            << lp_l1_secs << " seconds" << std::endl;
+
+  mesh.clear();
+  mesh.read_vtk(laplacian_file_name_2, err);
+  if (err) return 1;  
+
+  lp_wrapper.set_vertex_movement_limit_factor(0.1);
+  t.reset();
+  lp_wrapper.run_instructions(&mesh, &msq_geom2, err); 
+  if (err) return 1;
+  double lp_l2_secs = t.since_birth();
+  std::cout << std::endl << "LaplacianWrapper large file (term crit=0.1) completed in " 
+            << lp_l2_secs << " seconds" << std::endl;
+
 
 // #################### Begin UntangleWrapper::BETA tests ###################
 
@@ -219,9 +236,33 @@ int main(int argc, char* argv[])
   un_wrapper.run_instructions( &mesh, &un_domain2, err );
   if (err) return 1;
 
-  double unb_l_secs = t.since_birth();
-  std::cout << std::endl << "UntangleWrapper::BETA large file optimization completed in " 
-            << unb_l_secs << " seconds" << std::endl;
+  double unb_l1_secs = t.since_birth();
+  std::cout << std::endl << "UntangleWrapper::BETA large file (term crit=0.005) completed in " 
+            << unb_l1_secs << " seconds" << std::endl;
+
+  mesh.clear();
+  mesh.read_vtk(untangle_file_name_2, err);
+  if (err) return 1;
+
+   // get domain
+  verts.clear();
+  mesh.get_all_vertices( verts, err );
+  if (err || verts.empty()) return 1;
+  MsqVertex coords3;
+  mesh.vertices_get_coordinates( arrptr(verts), &coords3, 1, err );
+  if (err) return 1;
+
+  PlanarDomain un_domain3( norm, coords3 );
+ 
+  un_wrapper.set_vertex_movement_limit_factor( 0.1 );
+  t.reset();
+  un_wrapper.run_instructions( &mesh, &un_domain3, err );
+  if (err) return 1;
+
+  double unb_l2_secs = t.since_birth();
+  std::cout << std::endl << "UntangleWrapper::BETA large file (term crit=0.1) completed in " 
+            << unb_l2_secs << " seconds" << std::endl;
+
 
 // #################### Begin UntangleWrapper::SIZE tests ###################
 
@@ -232,10 +273,10 @@ int main(int argc, char* argv[])
   verts.clear();
   mesh.get_all_vertices( verts, err );
   if (err || verts.empty()) return 1;
-  MsqVertex coords3;
-  mesh.vertices_get_coordinates( arrptr(verts), &coords3, 1, err );
+  MsqVertex coords2a;
+  mesh.vertices_get_coordinates( arrptr(verts), &coords2a, 1, err );
   if (err) return 1;
-  PlanarDomain u_domain3( norm, coords3 );
+  PlanarDomain u_domain3( norm, coords2a );
 
   UntangleWrapper::UntangleMetric metric2 = UntangleWrapper::SIZE;
   UntangleWrapper un_wrapper2s(metric2);
@@ -261,15 +302,15 @@ int main(int argc, char* argv[])
   if (err) return 1;
 
   PlanarDomain un_domain4( norm, coords4 );
-  un_wrapper2s.set_outer_iteration_limit(25);
+  un_wrapper2s.set_vertex_movement_limit_factor( 0.005 );
 
   t.reset();
   un_wrapper2s.run_instructions( &mesh, &un_domain4, err );
   if (err) return 1;
 
-  double uns_short_l_secs = t.since_birth();
-  std::cout << std::endl << "UntangleWrappe::SIZE large file 25 iterations completed in " 
-            << uns_short_l_secs << " seconds" << std::endl;
+  double uns_l1_secs = t.since_birth();
+  std::cout << std::endl << "UntangleWrappe::SIZE large file (term crit=0.005) completed in " 
+            << uns_l1_secs << " seconds" << std::endl;
 
   mesh.clear();
   mesh.read_vtk(untangle_file_name_2, err);
@@ -281,14 +322,14 @@ int main(int argc, char* argv[])
   mesh.vertices_get_coordinates( arrptr(verts), &coords4, 1, err );
   if (err) return 1;
 
-  un_wrapper2l.set_outer_iteration_limit(50);
+  un_wrapper2l.set_vertex_movement_limit_factor( 0.1 );
   t.reset();
   un_wrapper2l.run_instructions( &mesh, &un_domain4, err );
   if (err) return 1;
 
-  double uns_long_l_secs = t.since_birth();
-  std::cout << std::endl << "UntangleWrappe::SIZE large file 50 iterations completed in " 
-            << uns_long_l_secs << " seconds" << std::endl;
+  double uns_l2_secs = t.since_birth();
+  std::cout << std::endl << "UntangleWrappe::SIZE large file (term crit=0.1) completed in " 
+            << uns_l2_secs << " seconds" << std::endl;
 
 
 // #################### Begin UntangleWrapper::SHAPESIZE tests ###################
@@ -355,35 +396,34 @@ int main(int argc, char* argv[])
   if (err) return 1;
   
   SphericalDomain geom( Vector3D(0,0,0), 10.0 );
-  SizeAdaptShapeWrapper sas_wrapper1(1e-2, 25);
-  SizeAdaptShapeWrapper sas_wrapper2(1e-2, 50);
+  SizeAdaptShapeWrapper sas_wrapper1(1e-2, 50);
+  SizeAdaptShapeWrapper sas_wrapper2(1e-1, 50);
+
   t.reset();
   sas_wrapper1.run_instructions( &mesh, &geom, err);
   if (err) return 1;
   double sas1_secs = t.since_birth();
-  std::cout << std::endl << "SizeAdaptShapeWrapper file 25 iterations completed in " 
+  std::cout << std::endl << "SizeAdaptShapeWrapper (term crit=0.01) completed in " 
             << sas1_secs << " seconds" << std::endl;
 
   mesh.clear();
   mesh.read_vtk(size_adapt_shape_file_name_1, err);
-  find_z10_extreme_elements( mesh, polar, equatorial, err ); 
   if (err) return 1;
-  elem_areas( mesh, polar, pol_min, pol_mean, pol_max, err ); 
-  if (err) return 1;
-  elem_areas( mesh, equatorial, eq_min, eq_mean, eq_max, err ); 
-  if (err) return 1;
+
   t.reset();
   sas_wrapper2.run_instructions( &mesh, &geom, err);
   if (err) return 1;
   double sas2_secs = t.since_birth();
-  std::cout << std::endl << "SizeAdaptShapeWrapper file 50 iterations completed in " 
+  std::cout << std::endl << "SizeAdaptShapeWrapper (term crit=0.1) completed in " 
             << sas2_secs << " seconds" << std::endl;
- 
+
+
+
 
   // #################### Begin PaverMinEdgeLengthWrapper tests ###################
 
-  PaverMinEdgeLengthWrapper mel_wrapper1(.005, 25);
-  PaverMinEdgeLengthWrapper mel_wrapper2(.005, 50);
+  PaverMinEdgeLengthWrapper mel_wrapper1(.005, 50);
+  PaverMinEdgeLengthWrapper mel_wrapper2(.1, 50);
 
   mesh.clear();
   mesh.read_vtk(min_edge_length_file_name_1, err); 
@@ -402,7 +442,7 @@ int main(int argc, char* argv[])
   mel_wrapper1.run_instructions(&mesh, err); 
   if (err) return 1;
   double mel1_l_secs = t.since_birth();
-  std::cout << std::endl << "PaverMinEdgeLengthWrapper large file 25 iterations completed in " 
+  std::cout << std::endl << "PaverMinEdgeLengthWrapper large file (term crit=0.005) completed in " 
             << mel1_l_secs << " seconds" << std::endl;
 
 
@@ -412,7 +452,7 @@ int main(int argc, char* argv[])
   mel_wrapper2.run_instructions(&mesh, err); 
   if (err) return 1;
   double mel2_l_secs = t.since_birth();
-  std::cout << std::endl << "PaverMinEdgeLengthWrapper large file 50 iterations completed in " 
+  std::cout << std::endl << "PaverMinEdgeLengthWrapper large file (term crit=0.1) completed in " 
             << mel2_l_secs << " seconds" << std::endl;
 
   // #################### Begin DeformingDomainWrapper tests ###################
@@ -474,8 +514,69 @@ int main(int argc, char* argv[])
   dd_wrapper.run_instructions( &mesh, &surface, err );
   if (MSQ_CHKERR(err)) return 1;
   double dd_secs = t.since_birth();
-  std::cout << std::endl << "DeformingDomainWrapper file optimization completed in " 
+  std::cout << std::endl << "DeformingDomainWrapper file (term crit=0.01) completed in " 
             << dd_secs << " seconds" << std::endl;
+
+    // Do it all again for the next test
+  mesh.clear();
+  mesh.read_vtk( deforming_domain_file_name_1, err ); 
+  if (MSQ_CHKERR(err)) return 1;
+
+  std::vector<Mesh::VertexHandle> curves2[4];
+  Mesh::VertexHandle corners2[4];
+  classify_boundary( &mesh, corners2, curves2, err );
+  if (MSQ_CHKERR(err)) return 1;
+  
+    // new, "deformed" domain will be an 2HDx2HD planar square
+  const double corner_coords2[][3] = { {-HD,-HD, Z},
+                                      { HD,-HD, Z},
+                                      { HD, HD, Z},
+                                      {-HD, HD, Z} };
+  LineDomain lines2[4] = { 
+    LineDomain( Vector3D(corner_coords2[0]), Vector3D( 1, 0, 0) ),
+    LineDomain( Vector3D(corner_coords2[1]), Vector3D( 0, 1, 0) ),
+    LineDomain( Vector3D(corner_coords2[2]), Vector3D(-1, 0, 0) ),
+    LineDomain( Vector3D(corner_coords2[3]), Vector3D( 0,-1, 0) ) };
+  PlanarDomain surface2( PlanarDomain::XY, Z );
+  
+    // save initial mesh state
+  DeformingCurveSmoother curve_tool2;
+  for (int i = 0; i < 4; ++i) {
+    curve_tool2.store_initial_mesh( &mesh, &curves2[i][0], curves2[i].size(), &lines2[i], err );
+    if (MSQ_CHKERR(err)) return 1;
+  }
+  DeformingDomainWrapper dd_wrapper2;
+  dd_wrapper2.store_initial_mesh( &mesh, err );
+  if (MSQ_CHKERR(err)) return 1;
+  
+    // move corner vertices to new location
+  for (int i = 0; i < 4; ++i) {
+    Vector3D vect(corner_coords2[i]);
+    mesh.vertex_set_coordinates( corners2[i], vect, err );
+    if (MSQ_CHKERR(err)) return 1;
+  }
+  std::vector<bool> fixed2(4,true);
+  mesh.vertices_set_fixed_flag( corners2, fixed2, 4, err );
+  if (MSQ_CHKERR(err)) return 1;
+  
+    // smooth curves
+  for (int i = 0; i < 4; ++i) {
+    curve_tool2.smooth_curve( &mesh, &curves2[i][0], curves2[i].size(), &lines2[i],
+                              DeformingCurveSmoother::PROPORTIONAL, err );
+    if (MSQ_CHKERR(err)) return 1;
+    fixed2.resize(curves2[i].size(),true);
+    mesh.vertices_set_fixed_flag( &curves2[i][0], fixed2, curves2[i].size(), err );
+    if (MSQ_CHKERR(err)) return 1;
+  }
+  
+  dd_wrapper2.set_vertex_movement_limit_factor(0.1);
+  t.reset();
+  dd_wrapper2.run_instructions( &mesh, &surface2, err );
+  if (MSQ_CHKERR(err)) return 1;
+  double dd_secs2 = t.since_birth();
+  std::cout << std::endl << "DeformingDomainWrapper file (term crit=0.1) completed in " 
+            << dd_secs2 << " seconds" << std::endl;
+
 
   // Timing Summary
   std::cout << std::endl << "********* Wrappers Timing Summary **********" 
@@ -487,35 +588,40 @@ int main(int argc, char* argv[])
             << si_l_secs << " seconds" << std::endl;
   std::cout << "LaplacianWrapper small file optimization completed in " 
             << lp_s_secs << " seconds" << std::endl;
-  std::cout << "LaplacianWrapper large file optimization completed in " 
-            << lp_l_secs << " seconds" << std::endl;
+  std::cout << "LaplacianWrapper large file optimization (term crit=0.001) in " 
+            << lp_l1_secs << " seconds" << std::endl;
+  std::cout << "LaplacianWrapper large file optimization (term crit=0.1) in " 
+            << lp_l2_secs << " seconds" << std::endl;
   std::cout << "UntangleWrapper::BETA small file optimization completed in " 
             << unb_s_secs << " seconds" << std::endl;
-  std::cout << "UntangleWrapper::BETA large file optimization completed in " 
-            << unb_l_secs << " seconds" << std::endl;
+  std::cout << "UntangleWrapper::BETA large file (term crit=0.005) completed in " 
+            << unb_l1_secs << " seconds" << std::endl;
+  std::cout << "UntangleWrapper::BETA large file (term crit=0.1) completed in " 
+            << unb_l2_secs << " seconds" << std::endl;
   std::cout << "UntangleWrapper::SIZE small file optimization completed in " 
             << uns_s_secs << " seconds" << std::endl;
-  std::cout << "UntangleWrapper::SIZE large file 25 iterations completed in " 
-            << uns_short_l_secs << " seconds" << std::endl;
-  std::cout << "UntangleWrapper::SIZE large file 50 iterations completed in " 
-            << uns_long_l_secs << " seconds" << std::endl;
+  std::cout << "UntangleWrapper::SIZE large file (term crit=0.005) completed in " 
+            << uns_l1_secs << " seconds" << std::endl;
+  std::cout << "UntangleWrapper::SIZE large file (term crit=0.1) completed in " 
+            << uns_l2_secs << " seconds" << std::endl;
   std::cout << "UntangleWrapper::SHAPESIZE small file optimization completed in " 
             << unss_s_secs << " seconds" << std::endl;
   std::cout << "UntangleWrapper::SHAPESIZE large file optimization completed in " 
             << unss_l_secs << " seconds" << std::endl;
-  std::cout << "SizeAdaptShapeWrapper file 25 iterations completed in " 
+  std::cout << "SizeAdaptShapeWrapper (term crit=0.01) completed in " 
             << sas1_secs << " seconds" << std::endl;
-  std::cout << "SizeAdaptShapeWrapper file 50 iterations completed in " 
+  std::cout << "SizeAdaptShapeWrapper (term crit=0.1) completed in " 
             << sas2_secs << " seconds" << std::endl;
   std::cout << "PaverMinEdgeLengthWrapper small file optimization completed in " 
             << mel_s_secs << " seconds" << std::endl;
-  std::cout  << "PaverMinEdgeLengthWrapper large file 25 iterations completed in " 
+  std::cout << "PaverMinEdgeLengthWrapper large file (term crit=0.005) completed in " 
             << mel1_l_secs << " seconds" << std::endl;
-  std::cout << "PaverMinEdgeLengthWrapper large file 50 iterations completed in " 
+  std::cout << "PaverMinEdgeLengthWrapper large file (term crit=0.1) completed in " 
             << mel2_l_secs << " seconds" << std::endl;
-  std::cout << "DeformingDomainWrapper file optimization completed in " 
+  std::cout << "DeformingDomainWrapper file (term crit=0.01) completed in " 
             << dd_secs << " seconds" << std::endl;
-
+  std::cout << "DeformingDomainWrapper file (term crit=0.1) completed in " 
+            << dd_secs2 << " seconds" << std::endl;
  
   return 0;
 }
