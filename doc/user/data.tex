@@ -149,19 +149,99 @@ NOTE:  When using the \texttt{ArrayMesh} interface, the application is responsib
  
 \section{Reading Mesh From Files} \label{sec:meshFiles}
 
+\subsection{VTK and ExodusII Files}
+
 Mesquite provides a concrete implementation of the \texttt{Mesquite::Mesh} named
 \texttt{Mesquite::MeshImpl}.  This implementation is capable of reading mesh from
 VTK\cite{VTKbook, VTKuml} and optionally ExodusII files. See Sections 
 \ref{sec:depends} and \ref{sec:compiling} for more 
 information regarding the optional support for ExodusII files.
 
+\subsection{Reading and Writing VTK Files}
+
+VTK files can be read into Mesquite via the MeshImpl::read\_vtk(...) method.  VTK files can be written using the MeshImpl::write\_vtk(...) method. 
+ The current implementation writes version 3.0 of the VTK file format
+and is capable of reading any version of the file format up to 3.0. Mesquite only supports the legacy VTK file format; it does not support XML format.  The capibilities and limitations of Mesquite VTK file processing is as follows:
+\begin{itemize}
+\item cannot read binary files
+\item can read the following Dataset types:
+\begin {verbatim}
+     "STRUCTURED_POINTS",
+     "STRUCTURED_GRID",
+     "UNSTRUCTURED_GRID",
+     "POLYDATA",
+     "RECTILINEAR_GRID",
+     "FIELD"
+\end{verbatim}
+\item can only write "UNSTRUCTURED\_GRID" Dataset type
+\item cannot read triangle strips
+\item can read/write following VTK attribute data:
+\begin {verbatim}
+     "SCALARS",
+     "COLOR_SCALARS",
+     "VECTORS",
+     "NORMALS",
+     "TEXTURE_COORDINATES",
+     "TENSORS",
+     "FIELD"
+\end{verbatim}
+\item will accept either "FIELD" or "DATASET FIELD" for block name value
+\item polygonal meshes can be read and written by Mesquite using VTK format.  However, only the LaplaceSmoother and the SmartLaplaceSmoother are currently able to work with this mesh type.
+\item supports fixed and slaved POINT Dataset Attributes with dataNames of "fixed" and "slaved".  These are used to specify which nodes are to be considered fixed and slaved.
+\end{itemize}
+
 The `fixed' flag for vertices can be specified in VTK files by defining a
 SCALAR POINT\_DATA attribute with values of 0 or 1, where 1 indicates that the
 corresponding vertex is fixed.  The \texttt{Mesquite::MeshImpl} class is capable
-of reading and storing tag data (see Section \ref{sec:tags_section}) using VTK attributes and
-field data.  The current implementation writes version 3.0 of the VTK file format
-and is capable of reading any version of the file format up to 3.0.  
+of reading and storing tag data (see Section \ref{sec:tags_section}) using VTK attributes and field data. A example of a Mesquite compatible VTK file can be found in Section \ref{sec:slaved_vertices}. 
 
+\subsection{VTK Cell Types}
+VTK files can contain the following types of cells:
+
+\begin{verbatim}
+   1. VTK_VERTEX 
+   2. VTK_POLY_VERTEX 
+   3. VTK_LINE 
+   4. VTK_POLY_LINE 
+   5. VTK_TRIANGLE
+   6. VTK_TRIANGLE_STRIP 
+   7. VTK_POLYGON 
+   8. VTK_PIXEL 
+   9. VTK_QUAD 
+  10. VTK_TETRA 
+  11. VTK_VOXEL 
+  12. VTK_HEXAHEDRON 
+  13. VTK_WEDGE 
+  14. VTK_PYRAMID 
+  15. VTK_PENTAGONAL_PRISM 
+  16. VTK_HEXAGONAL_PRISM 
+  21. VTK_QUADRATIC_EDGE 
+  22. VTK_QUADRATIC_TRIANGLE 
+  23. VTK_QUADRATIC_QUAD 
+  24. VTK_QUADRATIC_TETRA 
+  25. VTK_QUADRATIC_HEXAHEDRON 
+  26. VTK_QUADRATIC_WEDGE 
+  27. VTK_QUADRATIC_PYRAMID 
+  28. VTK_BI_QUADRATIC_QUAD 
+  29. VTK_TRI_QUADRATIC_HEXAHEDRON 
+  30. VTK_QUADRATIC_LINEAR_QUAD 
+  31. VTK_QUADRATIC_LINEAR_WEDGE 
+  32. VTK_QUADRATIC_WEDGE 
+  33. VTK_QUADRATIC_WEDGE 
+  34. VTK_BI_QUADRATIC_HEXAHEDRON 
+\end{verbatim}
+
+Mesquite supports the following VTK cell types (followed by the VTK Cell Types number):
+
+\begin{itemize}
+\item  TRIANGLE (5, 22)
+\item  QUADRILATERAL (9, 23, 28)
+\item  POLYGON (7)
+\item  TETRAHEDRON (10, 24)
+\item  HEXAHEDRON (12, 25, 29)
+\item PRISM (13, 26)
+\item  PYRAMID (14, 27)
+\end{itemize}
 
 \section{ITAPS iMesh Interface}
 

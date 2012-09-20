@@ -8,7 +8,7 @@ This chapter provides a brief overview of some of the tools provided in Mesquite
 
 \subsection{Stopping Assessment}
 
-A stopping assessment can be specified for each QualityAssessor instance.  The "stopping assessment" directs the assessment code calculate a value using the power mean data to use that value as the return value for the loop\_over\_mesh call.  If no power mean is specified for a QualityAssessor instance, a simple average of all metric values calculated during the assessment is returnedo from  loop\_over\_mesh.  Only one stopping assessment with its associated power mean can be specified for a particular QualityAssessor instance.  There are three different ways to specify a stopping assessment: when the QualityAssessor instance is created using a constructor, when a quality assessment is added via the add\_quality\_assessment () method, and directly with the set\_stopping\_assessment() method.  Since only one stopping assessment can be defined for a each instance of QualityAssessor, the last action that causes the stopping assessment to be set will be the one used for the assessment no matter how many metrics have been included.
+A stopping assessment can be specified for each QualityAssessor instance.  The "stopping assessment" directs the assessment code calculate a value using the power mean data to use that value as the return value for the loop\_over\_mesh call.  If no power mean is specified for a QualityAssessor instance, a simple average of all metric values calculated during the assessment is returned from  loop\_over\_mesh.  Only one stopping assessment with its associated power mean can be specified for a particular QualityAssessor instance.  There are three different ways to specify a stopping assessment: when the QualityAssessor instance is created using a constructor, when a quality assessment is added via the add\_quality\_assessment () method, and directly with the set\_stopping\_assessment() method.  Since only one stopping assessment can be defined for a each instance of QualityAssessor, the last action that causes the stopping assessment to be set will be the one used for the assessment no matter how many metrics have been included.
 
 \subsection{Using the Quality Assessor}
 
@@ -24,7 +24,7 @@ Parameters used by QualityAssesor constructors:
 
 \item[free\_elements\_only:] When this option is TRUE, summary statistics are only computed over the set of elements which contain free vertices. If an element in the mesh does not contain a free vertex, its quality is not included in the summary.	 If an element in the mesh does not contain a free vertex, its quality cannot be improved by Mesquite.	To compute the quality of all mesh elements, regardless of whether Mesquite can improve them, set this option to FALSE.	 Default is TRUE.
 
-\item[metric\_value\_tag\_name:] If a non-null value is specified, a tag with the specified name can be associated with quality values for individual elements or vertices if metric is an element-based or vertex-based metric.  If metric is not element-based or vertex-based, this argument has no effect. The specified tag can then be associated with quality values generated for a mesh.  Element-based metrics can have one tagged value per element quality value while vertex-based metrics can have one tagged value per vertex quality value.  Tagged quality values are created using the methods tag\_set\_element\_data() and tag\_set\_vertex\_data() found in the MeshImpl class. The tagged values can be retrived using the methods tag\_get\_element\_data() and tag\_get\_vertex()\_data from the same class.  Tags cannot be used with target metric classes. Default for metric\_value\_tag\_name is null value.
+\item[metric\_value\_tag\_name:] If a non-null value is specified, a tag with the specified name can be associated with quality values for individual elements or vertices if metric is an element-based or vertex-based metric.  If metric is not element-based or vertex-based, this argument has no effect. The specified tag can then be associated with quality values generated for a mesh.  Element-based metrics can have one tagged value per element quality value while vertex-based metrics can have one tagged value per vertex quality value.  Tagged quality values are created using the methods tag\_set\_element\_data() and tag\_set\_vertex\_data() found in the MeshImpl class. The tagged values can be retrieved using the methods tag\_get\_element\_data() and tag\_get\_vertex()\_data from the same class.  Tags cannot be used with target metric classes. Default for metric\_value\_tag\_name is null value.
 
 \item[inverted\_element\_tag\_name:] If a non-null value is specified, an integer tag with the specified name will be used to store a value of 0 for normal elements and 1 for inverted elements.  Default is null value.
 
@@ -37,7 +37,7 @@ Parameters used by QualityAssesor constructors:
 
   After the QualityAssessor instance is created, any of a number of methods can be used to set individual characteristics of the QualityAssessor object.
 
-  Once setup for the QualityAssessor object  is complete, the actual assessment is preformed by calling "loop\_over\_mesh".  After it terminates, results can be obtained using various methods supplied by the QualityAssessor class.
+  Once setup for the QualityAssessor object is complete, the actual assessment is preformed by calling "loop\_over\_mesh".  After it terminates, results can be obtained using various methods supplied by the QualityAssessor class.
 
 For each instance of the QualityAssessor, a summary of the results will be printed after the assessments have been completed. Display of the summary can be turned off by calling disable\_printing\_results() before the assessment is started.  The summary will include data for each of the metric assessments run by the Assessor.	 The printed data includes the metric name, the minimum and maximum values, the average value, the rms (root mean square), and the standard deviation.	If a power mean was specified for the assessment, an additional column will display the resultant value under a header containing the power mean value used in the calculation.	  All values in the QualityAssessor summary table are per mesh element.	 Any requested histograms are then displayed.  The number of values in the histogram is dependant upon the type of metric performed.  For element-based metrics, the histogram contains one value per element.	For vertex-based metrics, it will contain the number of target sample points per element times the number of elements.
 
@@ -73,8 +73,88 @@ Condition Number  1.05817     1.14257		       1.1469	  1.35948   0.0995044
 
 \end{verbatim}
 
+\section{QualityMetrics Classes}
+
+The QualityMetric classes are divided into groups based on their general function as detailed in the following sections.
+
+\subsection{Shape Quality Metrics}
+
+\subsubsection{AspectRatioGammaQualityMetric}
+
+This class computes the Aspect Ratio Gamma metric for two- and three-diminsional simplicial elements.
+
+\subsubsection{ConditionNumberQualityMetric}
+
+  Computes the condition number of given element. 
+
+     The metric does not use the sample point functionality or the compute\_weighted\_jacobian.  It evaluates the metric at  the element vertices, and uses the isotropic ideal element. It does require a feasible region, and the metric needs to be minimized
+
+\subsubsection{IdealWeightInverseMeanRatio}
+
+Computes the inverse mean ratio of given element.
+
+The metric does not use the sample point functionality or the compute\_weighted\_jacobian.  It evaluates the metric at the element vertices, and uses the isotropic ideal element.  Optionally, the metric computation can be raised to the 'pow\_dbl' power.  This does not necessarily raise the metric value to the 'pow\_dbl' power but instead raises each local metric.  For example, if the corner inverse mean ratios of a quadraliteral element were m1,m2,m3, and m4 and we set pow\_dbl=2 and used linear averaging, the metric value would then be m = .25(m1*m1 + m2*m2 + m3*m3 + m4*m4).  The metric does require a feasible region, and the metric needs to be minimized if pow\_dbl is greater than zero and maximized if pow\_dbl is less than zero.  pow\_dbl being equal to zero is invalid.
+
+\subsubsection{IdealWeightMeanRatio}
+
+Computes the mean ratio quality metric of given element.
+     
+ The metric does not use the sample point functionality or the     compute\_weighted\_jacobian.  It evaluates the metric at the element vertices, and uses the isotropic ideal element.  It does require a feasible region, and the metric needs to be maximized.
+
+\subsection{TMP Quality Metrics}
+
+\subsubsection{AffineMapMetric}
+
+Compares targets to affine map to ideal element.
+
+A quality metric defined using 2D and 3D target metrics, where the active (A) matrix is an affine map to the ideal, unit-side element.  
+
+\subsubsection{AWQualityMetric}
+
+Compares targets to mapping function Jacobian matrices
+ 
+ A quality metric defined using 2D and 3D target metrics, where the active (A) matrix compared to the target by the underlying metrics is the Jacobian matrix of the mapping function at a given sample point.  For surface elements, A is rotated to align the normal with W, such that both matrices can be reduced from 3x2 to 2x2.
+
+\subsubsection{TMPQualityMetric}
+
+Compare targets to mapping function Jacobian matrices
+ 
+ Base class for various TMP QualityMetric implementations.
+
+\subsubsection{TQualityMetric}
+
+Compare targets to mapping function Jacobian matrices
+
+A quality metric defined using 2D and 3D target metrics, where the active (A) matrix compared to the target by the underlying metrics is the Jacobian matrix of the mapping function at a given sample point.  For surface elements, A is rotated to align the normal with W, such that both matrices can be reduced from 3x2 to 2x2.
+
+\subsection{Untangle Quality Metrics}
+
+\subsubsection{UntangleBetaQualityMetric}
+
+  The untangle beta quality metric.
+       
+  Given a scalar value beta and local signed element volume alpha\_i, define delta\_i to be alpha\_i minus beta.  The Untangle beta value is then defined as square root of the sum over sample points of the absolute value of delta\_i minus delta\_i, difference squared. That is, the root mean square of the difference, abs(delta\_i) minus delta\_i.
+
+The constructor defaults to RMS AveragingMethod and ELEMENT\_VERTICES evaluationMode.  The default beta value is .05.
+
+\subsection{Volume Quality Metrics}
+
+\subsubsection{LocalSizeQualityMetric}
+       
+  Computes the local size metric for a given vertex.
+       
+  LocalSizeQualityMetric is a vertex based metric which computes the corner volume (or area) for the element corners attached to a given element.  Then these volumes (or areas) are averaged together.  The default averaging method is QualityMetric::RMS. 
+
+\subsubsection{SizeMetric}
+
+Element size (area or volume)
+
+This metric is intended primarily for use with QualityAssessor for obtaining a summary of the element sizes in the mesh.
+
+
+
 \clearpage
-\subsection{Quality Assessor Code Example}
+\section{Quality Assessor Code Example}
 
 A simple example using the QualityAssessor class:
 
@@ -111,7 +191,7 @@ A simple example using the QualityAssessor class:
 			<< " invalid elements found." << std::endl;
 \end{lstlisting}
 
-\subsection{Common-scale Histograms}
+\section{Common-scale Histograms}
 
 When optimizating a mesh, it can be useful to display the quality before and after optimization.  This is done by adding a QualityAssessor instance to an InstructionQueue, adding a quality improver instance to the InstructionQueue, and then adding the Quality Assessor instance to the InstructionQueue a second time.  This allows a comparison of the mesh quality before and after optimization.  Example code for doing this:
 
@@ -181,7 +261,7 @@ int main()
 \end{lstlisting}
 
 
-\subsubsection{Creating Common-scale Histograms}
+\subsection{Creating Common-scale Histograms}
 
 Comparing before and after histograms can be difficult when there is a large difference in the resultant quality value range.  In such cases, the common-scale histogram feature can be used to display two histograms with a common vertical interval scale and a common horizontal scale for the number of quality values that fall into each interval.  Unlike the above example that reused the same QualityAssessor instance for the before and after histograms, the common-scale histograms require two separate QualityAssessor instances.  After both the before optimization and after optimization quality assessments have been performed, the method 'scale\_histograms(QualityAssessor* optimal)' can be called to create a pair of common-scale histograms.  The before assessment is known as the 'initial', the after assessment is known as the 'optimal'.   The histogram interval for both the initial and optimal assessments must be the same for scale\_histograms() to work correctly.
 
@@ -235,7 +315,7 @@ ctions(&mesh, err);
 \end{lstlisting}
 
 \clearpage
-\subsubsection{Common-scale Histograms output example}
+\subsection{Common-scale Histograms output example}
 
 \begin{verbatim}
 ************** QualityAssessor(free only) Summary **************
@@ -515,4 +595,5 @@ The command to request an animation of the mesh optimization in a format suitabl
 tc.write_mesh_steps( "anim", TerminationCriterion::GNUPLOT );
 \end{lstlisting}
 This will produce a sequence of files named ``anim.1'', ``anim.2'', etc.  It will also export a file named ``anim'' that contains the necessary GNU Plot commands to display the animation.
+
 
