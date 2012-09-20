@@ -39,10 +39,10 @@
 
 namespace MESQUITE_NS {
 
-/**\brief (standard deviation)^2 template
+/**\brief (variance)^2 template
  *
  * This class implements an objective function that is the 
- * standard deviation of the quality metric evalutations.
+ * variance of the quality metric evalutations.
  */
 class VarianceTemplate : public ObjectiveFunctionTemplate
 {
@@ -115,8 +115,8 @@ class VarianceTemplate : public ObjectiveFunctionTemplate
      *\param count      The number of qm evaluations for the current patch
      *\param type       The evaluation type passed to 'evaluate'
      *\param global_count The total, accumulated number of QM evaluations
-     *\param result_sum The sum term of the standard deviation
-     *\param result_sqr The sum of squares term of the standard deviation
+     *\param result_sum The sum term of the variance 
+     *\param result_sqr The sum of squares term of the variance 
      */
     void accumulate( double sum, double sqr_sum, size_t count, 
                      EvalType type,

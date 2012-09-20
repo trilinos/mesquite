@@ -236,8 +236,11 @@ bool UntangleBetaQualityMetric::evaluate( PatchData& pd,
       fval=average_metrics(met_vals, 6, err);  MSQ_ERRZERO(err);
       break;
     default:
-      MSQ_SETERR(err)("Unsupported element type for Untangle quality metric.",
-                MsqError::UNSUPPORTED_ELEMENT);
+      MSQ_SETERR(err)( MsqError::UNSUPPORTED_ELEMENT,
+                       "Unsupported cell type (%ld) for Untangle quality metric.",
+                       type);
+
+
       fval=MSQ_MAX_CAP;
       return false;
   }// end switch over element type

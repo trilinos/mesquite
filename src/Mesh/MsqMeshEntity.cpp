@@ -661,6 +661,7 @@ void MsqMeshEntity::check_element_orientation_corners(
   int& total,
   MsqError &err)
 {
+  int num_nodes = node_count();
   total = inverted = 0;
 
   if (node_count() > vertex_count()) {
@@ -670,16 +671,6 @@ void MsqMeshEntity::check_element_orientation_corners(
   }
 
   const MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRRTN(err);
-
-    // Hex element descriptions
-  static const int locs_hex[8][4] = {{0, 1, 3, 4},
-                                     {1, 2, 0, 5},
-                                     {2, 3, 1, 6},
-                                     {3, 0, 2, 7},
-                                     {4, 7, 5, 0},
-                                     {5, 4, 6, 1},
-                                     {6, 5, 7, 2},
-                                     {7, 6, 4, 3}};
 
   const Vector3D d_con(1.0, 1.0, 1.0);
 
@@ -699,7 +690,7 @@ void MsqMeshEntity::check_element_orientation_corners(
       coord_vectors[0] = vertices[vertexIndices[1]]-center_vector;
       coord_vectors[1] = vertices[vertexIndices[2]]-center_vector;
       total = 1;
-      inverted = (coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0);
+      inverted = (coord_vectors[2]%(coord_vectors[0]*coord_vectors[1] ) <= 0.0);
       break;
     
     case QUADRILATERAL:
@@ -707,15 +698,15 @@ void MsqMeshEntity::check_element_orientation_corners(
       if (!pd.domain_set())
         return;
 
+      pd.get_domain_normal_at_element(this, coord_vectors[2], err); MSQ_ERRRTN(err);
+      coord_vectors[2] = coord_vectors[2] / coord_vectors[2].length();// Need unit normal
+
       for (i = 0; i < 4; ++i) {
-      
-        pd.get_domain_normal_at_element(this, coord_vectors[2], err); MSQ_ERRRTN(err);
-        coord_vectors[2] = coord_vectors[2] / coord_vectors[2].length();// Need unit normal
-        center_vector = vertices[vertexIndices[locs_hex[i][0]]];
-        coord_vectors[0] = vertices[vertexIndices[locs_hex[i][1]]]-center_vector;
-        coord_vectors[1] = vertices[vertexIndices[locs_hex[i][2]]]-center_vector;
+        center_vector = vertices[vertexIndices[i]];
+        coord_vectors[0] = vertices[vertexIndices[(i+1)%4]]-center_vector;
+        coord_vectors[1] = vertices[vertexIndices[(i+3)%4]]-center_vector;
         ++total;
-        inverted += (coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0);
+        inverted += (coord_vectors[2]%(coord_vectors[0]*coord_vectors[1] ) <= 0.0);
       }
       break;
 
@@ -726,6 +717,23 @@ void MsqMeshEntity::check_element_orientation_corners(
       coord_vectors[2] = vertices[vertexIndices[3]]-center_vector;
       total = 1;
       inverted = ( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0);
+      break;
+
+    case POLYGON:
+      
+      if (!pd.domain_set())
+        return;
+
+      pd.get_domain_normal_at_element(this, coord_vectors[2], err); MSQ_ERRRTN(err);
+      coord_vectors[2] = coord_vectors[2] / coord_vectors[2].length();// Need unit normal
+
+      for (i = 0; i < num_nodes; ++i) {
+        center_vector = vertices[vertexIndices[i]];
+        coord_vectors[0] = vertices[vertexIndices[(i+1)%num_nodes]]-center_vector;
+        coord_vectors[1] = vertices[vertexIndices[(i+num_nodes-1)%num_nodes]]-center_vector;
+        ++total;
+        inverted += (coord_vectors[2]%(coord_vectors[0]*coord_vectors[1] ) <= 0.0);
+      }
       break;
 
     default: // generic code for 3D elements

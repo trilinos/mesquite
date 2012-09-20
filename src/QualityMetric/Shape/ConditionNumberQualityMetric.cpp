@@ -203,8 +203,10 @@ bool ConditionNumberQualityMetric::evaluate( PatchData& pd,
     }
         
     default:
-      MSQ_SETERR(err)("Unsupported element type for Condition Number quality metric.",
-                    MsqError::UNSUPPORTED_ELEMENT);
+       MSQ_SETERR(err)( MsqError::UNSUPPORTED_ELEMENT,
+                      "Unsupported cell type (%ld) for Condition Number quality metric.",
+                       type);
+
      fval=MSQ_MAX_CAP;
      return false;
   }// end switch over element type

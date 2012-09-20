@@ -368,6 +368,9 @@ int TopologyInfo::higher_order( EntityTopology topo,
                                 MsqError& err )
 {
   int result = 0;
+  if (topo == POLYGON)  // polygons currently do not have higher order elements
+    return 0;
+
   if (topo >= MIXED || num_nodes < instance.adjMap[topo][0])
   {
     MSQ_SETERR(err)("Invalid element topology", MsqError::INVALID_ARG);

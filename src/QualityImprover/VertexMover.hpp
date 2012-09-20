@@ -28,7 +28,8 @@
   \file   VertexMover.hpp
   \brief  
 
-  The VertexMover Class is the base class for all the smoothing algorythms 
+  The VertexMover Class is the base class for all the smoothing and 
+  optimizing algorythms 
 
   \author Thomas Leurent
   \date   2002-01-17
