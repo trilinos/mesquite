@@ -735,7 +735,7 @@ AC_CONFIG_FILES([Makefile
                  testSuite/algorithm_test/Makefile
                  testSuite/analytical_grad_3D/Makefile
                  testSuite/convert/Makefile
-                 testSuite/baseline_timing_tests/Makefile
+                 testSuite/benchmark_tests/Makefile
                  testSuite/headers/Makefile
                  testSuite/idft_time/Makefile
                  testSuite/igeom/Makefile

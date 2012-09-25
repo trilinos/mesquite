@@ -29,7 +29,7 @@ Support for building Mesquite with Microsoft Visual Studio is no longer availabl
 \item Unit tests:  Mesquite provides a series of unit tests that may be used
 to verify the correct behavior of a build of the Mesquite library.  These tests
 are implemented using CppUnit framework.  The CppUnit framework must be installed
-to compile and run these test.  It is available at this URL:
+to compile and run these tests.  It is available at this URL:
 \begin{center}
 \url{http://cppunit.sourceforge.net}
 \end{center}
@@ -74,6 +74,10 @@ The NetCDF library can be obtained at the following URL:
 \end{center}
 \end{itemize}
 
+\section{Release and Debug Builds}
+Mesquite can be built in either a Release or Debug mode. On Unix-like systems the type of build is specified via an option on the configure command as detailed in Section \ref{build_options}. On Windows systems the type of build is selected through the CMake utility as explained in Section \ref{windows_build}. For Mac systems, the build type is specified in the do-configure script as shown in Section \ref{building_mac}.  The default mode on all systems is Release.
+
+
 \section{Building Mesquite}
 \label{sec:compiling}
 After downloading and unpacking the Mesquite source, the next step is to 
@@ -106,6 +110,7 @@ some of the optional arguments to the \texttt{./configure} script.
 CMake can also be used to build Mesquite on Unix-like systems.  With a version of CMake in your path, the command \texttt{ccmake} will invoke a text-based version of CMake, the command \texttt{cmake-gui} runs a graphical version. Instructions for configuring with CMake are found in Section \ref{windows_build}.  After generating the make files, exit CMake and cd to the specified build directory and enter the command: \texttt{make}.  
 
 \subsection{Options for Unix-like systems}
+\label{build_options}
 This section describes the options available for customizing the build
 system and the resulting Mesquite library.  An brief description of these
 and other options is available with the command: \texttt{./configure --help}.
@@ -218,7 +223,11 @@ download and install the CMake utility for Windows if you have not already done 
  \url{http://www.cmake.org/cmake/resources/software.html}
 \end{center}
 
-Using the graphical version of the CMake utility, select the folder containing the Mesquite source and enter a folder in which you would like the CMake output and compiled code to be stored.  Select the \texttt{Configure} button.  You will be presented with a group of configuration options.  Modify any desired options and click the \texttt{Configure} button again.  Each time you change one or more configuration options, you must click the \texttt{Configure} button to update the list of available options.  When you have finished changing build options, click the \texttt{Generate} button to generate Visual Studio input files and exit the CMake utility.
+Using the graphical version of the CMake utility, select the folder containing the Mesquite source and enter a folder in which you would like the CMake output and compiled code to be stored.  Select the \texttt{Configure} button.  You will be presented with a group of configuration options.  Modify any desired options and click the \texttt{Configure} button again.  Each time you change one or more configuration options, you must click the \texttt{Configure} button to update the list of available options.
+
+ The 'CMAKE\_BUILD\_TYPE' opton controls the build mode that will be used by Visual Studio. Set the option to either 'RELEASE' or 'DEBUG.  The build mode can also be changed from within Visual Studio itself after the generated project file has be loaded.
+
+  When you have finished changing build options, click the \texttt{Generate} button to generate Visual Studio input files and exit the CMake utility.
 
 The build folder you specified in the CMake utility should now contain the necessary input files to build Mesquite using Microsoft Visual C++.  
 
@@ -239,6 +248,7 @@ If the requested namespace is anything other than ``Mesquite'', then Mesquite wi
 
 \section{Building Trilinos Mesquite from Scratch on a Mac}
 \subsection{Installation}
+\label{mac_installation}
 
 Trilinos depends on git and cmake.
 macports is a tool for downloading and installing software on macs.
@@ -284,6 +294,7 @@ tar xvzf clang+llvm-3.0-x86_64-apple-darwin11.tar.gz
 This creates a {\tt clang+llvm-3.0-x86\_64-apple-darwin11} directory.  
 The bin subdirectory has the C and C++ compiler front ends (clang resp. clang++).
 \subsection{Building}
+\label{building_mac}
 Create a build directory for Trilinos.
 \begin{verbatim}
 cd Trilinos
