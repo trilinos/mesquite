@@ -245,7 +245,6 @@ TRIBITS_EXCLUDE_FILES(
   meshFiles/2D/VTK/rotsq.vtk
   meshFiles/2D/VTK/shashkov_opt.vtk
   meshFiles/2D/VTK/shashkov_quad_opt.vtk
-  meshFiles/2D/VTK/shashkov_quad.vtk
   meshFiles/2D/VTK/shashkov.vtk
   meshFiles/2D/VTK/square_tri_2.vtk
   meshFiles/2D/VTK/subdiv4x4_3_2_3x3.vtk
@@ -255,7 +254,6 @@ TRIBITS_EXCLUDE_FILES(
   meshFiles/2D/VTK/unstrquad.vtk
   meshFiles/2D/VTK/vtk_to_gnu.cc
   meshFiles/2D/VTK/ybiasqr24x24.vtk
-  meshFiles/2D/VTK/N-Polygonal/poly1.vtk
   meshFiles/2D/VTK/N-Polygonal/poly2.vtk
   meshFiles/2D/VTK/N-Polygonal/poly3.vtk
   meshFiles/2D/VTK/quadratic/homogeneousPart.vtk
