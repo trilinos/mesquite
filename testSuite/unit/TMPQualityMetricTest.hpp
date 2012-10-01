@@ -318,6 +318,9 @@ class IdealShapeXY : public IdealShapeTarget
   CPPUNIT_TEST (test_weighted_diagonals);\
   CPPUNIT_TEST (test_diagonal_with_fixed_vertices);
 
+static double col_dot_prod( MsqMatrix<2,2>& m )
+  { return m(0,0) * m(0,1) + m(1,0) * m(1,1); }
+
 template <class QMType> class TMPTypes {
 };
 
@@ -594,9 +597,6 @@ public:
 
 //CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TMPQualityMetricTest, "TMPQualityMetricTest");
 //CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TMPQualityMetricTest, "Unit");
-
-static double col_dot_prod( MsqMatrix<2,2>& m )
-  { return m(0,0) * m(0,1) + m(1,0) * m(1,1); }
 
 template <class QMType> inline
 void TMPQualityMetricTest<QMType>::test_evaluate_2D()
