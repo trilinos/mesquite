@@ -63,11 +63,11 @@ namespace MESQUITE_NS
       \brief The TerminationCriterion class contains functionality to
       terminate the VertexMover's optimization.
 
-      The TerminationCriterion class has three roles.  It
+      The Termination Criterion class has three roles.  It
       is used to terminate the optimization on a single patch; it
       is used to terminate the iterations over all patches in the
-      mesh; and it is used to cull vertices frm the optimization
-      processes.  Thus, for each optimzation, two TerminationCriterion
+      mesh; and it is used to cull vertices from the optimization
+      processes.  Thus, for each optimization, two TerminationCriterion
       objects are used.  The class contains five important member
       functions used in the VertexMover:  initialize(), reset(),
       terminate(), cull_vertices(), and cleanup().  These functions
@@ -79,13 +79,13 @@ namespace MESQUITE_NS
 
       There are several different types of termination criteria
       available. Multiple criteria types can be set on a given
-      TermiantionCriterion object, and when this occurs, the
+      Termination Criterion object, and when this occurs, the
       optimization process will terminate whenever any of the
       criteria have been satisfied.
       
       The following is a brief description of how TerminationCriterion
       is used within Mesquite.  Functions called during QualityImprovement
-      can be devided into three groups:
+      can be divided into three groups:
         reset_*      - Initialize data for an iteration
         accumulate_* - Update TC for changed data during iteration
         terminate    - Check if the termination criterion has been met.
@@ -115,6 +115,7 @@ namespace MESQUITE_NS
         o Care should be taken that terminate() does not check 
           uninitialized data if called before the first call to
           accumulate_patch()
+
   */
   class TerminationCriterion
   {

@@ -197,7 +197,7 @@ public:
 
   /**\brief Create a new orientation matrix
    *
-   * Create an orientation matrix tsuch that
+   * Create an orientation matrix such that
    * the first and second Jacobian columns of W are aligned to 
    * the passed vectors.
    */

@@ -27,11 +27,9 @@
 /*!
   \file   NonGradient.hpp
   \brief  
-
-  The NonGradient Class implements the steepest descent algorithm in
-  order to move a free vertex to an optimal position given an
-  ObjectiveFunction object and a QualityMetric object.
-
+  The NonGradient class is also a concrete vertex mover
+  which performs derivative free minimization
+  based on the Amoeba Method, as implemented in Numerical Recipes in C.
 */
 
 #ifndef Mesquite_NonGradient_hpp 
@@ -92,6 +90,10 @@ namespace MESQUITE_NS
     { 
       return(mMaxNumEval);
     }
+    double getSimplexDiameterScale()
+    { 
+      return(mScaleDiameter);
+    }
     void setDimension(int dimension)
     { 
       mDimension = dimension;
@@ -108,6 +110,14 @@ namespace MESQUITE_NS
     { 
       mMaxNumEval = maxNumEval;
     }
+    void setExactPenaltyFunction(bool exactPenalty)
+    { 
+      mUseExactPenaltyFunction=exactPenalty;
+    }
+    void setSimplexDiameterScale(double newScaleDiameter )
+    { 
+      mScaleDiameter = newScaleDiameter;
+    }
     void getRowSum( int numRow, int numCol, std::vector<double>& matrix, std::vector<double>& rowSum);
     bool testRowSum( int numRow, int numCol, double* matrix, double* rowSum);
     double evaluate( double localArray[], PatchData &pd, MsqError &err );
@@ -116,7 +126,10 @@ namespace MESQUITE_NS
     //! matrix stored by column as a std::vector
     std::vector<double> simplex; 
     std::vector<double> height; 
+    //! Generic patch helper function only used by NonGradient 
     void printPatch( const PatchData &pd, MsqError &err );
+    //! Generic patch helper function only used by NonGradient 
+    int getPatchDimension( const PatchData &pd, MsqError &err );
     //! Obtain diagnostic data during optimization
     //! off=level 0, ... level 3 = maximal
     MESQUITE_EXPORT void set_debugging_level(int level)
@@ -143,7 +156,10 @@ namespace MESQUITE_NS
     int mMaxNumEval;  //          |heightMax|+|heightMin|+mThreshold
                       //      or numEval >= mMaxNumEval
     double amotry(std::vector<double>&, std::vector<double>& , double* , int , double, PatchData&, MsqError &err );
+    bool mUseExactPenaltyFunction; 
     int mNonGradDebug;
+    double mScaleDiameter;
+    void printSimplex( std::vector<double>& , std::vector<double>& );
 
     NonGradient(const NonGradient &pd); //disable copying
     NonGradient& operator=(const NonGradient &pd);  //disable assignment

@@ -30,13 +30,27 @@
   The NonGradient class is also a concrete vertex mover
   which performs derivative free minimization
   based on the Amoeba Method, as implemented in Numerical Recipes in C.
+
+  The other optimization methods either accept or reject a point immediately.
+  Amoeba may not accept a point for several iterations/evaluations.
+  Amoeba does not check for BOUNDED_VERTEX_MOVERMENT. 
+  rtol=2.0*fabs( height[ihi]-height[ilo] )/
+         ( fabs(height[ihi])+fabs(height[ilo])+threshold );
+
+  We are aware of the problem of choosing the initial simplex, but have not
+  sovled it.  How has this been solved?
+  There is a problem of letting Mesquite handle convergence.  The idea here is to 
+  call accumulate_? only if the best point changes. But does it matter?  Where 
+  are the errors determined?  What does it mean to cull?
+  What does Pat... compare and contrast the differnt vertex movement criteria
+  with the Amoeba criterion.
 */
 
 #include "NonGradient.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 #include "MsqTimer.hpp"
 #include "MsqDebug.hpp"
-//#include "MsqError.hpp"
+#include "MsqError.hpp"
 #include <cmath>
 #include <iostream>
 #include "../../ObjectiveFunction/ObjectiveFunction.hpp"
@@ -58,9 +72,19 @@ NonGradient::NonGradient(ObjectiveFunction* of)
     mThreshold(0.0),
     mTolerance(0.0),
     mMaxNumEval(0),
-    mNonGradDebug(0)
+    mNonGradDebug(0),
+    mUseExactPenaltyFunction(true),
+    mScaleDiameter(0.1)
 {
-  set_debugging_level(0);
+  set_debugging_level(2);
+  //set the default inner termination criterion
+  TerminationCriterion* default_crit=get_inner_termination_criterion();
+  if(default_crit==NULL){
+    return;
+  }
+  else{
+    default_crit->add_iteration_limit( 5 );
+  }
 }  
 
 NonGradient::NonGradient(ObjectiveFunction* of, MsqError &err) 
@@ -71,16 +95,29 @@ NonGradient::NonGradient(ObjectiveFunction* of, MsqError &err)
     mThreshold(0.0),
     mTolerance(0.0),
     mMaxNumEval(0),
-    mNonGradDebug(0)
+    mNonGradDebug(0),
+    mUseExactPenaltyFunction(true),
+    mScaleDiameter(0.1)
 {
-  set_debugging_level(0);
+  set_debugging_level(2);
+  //set the default inner termination criterion
+  TerminationCriterion* default_crit=get_inner_termination_criterion();
+  if(default_crit==NULL){
+    MSQ_SETERR(err)("QualityImprover did not create a default inner "
+                    "termination criterion.", MsqError::INVALID_STATE);
+    return;
+  }
+  else{
+    default_crit->add_iteration_limit( 5 );
+    MSQ_ERRRTN(err);
+  }
 }  
 
 bool
 NonGradient::testRowSum( int numRow, int numCol, double* matrix, double* oldRowSum)
 {
   bool same = true;
-  std::vector<double> rowSum(numRow);
+  std::vector<double> rowSum(numRow,0.);
   double maxVal = 0.;
   for (int col=0;col<numCol;col++)    
   {
@@ -93,17 +130,18 @@ NonGradient::testRowSum( int numRow, int numCol, double* matrix, double* oldRowS
       }
     }
   }
-  double machEps = 1.e-14;  // better to use system parameters
+  double machEps = 1.e-14 * static_cast<double>(numRow); // better to use system parameters
+  double upperBound = machEps * maxVal + 1.e-15;
   for (int row=0;row<numRow;row++)
   {
-    if( fabs( rowSum[row] -  oldRowSum[row]) >  machEps * maxVal ) 
+    if( fabs( rowSum[row] -  oldRowSum[row]) >  upperBound ) 
     { 
          same = false;
          if( mNonGradDebug >= 2 )
          {
-           std::cout << " NonGradient Row Sum " << row << " Test failure: value " << rowSum[row] << " Discrepancy " <<  rowSum[row] -  oldRowSum[row] << " maxVal " << maxVal << std::endl;
+           std::cout << " Warning: NonGradient Row Sum " << row << " Test: value " << rowSum[row] << " Discrepancy " <<  rowSum[row] -  oldRowSum[row] << " maxVal " << maxVal << " numRow " << numRow << " numCol " << numCol <<std::endl;
          }
-         //MSQ_PRINT(2)("NonGradient Row Sum [%d] Test failure: value %22.15e  difference %22.15e \n", row, rowSum[row], rowSum[row] -  oldRowSum[row]); 
+         MSQ_PRINT(2)("NonGradient Row Sum [%d] Test failure: value %22.15e  difference %22.15e \n", row, rowSum[row], rowSum[row] -  oldRowSum[row]); 
     }
   }
   return(same);
@@ -140,15 +178,20 @@ NonGradient::evaluate( double *point,  PatchData &pd, MsqError &err )
     pointVec[index] = point[index];
   }
   pd.set_vertex_coordinates( pointVec, vertexIndex, err ); 
-  pd.snap_vertex_to_domain( vertexIndex, err );  //MSQ_ERRRTN(err);
+  pd.snap_vertex_to_domain( vertexIndex, err );  
+
   OFEvaluator& obj_func = get_objective_function_evaluator();
+  TerminationCriterion* term_crit=get_inner_termination_criterion();
+
   double value;
   bool feasible = obj_func.evaluate( pd, value, err ); MSQ_ERRZERO(err);
+  term_crit->accumulate_inner( pd, value, 0, err );  //MSQ_CHKERR(err);
   pd.set_vertex_coordinates( originalVec, vertexIndex, err ); 
-  if( !feasible )  
-  { // "value" undefined
+  if( !feasible && mUseExactPenaltyFunction )  
+  { // "value" undefined btw
     double ensureFiniteRtol= .25;
     value = DBL_MAX * ensureFiniteRtol;
+    //std::cout << " Infeasible patch: " << value << std::endl; printPatch( pd, err );
   }
   return value;
 }
@@ -174,13 +217,13 @@ NonGradient::amotry( std::vector<double>& simplex,
   {      
     std::cout << "Try ";
   }      
-  //MSQ_PRINT(3)("Try");
+  MSQ_PRINT(3)("Try");
   double ytry = evaluate(&ptry[0], pd, err); // value at trial point
   if( mNonGradDebug >= 3 ) 
   {      
     std::cout << ytry << std::endl;
   }      
-  //MSQ_PRINT(3)("yTry");
+  MSQ_PRINT(3)("yTry");
   if (ytry < height[ihi]) // better than highest (worst)
   {
     height[ihi]=ytry;     // swap ihi and ytry
@@ -200,16 +243,16 @@ void NonGradient::printPatch(const PatchData &pd, MsqError &err)
     return;
   }
   const size_t numNode = pd.num_nodes();   //27,  27 what?
-  //MSQ_PRINT(3)("Number of Vertices: %d\n",(int)pd.num_nodes());
+  MSQ_PRINT(3)("Number of Vertices: %d\n",(int)pd.num_nodes());
   const size_t numVert = pd.num_free_vertices(); // 1
-  //MSQ_PRINT(3)("Num Free = %d\n",(int)pd.num_free_vertices());
+  MSQ_PRINT(3)("Num Free = %d\n",(int)pd.num_free_vertices());
   const size_t numSlaveVert = pd.num_slave_vertices(); //0
   const size_t numCoin = pd.num_corners(); // 64
   const MsqVertex* coord = pd.get_vertex_array(err);
-  //MSQ_PRINT(3)("Number of Vertices: %d\n",(int)pd.num_nodes());
+  MSQ_PRINT(3)("Number of Vertices: %d\n",(int)pd.num_nodes());
 
   std::cout << "Patch " << numNode << "  " << numVert << "  " << numSlaveVert << "  " << numCoin << std::endl;
-  //MSQ_PRINT(3)("");
+  MSQ_PRINT(3)("");
   std::cout << "Coordinate ";
   std::cout << "         " << std::endl;
   for( size_t index = 0; index < numVert; index++ )
@@ -221,7 +264,57 @@ void NonGradient::printPatch(const PatchData &pd, MsqError &err)
   {      
          std::cout << "Number of Elements: " << pd.num_elements() << std::endl;
   }      
-  //MSQ_PRINT(3)("Number of Elements: %d\n",(int)pd.num_elements());
+  MSQ_PRINT(3)("Number of Elements: %d\n",(int)pd.num_elements());
+}
+
+void
+NonGradient::printSimplex( std::vector<double>& simplex , std::vector<double>& height )
+{
+  int numRow = getDimension();
+  int numCol = numRow + 1;
+  for (int col=0;col<numCol;col++)    
+  {
+    //std::cout << "simplex[ " << col << "]= " ;
+    for (int row=0;row<numRow;row++)
+    {
+      std::cout << simplex[row+col*numRow] << " "; 
+    }
+    //std::cout << "           "  << height[col] << std::endl;
+  }
+  for (int col=0;col<numCol;col++)    
+  {
+    std::cout << height[col] << " ";
+  }
+  std::cout << std::endl;
+}
+
+int NonGradient::getPatchDimension(const PatchData &pd, MsqError &err)
+{
+  const size_t numElt = pd.num_elements();
+  unsigned edimMax = 0;  // in case numElt == 0
+  for( size_t elementId = 0; elementId < numElt; elementId++)
+  {
+    const MsqMeshEntity& element = pd.element_by_index( elementId );
+    EntityTopology type = element.get_element_type();
+    unsigned edim = TopologyInfo::dimension( type );
+    if( elementId == 0 ) 
+    {
+      edimMax = edim;
+    } 
+    else
+    { 
+      if(edimMax != edim)
+      {
+        MSQ_SETERR(err)("A patch has elements of different dimensions", MsqError::INVALID_MESH);
+        std::cout << "A patch has elements of different dimensions" << edimMax << "  "  << edim << std::endl;
+        if(edimMax < edim)
+        {
+          edimMax = edim;
+        }
+      }
+    }
+  }
+  return( edimMax );
 }
   
 void NonGradient::initialize(PatchData &/*pd*/, MsqError &/*err*/)
@@ -230,10 +323,11 @@ void NonGradient::initialize(PatchData &/*pd*/, MsqError &/*err*/)
 
 void NonGradient::initialize_mesh_iteration(PatchData &pd, MsqError &err)
 {
-  int dimension = 3 * pd.num_free_vertices();
-  printPatch( pd, err );
+  int elementDimension = getPatchDimension( pd, err );  // to do: react to error
+  int dimension = elementDimension * pd.num_free_vertices();
+  //printPatch( pd, err );
   setDimension(dimension);
-  int maxNumEval = 100*dimension;
+  int maxNumEval = 100*dimension;  // 1. Make this a user parameter
   setMaxNumEval(maxNumEval);
   double threshold = 1.e-10; // avoid division by zero
   setThreshold(threshold);
@@ -243,12 +337,12 @@ void NonGradient::initialize_mesh_iteration(PatchData &pd, MsqError &err)
   if( dimension > 0 )
   {
     pd.get_minmax_edge_length( minEdgeLen, maxEdgeLen );
-    ftol = minEdgeLen * 1.e-4;
-    if( mNonGradDebug >= 3 ) 
+    //ftol = minEdgeLen * 1.e-4; // Turn off Amoeba convergence criterion
+    if( mNonGradDebug >= 1 ) 
     {      
          std::cout << "minimum edge length " << minEdgeLen << " maximum edge length " << maxEdgeLen << std::endl;
     }      
-    //MSQ_PRINT(3)("minimum edge length %e    maximum edge length %e\n", minEdgeLen,  maxEdgeLen);
+    MSQ_PRINT(3)("minimum edge length %e    maximum edge length %e\n", minEdgeLen,  maxEdgeLen);
   }
   setTolerance(ftol);
   int numRow = dimension;
@@ -256,7 +350,7 @@ void NonGradient::initialize_mesh_iteration(PatchData &pd, MsqError &err)
   if( numRow*numCol <= simplex.max_size() )
   { 
     simplex.assign(numRow*numCol, 0.);  // guard against previous simplex value
-    double scale = minEdgeLen * .1; // todo fix dmd ,  ftol = O(scale) or maybe O(scale)^2
+    double scale = minEdgeLen * mScaleDiameter;; 
     const MsqVertex* coord = pd.get_vertex_array(err);
     if( pd.num_free_vertices() > 1 )
     {
@@ -297,17 +391,14 @@ void NonGradient::optimize_vertex_positions(PatchData &pd,
   for(int col = 0; col < numCol; col++)
   {
     height[col] =  evaluate(&simplex[col*numRow], pd, err);//  eval patch stuff
-    if(mNonGradDebug > 0)
-    {
-      std::cout << "simplex[ " << col << "]= " ;
-      for(int row = 0; row < numRow; row++)
-      {
-        std::cout << simplex[row + col*numRow] << "  " ;
-      }
-      std::cout << "           "  << height[col] << std::endl;
-    }
+  }
+  if(mNonGradDebug > 0)
+  {
+    printSimplex( simplex, height );
   }
 
+  // standardization
+  TerminationCriterion* term_crit=get_inner_termination_criterion();
   int maxNumEval = getMaxNumEval();
   double threshold = getThreshold();
   double ftol = getTolerance();
@@ -317,36 +408,47 @@ void NonGradient::optimize_vertex_positions(PatchData &pd,
   double rtol = 2.*ftol;
   double ysave;
   double ytry;
+  bool afterEvaluation = false;
   std::vector<double> rowSum(numRow);
   getRowSum( numRow, numCol, simplex, rowSum);
-  int numEval=0;
-  while( rtol >= ftol && numEval < maxNumEval)
+  while( rtol >= ftol && !( term_crit->terminate() ) )
   {
-    //todo add to debug output 
-    //std::cout << " rtol " << rtol << "ftol" << ftol << std::endl;
-    if( numEval > 0 )   // skip before evaluations
+
+    if(mNonGradDebug > 0)
+    {
+      printSimplex( simplex, height );
+    }
+    //std::cout << "rtol " << rtol << " ftol " << ftol << " MesquiteIter " << term_crit->get_iteration_count() << " Done " << term_crit->terminate() << std::endl;
+
+    if( afterEvaluation )   
     {
       // reflect highPt through opposite face
-      if( height[0] == 0.)
-      {
-         MSQ_SETERR(err)("(A) Zero objective function value", MsqError::INTERNAL_ERROR);
-         exit(-1);
-      }
+      // height[0] may vanish
+/*
       if( !testRowSum( numRow, numCol, &simplex[0], &rowSum[0]) )
       {
-        MSQ_SETERR(err)("Internal check sum test A failed", MsqError::INTERNAL_ERROR);
+        // Before uncommenting here and ... 
+        //MSQ_SETERR(err)("Internal check sum test A failed", MsqError::INTERNAL_ERROR);
+        //MSQ_ERRRTN(err);
       }
+*/
       ytry=amotry(simplex,height,&rowSum[0],ihi,-1.0, pd, err);
+/*
       if( !testRowSum( numRow, numCol, &simplex[0], &rowSum[0]) )
       {
-         MSQ_SETERR(err)("Internal check sum test B failed", MsqError::INTERNAL_ERROR);
+         // ... here, determine a maxVal majorizing the previous as well as the current simplex.
+         //MSQ_SETERR(err)("Internal check sum test B failed", MsqError::INTERNAL_ERROR);
+         //MSQ_ERRRTN(err);
       }   
+*/
   
+/*
       if( height[0] == 0.)
       {
          MSQ_SETERR(err)("(B) Zero objective function value", MsqError::INTERNAL_ERROR);
          exit(-1);
       }
+*/
       if (ytry <= height[ilo])   
       {
         ytry=amotry(simplex,height,&rowSum[0],ihi,-2.0,pd,err);
@@ -381,16 +483,10 @@ void NonGradient::optimize_vertex_positions(PatchData &pd,
                 //MSQ_PRINT(3)("Contract all directions toward lowPt value( %d ) = %e    ilo = %d\n", col, height[col], ilo);
               }
             }
-            numEval += numRow;
-            getRowSum( numRow, numCol, simplex, rowSum);
           }
         }   
-        else 
-        {
-          --numEval;
-        }
       } // ytri > h(ilo) 
-    } // numEval > 0,  skip evaluation
+    } // after evaluation
     ilo=1; // conditional operator or inline if 
     ihi = height[0] > height[1] ? (inhi=1,0) : (inhi=0,1);
     for (int col=0;col<numCol;col++)
@@ -409,17 +505,11 @@ void NonGradient::optimize_vertex_positions(PatchData &pd,
     }
     rtol=2.0*fabs( height[ihi]-height[ilo] )/
          ( fabs(height[ihi])+fabs(height[ilo])+threshold );
-    numEval += 2;
-  } //  while( rtol >= ftol && numEval < maxNumEval)
-  // todo : add to diagnostic output 
-  // std::cout << " rtol " << rtol << "  ftol" << ftol << std::endl;
-  if (rtol < ftol)
+    afterEvaluation = true;
+  } //  while not converged 
+
+  // Always set to current best mesh.
   { 
-    if( mNonGradDebug >= 1 ) 
-    {      
-      std::cout << "Optimization Termination OptStatus: Converged" << std::endl;
-    }      
-    //MSQ_PRINT(1)("Optimization Termination OptStatus: Converged\n"); 
     if( ilo != 0 )
     {
       double yTemp = height[0];
@@ -433,23 +523,16 @@ void NonGradient::optimize_vertex_positions(PatchData &pd,
       }
     }
   }
-  else
-  {
-    if( mNonGradDebug >= 1 ) 
-    {      
-         std::cout << "Optimization Termination OptStatus: Max Iter Exceeded" << std::endl;
-    }      
-    //MSQ_PRINT(1)("Optimization Termination OptStatus: Max Iter Exceeded\n"); 
-  }
   if( pd.num_free_vertices() > 1 )
   {
     MSQ_SETERR(err)("Only one free vertex per patch implemented", MsqError::NOT_IMPLEMENTED);
   }
+
   Vector3D newPoint( &simplex[0] ); 
   size_t vertexIndex = 0; // fix c.f. freeVertexIndex
   pd.set_vertex_coordinates( newPoint, vertexIndex, err ); 
   pd.snap_vertex_to_domain( vertexIndex, err );
-  if( numEval >= maxNumEval)
+  if( term_crit->terminate() )
   {
     if( mNonGradDebug >= 1 ) 
     {      
