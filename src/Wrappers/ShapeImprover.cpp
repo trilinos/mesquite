@@ -28,6 +28,8 @@
 /** \file ShapeImprover.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
+ *  \author Boyd Tidwell
+ *  \date   10-23-12
  */
 
 
@@ -40,6 +42,7 @@
 #include "TerminationCriterion.hpp"
 #include "InstructionQueue.hpp"
 #include "QualityAssessor.hpp"
+#include "ElementPatches.hpp"
 
 #include "TShapeB1.hpp"
 #include "TShapeNB1.hpp"
@@ -88,56 +91,84 @@ void ShapeImprover::run_wrapper( Mesh* mesh,
 {
     // Quality Metrics
   IdealShapeTarget target;
-    // No-barrier phase
-  TShapeNB1 mu_no;
-  TQualityMetric metric_no_0( &target, &mu_no );
-  ElementPMeanP metric_no( 1.0, &metric_no_0 );
-    // Barrier phase
-  TShapeB1 mu_b;
-  TQualityMetric metric_b_0( &target, &mu_b );
-  ElementPMeanP metric_b( 1.0, &metric_b_0 );
-    // QualityAssessor
-  qa->add_quality_assessment( &metric_no );
-  qa->add_quality_assessment( &metric_b );
-  
 
-    // Phase 1: use non-barrier metric until mesh does not
-    //          have any inverted elements
-  PMeanPTemplate obj_func_no( 1.0, &metric_no );
-  ConjugateGradient improver_no( &obj_func_no );
-  improver_no.use_global_patch();
-  TerminationCriterion inner_no;
-  inner_no.add_absolute_vertex_movement_edge_length( mBeta );
-  inner_no.add_untangled_mesh();
-  if (maxTime > 0.0)
-    inner_no.add_cpu_time( maxTime );
-  improver_no.set_inner_termination_criterion( &inner_no );
-  InstructionQueue q_no;
-  Timer totalTimer;
-  q_no.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
-  q_no.set_master_quality_improver( &improver_no, err ); MSQ_ERRRTN(err);
-  q_no.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
-  q_no.run_common( mesh, pmesh, domain, settings, err ); MSQ_ERRRTN(err);
-  
-    // Phase 2: use-barrer metric on untangled mesh
-  PMeanPTemplate obj_func_b( 1.0, &metric_b );
-  ConjugateGradient improver_b( &obj_func_b );
-  improver_b.use_global_patch();
+  // Calculate minimum edge length in mesh
+
+    // create a temp global patch to get min edge len from
+  PatchData patch;
+  patch.set_mesh(mesh);
+  patch.set_domain(domain);
+  if (settings)
+    patch.attach_settings(settings);
+  std::vector<Mesh::ElementHandle> patch_elems;
+  std::vector<Mesh::VertexHandle> patch_verts;
+  mesh->get_all_elements(patch_elems, err);
+  mesh->get_all_vertices(patch_verts, err);
+  patch.set_mesh_entities(patch_elems, patch_verts, err);
+
+    // get min edge length from temp global patch
+  double min_edge_len = 0.0, max_edge_len = 0.0;
+  patch.get_minmax_edge_length(min_edge_len, max_edge_len);
+
   TerminationCriterion inner_b;
-  inner_b.add_absolute_vertex_movement_edge_length( mBeta );
-  if (maxTime > 0.0) {
-    double remaining = maxTime - totalTimer.since_birth();
-    if (remaining <= 0.0 ){
-      //MSQ_DBGOUT(2) << "Optimization is terminating without perfoming shape improvement." << std::endl;
-      remaining = 0.0;
-    }
-    inner_b.add_cpu_time( remaining );
+  double vertex_movement_edge_len = min_edge_len / 10.0;
+
+  // check for inverted elements 
+
+    // create QualityAssessor instance without a Quality Metric
+  QualityAssessor check_inverted(false, false);
+  InstructionQueue q_invert_check;
+    // a QuallityAssessor without a metric will just check for inverted elements and samples
+  q_invert_check.add_quality_assessor(&check_inverted, err);
+  q_invert_check.run_common( mesh, pmesh, domain, settings, err ); MSQ_ERRRTN(err);
+  int inverted_elems = 0, inverted_samples = 0;
+  check_inverted.get_inverted_element_count(inverted_elems, inverted_samples, err);
+  if (inverted_elems || inverted_samples)
+  {
+    // use non barrier shape improvement on tangled mesh
+    TShapeNB1 mu_no;
+    TQualityMetric metric_no_0( &target, &mu_no );
+    ElementPMeanP metric_no( 1.0, &metric_no_0 );
+    
+    // QualityAssessor
+    qa->add_quality_assessment( &metric_no );
+   
+    PMeanPTemplate obj_func_no( 1.0, &metric_no );
+    ConjugateGradient improver_no( &obj_func_no );
+    improver_no.use_global_patch();
+    TerminationCriterion inner_no;
+    inner_no.add_absolute_vertex_movement_edge_length( vertex_movement_edge_len );
+    inner_no.add_cpu_time( 300.0 );    // 5 minutes
+    improver_no.set_inner_termination_criterion( &inner_no );
+    InstructionQueue q_no;
+    q_no.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
+    q_no.set_master_quality_improver( &improver_no, err ); MSQ_ERRRTN(err);
+    q_no.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
+    q_no.run_common( mesh, pmesh, domain, settings, err ); MSQ_ERRRTN(err);
   }
-  improver_b.set_inner_termination_criterion( &inner_b );
-  InstructionQueue q_b;
-  q_b.set_master_quality_improver( &improver_b, err ); MSQ_ERRRTN(err);
-  q_b.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
-  q_b.run_common( mesh, pmesh, domain, settings, err ); MSQ_ERRRTN(err);
+  else
+  {
+    // use barrer metric on non-tangled mesh
+
+    Timer totalTimer;
+    TShapeB1 mu_b;
+    TQualityMetric metric_b_0( &target, &mu_b );
+    ElementPMeanP metric_b( 1.0, &metric_b_0 );
+    qa->add_quality_assessment( &metric_b );
+    PMeanPTemplate obj_func_b( 1.0, &metric_b );
+    ConjugateGradient improver_b( &obj_func_b );
+    improver_b.use_global_patch();
+
+    inner_b.add_absolute_vertex_movement_edge_length( vertex_movement_edge_len );
+    inner_b.add_cpu_time( 300.0 );    // 5 minutes
+
+    improver_b.set_inner_termination_criterion( &inner_b );
+    InstructionQueue q_b;
+    q_b.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
+    q_b.set_master_quality_improver( &improver_b, err ); MSQ_ERRRTN(err);
+    q_b.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
+    q_b.run_common( mesh, pmesh, domain, settings, err ); MSQ_ERRRTN(err);
+  }
 }
 
 } // namespace MESQUITE_NS

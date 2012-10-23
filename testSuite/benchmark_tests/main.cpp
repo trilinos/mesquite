@@ -65,7 +65,7 @@ using std::endl;
 #include "LaplaceWrapper.hpp"
 #include "UntangleWrapper.hpp"
 
-#include "ShapeImprovementWrapper.hpp"
+#include "ShapeImprover.hpp"
 #include "MsqTimer.hpp"
 #include "SizeAdaptShapeWrapper.hpp"
 #include "SphericalDomain.hpp"
@@ -123,16 +123,16 @@ int main(int argc, char* argv[])
   Mesquite::MsqPrintError err(cout);
   Mesquite::MeshImpl mesh;
 
-// #################### Begin ShapeImprovementWrappers tests ###################
+// #################### Begin ShapeImprover tests ###################
 
-  ShapeImprovementWrapper si_wrapper;
+  ShapeImprover si_wrapper;
   mesh.read_vtk(shape_improv_file_name_1, err);
 
   Timer t;  
   si_wrapper.run_instructions(&mesh, err); 
   if (err) return 1;
   double si_s_secs = t.since_birth();
-  std::cout << std::endl << "ShapeImprovementWrapper small file optimization completed in " 
+  std::cout << std::endl << "ShapeImprover small file optimization completed in " 
             << si_s_secs << " seconds" << std::endl;
 
   mesh.clear();
@@ -142,7 +142,7 @@ int main(int argc, char* argv[])
   si_wrapper.run_instructions(&mesh, err); 
   if (err) return 1;
   double si_l_secs = t.since_birth();
-  std::cout << std::endl << "ShapeImprovementWrapper large file optimization completed in " 
+  std::cout << std::endl << "ShapeImprover large file optimization completed in " 
             << si_l_secs << " seconds" << std::endl;
 
 // #################### Begin LaplacianWrapper tests ###################
@@ -582,9 +582,9 @@ int main(int argc, char* argv[])
   std::cout << std::endl << "********* Wrappers Timing Summary **********" 
             << std::endl << "Version "  << version_string(true) 
             << std::endl << std::endl;
-  std::cout << "ShapeImprovementWrapper small file optimization completed in " 
+  std::cout << "ShapeImprover small file optimization completed in " 
             << si_s_secs << " seconds" << std::endl;
-  std::cout << "ShapeImprovementWrapper large file optimization completed in " 
+  std::cout << "ShapeImprover large file optimization completed in " 
             << si_l_secs << " seconds" << std::endl;
   std::cout << "LaplacianWrapper small file optimization completed in " 
             << lp_s_secs << " seconds" << std::endl;
