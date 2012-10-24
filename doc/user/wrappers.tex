@@ -71,14 +71,11 @@ Condition Number           1           1           1           1           0
 \noindent {\it Name}: ShapeImprover \newline
 \noindent {\it Purpose}: Make the shape of an element as close as possible to 
 that of the ideal/regular element shape. For example, make triangular and 
-tetrahedral elements equilateral.  The wrapper will use a non-barrier metric
-until the mesh contains no inverted elements.  If the initial mesh was not tangled this phase will not modify the mesh.  If no limit is imposed on CPU
-time or time remains a second phase using a barrier metric will further 
-optimize the mesh with the guarantee that no elements will become inverted. \newline
-\noindent {\it Notes}: Will return failure if mesh contains inverted elements after first phase.\newline
+tetrahedral elements equilateral.  The wrapper will use a non-barrier metric on meshes that contain inverted elements
+and will use a barrier metric if the mesh does not contain inverted elements.  The default CPU time limit is 300 seconds.\newline 
+\noindent {\it Notes}: There is no guarantee that the wrapper will be able to successfully untangle a mesh that contains inverted elements.\newline
 \noindent {\it Limitations/assumptions}:  \newline 
-\noindent {\it Input Termination Criterion}: CPU time limit (not used if input 
-value is non-positive) or fraction of mean edge length (default is 0.005). \newline \newline
+\noindent {\it Input Termination Criterion}: CPU time limit of 300 seconds or maximum absolute vertex movement of 10 percent of the minimum edge length. \newline \newline
 
 \noindent Under the Cover: \newline
 \noindent {\it Metric}: TMPQualityMetric(Shape/ShapeBarrier) \newline
@@ -94,37 +91,23 @@ value is non-positive) or fraction of mean edge length (default is 0.005). \newl
 
   Evaluating quality for 40 elements.
   This mesh had 40 quadrilateral elements.
-  There were no inverted elements detected. 
+  There were no inverted elements detected.
   No entities had undefined values for any computed metric.
 
-                  metric     minimum     average         rms     maximum    std.dev.
- ElementPMeanP(TShapeB1)   0.0767863    0.232261    0.262717    0.404594    0.122781
-ElementPMeanP(TShapeNB1)   0.0140953   0.0601601   0.0718989    0.118462   0.0393729
-      Inverse Mean Ratio     1.07679     1.23226     1.23836     1.40459    0.122781
+             metric     minimum     average         rms     maximum    std.dev.
+ElementPMeanP(TShapeB1)
+                      0.0767863    0.232261    0.262717    0.404594    0.122781
 
 ************** QualityAssessor(free only) Summary **************
 
   Evaluating quality for 40 elements.
   This mesh had 40 quadrilateral elements.
-  There were no inverted elements detected. 
+  There were no inverted elements detected.
   No entities had undefined values for any computed metric.
 
-                  metric     minimum     average         rms     maximum    std.dev.
- ElementPMeanP(TShapeB1)   0.0767863    0.232261    0.262717    0.404594    0.122781
-ElementPMeanP(TShapeNB1)   0.0140953   0.0601601   0.0718989    0.118462   0.0393729
-      Inverse Mean Ratio     1.07679     1.23226     1.23836     1.40459    0.122781
-
-************** QualityAssessor(free only) Summary **************
-
-  Evaluating quality for 40 elements.
-  This mesh had 40 quadrilateral elements.
-  There were no inverted elements detected. 
-  No entities had undefined values for any computed metric.
-
-                  metric     minimum     average         rms     maximum    std.dev.
- ElementPMeanP(TShapeB1)    0.121425      0.2041    0.207481    0.326159   0.0373025
-ElementPMeanP(TShapeNB1)   0.0192667   0.0495255   0.0542939    0.101861   0.0222498
-      Inverse Mean Ratio     1.12142      1.2041     1.20468     1.32616   0.0373025
+             metric     minimum     average         rms     maximum    std.dev.
+ElementPMeanP(TShapeB1)
+                       0.124926    0.204118    0.207417    0.328688   0.0368497
 \end{verbatim}
 
 \begin{figure*}[htbp]

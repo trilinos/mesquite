@@ -51,11 +51,11 @@
 
 namespace MESQUITE_NS {
 
-const double DEFAULT_BETA = 0.005;
+const double DEFAULT_BETA = 0.0;
 const int DEFUALT_PARALLEL_ITERATIONS = 10;
 
 ShapeImprover::ShapeImprover() 
- : maxTime(-1.0), 
+ : maxTime(300.0), 
    mBeta(DEFAULT_BETA),
    parallelIterations(DEFUALT_PARALLEL_ITERATIONS)
 {}
@@ -92,26 +92,30 @@ void ShapeImprover::run_wrapper( Mesh* mesh,
     // Quality Metrics
   IdealShapeTarget target;
 
-  // Calculate minimum edge length in mesh
+  // only calc min edge length if user hasn't set the vertex_movement_limit_factor
+  if (!mBeta)
+  {  
+    // Calculate minimum edge length in mesh
 
-    // create a temp global patch to get min edge len from
-  PatchData patch;
-  patch.set_mesh(mesh);
-  patch.set_domain(domain);
-  if (settings)
-    patch.attach_settings(settings);
-  std::vector<Mesh::ElementHandle> patch_elems;
-  std::vector<Mesh::VertexHandle> patch_verts;
-  mesh->get_all_elements(patch_elems, err);
-  mesh->get_all_vertices(patch_verts, err);
-  patch.set_mesh_entities(patch_elems, patch_verts, err);
+      // create a temp global patch to get min edge len from
+    PatchData patch;
+    patch.set_mesh(mesh);
+    patch.set_domain(domain);
+    if (settings)
+      patch.attach_settings(settings);
+    std::vector<Mesh::ElementHandle> patch_elems;
+    std::vector<Mesh::VertexHandle> patch_verts;
+    mesh->get_all_elements(patch_elems, err);
+    mesh->get_all_vertices(patch_verts, err);
+    patch.set_mesh_entities(patch_elems, patch_verts, err);
 
-    // get min edge length from temp global patch
-  double min_edge_len = 0.0, max_edge_len = 0.0;
-  patch.get_minmax_edge_length(min_edge_len, max_edge_len);
+      // get min edge length from temp global patch
+    double min_edge_len = 0.0, max_edge_len = 0.0;
+    patch.get_minmax_edge_length(min_edge_len, max_edge_len);
+    mBeta = min_edge_len / 10.0;
+  }
 
   TerminationCriterion inner_b;
-  double vertex_movement_edge_len = min_edge_len / 10.0;
 
   // check for inverted elements 
 
@@ -137,8 +141,9 @@ void ShapeImprover::run_wrapper( Mesh* mesh,
     ConjugateGradient improver_no( &obj_func_no );
     improver_no.use_global_patch();
     TerminationCriterion inner_no;
-    inner_no.add_absolute_vertex_movement_edge_length( vertex_movement_edge_len );
-    inner_no.add_cpu_time( 300.0 );    // 5 minutes
+    if (maxTime > 0.0)
+      inner_no.add_cpu_time( maxTime ); 
+    inner_no.add_absolute_vertex_movement_edge_length( mBeta );
     improver_no.set_inner_termination_criterion( &inner_no );
     InstructionQueue q_no;
     q_no.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
@@ -159,8 +164,9 @@ void ShapeImprover::run_wrapper( Mesh* mesh,
     ConjugateGradient improver_b( &obj_func_b );
     improver_b.use_global_patch();
 
-    inner_b.add_absolute_vertex_movement_edge_length( vertex_movement_edge_len );
-    inner_b.add_cpu_time( 300.0 );    // 5 minutes
+    if (maxTime > 0.0)
+      inner_b.add_cpu_time( maxTime ); 
+    inner_b.add_absolute_vertex_movement_edge_length( mBeta );
 
     improver_b.set_inner_termination_criterion( &inner_b );
     InstructionQueue q_b;
