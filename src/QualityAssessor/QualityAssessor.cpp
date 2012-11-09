@@ -1279,14 +1279,16 @@ void QualityAssessor::Assessor::add_hist_value( double metric_value )
 
 void QualityAssessor::Assessor::calculate_histogram_range()
 {
-  double step = (maximum - minimum) / (histogram.size() - 2);
+  double lower_bound = minimum;
+  int num_intervals = histogram.size();
+  double step = (maximum - lower_bound) / num_intervals;
   if (step == 0)
     step = 1.0;
-  double size = pow( 10.0, ceil(log10(step)) );
+  double size = pow( 10.0, floor(log10(step / (num_intervals-1))) );
   if (size < 1e-6) 
     size = 1.0;
-  histMin = size * floor( minimum / size );
-  histMax = size *  ceil( maximum / size );
+  histMin = lower_bound;
+  histMax = lower_bound + num_intervals * size * ceil(step/size);
 }  
 
 void QualityAssessor::print_summary( std::ostream& stream ) const
