@@ -247,7 +247,7 @@ int main()
   queue1.add_quality_assessor(&quality_assessor, err);
   if (err) return 1;
 
-    // launches optimization on mesh_set1
+    // launches optimization on mesh
   queue1.run_instructions(&mesh, err);
   if (err) return 1;
 
@@ -262,29 +262,13 @@ int main()
 
 
 \subsection{Creating Common-scale Histograms}
+\label{sec:creating_histograms}
 
 Comparing before and after histograms can be difficult when there is a large difference in the resultant quality value range.  In such cases, the common-scale histogram feature can be used to display two histograms with a common vertical interval scale and a common horizontal scale for the number of quality values that fall into each interval.  Unlike the above example that reused the same QualityAssessor instance for the before and after histograms, the common-scale histograms require two separate QualityAssessor instances.  After both the before optimization and after optimization quality assessments have been performed, the method 'scale\_histograms(QualityAssessor* optimal)' can be called to create a pair of common-scale histograms.  The before assessment is known as the 'initial', the after assessment is known as the 'optimal'.   The histogram interval for both the initial and optimal assessments must be the same for scale\_histograms() to work correctly.
 
  Below is a portion of the previous code modified to show how to create common-scale histograms.
 \begin{lstlisting}[frame=single]
     // Set up the quality assessor
-  QualityAssessor initial_quality_assessor=QualityAssessor(&cond_no, 10);
-  QualityAssessor optimal_quality_assessor=QualityAssessor(&c_ond_no, 10);
-
-    // assess the quality of the initial mesh
-  queue1.add_quality_assessor(&initial_quality_assessor, err);
-  if (err) return 1;
-
-    // Set the max min method to be the master quality improver
-  queue1.set_master_quality_improver(&minmax_method, err);
-  if (err) return 1;
-\end{verbatim}
-    // assess the quality of the final mesh
-  queue1.add_quality_assessor(&optimal_quality_assessor, err);
-  if (err) return 1;
-
-    // launches optimization on mesh_set1
-  queue1.run_instru    // Set up the quality assessor
   QualityAssessor initial_quality_assessor=QualityAssessor(&cond_no, 10);
   QualityAssessor optimal_quality_assessor=QualityAssessor(&cond_no, 10);
 
@@ -300,22 +284,20 @@ Comparing before and after histograms can be difficult when there is a large dif
   queue1.add_quality_assessor(&optimal_quality_assessor, err);
   if (err) return 1;
 
-    // launches optimization on mesh_set1
+    // launches quality assessments and optimization on mesh
   queue1.run_instructions(&mesh, err);
   if (err) return 1;
 
     // create common-scale histograms
   initial_quality_assessor.scale_histograms(&optimal_quality_assessor);
-ctions(&mesh, err);
-  if (err) return 1;
-
-    // create common-scale histograms
-  initial_quality_assessor.scale_histograms(&optimal_quality_assessor);
-
 \end{lstlisting}
+
+When executed, the above code will send its output to std::cout.
 
 \clearpage
 \subsection{Common-scale Histograms output example}
+
+The following is the output created by the code shown in Section \ref{sec:creating_histograms}.  It consists of the initial and optimal QualityAssessor Summaries followed by the initial and optimal common scale histograms. 
 
 \begin{verbatim}
 ************** QualityAssessor(free only) Summary **************
@@ -350,8 +332,8 @@ Condition Number     1.05817     1.14257      1.1469     1.35948   0.0995044
   There were no inverted elements detected.
   No entities had undefined values for any computed metric.
 
-metric	 minimum     average	 rms	     maximum	 std.dev.
-TSquared 1.99733     2		 2	     2.00266	 0.00173023
+  metric       minimum     average     rms      maximum     std.dev.
+TSquared       1.99733        2         2       2.00266    0.00173023
 
    TSquared histogram:
    ( 1.997-1.9976) |==================2
