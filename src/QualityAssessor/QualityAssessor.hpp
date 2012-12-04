@@ -493,8 +493,7 @@ namespace MESQUITE_NS
         unsigned long numInvalid;  //< Count of invalid metric values
         
         double pMean;     //< Power for general power-mean.
-        
-        
+            
         /** The histogram counts, where the first and last values are
          * counts of values below the lower bound and above the upper
          * bound, respectively.  The remaining values are the histogram
@@ -513,6 +512,8 @@ namespace MESQUITE_NS
         bool stoppingFunction;
         
         int referenceCount;
+
+        enum AssessSchemes assessScheme;
 
      };    
         

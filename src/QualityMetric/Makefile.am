@@ -11,6 +11,7 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_DIR)/EdgeQM.cpp \
 	$(SRC_QUALITYMETRIC_DIR)/ElemSampleQM.cpp \
 	$(SRC_QUALITYMETRIC_DIR)/ElementMaxQM.cpp \
+	$(SRC_QUALITYMETRIC_DIR)/ElementAvgQM.cpp \
 	$(SRC_QUALITYMETRIC_DIR)/ElementPMeanP.cpp \
 	$(SRC_QUALITYMETRIC_DIR)/ElementQM.cpp \
 	$(SRC_QUALITYMETRIC_DIR)/MultiplyQualityMetric.cpp \
@@ -31,6 +32,7 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_DIR)/EdgeQM.hpp \
 	$(SRC_QUALITYMETRIC_DIR)/ElemSampleQM.hpp \
 	$(SRC_QUALITYMETRIC_DIR)/ElementMaxQM.hpp \
+	$(SRC_QUALITYMETRIC_DIR)/ElementAvgQM.hpp \
 	$(SRC_QUALITYMETRIC_DIR)/ElementPMeanP.hpp \
 	$(SRC_QUALITYMETRIC_DIR)/ElementQM.hpp \
 	$(SRC_QUALITYMETRIC_DIR)/MultiplyQualityMetric.hpp \

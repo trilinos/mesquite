@@ -109,6 +109,15 @@ namespace MESQUITE_NS
     MIXED
   };
 
+  enum AssessSchemes
+  { 
+    NO_SCHEME = 0,
+    ELEMENT_AVG_QM = 1,
+    ELEMENT_MAX_QM = 2, 
+    TMP_QUALITY_METRIC = 3,
+    QUALITY_METRIC = 4 } ;
+
+
     // Version information
    MESQUITE_EXPORT const char* version_string(bool);
    MESQUITE_EXPORT unsigned int major_version_number();

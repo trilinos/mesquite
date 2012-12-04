@@ -413,6 +413,7 @@ APPEND_SET(HEADERS
   QualityMetric/EdgeQM.hpp
   QualityMetric/ElemSampleQM.hpp
   QualityMetric/ElementMaxQM.hpp
+  QualityMetric/ElementAvgQM.hpp
   QualityMetric/ElementPMeanP.hpp
   QualityMetric/ElementQM.hpp
   QualityMetric/MultiplyQualityMetric.hpp
@@ -434,6 +435,7 @@ APPEND_SET(SOURCES
   QualityMetric/EdgeQM.cpp
   QualityMetric/ElemSampleQM.cpp
   QualityMetric/ElementMaxQM.cpp
+  QualityMetric/ElementAvgQM.cpp
   QualityMetric/ElementPMeanP.cpp
   QualityMetric/ElementQM.cpp
   QualityMetric/MultiplyQualityMetric.cpp
