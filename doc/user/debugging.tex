@@ -41,7 +41,17 @@ Parameters used by QualityAssesor constructors:
 
 For each instance of the QualityAssessor, a summary of the results will be printed after the assessments have been completed. Display of the summary can be turned off by calling disable\_printing\_results() before the assessment is started.  The summary will include data for each of the metric assessments run by the Assessor.	 The printed data includes the metric name, the minimum and maximum values, the average value, the rms (root mean square), and the standard deviation.	If a power mean was specified for the assessment, an additional column will display the resultant value under a header containing the power mean value used in the calculation.	  All values in the QualityAssessor summary table are per mesh element.	 Any requested histograms are then displayed.  The number of values in the histogram is dependant upon the type of metric performed.  For element-based metrics, the histogram contains one value per element.	For vertex-based metrics, it will contain the number of target sample points per element times the number of elements.
 
-\clearpage
+Element quality metrics is calculated in one of  four ways:
+
+
+\begin{enumerate}
+\item As the average of the quality values of the underlying sample points.  A single quality value is calculated for each element.  This functionality is provided by the ElementAvgQM class.
+\item As the maximum of the quality values of the underlying sample points for each element.  A single quality value is calculated for each element.  This functionality is provide by the ElementMaxQM class.
+\item For target-based metrics (any metric derived from the TMPQualityMetric class or TMetric class used in conjuntion with the TQualityMetric class),  a quality value is produced for each element sample point.  For example, a quadrangle has four sample points, one at each corner, therefore four quality values per element will be produced for a quadrangle when using a target-based metric. 
+\item All other metrics derived from the QualityMetric class that are not one of the above metrics will have one quality metric value per element.  Sample points are not used.
+\end{enumerate}
+
+
   Below is an example of a summary and histogram for an eight element mesh for two different metrics, one that included a power mean of 1.5.
 
 
@@ -54,9 +64,24 @@ For each instance of the QualityAssessor, a summary of the results will be print
   There were no inverted elements detected.
   No entities had undefined values for any computed metric.
 
-       metric	  minimum     average	1.5-mean	  rms	  maximum    std.dev.
-Condition Number  1.05817     1.14257		       1.1469	  1.35948   0.0995044
-     TSquared	     1.18	 2.23	 2.28262      2.33533	     3.77    0.693433
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+     1.05817     1.14257      1.1469     1.35948   0.0995044
+
+     Number of statistics = 8
+     Metric = Condition Number
+     Element Quality not based on sample points.
+
+    -------------------------------------------
+     Sample Point Quality Statistics
+
+     minimum     average     1.5-mean         rms     maximum    std.dev.
+        1.18        2.23      2.28262     2.33533        3.77    0.693433
+
+     Number of statistics = 32
+     Metric = TSquared 
+
 
    TSquared histogram:
    (  1-1.3) |======================3
@@ -196,68 +221,55 @@ A simple example using the QualityAssessor class:
 When optimizating a mesh, it can be useful to display the quality before and after optimization.  This is done by adding a QualityAssessor instance to an InstructionQueue, adding a quality improver instance to the InstructionQueue, and then adding the Quality Assessor instance to the InstructionQueue a second time.  This allows a comparison of the mesh quality before and after optimization.  Example code for doing this:
 
 \begin{lstlisting}[frame=single]
+#include "Mesquite_all_headers.hpp"
 
-#include "Mesquite.hpp"
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
-#include "InstructionQueue.hpp"
-#include "TerminationCriterion.hpp"
-#include "QualityAssessor.hpp"
-#include "ConditionNumberQualityMetric.hpp"
-#include "NonSmoothDescent.hpp"
-
-#include "MeshImpl.hpp"
 using namespace Mesquite;
 
 int main()
 {
-  MsqPrintError err( std::cout );
+  MsqPrintError err(std::cout);
   Mesquite::MeshImpl mesh;
+  mesh.read_vtk("hexes_4by2by2.vtk", err);
 
-    // read in mesh
-  const char *file_name = "tire.vtk";\begin{lstlisting}[frame=single]
-  mesh.read_vtk(file_name, err);
+  ConditionNumberQualityMetric cond_num;
+
+    // builds an objective function
+  LPtoPTemplate obj_func(&cond_num, 2, err);
   if (err) return 1;
 
-    // Create an intruction queue
-  InstructionQueue queue1;
+    // creates the steepest descent optimization procedures
+  SteepestDescent descent_method( &obj_func );
+  descent_method.use_global_patch();
 
-    // Create a condition number quality metric
-  ConditionNumberQualityMetric cond_no;
+  QualityAssessor qa=QualityAssessor(&cond_num, 10);
+  if (err) return 1;
 
-    // Create the NonSmooth Steepest Descent procedures
-  NonSmoothDescent minmax_method( &cond_no );
-
-    // Set a termination criterion
+    //**************Set termination criterion****************
   TerminationCriterion tc2;
   tc2.add_iteration_limit( 1 );
-  minmax_method.set_outer_termination_criterion(&tc2);
-    // Set up the quality assessor
-  QualityAssessor quality_assessor = QualityAssessor(&cond_no);
+  descent_method.set_inner_termination_criterion(&tc2);
 
-    // assess the quality of the initial mesh
-  queue1.add_quality_assessor(&quality_assessor, err);
+    // creates an instruction queue
+  InstructionQueue queue1;
+
+    // adds quality assessment to instruction queue
+  queue1.add_quality_assessor(&qa,err);
+
+    // adds a improver/solver to instruction queue
+  queue1.set_master_quality_improver(&descent_method, err);
   if (err) return 1;
 
-    // Set the max min method to be the master quality improver
-  queue1.set_master_quality_improver(&minmax_method, err);
-  if (err) return 1;
-
-    // assess the quality of the final mesh
-  queue1.add_quality_assessor(&quality_assessor, err);
+    // adds another quality assessment to instruction queue
+    // to show any improvement
+  queue1.add_quality_assessor(&qa,err);
   if (err) return 1;
 
     // launches optimization on mesh
   queue1.run_instructions(&mesh, err);
   if (err) return 1;
 
-    // write out the smoothed mesh
-  mesh.write_vtk("smoothed_mesh.vtk", err);
-  if (err) return 1;
-
   return 0;
 }
-
 \end{lstlisting}
 
 
@@ -268,23 +280,21 @@ Comparing before and after histograms can be difficult when there is a large dif
 
  Below is a portion of the previous code modified to show how to create common-scale histograms.
 \begin{lstlisting}[frame=single]
-    // Set up the quality assessor
-  QualityAssessor initial_quality_assessor=QualityAssessor(&cond_no, 10);
-  QualityAssessor optimal_quality_assessor=QualityAssessor(&cond_no, 10);
+    // Set up the quality assessors
+  QualityAssessor initial_quality_assessor=QualityAssessor(&cond_num, 10);
+  QualityAssessor optimal_quality_assessor=QualityAssessor(&cond_num, 10);
 
     // assess the quality of the initial mesh
   queue1.add_quality_assessor(&initial_quality_assessor, err);
-  if (err) return 1;
 
-    // Set the max min method to be the master quality improver
-  queue1.set_master_quality_improver(&minmax_method, err);
+  queue1.set_master_quality_improver(&descent_method, err);
   if (err) return 1;
 
     // assess the quality of the final mesh
   queue1.add_quality_assessor(&optimal_quality_assessor, err);
   if (err) return 1;
 
-    // launches quality assessments and optimization on mesh
+   // launches optimization on mesh
   queue1.run_instructions(&mesh, err);
   if (err) return 1;
 
@@ -302,84 +312,94 @@ The following is the output created by the code shown in Section \ref{sec:creati
 \begin{verbatim}
 ************** QualityAssessor(free only) Summary **************
 
-  Evaluating quality for 8 elements.
-  This mesh had 8 quadrilateral elements.
+  Evaluating quality for 16 elements.
+  This mesh had 16 hexahedron elements.
   There were no inverted elements detected.
   No entities had undefined values for any computed metric.
 
-          metric     minimum     average         rms     maximum    std.dev.
-Condition Number     1.05817     1.14257      1.1469     1.35948   0.0995044
-        TSquared        1.18        2.23     2.33533        3.77    0.693433
+     Element Quality Statistics
 
-   TSquared histogram:
-   (  1-1.3) |====================3
-   (1.3-1.6) |===========================4
-   (1.6-1.9) |===========================4
-   (1.9-2.2) |=============================================================9
-   (2.2-2.5) |=============2
-   (2.5-2.8) |===========================4
-   (2.8-3.1) |======1
-   (3.1-3.4) |====================3
-   (3.4-3.7) |======1
-   (3.7-4  ) |======1
-  metric was evaluated 32 times.
+     minimum     average         rms     maximum    std.dev.
+     1.00394     1.01984     1.01999     1.04547   0.0169641
+
+     Number of statistics = 16
+     Metric = Condition Number
+     Element Quality not based on sample points.
+
+
+   Condition Number histogram:
+   (   1-1.01) |===================================================8
+   (1.01-1.01) |0
+   (1.01-1.02) |0
+   (1.02-1.02) |0
+   (1.02-1.02) |=========================4
+   (1.02-1.03) |0
+   (1.03-1.03) |0
+   (1.03-1.04) |0
+   (1.04-1.04) |0
+   (1.04-1.05) |=========================4
+  metric was evaluated 16 times.
 
 
 ************** QualityAssessor(free only) Summary **************
 
-  Evaluating quality for 8 elements.
-  This mesh had 8 quadrilateral elements.
+  Evaluating quality for 16 elements.
+  This mesh had 16 hexahedron elements.
   There were no inverted elements detected.
   No entities had undefined values for any computed metric.
 
-  metric       minimum     average     rms      maximum     std.dev.
-TSquared       1.99733        2         2       2.00266    0.00173023
+     Element Quality Statistics
 
-   TSquared histogram:
-   ( 1.997-1.9976) |==================2
-   (1.9976-1.9982) |===========================3
-   (1.9982-1.9988) |=======================================================6
-   (1.9988-1.9994) |===========================3
-   (1.9994-2     ) |====================================4
-   (     2-2.0006) |0
-   (2.0006-2.0012) |===========================3
-   (2.0012-2.0018) |=======================================================6
-   (2.0018-2.0024) |===========================3
-   (2.0024-2.003 ) |==================2
-  metric was evaluated 32 times.
+minimum     average     rms         maximum     std.dev.
+1.00003     1.00124     1.00124     1.00259     0.0010116
 
-\end{verbatim}
+     Number of statistics = 16
+     Metric = Condition Number
+     Element Quality not based on sample points.
 
-\clearpage
-\begin{verbatim}
+
+   Condition Number histogram:
+   (1.00003-1.0003 ) |=============================================4
+   ( 1.0003-1.00056) |=============================================4
+   (1.00056-1.00082) |0
+   (1.00082-1.00109) |0
+   (1.00109-1.00135) |0
+   (1.00135-1.00162) |0
+   (1.00162-1.00188) |=============================================4
+   (1.00188-1.00214) |0
+   (1.00214-1.00241) |0
+   (1.00241-1.00267) |=============================================4
+  metric was evaluated 16 times.
+
+
 ************** Common-scale Histograms **************
 
-   TSquared histogram (initial mesh):
-   (  1-1.3) |=====3
-   (1.3-1.6) |=======4
-   (1.6-1.9) |=======4
-   (1.9-2.2) |================9
-   (2.2-2.5) |===2
-   (2.5-2.8) |=======4
-   (2.8-3.1) |=1
-   (3.1-3.4) |=====3
-   (3.4-3.7) |=1
-   (3.7-4  ) |=1
-  metric was evaluated 32 times.
+   Condition Number histogram (initial mesh):
+   (   1-1   ) |=========================8
+   (   1-1.01) |0
+   (1.01-1.01) |0
+   (1.01-1.02) |0
+   (1.02-1.02) |============4
+   (1.02-1.03) |0
+   (1.03-1.03) |0
+   (1.03-1.04) |0
+   (1.04-1.04) |0
+   (1.04-1.05) |============4
+  metric was evaluated 16 times.
 
 
-   TSquared histogram (optimal mesh):
-   (  1-1.3) |0
-   (1.3-1.6) |0
-   (1.6-1.9) |0
-   (1.9-2.2) |============================================================32
-   (2.2-2.5) |0
-   (2.5-2.8) |0
-   (2.8-3.1) |0
-   (3.1-3.4) |0
-   (3.4-3.7) |0
-   (3.7-4  ) |0
-  metric was evaluated 32 times.
+   Condition Number histogram (optimal mesh):
+   (   1-1   ) |==================================================16
+   (   1-1.01) |0
+   (1.01-1.01) |0
+   (1.01-1.02) |0
+   (1.02-1.02) |0
+   (1.02-1.03) |0
+   (1.03-1.03) |0
+   (1.03-1.04) |0
+   (1.04-1.04) |0
+   (1.04-1.05) |0
+  metric was evaluated 16 times.
 
 \end{verbatim}
 

@@ -38,11 +38,16 @@ wrapper.  \newline
   THERE ARE 28 INVERTED ELEMENTS.
   (Elements invalid at 108 of 256 sample locations.)
 
-  28 OF 64 ENTITIES EVALUATED TO AN UNDEFINED VALUE FOR Condition Number
+  28 OF 64 ENTITIES EVALUATED TO AN UNDEFINED VALUE FOR Inverse Mean Ratio
 
-          metric     minimum     average         rms     maximum    std.dev.
-Condition Number     2.06667      437501      661438      1e+006      496077
-     Edge Length     1.62019      1.8649     1.88746     2.57391    0.290915
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0     1.48854     2.00094     3.15625     1.33716
+
+     Number of statistics = 64
+     Metric = Inverse Mean Ratio
+     Element Quality not based on sample points.
 
 
 ************** QualityAssessor(free only) Summary **************
@@ -52,9 +57,14 @@ Condition Number     2.06667      437501      661438      1e+006      496077
   There were no inverted elements detected.
   No entities had undefined values for any computed metric.
 
-          metric     minimum     average         rms     maximum    std.dev.
-Condition Number           1           1           1           1           0
-     Edge Length    0.999994           1           1           11.94596e-006
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           1           1           1           1           0
+
+     Number of statistics = 64
+     Metric = Inverse Mean Ratio
+     Element Quality not based on sample points.
 \end{verbatim}
 \begin{figure*}[htbp]
 \begin{center}
@@ -94,9 +104,15 @@ and will use a barrier metric if the mesh does not contain inverted elements.  T
   There were no inverted elements detected.
   No entities had undefined values for any computed metric.
 
-             metric     minimum     average         rms     maximum    std.dev.
-ElementPMeanP(TShapeB1)
-                      0.0767863    0.232261    0.262717    0.404594    0.122781
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+   0.0767863    0.232261    0.262717    0.404594    0.122781
+
+     Number of statistics = 40
+     Metric = ElementPMeanP(TShapeB1)
+     Element Quality not based on sample points.
+
 
 ************** QualityAssessor(free only) Summary **************
 
@@ -105,9 +121,14 @@ ElementPMeanP(TShapeB1)
   There were no inverted elements detected.
   No entities had undefined values for any computed metric.
 
-             metric     minimum     average         rms     maximum    std.dev.
-ElementPMeanP(TShapeB1)
-                       0.124926    0.204118    0.207417    0.328688   0.0368497
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+    0.124926    0.204118    0.207417    0.328688   0.0368497
+
+     Number of statistics = 40
+     Metric = ElementPMeanP(TShapeB1)
+     Element Quality not based on sample points.
 \end{verbatim}
 
 \begin{figure*}[htbp]
@@ -143,10 +164,6 @@ an input mesh with no inverted elements. \newline \newline
 \noindent Example: \newline
 
 \begin{verbatim}
-**********************************************
-Running "shest_grid32.vtk" for SHAPESIZE
-**********************************************
-
 ************** QualityAssessor(free only) Summary **************
 
   Evaluating quality for 1024 elements.
@@ -156,9 +173,14 @@ Running "shest_grid32.vtk" for SHAPESIZE
 
   No entities had undefined values for any computed metric.
 
-             metric     minimum     average         rms     maximum    std.dev.
-ElementPMeanP(untangle(2D:TShapeSize2DNB1; 3D:TShapeSize3DNB1))
-                              0     48.5379     210.965     2915.69     205.305
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0     48.5379     210.965     2915.69     205.305
+
+     Number of statistics = 1024
+     Metric = ElementPMeanP(untangle(2D:TShapeSize2DNB1; 3D:TShapeSize3DNB1))
+     Element Quality not based on sample points.
 
 ************** QualityAssessor(free only) Summary **************
 
@@ -167,9 +189,14 @@ ElementPMeanP(untangle(2D:TShapeSize2DNB1; 3D:TShapeSize3DNB1))
   There were no inverted elements detected.
   No entities had undefined values for any computed metric.
 
-             metric     minimum     average         rms     maximum    std.dev.
-ElementPMeanP(untangle(2D:TShapeSize2DNB1; 3D:TShapeSize3DNB1))
-                              0     1.46636     23.8476     462.591     23.8025
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0     1.46636     23.8476     462.591     23.8025
+
+     Number of statistics = 1024
+     Metric = ElementPMeanP(untangle(2D:TShapeSize2DNB1; 3D:TShapeSize3DNB1))
+     Element Quality not based on sample points.
 \end{verbatim}
 
 
@@ -209,23 +236,54 @@ time-step limination is governed by the minimum edge-length in the mesh. \newlin
 
   Evaluating quality for 8 elements.
   This mesh had 8 quadrilateral elements.
-  There were no inverted elements detected. 
+  There were no inverted elements detected.
   No entities had undefined values for any computed metric.
 
-                     metric     minimum     average         rms     maximum    std.dev.
-ElementPMeanP(TShapeSizeB1)    0.357275    0.983461     1.33806     3.27555    0.907303
-                 EdgeLength    0.538516     1.11317     1.15398     1.51327    0.304184
+     Element Quality Statistics
 
-************** QualityAssessor(free only) Summary **************
+     minimum     average         rms     maximum    std.dev.
+    0.357275    0.983461     1.33806     3.27555    0.907303
+
+     Number of statistics = 8
+     Metric = ElementPMeanP(TShapeSizeB1)
+     Element Quality not based on sample points.
+
+    -------------------------------------------
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+    0.538516     1.11317     1.15398     1.51327    0.304184
+
+     Number of statistics = 12
+     Metric = EdgeLength
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
 
   Evaluating quality for 8 elements.
   This mesh had 8 quadrilateral elements.
-  There were no inverted elements detected. 
+  There were no inverted elements detected.
   No entities had undefined values for any computed metric.
 
-                     metric     minimum     average         rms     maximum    std.dev.
-ElementPMeanP(TShapeSizeB1)  0.00135009   0.0017804  0.00179488  0.00221721 0.000227498
-                 EdgeLength    0.994086      1.0004     1.00041     1.00293  0.00253389
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+  0.00135009   0.0017804  0.00179488  0.00221721 0.000227498
+
+     Number of statistics = 8
+     Metric = ElementPMeanP(TShapeSizeB1)
+     Element Quality not based on sample points.
+
+    -------------------------------------------
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+    0.994086      1.0004     1.00041     1.00293  0.00253389
+
+     Number of statistics = 12
+     Metric = EdgeLength
+     Element Quality not based on sample points.
 \end{verbatim}
 
 
@@ -266,35 +324,54 @@ create anisotropic elements.  \newline
 
   Evaluating quality for 3456 elements.
   This mesh had 3456 quadrilateral elements.
-  There were no inverted elements detectedas-sphere-quads. 
+  There were no inverted elements detected.
   No entities had undefined values for any computed metric.
 
-                     metric     minimum     average         rms     maximum    std.dev.
-ElementPMeanP(TShapeSizeB1)  0.00447499     0.23505    0.288066    0.710249    0.166533
-                 EdgeLength    0.163072    0.574857     0.62062     1.01908      0.2339
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+  0.00447499     0.23505    0.288066    0.710249    0.166533
+
+     Number of statistics = 3456
+     Metric = ElementPMeanP(TShapeSizeB1)
+     Element Quality not based on sample points.
+
+    -------------------------------------------
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+    0.163072    0.574857     0.62062     1.01908      0.2339
+
+     Number of statistics = 13824
+     Metric = EdgeLength
+     Element Quality not based on sample points.
 
 
 ************** QualityAssessor(free only) Summary **************
 
   Evaluating quality for 3456 elements.
   This mesh had 3456 quadrilateral elements.
-  There were no inverted elements detected. 
+  There were no inverted elements detected.
   No entities had undefined values for any computed metric.
 
-                     metric     minimum     average         rms     maximum    std.dev.
-ElementPMeanP(TShapeSizeB1)  0.00558463   0.0591772   0.0767815    0.303106    0.048923
-                 EdgeLength    0.161144    0.562074    0.607611     1.11686    0.230789
+     Element Quality Statistics
 
+     minimum     average         rms     maximum    std.dev.
+  0.00558463   0.0591772   0.0767815    0.303106    0.048923
 
-AREAS:      Initial     Final       Difference  Change
-Polar:
-  Minimum:    0.035147    0.033739    0.001407    4.003825%
-  Average:    0.356401    0.355561    0.000840    0.235642%
-  Maximum:    0.956929    0.896340    0.060589    6.331607%
-Equatorial:
-  Minimum:    0.530028    0.650497    0.120469   22.728869%
-  Average:    0.718328    0.763170    0.044842    6.242616%
-  Maximum:    0.957685    0.896794    0.060891    6.358101%
+     Number of statistics = 3456
+     Metric = ElementPMeanP(TShapeSizeB1)
+     Element Quality not based on sample points.
+
+    -------------------------------------------
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+    0.161144    0.562074    0.607611     1.11686    0.230789
+
+     Number of statistics = 13824
+     Metric = EdgeLength
+     Element Quality not based on sample points.
 \end{verbatim}
 
 
@@ -331,6 +408,7 @@ preserving an existing layer of sliver elements in the boundary layer. \newline
 \noindent Additional Information: \newline
 \noindent {\it Article}: Introducing the Target-matrix Paradigm for mesh optimization via node-movement", Engineering with Computers, Sept. 2011.\newline
 
+\newpage
 \section{Deforming Domain} \label{sec:DeformingDomain}
 
 \noindent {\it Name}: DeformingDomainWrapper \newline
@@ -359,23 +437,36 @@ value is non-positive) or fraction of mean edge length (default is 0.005). \newl
 
   Evaluating quality for 216 elements.
   This mesh had 216 quadrilateral elements.
-  THERE ARE 56 INVERTED ELEMENTS. 
+  THERE ARE 56 INVERTED ELEMENTS.
   (Elements invalid at 220 of 864 sample locations.)
 
   No entities had undefined values for any computed metric.
 
-                  metric     minimum     average         rms     maximum    std.dev.
-ElementPMeanP(TShapeNB1) 4.57621e-05     7.63416     20.8252     67.0217     19.3754
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+4.57621e-005     7.63416     20.8252     67.0217     19.3754
+
+     Number of statistics = 216
+     Metric = ElementPMeanP(TShapeNB1)
+     Element Quality not based on sample points.
+
 
 ************** QualityAssessor(free only) Summary **************
 
   Evaluating quality for 216 elements.
   This mesh had 216 quadrilateral elements.
-  There were no inverted elements detected. 
+  There were no inverted elements detected.
   No entities had undefined values for any computed metric.
 
-                  metric     minimum     average         rms     maximum    std.dev.
-ElementPMeanP(TShapeNB1) 0.000763758   0.0202682   0.0252805   0.0947676   0.0151097
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+ 0.000763758   0.0202682   0.0252805   0.0947676   0.0151097
+
+     Number of statistics = 216
+     Metric = ElementPMeanP(TShapeNB1)
+     Element Quality not based on sample points.
 \end{verbatim}
 
 
