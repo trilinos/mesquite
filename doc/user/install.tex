@@ -56,22 +56,19 @@ To run the unit tests on Unix-like platforms:
            $ make check
 
 \end{verbatim}
-\item ExodusII support:  To enable support for reading or writing ExodusII files in Mesquite, the header files for the ExodusII library must be available.  To link an application with a Mesquite library supporting ExodusII, the ExodusII library and possibly the NetCDF library must be available.  To obtain the ExodusII library, contact:
-\begin{verbatim}
-Marilyn K. Smith
-Research Programs Department
-Department 9103, MS 0833
-Sandia National Laboratories
-P.O.Box 5800
-Albuquerque, NM 87185-0833
-Phone: (505) 844-3082
-FAX:   (505) 844-8251
-Email: mksmith@sandia.gov
-\end{verbatim}
+\item ExodusII support:  To enable support for reading or writing ExodusII files in Mesquite, the header files for the ExodusII library must be available and the library supporting ExodusII, the ExodusII library and possibly the NetCDF library must be available. If you need to build the ExodusII libraries from source, you will need to build the NetCDF library first.  ExodusII files can be read via the MeshImpl::read\_exodus(...) function and written via the MeshImpl::write\_exodus(...) function. 
+
+ The ExodusII library can be obtained at the following URL:
+\begin{center}
+\begin{small}\url{http://sourceforge.net/projects/exodusii}\end{small}
+\end{center}
+
 The NetCDF library can be obtained at the following URL:
 \begin{center}
 \begin{small}\url{http://www.unidata.ucar.edu/downloads/netcdf/index.jsp}\end{small}
 \end{center}
+
+
 \end{itemize}
 
 \section{Release and Debug Builds}
