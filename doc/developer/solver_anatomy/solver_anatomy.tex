@@ -128,7 +128,7 @@ All quality improvers in the current Mesquite implementation are subclasses of t
 
 Optimization of mesh in Mesquite is performed on \emph{patches}.  Given a mesh defined by a set of vertices $V$ and elements $E$, a patch is composed of an arbitrary $W \subset V$,  $F={f \in E, Cl(f) \cup W \ne \emptyset}$.  That is, a patch is defined to be some subset of the vertices to optimize and the elements for which the quality is affected by the position of these verices.  In containing elements, the patch implicitly contains all vertices in the closure of those elements.  Any such implicit vertices that are not also in $W$ ($x \in Cl(E), x \notin W$) are referred to as \emph{fixed} (or less accurately as \emph{boundary}) vertices.  This property should not be confused with the global \emph{fixed} property of vertices $v \in V$.  The latter is an input constraint on the mesh, while the former is a property of the temporary patch data structure, not the actual subset of the mesh represented by the patch.   Patches may overlap, may be disjoint, etc.  
 
-Vertices are marked as fixed in a patch because the positions of those vertices will not be optimized as part of the optimization of the current patch.  Any vertex that is marked as fixed in the input mesh will always be marked as fixed in any patch it occurs in because the coordinates of such a vertex are by definition never optimized.  A vertex may also be marked as fixed in a patch for other reasons, for example if it is not in the set of vertices to optimize with the patch but is in the closure of the elements adjacent to said vertices.  The \emph{fixed} state of a vertex in a patch is a property of the patch.  Such a vertex may not be fixed in other patches, and will not be fixed in at least one other patch unless it is marked as fixed by the application as part of the input mesh.  Global patches are the only case where the fixed state in the patch is the same as the fixed state in the input mesh:  all non-fixed vertices in the input mesh are not marked as fixed in a global patch.
+Vertices are marked as fixed in a patch because the positions of those vertices will not be optimized as part of the optimization of the current patch.  Any vertex that is marked as fixed in the input mesh will always be marked as fixed in any patch it occurs in because the coordinates of such a vertex are by definition never optimized.  A vertex may also be marked as fixed in a patch for other reasons, for exaple if it is not in the set of vertices to optimize with the patch but is in the closure of the elements adjacent to said vertices.  The \emph{fixed} state of a vertex in a patch is a property of the patch.  Such a vertex may not be fixed in other patches, and will not be fixed in at least one other patch unless it is marked as fixed by the application as part of the input mesh.  Global patches are the only case where the fixed state in the patch is the same as the fixed state in the input mesh:  all non-fixed vertices in the input mesh are not marked as fixed in a global patch.
 
 Figure \ref{fig:patch-types} illustrates different patch determination schemes.  The left-most mesh (a) is an input mesh supplied by the application, with the fixed vertices colored in grey and the free vertices in black. A single-vertex patch in the same mesh is shown in (b), with the patch elements in red and the free patch vertex in blue.   A global patch is shown in (c) and an appliciation-defined patch in (d).
 
@@ -220,7 +220,7 @@ Most solvers in Mesquite also require the gradient of the objective function (th
 
 \subsection{Objective Function Support for Block Coordinate Descent}
 
-The \texttt{enum EvalType} was added to allow \texttt{ObjectiveFunction} implementations to support block coordinate descent algorithms efficiently.  Many objective function templates perform averaging of quality metric values.  These objective functions can be calculated as a running total for the working mesh.  This running total can be updated for changes to the local patch without needing to recalculate quality metric values for other parts of the mesh.  Consider the example of an objective function that is the algebraic mean of an element quality metric $\mu(v \in Cl(e_i))$:
+The \texttt{enum EvalType} was added to allow \texttt{ObjectiveFunction} implementations to support block coordinate descent algorithms efficiently.  Many objective function templates perform averaging of quality metric values.  These objective functions can be calculated as a running total for the working mesh.  This running total cane be updated for changes to the local patch without needing to recalculate quality metric values for other parts of the mesh.  Consider the example of an objective function that is the algebraic mean of an element quality metric $\mu(v \in Cl(e_i))$:
 \begin{displaymath}
 M = \{ e_1 \cdots e_n \}
 \end{displaymath}
@@ -273,10 +273,6 @@ Existing template-type objective functions from version 1.1 of Mesquite have bee
 The new objective functions \texttt{PMeanPTemplate}, \texttt{StdDevTemplate}, and \texttt{VarianceTemplate} have also been added.  All three of these objective function templates support block coordinate descent optimization.   
 
 The composite objective functions modify one or two existing objective functions (e.g. adding two together).  All composite \texttt{ObjectiveFunction}s support analytical gradients and coordinate descent optimization if the underlying \texttt{ObjectiveFunction}s do.  Similarly, all except \texttt{CompositeOFMultiply} support analytical Hessians as long as their underlying \texttt{ObjectiveFunction}s do.  \texttt{CompositeOFMultiply} does not have a suitably sparse Hessian (see Section \ref{sec:Hessian}).
-
-\subsection{Future Work}
-
-The \texttt{PMeanPTempate} is currently implemented in a simplistic fashion.  It should be specialized to handle common P-values more efficiently, either by re-implementing it as a C++ template class with P as a parameter or by providing specialized classes for common P-values (e.g. $\frac{1}{2}$, $1$, and $2$).
 
 \subsection{What's New}
 
@@ -465,8 +461,6 @@ The \texttt{LVQDTargetCalculator} combines four other target calculators using a
 \mathbf{W} = \lambda(\mathbf{W_\lambda}) \times \mathbf{V}(\mathbf{W_V}) \times \mathbf{Q}(\mathbf{W_Q}) \times \mathbf{\Delta}(\mathbf{W_\Delta}) 
 \end{displaymath}
 The $\lambda$ function returns a the scalar size component of the $\mathbf{W_\lambda}$ term.  The $\mathbf{V}$ function returns the orientation component of the $\mathbf{W_V}$ term.  $\mathbf{Q}(\mathbf{W_Q})$ is the shape component of $\mathbf{W_Q}$.  The $\mathbf{\Delta}$ function returns the aspect ratio component of $\mathbf{W_\Delta}$.  
-
-The \texttt{IdentityTargetCalculator} (not in diagrams) is provided for use in LVQD factorizations where not all of the terms are relevant.  It returns a constant identity matrix for 3x3 targets and a 3x2 matrix composed of a 2x2 identity matrix and zeros for the third row for 3x2 targets.
 
 \subsection{Weight Calculators}
 
@@ -751,7 +745,7 @@ A \texttt{SAVE} evaluation is passed the initial, unmodified patch ($P_0$) just 
 
 \item{\texttt{UPDATE}}
 
-A \texttt{UPDATE} evaluation modifies both the accumulated objective function value and the saved patch value from the previous \texttt{SAVE} or \texttt{UPDATE} evaluation.  During this evaluation mode, the objective function should update its accumulated value such that it is updated for a change in the passed patch to the current value from the previously saved value.  Further, the saved patch value should be changed to the corresponding value for the current patch, as that is the value now accounted for in the accumulated value.  The result value is the updated accumulated value.
+A \texttt{UPDATE} evaluation modifies both the accumulated objective function vacua and the saved patch value from the previous \texttt{SAVE} or \texttt{UPDATE} evaluation.  During this evaluation mode, the objective function should update its accumulated value such that it is updated for a change in the passed patch to the current value from the previously saved value.  Further, the saved patch value should be changed to the corresponding value for the current patch, as that is the value now accounted for in the accumulated value.  The result value is the updated accumulated value.
 
 This mode of evaluation is best explained describing the how it relates to several of the above modes in an optimization.  The typical sequence of events is something like the following:
 \begin{enumerate}
