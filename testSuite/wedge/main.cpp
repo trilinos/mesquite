@@ -115,7 +115,7 @@ int main( int argc, char* argv[] )
     return 2;
   }
   
-  const char* meshfile = MESH_FILES_DIR "3D/VTK/6-wedge-prism.vtk";
+  const char* meshfile = MESH_FILES_DIR "3D/vtk/prisms/untangled/6-wedge-prism.vtk";
   unsigned i;
 
   Mesquite::MsqPrintError err(cout);

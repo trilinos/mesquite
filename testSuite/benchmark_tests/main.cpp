@@ -75,8 +75,8 @@ using std::endl;
 
 using namespace Mesquite;
 
-const char shape_improv_file_name_1[] = MESH_FILES_DIR "3D/VTK/1000hex-block-internal-bias.vtk";
-const char shape_improv_file_name_2[] = MESH_FILES_DIR "3D/VTK/tire.vtk";
+const char shape_improv_file_name_1[] = MESH_FILES_DIR "3D/vtk/hexes/untangled/1000hex-block-internal-bias.vtk";
+const char shape_improv_file_name_2[] = MESH_FILES_DIR "3D/vtk/tets/untangled/tire.vtk";
 const char laplacian_file_name_1[] = MESH_FILES_DIR "2D/VTK/square_quad_10_rand.vtk";
 const char laplacian_file_name_2[] = MESH_FILES_DIR "2D/VTK/shashkov_quad.vtk";
 const char untangle_file_name_1[] = MESH_FILES_DIR "2D/VTK/tangled_horse1.vtk";
@@ -84,7 +84,7 @@ const char untangle_file_name_2[] = MESH_FILES_DIR "2D/VTK/shest_grid32.vtk";
 const char size_adapt_shape_file_name_1[] = MESH_FILES_DIR "2D/VTK/bias-sphere-quads.vtk";
 const char min_edge_length_file_name_1[] = MESH_FILES_DIR "2D/VTK/quads_4by2_bad.vtk";
 const char min_edge_length_file_name_2[] = MESH_FILES_DIR "2D/VTK/shashkov_quad.vtk";
-const char deforming_domain_file_name_1[] = MESH_FILES_DIR "3D/VTK/sph-10-zsquare.vtk";
+const char deforming_domain_file_name_1[] = MESH_FILES_DIR "3D/vtk/hexes/untangled/sph-10-zsquare.vtk";
 
 void help(const char* argv0)
 {

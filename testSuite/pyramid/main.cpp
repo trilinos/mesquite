@@ -79,7 +79,7 @@ bool smooth_mixed_mesh( const char* filename );
 int main( int argc, char* argv[] )
 {
   unsigned i;
-  const char* input_file = MESH_FILES_DIR "3D/VTK/mixed-hex-pyr-tet.vtk";
+  const char* input_file = MESH_FILES_DIR "3D/vtk/mixed/tangled/mixed-hex-pyr-tet.vtk";
   if (argc == 2)
     input_file = argv[1];
   else if (argc != 1)
@@ -97,10 +97,10 @@ int main( int argc, char* argv[] )
 
     // Read Mesh
   Mesquite::MeshImpl mesh;
-  mesh.read_vtk(MESH_FILES_DIR "3D/VTK/12-pyramid-unit-sphere.vtk", err);
+  mesh.read_vtk(MESH_FILES_DIR "3D/vtk/pyramids/untangled/12-pyramid-unit-sphere.vtk", err);
   CPPUNIT_ASSERT(!err);
   Mesquite::MeshImpl ideal_mesh;
-  ideal_mesh.read_vtk(MESH_FILES_DIR "3D/VTK/12-pyramid-unit-sphere.vtk", err);
+  ideal_mesh.read_vtk(MESH_FILES_DIR "3D/vtk/pyramids/untangled/12-pyramid-unit-sphere.vtk", err);
   CPPUNIT_ASSERT(!err);
 
     // Check that the mesh read correctly, and contains what is

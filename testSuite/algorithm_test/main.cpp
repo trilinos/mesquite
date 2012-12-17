@@ -71,7 +71,7 @@ int main()
 {     
   MsqPrintError err(cout);
   Mesquite::MeshImpl mesh;
-  mesh.read_vtk(MESH_FILES_DIR "3D/VTK/tire.vtk", err);
+  mesh.read_vtk(MESH_FILES_DIR "3D/vtk/tets/untangled/tire.vtk", err);
   if (err) return 1;
   
     // creates an intruction queue

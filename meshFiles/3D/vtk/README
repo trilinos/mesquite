@@ -1,4 +1,4 @@
-List of the meshes in .../3D/VTK/ and brief descriptions.
+List of the meshes in .../3D/vtk/... directories and brief descriptions.
 
 cub_fru.vtk:  A mesh generated in Cubit for the cubit test suite,
 slightly modified.  Contains 12,753 vertices and 10,752 HEX elements.

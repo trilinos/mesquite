@@ -1709,6 +1709,7 @@ std::string QualityAssessor::element_name_as_string(int enum_name)
     case PRISM:         str_value.assign("prism"); break;
     case SEPTAHEDRON:   str_value.assign("septahedron"); break;
     case MIXED:         str_value.assign("mixed"); break;
+    case PYRAMID:       str_value.assign("pyramid"); break;
   }
 
   return str_value;

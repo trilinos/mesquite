@@ -60,7 +60,7 @@ using std::endl;
 
 using namespace Mesquite;
 
-const char DEFAULT_INPUT[] = MESH_FILES_DIR "3D/VTK/flat-tet-sphere.vtk";
+const char DEFAULT_INPUT[] = MESH_FILES_DIR "3D/vtk/tets/untangled/flat-tet-sphere.vtk";
 
 void help(const char* argv0)
 {

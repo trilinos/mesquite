@@ -75,7 +75,7 @@ void usage()
 int main(int argc, char* argv[])
 {
   Mesquite::MsqPrintError err(cout);
-  const char* file_name = MESH_FILES_DIR "3D/VTK/large_box_hex_1000.vtk";
+  const char* file_name = MESH_FILES_DIR "3D/vtk/hexes/untangled/large_box_hex_1000.vtk";
   double OF_value = 0.;
   
   

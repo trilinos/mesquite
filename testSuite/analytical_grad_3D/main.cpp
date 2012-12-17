@@ -71,7 +71,7 @@ int main()
 {
   MsqPrintError err(std::cout);
   Mesquite::MeshImpl mesh;
-  mesh.read_vtk(MESH_FILES_DIR "3D/VTK/hexes_4by2by2.vtk", err);
+  mesh.read_vtk(MESH_FILES_DIR "3D/vtk/hexes/untangled/hexes_4by2by2.vtk", err);
   
     // creates an intruction queue
   InstructionQueue queue1;

@@ -51,8 +51,8 @@
 using namespace Mesquite;
 using namespace std;
 
-const char HEX_MESH[] = MESH_FILES_DIR "3D/VTK/1000hex-block-internal-bias.vtk";
-const char TET_MESH[] = MESH_FILES_DIR "3D/VTK/tire.vtk";
+const char HEX_MESH[] = MESH_FILES_DIR "3D/vtk/hexes/untangled/1000hex-block-internal-bias.vtk";
+const char TET_MESH[] = MESH_FILES_DIR "3D/vtk/tets/untangled/tire.vtk";
 typedef FeasibleNewton SolverType;
 
 class BCDTest : public CppUnit::TestFixture
