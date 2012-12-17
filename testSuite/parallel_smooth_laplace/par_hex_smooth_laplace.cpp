@@ -88,7 +88,7 @@ using std::endl;
 
 using namespace Mesquite;
 
-#define VTK_3D_DIR MESH_FILES_DIR "3D/VTK/"
+#define VTK_3D_DIR MESH_FILES_DIR "3D/vtk/hexes/untangled/"
 
 using namespace std;
   
