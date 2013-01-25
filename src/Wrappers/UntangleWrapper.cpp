@@ -103,14 +103,15 @@ void UntangleWrapper::set_vertex_movement_limit_factor( double f )
   { movementFactor = f; }
 
 
-void UntangleWrapper::run_wrapper( Mesh* mesh,
+void UntangleWrapper::run_wrapper( MeshDomainAssoc* mesh_and_domain,
                                    ParallelMesh* pmesh,
-                                   MeshDomain* geom,
                                    Settings* settings,
                                    QualityAssessor* qa,
                                    MsqError& err )
 {
-  Instruction::initialize_vertex_byte( mesh, geom, settings, err ); MSQ_ERRRTN(err);
+  Instruction::initialize_vertex_byte( mesh_and_domain, settings, err ); MSQ_ERRRTN(err);
+
+  Mesh* mesh = mesh_and_domain->get_mesh();
 
     // get some global mesh properties
   SimpleStats edge_len, lambda;
@@ -182,7 +183,7 @@ void UntangleWrapper::run_wrapper( Mesh* mesh,
   q.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
   q.set_master_quality_improver( &solver, err ); MSQ_ERRRTN(err);
   q.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
-  q.run_common( mesh, pmesh, geom, settings, err ); MSQ_ERRRTN(err);
+  q.run_common( mesh_and_domain, pmesh, settings, err ); MSQ_ERRRTN(err);
 }
 
 

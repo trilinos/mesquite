@@ -99,8 +99,9 @@ void SlaveBoundaryVerticesTest::test_fail_if_slaves_not_calculated()
   MeshImpl mesh;
   DomainClassifier domain;
   make_mesh( mesh, domain, 2 );
-  
-  tool.loop_over_mesh( &mesh, &domain, &settings, err );
+    
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &domain);
+  tool.loop_over_mesh( &mesh_and_domain, &settings, err );
   CPPUNIT_ASSERT(err);
   err.clear();
 }
@@ -268,7 +269,8 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
   Settings settings;
   settings.set_slaved_ho_node_mode( Settings::SLAVE_CALCULATED );
   SlaveBoundaryVertices tool( depth, boundary );
-  tool.loop_over_mesh( &mesh, &domain, &settings, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &domain);
+  tool.loop_over_mesh( &mesh_and_domain, &settings, err );
   ASSERT_NO_ERROR(err);
   
     // Now verify the results

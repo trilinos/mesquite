@@ -390,7 +390,8 @@ double run( QualityMetric* metric,
     domain = new PlanarDomain( PlanarDomain::XY, min[2] );
   
   Timer timer;
-  q.run_instructions( &mesh, domain, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, domain);
+  q.run_instructions( &mesh_and_domain, err );
   seconds_out = timer.since_birth();
   if (err) {
     cerr << "Optimization failed." << endl << err << endl;

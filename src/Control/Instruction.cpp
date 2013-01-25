@@ -47,20 +47,24 @@ Instruction::~Instruction()
 {}
 
 double Instruction::loop_over_mesh( ParallelMesh* mesh, 
-				    MeshDomain* domain, 
-				    const Settings* settings,
-				    MsqError& err )
+				                            MeshDomain* domain, 
+			                         	    const Settings* settings,
+				                            MsqError& err )
 {
-  return loop_over_mesh((Mesh*)mesh, domain, settings, err);
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc((Mesh*)mesh, domain, false, true);
+  return loop_over_mesh(&mesh_and_domain, settings, err);
 }
 
-void Instruction::initialize_vertex_byte( Mesh* mesh,
-                                          MeshDomain* domain,
+void Instruction::initialize_vertex_byte( MeshDomainAssoc* mesh_and_domain,
                                           const Settings* settings,
                                           MsqError& err )
 {
   std::vector<Mesh::VertexHandle> verts;
   std::vector<unsigned char> bytes;
+
+  Mesh* mesh = mesh_and_domain->get_mesh();
+  MeshDomain* domain = mesh_and_domain->get_domain();
+
 
     // Handle SLAVE_ALL first because we want to work with vertices
     // in element connectivity lists rather than one big array of

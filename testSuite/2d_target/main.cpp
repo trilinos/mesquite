@@ -168,7 +168,8 @@ static int do_smoother( const char* input_file,
   if (MSQ_CHKERR(err)) return 2;
   PlanarDomain geom = make_domain( &mesh, err );
   if (MSQ_CHKERR(err)) return 1;
-  q.run_instructions( &mesh, &geom, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &geom);
+  q.run_instructions( &mesh_and_domain, err );
   if (MSQ_CHKERR(err)) return 3;
   mesh.write_vtk( output_file, err );
   if (MSQ_CHKERR(err)) return 2;

@@ -241,14 +241,12 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(InstructionQueueTest, "Unit");
 class DummyVertexSlaver : public VertexSlaver
 {
   public:
-    virtual double loop_over_mesh( Mesh* , 
-                                   MeshDomain* , 
+    virtual double loop_over_mesh( MeshDomainAssoc* , 
                                    const Settings* ,
                                    MsqError&  )
       { CPPUNIT_ASSERT(false); return 0.0; }
     virtual std::string get_name() const { return "Dummy"; }
-    virtual void initialize_queue( Mesh* ,
-                                   MeshDomain* ,
+    virtual void initialize_queue( MeshDomainAssoc* ,
                                    const Settings* ,
                                    MsqError&  ) {}
 };

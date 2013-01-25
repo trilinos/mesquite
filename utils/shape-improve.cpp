@@ -48,7 +48,8 @@ int main( int argc, char* argv[] )
     smoother.set_vertex_movement_limit_factor( movement_beta.value() );
   if (cpu_time.seen())
     smoother.set_cpu_time_limit( cpu_time.value() );
-  smoother.run_instructions( &mesh, domain, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, domain);
+  smoother.run_instructions( &mesh_and_domain, err );
   if (err) {
     std::cerr << err << std::endl;
     return 3;

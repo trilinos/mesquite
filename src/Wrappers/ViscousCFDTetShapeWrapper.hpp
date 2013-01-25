@@ -38,6 +38,8 @@
 
 namespace MESQUITE_NS {
 
+class MeshDomainAssoc;
+
 class MESQUITE_EXPORT ViscousCFDTetShapeWrapper : public Wrapper
 {
   private:
@@ -46,9 +48,8 @@ class MESQUITE_EXPORT ViscousCFDTetShapeWrapper : public Wrapper
     int parallelIterations;
     double maxVtxMovement;
 
-    void run_wrapper( Mesh* mesh,
+    void run_wrapper( MeshDomainAssoc* mesh_and_domain,
                       ParallelMesh* pmesh,
-                      MeshDomain* geom,
                       Settings* settings,
                       QualityAssessor* qa,
                       MsqError& err );

@@ -73,7 +73,8 @@ int main( int argc, char* argv[] )
 //  q.set_mapping_function( &tet );
   
   q.add_quality_assessor( &qa, err );
-  q.run_instructions( &mesh, domain, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, domain);
+  q.run_instructions( &mesh_and_domain, err );
   delete domain;
   if (err) {
     std::cerr << err << std::endl;

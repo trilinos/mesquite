@@ -69,13 +69,12 @@ public:
            Vector3D grad_values = Vector3D(0,0,0) )
     : mValue(0.0), mGrad(grad_values), mValid(true) {}
 
-  bool initialize_block_coordinate_descent( Mesh* mesh,
-                                            MeshDomain* domain,
+  bool initialize_block_coordinate_descent( MeshDomainAssoc* domain,
                                             const Settings* settings,
                                             PatchSet* user_set,
                                             MsqError& err );
     
-  void initialize_queue( Mesh* , MeshDomain* , 
+  void initialize_queue( MeshDomainAssoc* , 
                          const Settings* ,
                          MsqError&  ) {}
 
@@ -373,7 +372,8 @@ void TerminationCriterionTest::test_absolute_vertex_movement_edge_length()
     // initialize termination criterion
   TerminationCriterion tc;
   tc.add_absolute_vertex_movement_edge_length( beta );
-  tc.initialize_queue( &mesh, 0, 0, err ); ASSERT_NO_ERROR(err);
+  MeshDomainAssoc mesh_and_domain2 = MeshDomainAssoc(&mesh, 0);
+  tc.initialize_queue( &mesh_and_domain2, 0, err ); ASSERT_NO_ERROR(err);
   
     // get a patch data
   PatchData pd;
@@ -795,15 +795,15 @@ void TerminationCriterionTest::test_abs_vtx_movement_culling()
     // No run the "optimizer"
   InstructionQueue q;
   q.set_master_quality_improver( &smoother, err );
-  q.run_instructions( &mesh, &zplane, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &zplane);
+  q.run_instructions( &mesh_and_domain, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT( smoother.should_have_terminated() );
   CPPUNIT_ASSERT( smoother.num_passes() > 1 );
 }
 
 
-bool DummyOF::initialize_block_coordinate_descent( Mesh*,
-                                                   MeshDomain*,
+bool DummyOF::initialize_block_coordinate_descent( MeshDomainAssoc*,
                                                    const Settings*,
                                                    PatchSet*,
                                                    MsqError& err )

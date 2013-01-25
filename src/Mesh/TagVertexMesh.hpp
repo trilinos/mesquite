@@ -174,8 +174,7 @@ class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator, public Instruction
     
 //**************** Instruction ****************
 
-    virtual double loop_over_mesh( Mesh* mesh, 
-                                   MeshDomain* domain, 
+    virtual double loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
                                    const Settings* settings,
                                    MsqError& err );
 
@@ -185,8 +184,7 @@ class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator, public Instruction
      //!
      //! Do any preliminary global initialization, consistency checking,
      //! etc.  Default implementation does nothing.
-    virtual void initialize_queue( Mesh* mesh,
-                                   MeshDomain* domain,
+    virtual void initialize_queue( MeshDomainAssoc* mesh_and_domain,
                                    const Settings* settings,
                                    MsqError& err );
 };

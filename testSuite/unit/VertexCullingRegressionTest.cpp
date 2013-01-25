@@ -157,7 +157,8 @@ public:
       queue1.add_quality_assessor(&stop_qa,err);
         //Make sure no errors
       CPPUNIT_ASSERT(!err);
-      queue1.run_instructions(&mesh, &msq_geom, err);
+      MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &msq_geom);
+      queue1.run_instructions(&mesh_and_domain, err);
       CPPUNIT_ASSERT(!err);
     }
   

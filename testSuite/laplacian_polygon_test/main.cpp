@@ -134,8 +134,9 @@ int main(int argc, char* argv[])
   PlanarDomain plane(Vector3D(0,0,1), Vector3D(0,0,0));
   
     // launches optimization on mesh_set1
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &plane);
   Timer t;
-  queue1.run_instructions(&mesh, &plane, err); 
+  queue1.run_instructions(&mesh_and_domain, err);
   if (err) return 1;
   double secs = t.since_birth();
   std::cout << "Optimization completed in " << secs << " seconds" << std::endl;

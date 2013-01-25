@@ -78,11 +78,11 @@ void TagVertexMesh::initialize( Mesh* mesh, std::string name, MsqError& err )
 }
 
 
-double TagVertexMesh::loop_over_mesh( Mesh* mesh, 
-                                      MeshDomain* , 
+double TagVertexMesh::loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
                                       const Settings* ,
                                       MsqError& err )
 {
+  Mesh* mesh = mesh_and_domain->get_mesh();
   if (mesh != get_mesh()) {
     MSQ_SETERR(err)("InstructionQueue and TagVertexMesh have different "
                     "Mesquite::Mesh instances.  Cannot initialize TagVertexMesh",
@@ -261,10 +261,9 @@ void TagVertexMesh::release()
   MeshDecorator::release();
 }
 
-void TagVertexMesh::initialize_queue( Mesh* ,
-                                   MeshDomain* ,
-                                   const Settings* ,
-                                   MsqError&  )
+void TagVertexMesh::initialize_queue( MeshDomainAssoc* mesh_and_domain,
+                                      const Settings* ,
+                                      MsqError&  )
 {
 }
 

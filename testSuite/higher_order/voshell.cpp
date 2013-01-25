@@ -182,13 +182,14 @@ int run_example( const Example& e, bool write_output_file )
   UntangleWrapper untangler;
   untangler.set_slaved_ho_node_mode( Settings::SLAVE_NONE );
   untangler.set_mapping_function( &hex27 );
-  untangler.run_instructions( &mesh, &domain, err ); 
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &domain, false, true);
+  untangler.run_instructions( &mesh_and_domain, err ); 
   if (MSQ_CHKERR(err)) return 1;
   ShapeImprover smoother;
   smoother.set_slaved_ho_node_mode( Settings::SLAVE_NONE );
   smoother.set_mapping_function( &hex27 );
   smoother.set_vertex_movement_limit_factor( 0.05 );
-  smoother.run_instructions( &mesh, &domain, err );
+  smoother.run_instructions( &mesh_and_domain, err );
   if (MSQ_CHKERR(err)) return 1;
   
   if (write_output_file) {

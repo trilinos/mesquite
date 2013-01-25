@@ -925,7 +925,8 @@ void PatchDataTest::test_fixed_by_geom_dim( unsigned dim )
   Mesh* mesh = 0;
   MeshDomain* domain = 0;
   get_quad8_mesh_and_domain( mesh, domain );
-  Instruction::initialize_vertex_byte( mesh, domain, &settings, err ); 
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(mesh, domain);
+  Instruction::initialize_vertex_byte( &mesh_and_domain, &settings, err ); 
   ASSERT_NO_ERROR(err);
   
   PatchData pd;
@@ -1018,7 +1019,8 @@ void PatchDataTest::check_higher_order_vertices_slaved(
   
   Settings settings;
   settings.set_slaved_ho_node_mode( mode );
-  Instruction::initialize_vertex_byte( mesh, 0, &settings, err ); 
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(mesh, 0);
+  Instruction::initialize_vertex_byte( &mesh_and_domain, &settings, err ); 
   ASSERT_NO_ERROR(err);
   
   PatchData pd;

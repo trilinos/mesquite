@@ -53,14 +53,14 @@
 
 namespace MESQUITE_NS {
 
-void SizeAdaptShapeWrapper::run_wrapper( Mesh* mesh, 
+void SizeAdaptShapeWrapper::run_wrapper( MeshDomainAssoc* mesh_and_domain,
                                          ParallelMesh* pmesh,
-                                         MeshDomain* domain, 
                                          Settings* settings,
                                          QualityAssessor* qa,
                                          MsqError& err )
 {
   InstructionQueue q;
+  Mesh* mesh = mesh_and_domain->get_mesh();
  
     // calculate average lambda for mesh
   TagVertexMesh init_mesh( err, mesh );  MSQ_ERRRTN(err);
@@ -94,7 +94,7 @@ void SizeAdaptShapeWrapper::run_wrapper( Mesh* mesh,
   q.add_quality_assessor( qa, err );
 
   // Optimize mesh
-  q.run_common( mesh, pmesh, domain, settings, err ); MSQ_CHKERR(err);  
+  q.run_common( mesh_and_domain, pmesh, settings, err ); MSQ_CHKERR(err);  
 }
 
 } // namespace MESQUITE_NS

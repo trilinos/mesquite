@@ -48,11 +48,13 @@ SlaveBoundaryVertices::SlaveBoundaryVertices( unsigned depth, unsigned dim )
 std::string SlaveBoundaryVertices::get_name() const
   { return "SlaveBoundaryVertices"; }
 
-double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh, 
-                                              MeshDomain* domain, 
+double SlaveBoundaryVertices::loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
                                               const Settings* settings,
                                               MsqError& err )
 {
+  Mesh* mesh = mesh_and_domain->get_mesh();
+  MeshDomain* domain = mesh_and_domain->get_domain();
+
   if (settings->get_slaved_ho_node_mode() != Settings::SLAVE_CALCULATED) {
     MSQ_SETERR(err)("Request to calculate higher-order node slaved status "
                     "when Settings::get_get_slaved_ho_node_mode() "
@@ -172,8 +174,7 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
   return 0.0;
 }
 
-void SlaveBoundaryVertices::initialize_queue( Mesh* ,
-                                              MeshDomain* ,
+void SlaveBoundaryVertices::initialize_queue( MeshDomainAssoc* mesh_and_domain,
                                               const Settings* ,
                                               MsqError&  )
 {

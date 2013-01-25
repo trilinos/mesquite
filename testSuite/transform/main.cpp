@@ -96,7 +96,8 @@ int main(int argc, char* argv[])
   Vector3D my_vec(0, 0 , 10);
   MeshTransform my_transform(my_mat, my_vec);
     //mesh->write_exodus("original_mesh.exo", err);
-  my_transform.loop_over_mesh(&mesh, 0, 0, err);
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, 0);
+  my_transform.loop_over_mesh(&mesh_and_domain, 0, err);
   if (err) return 1;
     //mesh->write_exodus("transformed_mesh.exo", err);
   mesh.write_vtk("transformed_mesh.vtk", err);

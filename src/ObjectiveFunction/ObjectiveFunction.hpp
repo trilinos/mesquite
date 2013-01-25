@@ -62,6 +62,7 @@ namespace MESQUITE_NS
    class MeshDomain;
    class PatchSet;
    class Settings;
+   class MeshDomainAssoc;
    
   /*! \class ObjectiveFunction
        \brief Base class for concrete Objective Functions
@@ -128,8 +129,7 @@ namespace MESQUITE_NS
       //! because every practical OF implementation at this time should
       //! have an implementation that at least recursively calls the same
       //! function on the underlying QualityMetric or ObjectiveFunction(s).
-     virtual void initialize_queue( Mesh* mesh,
-                                    MeshDomain* domain,
+     virtual void initialize_queue( MeshDomainAssoc* mesh_and_domain,
                                     const Settings* settings,
                                     MsqError& err ) = 0;
     
@@ -144,8 +144,7 @@ namespace MESQUITE_NS
        *\param domain The MeshDomain
        *\param user_set User-defined patch set - not relevant for most OF templates.
        */
-    virtual bool initialize_block_coordinate_descent( Mesh* mesh, 
-                                                      MeshDomain* domain, 
+    virtual bool initialize_block_coordinate_descent( MeshDomainAssoc* mesh_and_domain,
                                                       const Settings* settings,
                                                       PatchSet* user_set,
                                                       MsqError& err ) = 0;

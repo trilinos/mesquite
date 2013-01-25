@@ -1003,9 +1003,7 @@ bool TerminationCriterion::cull_vertices_global(PatchData &global_patch,
     //PRINT_INFO("CULLING_METHOD FLAG = %i",cullingMethodFlag);
   
     //cull_bool will be changed to true if the criterion is satisfied
-  bool b, cull_bool=false;
-
-  bool inner_crit_terminated, all_culled;
+  bool cull_bool=false;
 
   std::vector<Mesh::VertexHandle> mesh_vertices;
   //std::vector<Mesh::VertexHandle> patch_vertices;
@@ -1144,13 +1142,13 @@ void TerminationCriterion::write_iterations( const char* filename, MsqError& err
 }
     
     
-void TerminationCriterion::initialize_queue( Mesh* mesh,
-                                             MeshDomain* ,
+void TerminationCriterion::initialize_queue( MeshDomainAssoc* mesh_and_domain,
                                              const Settings* ,
                                              MsqError& err )
 {
   if (VERTEX_MOVEMENT_ABS_EDGE_LENGTH & (terminationCriterionFlag|cullingMethodFlag)) 
   {
+    Mesh* mesh = mesh_and_domain->get_mesh();
     MeshUtil tool(mesh);
     SimpleStats stats;
     tool.edge_length_distribution( stats, err );

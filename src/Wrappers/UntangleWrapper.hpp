@@ -107,9 +107,8 @@ public:
 protected:
 
   MESQUITE_EXPORT
-  void run_wrapper( Mesh* mesh,
+  void run_wrapper( MeshDomainAssoc* mesh_and_domain,
                     ParallelMesh* pmesh,
-                    MeshDomain* geom,
                     Settings* settings,
                     QualityAssessor* qa,
                     MsqError& err );

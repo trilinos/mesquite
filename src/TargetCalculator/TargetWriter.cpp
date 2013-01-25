@@ -60,11 +60,13 @@ TargetWriter::~TargetWriter() {}
 std::string TargetWriter::get_name() const
   { return "TargetWriter"; }
 
-double TargetWriter::loop_over_mesh( Mesh* mesh, 
-                                     MeshDomain* domain, 
+double TargetWriter::loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
                                      const Settings* settings,
                                      MsqError& err )
 {
+  Mesh* mesh = mesh_and_domain->get_mesh();
+  MeshDomain* domain = mesh_and_domain->get_domain();
+ 
   PatchData patch;
   patch.set_mesh( mesh );
   patch.set_domain( domain );
@@ -230,8 +232,7 @@ TagHandle TargetWriter::get_tag_handle( const std::string& base_name,
   return handle;
 }
 
-void TargetWriter::initialize_queue( Mesh* ,
-                                     MeshDomain* ,
+void TargetWriter::initialize_queue( MeshDomainAssoc* ,
                                      const Settings* ,
                                      MsqError&  )
 {

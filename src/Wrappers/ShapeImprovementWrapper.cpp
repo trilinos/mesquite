@@ -80,9 +80,8 @@ ShapeImprovementWrapper::ShapeImprovementWrapper(double cpu_time,
 {}
  
  
-void ShapeImprovementWrapper::run_wrapper( Mesh* mesh,
+void ShapeImprovementWrapper::run_wrapper( MeshDomainAssoc* mesh_and_domain,
                                            ParallelMesh* pmesh,
-                                           MeshDomain* domain,
                                            Settings* settings,
                                            QualityAssessor* qa,
                                            MsqError& err )
@@ -122,7 +121,7 @@ void ShapeImprovementWrapper::run_wrapper( Mesh* mesh,
   Timer totalTimer;
   q1.set_master_quality_improver( &untangle_global, err ); MSQ_ERRRTN(err);
   q1.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
-  q1.run_common( mesh, pmesh, domain, settings, err ); MSQ_ERRRTN(err);
+  q1.run_common( mesh_and_domain, pmesh, settings, err ); MSQ_ERRRTN(err);
   
     // If limited by CPU time, limit next step to remaning time
   if (maxTime > 0.0) {
@@ -138,7 +137,7 @@ void ShapeImprovementWrapper::run_wrapper( Mesh* mesh,
   InstructionQueue q2;
   q2.set_master_quality_improver( &feas_newt, err ); MSQ_ERRRTN(err);
   q2.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
-  q2.run_common( mesh, pmesh, domain, settings, err ); MSQ_ERRRTN(err);
+  q2.run_common( mesh_and_domain, pmesh, settings, err ); MSQ_ERRRTN(err);
 }
 
 } // namespace Mesquite

@@ -38,10 +38,10 @@
 MESQUITE_NS::Wrapper::Wrapper() : qualAssessor( new QualityAssessor ) {}
 MESQUITE_NS::Wrapper::~Wrapper() { delete qualAssessor; }
 
-void MESQUITE_NS::Wrapper::run_common(  Mesh* mesh, ParallelMesh* pmesh, 
-                             MeshDomain* dom, Settings* opt, MsqError& err )
+void MESQUITE_NS::Wrapper::run_common(  MeshDomainAssoc* mesh_and_domain, ParallelMesh* pmesh, 
+                                        Settings* opt, MsqError& err )
 {
   QualityAssessor qa(*qualAssessor); // use copy so that subclass changes aren't persistent.
-  run_wrapper( mesh, pmesh, dom, opt, &qa, err );
+  run_wrapper( mesh_and_domain, pmesh, opt, &qa, err );
   MSQ_CHKERR(err); // udpate stack trace, don't care about value
 }

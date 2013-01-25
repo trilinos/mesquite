@@ -60,11 +60,10 @@ public:
   ~TargetWriter();
   
   MESQUITE_EXPORT
-  double loop_over_mesh( Mesh* mesh, MeshDomain*, const Settings*, MsqError& );
+  double loop_over_mesh( MeshDomainAssoc* mesh_and_domain, const Settings*, MsqError& );
  
   MESQUITE_EXPORT
-  void initialize_queue( Mesh* mesh,
-                         MeshDomain* domain,
+  void initialize_queue( MeshDomainAssoc* mesh_and_domain,
                          const Settings* settings,
                          MsqError& err );
 

@@ -322,15 +322,13 @@ namespace MESQUITE_NS
                                    const char* metric_label = 0 );
     
     virtual MESQUITE_EXPORT
-    void initialize_queue( Mesh* mesh,
-                           MeshDomain* domain,
+    void initialize_queue( MeshDomainAssoc* mesh_and_domain,
                            const Settings* settings,
                            MsqError& err );
     
       //! Does one sweep over the mesh and assess the quality with the metrics previously added.
     virtual MESQUITE_EXPORT
-    double loop_over_mesh( Mesh* mesh,
-                           MeshDomain* domain,
+    double loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
                            const Settings* settings,
                            MsqError &err);
 
@@ -582,8 +580,7 @@ namespace MESQUITE_NS
   
 
       //! Common code for serial and parallel loop_over_mesh
-    double loop_over_mesh_internal( Mesh* mesh,
-                                    MeshDomain* domain,
+    double loop_over_mesh_internal( MeshDomainAssoc* mesh_and_domain,
                                     const Settings* settings,
                                     ParallelHelper* helper,
                                     MsqError &err);

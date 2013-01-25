@@ -288,7 +288,8 @@ int do_test( bool slave)
   cout << "Smoothing linear elements" << endl;
   InstructionQueue* q1 = create_instruction_queue( err );
   if (MSQ_CHKERR(err)) return 1;
-  q1->run_instructions( linear_in, &geom, err ); 
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(linear_in, &geom);
+  q1->run_instructions( &mesh_and_domain, err ); 
   if (MSQ_CHKERR(err)) return 1;
   cout << "Checking results" << endl;
   compare_nodes( 0, NUM_CORNER_VERTICES, linear_in, linear_ex, err );
@@ -306,7 +307,8 @@ int do_test( bool slave)
   if (!slave)
     q3->set_slaved_ho_node_mode(Settings::SLAVE_NONE);
 //  q3->set_mapping_function( &quad9 );
-  q3->run_instructions( quadratic_in_2, &geom, err ); 
+  MeshDomainAssoc mesh_and_domain2 = MeshDomainAssoc(quadratic_in_2, &geom);
+  q3->run_instructions( &mesh_and_domain2, err ); 
   if (MSQ_CHKERR(err)) return 1;
     // Make sure corner vertices are the same as in the linear case
   cout << "Checking results" << endl;
@@ -353,7 +355,8 @@ int do_smooth_ho()
   if (MSQ_CHKERR(err)) return 1;
   q1->set_slaved_ho_node_mode(Settings::SLAVE_NONE);
 //  q1->set_mapping_function( &quad9 );
-  q1->run_instructions( quadratic_in, &geom, err ); 
+    MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(quadratic_in, &geom);
+  q1->run_instructions( &mesh_and_domain, err ); 
   if (MSQ_CHKERR(err)) return 1;
   cout << "Checking results" << endl;
   //compare_nodes( 0, NUM_CORNER_VERTICES + NUM_MID_NODES,

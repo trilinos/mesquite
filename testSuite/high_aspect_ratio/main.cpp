@@ -200,7 +200,8 @@ int main( int argc, char* argv[] )
   q.set_master_quality_improver( solver, err );
   q.add_quality_assessor( &qa, err );
   
-  q.run_instructions( &mesh, &domain, err ); CHECKERR
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &domain);
+  q.run_instructions( &mesh_and_domain, err ); CHECKERR
   
   mesh.write_vtk( output_file_name.c_str(), err ); CHECKERR
   

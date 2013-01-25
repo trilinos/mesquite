@@ -110,7 +110,8 @@ int main( int argc, char* argv[] )
   }
   
   xform.skip_fixed_vertices( freeonly.value() );
-  xform.loop_over_mesh( &mesh, 0, 0, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, 0);
+  xform.loop_over_mesh( &mesh_and_domain, 0, err );
   if (err) {
     std::cerr << err << std::endl ;
     return 2;

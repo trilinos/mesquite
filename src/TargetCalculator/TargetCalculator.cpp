@@ -650,8 +650,7 @@ void TargetCalculator::get_refmesh_Jacobian_2D(
 TargetCalculator::~TargetCalculator()
 {}
 
-void TargetCalculator::initialize_queue( Mesh* ,
-                                         MeshDomain* ,
+void TargetCalculator::initialize_queue( MeshDomainAssoc* ,
                                          const Settings* ,
                                          MsqError&  )
 {}

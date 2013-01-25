@@ -99,7 +99,8 @@ int main( int argc, char* argv[] )
 #endif
   IdealWeightInverseMeanRatio extra_metric;
   smoother.quality_assessor().add_quality_assessment(&extra_metric);
-  smoother.run_instructions( &mesh, &plane, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &plane);
+  smoother.run_instructions( &mesh_and_domain, err );
   if (err) {
     std::cerr << err << std::endl
               << input_file << ": smoother failed" << std::endl;

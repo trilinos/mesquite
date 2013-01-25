@@ -45,9 +45,8 @@ class MESQUITE_EXPORT SizeAdaptShapeWrapper : public Wrapper
     int parallelIterations;
     double maxVtxMovement;
 
-    void run_wrapper( Mesh* mesh,
+    void run_wrapper( MeshDomainAssoc* mesh_and_domain,
                       ParallelMesh* pmesh,
-                      MeshDomain* geom,
                       Settings* settings,
                       QualityAssessor* qa,
                       MsqError& err );

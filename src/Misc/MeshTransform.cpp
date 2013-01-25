@@ -47,11 +47,12 @@ namespace MESQUITE_NS {
 /*! 
   Actually apply the affine transformation
   */
-  double MeshTransform::loop_over_mesh( Mesh* mesh,
-                                        MeshDomain* ,
+  double MeshTransform::loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
                                         const Settings*,
                                         MsqError &err )
   {
+    Mesh* mesh = mesh_and_domain->get_mesh();
+
     std::vector<Mesh::VertexHandle> handle_list;
     mesh->get_all_vertices( handle_list, err );
     if (MSQ_CHKERR(err))
@@ -116,10 +117,9 @@ namespace MESQUITE_NS {
       }
     }      
 
-  void MeshTransform::initialize_queue( Mesh* ,
-                                   MeshDomain* ,
-                                   const Settings* ,
-                                   MsqError&  )
+  void MeshTransform::initialize_queue( MeshDomainAssoc* mesh_and_domain,
+                                        const Settings* ,
+                                        MsqError&  )
     {
     }
   

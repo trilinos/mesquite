@@ -43,6 +43,7 @@ class PatchData;
 class MsqError;
 class Mesh;
 class MeshDomain;
+class MeshDomainAssoc;
 class Settings;
 
 class MESQUITE_EXPORT WeightCalculator
@@ -55,8 +56,7 @@ public:
    //!
    //! Do any preliminary global initialization, consistency checking,
    //! etc.  Default implementation does nothing.
-  virtual void initialize_queue( Mesh* mesh,
-                                 MeshDomain* domain,
+  virtual void initialize_queue( MeshDomainAssoc* mesh_and_domain,
                                  const Settings* settings,
                                  MsqError& err );
 

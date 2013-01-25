@@ -112,7 +112,8 @@ int main(int argc, char* argv[])
     /* Run optimizer */
   SphericalDomain geom( Vector3D(0,0,0), 10.0 );
   SizeAdaptShapeWrapper smoother(1e-2);
-  smoother.run_instructions( &mesh, &geom, err);
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &geom);
+  smoother.run_instructions( &mesh_and_domain, err);
   if (err) return 1;
   
   if (output_file) {

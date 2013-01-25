@@ -65,8 +65,7 @@ public:
    */
   OFEvaluator( ObjectiveFunction* of );
     
-  void initialize_queue( Mesh* mesh,
-                         MeshDomain* domain,
+  void initialize_queue( MeshDomainAssoc* mesh_and_domain,
                          const Settings* settings,
                          MsqError& err );
   
@@ -79,8 +78,7 @@ public:
    *
    *\param mesh The active mesh
    */
-  bool initialize( Mesh* mesh, 
-                   MeshDomain* domain,
+  bool initialize( MeshDomainAssoc* mesh_and_domain,
                    const Settings* settings,
                    PatchSet* patches,
                    MsqError& err );

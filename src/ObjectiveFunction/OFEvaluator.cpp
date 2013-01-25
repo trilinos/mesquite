@@ -40,8 +40,7 @@ OFEvaluator::OFEvaluator( ObjectiveFunction* of ) : OF(of), doBCD(false)
   { }
 
 
-bool OFEvaluator::initialize( Mesh* mesh, 
-                              MeshDomain* domain,
+bool OFEvaluator::initialize( MeshDomainAssoc* mesh_and_domain,
                               const Settings* settings,
                               PatchSet* user_set,
                               MsqError& err )
@@ -66,17 +65,16 @@ bool OFEvaluator::initialize( Mesh* mesh,
   }
   
   bool result = get_objective_function()->
-    initialize_block_coordinate_descent( mesh, domain, settings, user_set, err );
+    initialize_block_coordinate_descent( mesh_and_domain, settings, user_set, err );
   return !MSQ_CHKERR(err) && result;
 }
 
-void OFEvaluator::initialize_queue( Mesh* mesh,
-                                    MeshDomain* domain,
+void OFEvaluator::initialize_queue( MeshDomainAssoc* mesh_and_domain,
                                     const Settings* settings,
                                     MsqError& err )
 {
   if (get_objective_function())
-    get_objective_function()->initialize_queue( mesh, domain, settings, err );
+    get_objective_function()->initialize_queue( mesh_and_domain, settings, err );
   MSQ_ERRRTN(err);
 }
 

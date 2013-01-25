@@ -85,7 +85,7 @@ int main( )
   if (err) return 1;
   
   // Set Domain Constraint
-  Vector3D pnt(0,0,0);
+  Vector3D pnt(0,0,5);
   Vector3D s_norm(0,0,1);
   PlanarDomain msq_geom(s_norm, pnt);
                                                                               
@@ -153,7 +153,8 @@ int main( )
   if (err) return 1;
   
     // launches optimization on mesh_set1
-  queue1.run_instructions(&mesh, &msq_geom, err);
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &msq_geom);
+  queue1.run_instructions(&mesh_and_domain, err);
   if (err) return 1;
   
   if (write_output)

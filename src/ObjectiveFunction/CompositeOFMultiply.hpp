@@ -63,14 +63,12 @@ namespace MESQUITE_NS
       //! Do any preliminary global initialization, consistency checking,
       //! etc. 
 	 MESQUITE_EXPORT
-     virtual void initialize_queue( Mesh* mesh,
-                                    MeshDomain* domain,
+     virtual void initialize_queue( MeshDomainAssoc* mesh_and_domain,
                                     const Settings* settings,
                                     MsqError& err );
 
 	 MESQUITE_EXPORT
-     virtual bool initialize_block_coordinate_descent( Mesh* mesh, 
-                                                       MeshDomain* domain,
+     virtual bool initialize_block_coordinate_descent( MeshDomainAssoc* mesh_and_domain,
                                                        const Settings* settings,
                                                        PatchSet* user_set,
                                                        MsqError& err );

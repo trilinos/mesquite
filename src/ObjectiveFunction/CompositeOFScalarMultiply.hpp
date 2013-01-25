@@ -49,6 +49,7 @@ namespace MESQUITE_NS
    class MsqMeshEntity;
    class PatchData;
    class MsqError;
+   class MeshDomainAssoc;
    
    class MESQUITE_EXPORT CompositeOFScalarMultiply : public ObjectiveFunction
    {
@@ -60,13 +61,11 @@ namespace MESQUITE_NS
       //!
       //! Do any preliminary global initialization, consistency checking,
       //! etc. 
-     virtual void initialize_queue( Mesh* mesh,
-                                    MeshDomain* domain,
+     virtual void initialize_queue( MeshDomainAssoc* mesh_and_domain,
                                     const Settings* settings,
                                     MsqError& err );
 
-     virtual bool initialize_block_coordinate_descent( Mesh* mesh, 
-                                                       MeshDomain* domain,
+     virtual bool initialize_block_coordinate_descent(MeshDomainAssoc* mesh_and_domain,
                                                        const Settings* settings,
                                                        PatchSet* user_set,
                                                        MsqError& err );

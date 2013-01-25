@@ -120,16 +120,18 @@ VertexMover::~VertexMover() {}
     \param const MeshSet &: this MeshSet is looped over. Only the
     mutable data members are changed (such as currentVertexInd).
   */
-double VertexMover::loop_over_mesh( Mesh* mesh,
-                                    MeshDomain* domain,
+double VertexMover::loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
                                     const Settings* settings,
                                     MsqError& err )
 {
+  Mesh* mesh = mesh_and_domain->get_mesh();
+  MeshDomain* domain = mesh_and_domain->get_domain();
+
   TagHandle coord_tag = 0; // store uncommitted coords for jacobi optimization 
   TagHandle* coord_tag_ptr = 0;
 
     // Clear culling flag, set hard fixed flag, etc on all vertices
-  initialize_vertex_byte( mesh, domain, settings, err ); MSQ_ERRZERO(err);
+  initialize_vertex_byte( mesh_and_domain, settings, err ); MSQ_ERRZERO(err);
 
     // Get the patch data to use for the first iteration
   OFEvaluator& obj_func = get_objective_function_evaluator();
@@ -184,7 +186,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   this->initialize(patch, err);        
   if (MSQ_CHKERR(err)) goto ERROR;
   
-  valid = obj_func.initialize( mesh, domain, settings, patch_set, err ); 
+  valid = obj_func.initialize( mesh_and_domain, settings, patch_set, err ); 
   if (MSQ_CHKERR(err)) goto ERROR;
   if (!valid) {
     MSQ_SETERR(err)("ObjectiveFunction initialization failed.  Mesh "
@@ -383,7 +385,8 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
     bool one_patch = false;
 
     // Clear culling flag, set hard fixed flag, etc on all vertices
-  initialize_vertex_byte( mesh, domain, settings, err ); MSQ_ERRZERO(err);
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc((Mesh*)mesh, 0);
+  initialize_vertex_byte( &mesh_and_domain, settings, err ); MSQ_ERRZERO(err);
 
     // Get the patch data to use for the first iteration
   OFEvaluator& obj_func = get_objective_function_evaluator();
@@ -451,7 +454,8 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
   this->initialize(patch, err); 
   if (MSQ_CHKERR(err)) { MSQ_SETERR(perr)("initialize patch", MsqError::INVALID_STATE); } //goto ERROR;
   
-  obj_func.initialize( (Mesh*)mesh, domain, settings, patch_set, err ); 
+  MeshDomainAssoc mesh_and_domain2 = MeshDomainAssoc((Mesh*)mesh, domain);
+  obj_func.initialize( &mesh_and_domain2, settings, patch_set, err ); 
   if (MSQ_CHKERR(err)) { MSQ_SETERR(perr)("initialize obj_func", MsqError::INVALID_STATE);} //goto ERROR;
   
   outer_crit->reset_outer( (Mesh*)mesh, domain, obj_func, settings, err); 
@@ -809,13 +813,12 @@ ERROR:
 }
 
     
-void VertexMover::initialize_queue( Mesh* mesh,
-                                    MeshDomain* domain,
+void VertexMover::initialize_queue( MeshDomainAssoc* mesh_and_domain,
                                     const Settings* settings,
                                     MsqError& err )
 {
-  QualityImprover::initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);
-  objFuncEval.initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);
+  QualityImprover::initialize_queue( mesh_and_domain, settings, err ); MSQ_ERRRTN(err);
+  objFuncEval.initialize_queue( mesh_and_domain, settings, err ); MSQ_ERRRTN(err);
 }
 
 TagHandle VertexMover::get_jacobi_coord_tag( Mesh* mesh, MsqError& err )

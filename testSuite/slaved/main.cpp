@@ -136,7 +136,8 @@ int main( int argc, char* argv[] )
       "FLAG" };
   
   MeshImpl meshes[NUM_MODES];
-  
+  std::vector<MeshDomainAssoc> meshes_and_domains;
+
   bool have_slaved_flag = true;
   std::vector<bool> flag(1);
   for (int i = 0; i < NUM_MODES; ++i) {
@@ -178,7 +179,8 @@ int main( int argc, char* argv[] )
     if (err) return 1;
 
     q.set_slaved_ho_node_mode( modes[i] );
-    q.run_instructions( &meshes[i], &plane, err );
+    meshes_and_domains.push_back(MeshDomainAssoc(&meshes[i], &plane));
+    q.run_instructions( &meshes_and_domains[i], err );
     if (err) return 1;
 
     if (modes[i] == Settings::SLAVE_CALCULATED) {
@@ -440,7 +442,8 @@ int check_global_patch_slaved( Mesh& mesh, MsqError& err )
 {
   Settings s;
   s.set_slaved_ho_node_mode( Settings::SLAVE_FLAG );
-  Instruction::initialize_vertex_byte( &mesh, 0, &s, err ); MSQ_ERRZERO(err);
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, 0);
+  Instruction::initialize_vertex_byte( &mesh_and_domain, &s, err ); MSQ_ERRZERO(err);
   
   PatchData pd;
   pd.attach_settings( &s );

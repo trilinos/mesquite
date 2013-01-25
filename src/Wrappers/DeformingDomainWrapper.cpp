@@ -94,9 +94,8 @@ void DeformingDomainWrapper::set_vertex_movement_limit_factor( double f )
   movementFactor = f;
 }
 
-void DeformingDomainWrapper::run_wrapper( Mesh* mesh,
+void DeformingDomainWrapper::run_wrapper( MeshDomainAssoc* mesh_and_domain,
                                           ParallelMesh* pmesh,
-                                          MeshDomain* geom,
                                           Settings* settings,
                                           QualityAssessor* qa,
                                           MsqError& err )
@@ -107,6 +106,9 @@ void DeformingDomainWrapper::run_wrapper( Mesh* mesh,
       movementFactor);
     return;
   }
+
+  Mesh* mesh = mesh_and_domain->get_mesh();
+  MeshDomain* geom = mesh_and_domain->get_domain();
 
     // Move initial mesh to domain in case caller did not
   move_to_domain( mesh, geom, err ); MSQ_ERRRTN(err);
@@ -150,7 +152,7 @@ void DeformingDomainWrapper::run_wrapper( Mesh* mesh,
   q.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
   q.set_master_quality_improver( &improver, err ); MSQ_ERRRTN(err);
   q.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
-  q.run_common( mesh, pmesh, geom, settings, err ); MSQ_ERRRTN(err);
+  q.run_common( mesh_and_domain, pmesh, settings, err ); MSQ_ERRRTN(err);
 }
 
 void DeformingDomainWrapper::move_to_domain( Mesh* mesh, 

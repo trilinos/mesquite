@@ -209,7 +209,8 @@ int uwt( bool skip,
     wrapper.set_metric_constant( constant );
   if (brief_output)
     wrapper.quality_assessor().disable_printing_results();
-  wrapper.run_instructions( &mesh, &domain, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &domain);
+  wrapper.run_instructions( &mesh_and_domain, err );
   if (err) {
     std::cerr << err << std::endl;
     std::cerr << "ERROR: optimization failed" << std::endl;

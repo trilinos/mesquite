@@ -143,7 +143,8 @@ int main(int argc, char* argv[])
   q.add_quality_assessor( &qa, err );
   q.set_master_quality_improver( &solver, err );
   q.add_quality_assessor( &qa, err );
-  q.run_instructions( &mesh, &zplane, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &zplane);
+  q.run_instructions( &mesh_and_domain, err );
   if (err)
     return 2;
   if (final_mesh_file) {

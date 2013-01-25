@@ -158,13 +158,14 @@ public:
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
        // launches optimization on mesh_set1
-     double orig_qa_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+     MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &msq_geom);
+     double orig_qa_val=qa.loop_over_mesh(&mesh_and_domain, 0, err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
-     queue1.run_instructions(&mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
+     queue1.run_instructions(&mesh_and_domain, err); CPPUNIT_ASSERT(!err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
-     double fin_qa_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+     double fin_qa_val=qa.loop_over_mesh(&mesh_and_domain, 0, err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
        //make sure 'quality' improved
@@ -202,15 +203,16 @@ public:
        CPPUNIT_ASSERT(!err);
          // launches optimization on mesh_set1
        QualityAssessor qa=QualityAssessor( &shape_metric );
-       double orig_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+       MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &msq_geom);
+       double orig_val=qa.loop_over_mesh(&mesh_and_domain, 0, err);
        
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       queue1.run_instructions(&mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
+       queue1.run_instructions(&mesh_and_domain, err); CPPUNIT_ASSERT(!err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
 
-       double final_val= qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+       double final_val= qa.loop_over_mesh(&mesh_and_domain, 0, err);
   
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
@@ -254,13 +256,14 @@ public:
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          // launches optimization on mesh_set1
-       double orig_qa_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+       MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &msq_geom);
+       double orig_qa_val=qa.loop_over_mesh(&mesh_and_domain, 0, err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       queue1.run_instructions(&mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
+       queue1.run_instructions(&mesh_and_domain, err); CPPUNIT_ASSERT(!err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       double fin_qa_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+       double fin_qa_val=qa.loop_over_mesh(&mesh_and_domain, 0, err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          //make sure 'quality' improved

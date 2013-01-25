@@ -157,8 +157,9 @@ int main(int argc, char* argv[])
   mesh.read_vtk(laplacian_file_name_1, err);
   if (err) return 1;
 
+  MeshDomainAssoc mesh_and_domain4 = MeshDomainAssoc(&mesh, &msq_geom);
   t.reset();
-  lp_wrapper.run_instructions(&mesh, &msq_geom, err); 
+  lp_wrapper.run_instructions(&mesh_and_domain4, err); 
   if (err) return 1;
   double lp_s_secs = t.since_birth();
   std::cout << std::endl << "LaplacianWrapper small file optimization completed in " 
@@ -171,8 +172,9 @@ int main(int argc, char* argv[])
   mesh.read_vtk(laplacian_file_name_2, err);
   if (err) return 1;  
 
+  MeshDomainAssoc mesh_and_domain5 = MeshDomainAssoc(&mesh, &msq_geom2);
   t.reset();
-  lp_wrapper.run_instructions(&mesh, &msq_geom2, err); 
+  lp_wrapper.run_instructions(&mesh_and_domain5, err); 
   if (err) return 1;
   double lp_l1_secs = t.since_birth();
   std::cout << std::endl << "LaplacianWrapper large file (term crit=0.001) completed in " 
@@ -184,7 +186,7 @@ int main(int argc, char* argv[])
 
   lp_wrapper.set_vertex_movement_limit_factor(0.1);
   t.reset();
-  lp_wrapper.run_instructions(&mesh, &msq_geom2, err); 
+  lp_wrapper.run_instructions(&mesh_and_domain5, err); 
   if (err) return 1;
   double lp_l2_secs = t.since_birth();
   std::cout << std::endl << "LaplacianWrapper large file (term crit=0.1) completed in " 
@@ -210,8 +212,9 @@ int main(int argc, char* argv[])
   UntangleWrapper un_wrapper (metric);
   un_wrapper.set_vertex_movement_limit_factor( 0.005 );
 
+  MeshDomainAssoc mesh_and_domain3 = MeshDomainAssoc(&mesh, &u_domain);
   t.reset();
-  un_wrapper.run_instructions( &mesh, &u_domain, err );
+  un_wrapper.run_instructions( &mesh_and_domain3, err );
   if (err) return 1;
 
   double unb_s_secs = t.since_birth();
@@ -232,8 +235,9 @@ int main(int argc, char* argv[])
 
   PlanarDomain un_domain2( norm, coords2 );
  
+    MeshDomainAssoc mesh_and_domain6 = MeshDomainAssoc(&mesh, &un_domain2);
   t.reset();
-  un_wrapper.run_instructions( &mesh, &un_domain2, err );
+  un_wrapper.run_instructions( &mesh_and_domain6, err );
   if (err) return 1;
 
   double unb_l1_secs = t.since_birth();
@@ -255,8 +259,9 @@ int main(int argc, char* argv[])
   PlanarDomain un_domain3( norm, coords3 );
  
   un_wrapper.set_vertex_movement_limit_factor( 0.1 );
+  MeshDomainAssoc mesh_and_domain7 = MeshDomainAssoc(&mesh, &un_domain3);
   t.reset();
-  un_wrapper.run_instructions( &mesh, &un_domain3, err );
+  un_wrapper.run_instructions( &mesh_and_domain7, err );
   if (err) return 1;
 
   double unb_l2_secs = t.since_birth();
@@ -282,8 +287,9 @@ int main(int argc, char* argv[])
   UntangleWrapper un_wrapper2s(metric2);
   UntangleWrapper un_wrapper2l(metric2);
 
+  MeshDomainAssoc mesh_and_domain8 = MeshDomainAssoc(&mesh, &u_domain3);
   t.reset();
-  un_wrapper2s.run_instructions( &mesh, &u_domain3, err );
+  un_wrapper2s.run_instructions( &mesh_and_domain8, err );
   if (err) return 1;
   double uns_s_secs = t.since_birth();
   std::cout << std::endl << "UntangleWrapper::SIZE small file optimization completed in " 
@@ -304,8 +310,9 @@ int main(int argc, char* argv[])
   PlanarDomain un_domain4( norm, coords4 );
   un_wrapper2s.set_vertex_movement_limit_factor( 0.005 );
 
+  MeshDomainAssoc mesh_and_domain9 = MeshDomainAssoc(&mesh, &un_domain4);
   t.reset();
-  un_wrapper2s.run_instructions( &mesh, &un_domain4, err );
+  un_wrapper2s.run_instructions( &mesh_and_domain9, err );
   if (err) return 1;
 
   double uns_l1_secs = t.since_birth();
@@ -324,7 +331,7 @@ int main(int argc, char* argv[])
 
   un_wrapper2l.set_vertex_movement_limit_factor( 0.1 );
   t.reset();
-  un_wrapper2l.run_instructions( &mesh, &un_domain4, err );
+  un_wrapper2l.run_instructions( &mesh_and_domain9, err );
   if (err) return 1;
 
   double uns_l2_secs = t.since_birth();
@@ -349,8 +356,9 @@ int main(int argc, char* argv[])
   UntangleWrapper::UntangleMetric metric3 = UntangleWrapper::SHAPESIZE;
   UntangleWrapper un_wrapper3(metric3);
 
+  MeshDomainAssoc mesh_and_domain10 = MeshDomainAssoc(&mesh, &u_domain5);
   t.reset();
-  un_wrapper3.run_instructions( &mesh, &u_domain5, err );
+  un_wrapper3.run_instructions( &mesh_and_domain10, err );
   if (err) return 1;
 
   double unss_s_secs = t.since_birth();
@@ -371,8 +379,9 @@ int main(int argc, char* argv[])
 
   PlanarDomain un_domain6( norm, coords6 );
  
+  MeshDomainAssoc mesh_and_domain11 = MeshDomainAssoc(&mesh, &un_domain6);
   t.reset();
-  un_wrapper3.run_instructions( &mesh, &un_domain6, err );
+  un_wrapper3.run_instructions( &mesh_and_domain11, err );
   if (err) return 1;
 
   double unss_l_secs = t.since_birth();
@@ -399,8 +408,9 @@ int main(int argc, char* argv[])
   SizeAdaptShapeWrapper sas_wrapper1(1e-2, 50);
   SizeAdaptShapeWrapper sas_wrapper2(1e-1, 50);
 
+  MeshDomainAssoc mesh_and_domain12 = MeshDomainAssoc(&mesh, &geom);
   t.reset();
-  sas_wrapper1.run_instructions( &mesh, &geom, err);
+  sas_wrapper1.run_instructions( &mesh_and_domain12, err);
   if (err) return 1;
   double sas1_secs = t.since_birth();
   std::cout << std::endl << "SizeAdaptShapeWrapper (term crit=0.01) completed in " 
@@ -411,14 +421,11 @@ int main(int argc, char* argv[])
   if (err) return 1;
 
   t.reset();
-  sas_wrapper2.run_instructions( &mesh, &geom, err);
+  sas_wrapper2.run_instructions( &mesh_and_domain12, err);
   if (err) return 1;
   double sas2_secs = t.since_birth();
   std::cout << std::endl << "SizeAdaptShapeWrapper (term crit=0.1) completed in " 
             << sas2_secs << " seconds" << std::endl;
-
-
-
 
   // #################### Begin PaverMinEdgeLengthWrapper tests ###################
 
@@ -510,8 +517,9 @@ int main(int argc, char* argv[])
     if (MSQ_CHKERR(err)) return 1;
   }
   
+  MeshDomainAssoc mesh_and_domain1 = MeshDomainAssoc(&mesh, &surface);
   t.reset();
-  dd_wrapper.run_instructions( &mesh, &surface, err );
+  dd_wrapper.run_instructions( &mesh_and_domain1, err );
   if (MSQ_CHKERR(err)) return 1;
   double dd_secs = t.since_birth();
   std::cout << std::endl << "DeformingDomainWrapper file (term crit=0.01) completed in " 
@@ -570,13 +578,13 @@ int main(int argc, char* argv[])
   }
   
   dd_wrapper2.set_vertex_movement_limit_factor(0.1);
+  MeshDomainAssoc mesh_and_domain2 = MeshDomainAssoc(&mesh, &surface2);
   t.reset();
-  dd_wrapper2.run_instructions( &mesh, &surface2, err );
+  dd_wrapper2.run_instructions( &mesh_and_domain2, err );
   if (MSQ_CHKERR(err)) return 1;
   double dd_secs2 = t.since_birth();
   std::cout << std::endl << "DeformingDomainWrapper file (term crit=0.1) completed in " 
             << dd_secs2 << " seconds" << std::endl;
-
 
   // Timing Summary
   std::cout << std::endl << "********* Wrappers Timing Summary **********" 
@@ -622,7 +630,7 @@ int main(int argc, char* argv[])
             << dd_secs << " seconds" << std::endl;
   std::cout << "DeformingDomainWrapper file (term crit=0.1) completed in " 
             << dd_secs2 << " seconds" << std::endl;
- 
+  
   return 0;
 }
 

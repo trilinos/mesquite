@@ -69,15 +69,13 @@ namespace MESQUITE_NS
     
       //virtual functions from PatchDataUser...
       //!Loop over the mesh and perform the affine transformation
-    virtual double loop_over_mesh( Mesh* mesh, 
-                                   MeshDomain* domain, 
+    virtual double loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
                                    const Settings* settings,
                                    MsqError &err);
       //! Return the name of this PatchDataUser:  Mesh Transform
     virtual std::string get_name() const { return "Mesh Transform";}
     
-    virtual void initialize_queue( Mesh* mesh,
-                                   MeshDomain* domain,
+    virtual void initialize_queue( MeshDomainAssoc* mesh_and_domain,
                                    const Settings* settings,
                                    MsqError& err );
     

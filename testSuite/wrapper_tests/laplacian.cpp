@@ -80,7 +80,8 @@ int main()
   if (err) return 1;
   
     // launches optimization on mesh_set1
-  laplacian_smoother.run_instructions(&mesh, &msq_geom, err); 
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &msq_geom);
+  laplacian_smoother.run_instructions(&mesh_and_domain, err); 
   if (err) return 1;
  
   mesh.write_vtk("smoothed_mesh.vtk", err); 

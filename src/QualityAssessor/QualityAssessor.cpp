@@ -417,13 +417,12 @@ TagHandle QualityAssessor::get_tag( Mesh* mesh,
   return tag;
 }
 
-void QualityAssessor::initialize_queue( Mesh* mesh,
-                                        MeshDomain* domain,
+void QualityAssessor::initialize_queue( MeshDomainAssoc* mesh_and_domain,
                                         const Settings* settings,
                                         MsqError& err )
 {
   for (list_type::iterator i = assessList.begin(); i != assessList.end(); ++i) {
-    (*i)->get_metric()->initialize_queue( mesh, domain, settings, err );
+    (*i)->get_metric()->initialize_queue( mesh_and_domain, settings, err );
     MSQ_ERRRTN(err);
   }
 }
@@ -439,12 +438,11 @@ void QualityAssessor::initialize_queue( Mesh* mesh,
   set_stopping_assessemnt().
   \param ms (const MeshSet &) MeshSet used for quality assessment.
  */
-double QualityAssessor::loop_over_mesh( Mesh* mesh,
-                                        MeshDomain* domain,
+double QualityAssessor::loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
                                         const Settings* settings,
                                         MsqError& err)
 {
-  return loop_over_mesh_internal( mesh, domain, settings, NULL, err );
+  return loop_over_mesh_internal( mesh_and_domain, settings, NULL, err );
 }
 
 /*! 
@@ -463,12 +461,12 @@ double QualityAssessor::loop_over_mesh( ParallelMesh* mesh,
                                         const Settings* settings,
                                         MsqError& err)
 {
-  return loop_over_mesh_internal( mesh, domain, settings, 
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc((Mesh*)mesh, domain, false, true);
+  return loop_over_mesh_internal( &mesh_and_domain, settings, 
                                   mesh->get_parallel_helper(), err );
 }
 
-double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
-                                                 MeshDomain* domain,
+double QualityAssessor::loop_over_mesh_internal( MeshDomainAssoc* mesh_and_domain,
                                                  const Settings* settings,
                                                  ParallelHelper* helper,
                                                  MsqError& err )
@@ -477,7 +475,10 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
   reset_data();
 
     // Clear culling flag, set hard fixed flag, etc on all vertices
-  initialize_vertex_byte( mesh, domain, settings, err ); MSQ_ERRZERO(err);
+  initialize_vertex_byte( mesh_and_domain, settings, err ); MSQ_ERRZERO(err);
+
+  Mesh* mesh = mesh_and_domain->get_mesh();
+  MeshDomain* domain = mesh_and_domain->get_domain();
 
   PatchData patch;
   patch.set_mesh( mesh );

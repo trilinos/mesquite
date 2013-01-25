@@ -65,6 +65,7 @@ namespace MESQUITE_NS
    class MsqMeshEntity;
    class Mesh;
    class MeshDomain;
+   class MeshDomainAssoc;
    class Settings;
    
    class QualityMetric
@@ -338,8 +339,7 @@ namespace MESQUITE_NS
       //! Do any preliminary global initialization, consistency checking,
       //! etc.  Default implementation does nothing.
      MESQUITE_EXPORT virtual 
-     void initialize_queue( Mesh* mesh,
-                            MeshDomain* domain,
+     void initialize_queue( MeshDomainAssoc* mesh_and_domain,
                             const Settings* settings,
                             MsqError& err );
 

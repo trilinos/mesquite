@@ -82,15 +82,16 @@ void ShapeImprover::set_parallel_iterations( int count )
   parallelIterations = count;
 }
 
-void ShapeImprover::run_wrapper( Mesh* mesh,
-                                ParallelMesh* pmesh,
-                                MeshDomain* domain,
-                                Settings* settings,
-                                QualityAssessor* qa,
-                                MsqError& err )
+void ShapeImprover::run_wrapper( MeshDomainAssoc* mesh_and_domain,
+                                 ParallelMesh* pmesh,
+                                 Settings* settings,
+                                 QualityAssessor* qa,
+                                 MsqError& err )
 {
     // Quality Metrics
   IdealShapeTarget target;
+  Mesh* mesh = mesh_and_domain->get_mesh();
+  MeshDomain* domain = mesh_and_domain->get_domain();
 
   // only calc min edge length if user hasn't set the vertex_movement_limit_factor
   if (!mBeta)
@@ -124,7 +125,7 @@ void ShapeImprover::run_wrapper( Mesh* mesh,
   InstructionQueue q_invert_check;
     // a QuallityAssessor without a metric will just check for inverted elements and samples
   q_invert_check.add_quality_assessor(&check_inverted, err);
-  q_invert_check.run_common( mesh, pmesh, domain, settings, err ); MSQ_ERRRTN(err);
+  q_invert_check.run_common( mesh_and_domain, pmesh, settings, err ); MSQ_ERRRTN(err);
   int inverted_elems = 0, inverted_samples = 0;
   check_inverted.get_inverted_element_count(inverted_elems, inverted_samples, err);
   if (inverted_elems || inverted_samples)
@@ -149,7 +150,7 @@ void ShapeImprover::run_wrapper( Mesh* mesh,
     q_no.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
     q_no.set_master_quality_improver( &improver_no, err ); MSQ_ERRRTN(err);
     q_no.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
-    q_no.run_common( mesh, pmesh, domain, settings, err ); MSQ_ERRRTN(err);
+    q_no.run_common( mesh_and_domain, pmesh, settings, err ); MSQ_ERRRTN(err);
   }
   else
   {
@@ -173,7 +174,7 @@ void ShapeImprover::run_wrapper( Mesh* mesh,
     q_b.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
     q_b.set_master_quality_improver( &improver_b, err ); MSQ_ERRRTN(err);
     q_b.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
-    q_b.run_common( mesh, pmesh, domain, settings, err ); MSQ_ERRRTN(err);
+    q_b.run_common( mesh_and_domain, pmesh, settings, err ); MSQ_ERRRTN(err);
   }
 }
 

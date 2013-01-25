@@ -297,9 +297,8 @@ void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
 }
 
   
-void InstructionQueue::run_common( Mesh* mesh,
+void InstructionQueue::run_common( MeshDomainAssoc* mesh_and_domain,
                                    ParallelMesh* pmesh, 
-                                   MeshDomain* domain,
                                    Settings* settings,
                                    MsqError &err)
 { 
@@ -316,6 +315,9 @@ void InstructionQueue::run_common( Mesh* mesh,
   MsqInterrupt msq_interrupt;
 #endif
 
+  Mesh* mesh = mesh_and_domain->get_mesh();
+  MeshDomain* domain = mesh_and_domain->get_domain();
+
     // Generate SIGFPE on floating point errors
   MsqFPE fpe_trap( settings->trap_floating_point_exception() );
   
@@ -330,7 +332,7 @@ void InstructionQueue::run_common( Mesh* mesh,
       return;
     }
     
-    (*instr)->initialize_queue( mesh, domain, settings, err ); 
+    (*instr)->initialize_queue( mesh_and_domain, settings, err ); 
     MSQ_ERRRTN(err);
   }
   
@@ -348,7 +350,7 @@ void InstructionQueue::run_common( Mesh* mesh,
       (*instr)->loop_over_mesh( pmesh, domain, settings, err ); 
     }
     else {
-      (*instr)->loop_over_mesh( mesh, domain, settings, err ); 
+      (*instr)->loop_over_mesh( mesh_and_domain, settings, err ); 
     }
     MSQ_ERRRTN(err);
   }

@@ -186,13 +186,14 @@ public:
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
        // launches optimization on mesh_set1
-     double orig_qa_val=stop_qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+     MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &msq_geom);
+     double orig_qa_val=stop_qa.loop_over_mesh(&mesh_and_domain, 0, err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
-     queue1.run_instructions(&mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
+     queue1.run_instructions(&mesh_and_domain, err); CPPUNIT_ASSERT(!err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
-     double fin_qa_val=stop_qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+     double fin_qa_val=stop_qa.loop_over_mesh(&mesh_and_domain, 0, err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
        //make sure 'quality' improved
@@ -204,13 +205,13 @@ public:
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
        // launches optimization on mesh_set1
-     orig_qa_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+     orig_qa_val=qa.loop_over_mesh(&mesh_and_domain, 0, err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
-     queue2.run_instructions(&mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
+     queue2.run_instructions(&mesh_and_domain, err); CPPUNIT_ASSERT(!err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
-     fin_qa_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+     fin_qa_val=qa.loop_over_mesh(&mesh_and_domain, 0, err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
        //make sure 'quality' improved
@@ -279,13 +280,14 @@ public:
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          // launches optimization on mesh_set1
-       double orig_qa_val=stop_qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+       MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &msq_geom);
+       double orig_qa_val=stop_qa.loop_over_mesh(&mesh_and_domain, 0, err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       queue1.run_instructions(&mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
+       queue1.run_instructions(&mesh_and_domain, err); CPPUNIT_ASSERT(!err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       double fin_qa_val=stop_qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+       double fin_qa_val=stop_qa.loop_over_mesh(&mesh_and_domain, 0, err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          //make sure 'quality' improved
@@ -297,13 +299,13 @@ public:
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          // launches optimization on mesh_set1
-       orig_qa_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+       orig_qa_val=qa.loop_over_mesh(&mesh_and_domain, 0, err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       queue2.run_instructions(&mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
+       queue2.run_instructions(&mesh_and_domain, err); CPPUNIT_ASSERT(!err);
        //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       fin_qa_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+       fin_qa_val=qa.loop_over_mesh(&mesh_and_domain, 0, err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          //make sure 'quality' improved
@@ -358,13 +360,14 @@ public:
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          // launches optimization on mesh_set1
-       double orig_qa_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+       MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &msq_geom);
+       double orig_qa_val=qa.loop_over_mesh(&mesh_and_domain, 0, err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       queue1.run_instructions(&mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
+       queue1.run_instructions(&mesh_and_domain, err); CPPUNIT_ASSERT(!err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       double fin_qa_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+       double fin_qa_val=qa.loop_over_mesh(&mesh_and_domain, 0, err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          //make sure 'quality' improved

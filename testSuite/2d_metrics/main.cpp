@@ -468,7 +468,9 @@ bool run_smoother( mesh_reader_t input_mesh,
   CHKERR(err)
 
   cout << "Running " << exp << "." << n << " ...";
-  q.run_instructions( &active, &plane2, err );
+
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&active, &plane2);
+  q.run_instructions( &mesh_and_domain, err );
   if (MSQ_CHKERR(err)) {
     cout << "######## EXPERIMENT " << exp << "." << n << " FAILED! ##########" << endl;
     return false;

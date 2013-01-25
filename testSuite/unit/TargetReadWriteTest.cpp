@@ -236,7 +236,8 @@ void TargetReadWriteTest::read_write_3D_targets()
   
     // Write the targets
   TargetWriter writer( &tc );
-  writer.loop_over_mesh( &myMesh, 0, &linearMaps, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, 0);
+  writer.loop_over_mesh( &mesh_and_domain, &linearMaps, err );
   CPPUNIT_ASSERT(!err);
   
     // Compare all target matrices
@@ -272,7 +273,8 @@ void TargetReadWriteTest::read_write_surface_targets()
   
     // Write the targets
   TargetWriter writer( &tc );
-  writer.loop_over_mesh( &myMesh, 0, &linearMaps, err );
+    MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, 0);
+  writer.loop_over_mesh( &mesh_and_domain, &linearMaps, err );
   CPPUNIT_ASSERT(!err);
   
     // Compare all target matrices
@@ -308,7 +310,8 @@ void TargetReadWriteTest::read_write_2D_targets()
   
     // Write the targets
   TargetWriter writer( &tc );
-  writer.loop_over_mesh( &myMesh, 0, &linearMaps, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, 0);
+  writer.loop_over_mesh( &mesh_and_domain, &linearMaps, err );
   CPPUNIT_ASSERT(!err);
   
     // Compare all target matrices
@@ -342,7 +345,8 @@ void TargetReadWriteTest::read_write_weights()
   
     // Write the targets
   TargetWriter writer( 0, &tc );
-  writer.loop_over_mesh( &myMesh, 0, &linearMaps, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, 0);
+  writer.loop_over_mesh( &mesh_and_domain, &linearMaps, err );
   CPPUNIT_ASSERT(!err);
   
     // Compare all target matrices

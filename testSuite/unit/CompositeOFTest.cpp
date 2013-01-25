@@ -61,7 +61,7 @@ class FauxObjectiveFunction : public ObjectiveFunction
       : mValue(value), mInvalid(invalid), mError(error)
       { ++instanceCount; }
     ~FauxObjectiveFunction() { --instanceCount; }
-    bool initialize_block_coordinate_descent( Mesh*, MeshDomain*, const Settings*, PatchSet*, MsqError& )
+    bool initialize_block_coordinate_descent( MeshDomainAssoc*, const Settings*, PatchSet*, MsqError& )
       { CPPUNIT_ASSERT_MESSAGE("This shouldn't ever get called", false ); return false; }
     bool evaluate( EvalType, PatchData&, double& value_out, bool, MsqError& err )
       { 
@@ -78,7 +78,7 @@ class FauxObjectiveFunction : public ObjectiveFunction
     void clear() {}
     int min_patch_layers() const { return 0; }
     
-    void initialize_queue( Mesh* , MeshDomain* , 
+    void initialize_queue( MeshDomainAssoc* , 
                            const Settings* ,
                            MsqError&  ) {}
   

@@ -76,7 +76,8 @@ int main(int argc, char* argv[])
   queue.set_master_quality_improver(&f_newton, err);
   queue.add_quality_assessor(&m_ratio_qa, err);
     // do optimization of the mesh_set
-  queue.run_instructions(&my_mesh, &my_mesh_plane, err);
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&my_mesh, &my_mesh_plane);
+  queue.run_instructions(&mesh_and_domain, err);
   if (err) {
     std::cout << err << std::endl;
     return 2;

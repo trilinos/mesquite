@@ -163,7 +163,8 @@ int main( int argc, char* argv[] )
   cond_write_file( mesh, deformed_file );
   
     // smooth surface mesh
-  wrapper.run_instructions( &mesh, &surface, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &surface);
+  wrapper.run_instructions( &mesh_and_domain, err );
   if (MSQ_CHKERR(err)) return 1;
   
   cond_write_file( mesh, smoothed_file );

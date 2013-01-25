@@ -35,6 +35,7 @@ SUBDIRS = test_1 \
 	  algorithm_test\
 	  analytical_grad_3D \
           benchmark_tests \
+          paraboloid_domain_test \
           $(EXO_TEST) \
 	  headers \
           high_aspect_ratio \

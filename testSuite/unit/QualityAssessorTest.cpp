@@ -306,7 +306,8 @@ void QualityAssessorTest::test_basic_stats_element()
   qa.disable_printing_results();
   
   MsqError err;
-  qa.loop_over_mesh( &myMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
   
     // check didn't evaluate any element more than once
@@ -338,7 +339,8 @@ void QualityAssessorTest::test_basic_stats_vertex()
   qa.disable_printing_results();
   
   MsqError err;
-  qa.loop_over_mesh( &myMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
   
     // check didn't evaluate any vertex more than once
@@ -371,7 +373,8 @@ void QualityAssessorTest::test_basic_stats_sample()
   qa.disable_printing_results();
  
   MsqError err;
-  qa.loop_over_mesh( &myMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
   
     // check didn't evaluate any sample more than once
@@ -420,7 +423,8 @@ void QualityAssessorTest::test_histogram_known_range()
   qa.disable_printing_results();
   
   MsqError err;
-  qa.loop_over_mesh( &myMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
   
     // calculate expected histogram
@@ -478,7 +482,8 @@ void QualityAssessorTest::test_histogram_unknown_range()
   qa.disable_printing_results();
   
   MsqError err;
-  qa.loop_over_mesh( &myMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
   
     // check values
@@ -549,7 +554,8 @@ void QualityAssessorTest::test_power_mean()
   qa.disable_printing_results();
   
   MsqError err;
-  qa.loop_over_mesh( &myMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
   
     // get results
@@ -584,12 +590,14 @@ void QualityAssessorTest::test_invalid_count()
   CPPUNIT_ASSERT(NULL != results);
   
     // try mesh with only valid elements
-  qa.loop_over_mesh( &myMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
   CPPUNIT_ASSERT_EQUAL( 0, results->get_invalid_element_count() );
   
     // try mesh with one inverted element
-  qa.loop_over_mesh( &invertedMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain2 = MeshDomainAssoc(&invertedMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain2, &mySettings, err  );
   ASSERT_NO_ERROR( err );
   CPPUNIT_ASSERT_EQUAL( 1, results->get_invalid_element_count() );
 }
@@ -603,7 +611,8 @@ void QualityAssessorTest::test_inverted_count()
   qa.disable_printing_results();
   
     // try mesh with only valid elements
-  qa.loop_over_mesh( &myMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
   inverted = samples = -1;
   qa.get_inverted_element_count( inverted, samples, err );
@@ -612,7 +621,8 @@ void QualityAssessorTest::test_inverted_count()
   CPPUNIT_ASSERT_EQUAL( 0, samples );
   
     // try mesh with one inverted element
-  qa.loop_over_mesh( &invertedMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain2 = MeshDomainAssoc(&invertedMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain2, &mySettings, err  );
   ASSERT_NO_ERROR( err );
   inverted = samples = -1;
   qa.get_inverted_element_count( inverted, samples, err );
@@ -715,7 +725,8 @@ void QualityAssessorTest::test_output_control()
     // disable output from constructor
   QualityAssessor qa1( &metric, 0, 0, false, 0, false );
   redir.redirect();
-  qa1.loop_over_mesh( &invertedMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&invertedMesh, &myDomain);
+  qa1.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   redir.restore();
     // make sure nothing was written to output streams
   CPPUNIT_ASSERT( !redir.have_data() );
@@ -724,7 +735,7 @@ void QualityAssessorTest::test_output_control()
   QualityAssessor qa2( &metric );
   qa2.disable_printing_results();
   redir.redirect();
-  qa2.loop_over_mesh( &invertedMesh, &myDomain, &mySettings, err  );
+  qa2.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   redir.restore();
     // make sure nothing was written to output streams
   CPPUNIT_ASSERT( !redir.have_data() );
@@ -733,7 +744,7 @@ void QualityAssessorTest::test_output_control()
   stringstream deststr;
   QualityAssessor qa3( deststr, &metric );
   redir.redirect();
-  qa3.loop_over_mesh( &invertedMesh, &myDomain, &mySettings, err  );
+  qa3.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   redir.restore();
     // make sure nothing was written to output streams
   CPPUNIT_ASSERT( !redir.have_data() );
@@ -752,7 +763,8 @@ void QualityAssessorTest::test_tag_element()
   qa.disable_printing_results();
   
   MsqError err;
-  qa.loop_over_mesh( &myMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
   
   TagHandle tag;
@@ -788,7 +800,8 @@ void QualityAssessorTest::test_tag_vertex()
   qa.disable_printing_results();
   
   MsqError err;
-  qa.loop_over_mesh( &myMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
   
   TagHandle tag;
@@ -821,7 +834,8 @@ void QualityAssessorTest::test_tag_inverted()
   QualityAssessor qa( false, false, tag_name );
   
   MsqError err;
-  qa.loop_over_mesh( &invertedMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&invertedMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
   
   TagHandle tag;
@@ -862,7 +876,8 @@ void QualityAssessorTest::test_print_inverted()
   stringstream str;
   QualityAssessor qa( str );
   qa.measure_free_samples_only( false );
-  qa.loop_over_mesh( &invertedMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&invertedMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
 
     // get inverted count from QA
@@ -887,7 +902,8 @@ void QualityAssessorTest::test_print_stats()
   stringstream str;
   ConditionNumberQualityMetric metric;
   QualityAssessor qa( str, &metric );
-  qa.loop_over_mesh( &myMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
 
     // get results
@@ -934,7 +950,8 @@ void QualityAssessorTest::test_print_name()
   stringstream str;
   ConditionNumberQualityMetric metric;
   QualityAssessor qa( str, &metric, 0, 0, false, 0, 0, NAME);
-  qa.loop_over_mesh( &myMesh, &myDomain, &mySettings, err  );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&myMesh, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
 
     // seach output for first occurance of name
@@ -994,7 +1011,8 @@ void QualityAssessorTest::test_free_only()
   q.add_quality_assessor( &qa_all, err );
   q.add_quality_assessor( &qa_free, err );
   PlanarDomain xy(PlanarDomain::XY);
-  q.run_instructions( &mesh, &xy, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &xy);
+  q.run_instructions( &mesh_and_domain, err );
   ASSERT_NO_ERROR(err);
   
   const QualityAssessor::Assessor* data;

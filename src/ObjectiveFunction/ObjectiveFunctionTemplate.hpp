@@ -55,8 +55,7 @@ class MESQUITE_EXPORT ObjectiveFunctionTemplate : public ObjectiveFunction
     
     void set_quality_metric( QualityMetric* metric ) { qualityMetric = metric; }
 
-    virtual bool initialize_block_coordinate_descent( Mesh* mesh, 
-                                                      MeshDomain* domain, 
+    virtual bool initialize_block_coordinate_descent( MeshDomainAssoc* mesh_and_domain,
                                                       const Settings* settings,
                                                       PatchSet* user_set,
                                                       MsqError& err );
@@ -67,8 +66,7 @@ class MESQUITE_EXPORT ObjectiveFunctionTemplate : public ObjectiveFunction
       //!
       //! Do any preliminary global initialization, consistency checking,
       //! etc.  Default implementation does nothing.
-     virtual void initialize_queue( Mesh* mesh,
-                                    MeshDomain* domain,
+     virtual void initialize_queue( MeshDomainAssoc* mesh_and_domain,
                                     const Settings* settings,
                                     MsqError& err );
 

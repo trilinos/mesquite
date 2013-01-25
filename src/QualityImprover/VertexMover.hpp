@@ -62,13 +62,11 @@ namespace MESQUITE_NS
     // virtual destructor ensures use of polymorphism during destruction
     virtual ~VertexMover();
     
-    virtual void initialize_queue( Mesh* mesh,
-                                   MeshDomain* domain,
+    virtual void initialize_queue( MeshDomainAssoc* mesh_and_domain,
                                    const Settings* settings,
                                    MsqError& err );
     
-    virtual double loop_over_mesh( Mesh* mesh, 
-                                   MeshDomain* domain,
+    virtual double loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
                                    const Settings* settings,
                                    MsqError &err);
 

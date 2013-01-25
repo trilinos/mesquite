@@ -45,16 +45,14 @@ namespace MESQUITE_NS {
 
 ObjectiveFunctionTemplate::~ObjectiveFunctionTemplate() {}
 
-void ObjectiveFunctionTemplate::initialize_queue( Mesh* mesh,
-                                               MeshDomain* domain,
-                                               const Settings* settings,
-                                               MsqError& err )
+void ObjectiveFunctionTemplate::initialize_queue( MeshDomainAssoc* mesh_and_domain,
+                                                  const Settings* settings,
+                                                  MsqError& err )
 {
-  qualityMetric->initialize_queue( mesh, domain, settings, err ); MSQ_ERRRTN(err);
+  qualityMetric->initialize_queue( mesh_and_domain, settings, err ); MSQ_ERRRTN(err);
 }
 
-bool ObjectiveFunctionTemplate::initialize_block_coordinate_descent( Mesh* mesh, 
-                                                      MeshDomain* domain, 
+bool ObjectiveFunctionTemplate::initialize_block_coordinate_descent( MeshDomainAssoc* mesh_and_domain,
                                                       const Settings* settings,
                                                       PatchSet* ,
                                                       MsqError& err )
@@ -73,6 +71,9 @@ bool ObjectiveFunctionTemplate::initialize_block_coordinate_descent( Mesh* mesh,
                       MsqError::INVALID_STATE);
       return false;
   }
+
+  Mesh* mesh = mesh_and_domain->get_mesh();
+  MeshDomain* domain = mesh_and_domain->get_domain();
 
   clear();
   patch_set->set_mesh( mesh );
