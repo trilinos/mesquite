@@ -491,12 +491,26 @@ namespace MESQUITE_NS
       The MeshDomainAssoc class provides an association of a Mesh instance
       with a MeshDomain instance.  The mesh is checked to verify that
       it is compatibile with the associated MeshDomain.  If the two are
-      not compatible, the MeshDomainAssoc instace is not created.  Each
-      class deriving MeshDomainAssoc is responsible for making this check.
+      not compatible, the MeshDomainAssoc instace is not created. 
     */
   class MESQUITE_EXPORT MeshDomainAssoc
   {
   public:
+
+      /**\brief Constructor
+       *\param mesh                       The mesh instance being associated
+       * param domain                     The domain being associated
+       * param full_compatibility_check   Controls how many vertices will be checked for 
+       *                                  compatibility with the associated domain.
+       *                                  When false, only the first vertex of the mesh
+       *                                  is checked for compatibility.  When true, all
+       *                                  vertices of the mesh are checked.
+       * param proceed                    Controls what Mesquite will do if the compatibility
+       *                                  check fails.  When false, mesquite terminates i
+       *                                  execution.  When true, execution continues.
+       * param skip_compatibility_checki  when true, does not perform the compatibility check. 
+       *                                  When false, the check is performed.
+       */
     MeshDomainAssoc(Mesquite::Mesh* mesh, 
                     Mesquite::MeshDomain* domain, 
                     bool full_compatibility_check=false,
