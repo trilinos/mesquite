@@ -65,7 +65,8 @@ int main(int argc, char* argv[])
   PlanarDomain plane(Vector3D(0,0,1), Vector3D(0,0,5));
   
     // launches optimization on mesh
-  queue1.run_instructions(&mesh, &plane, err); 
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &plane);
+  queue1.run_instructions(&mesh_and_domain, err); 
   if (err) return 1;
 
   return 0;
@@ -109,7 +110,8 @@ int main( )
   queue1.set_master_quality_improver(&rand, err);
   if (err) return 1;
 
-  queue1.run_instructions(&mesh, &msq_geom, err);
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &msq_geom);
+  queue1.run_instructions(&mesh_and_domain, err);
   if (err) return 1;
   
   return 0;
@@ -165,7 +167,8 @@ int main( )
   queue1.add_quality_assessor(&stop_qa2,err);
   if (err) return 1;
 
-  queue1.run_instructions(&mesh, &msq_geom, err);
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &msq_geom);
+  queue1.run_instructions(&mesh_and_domain, err);
   if (err) return 1;
   
   return 0;
@@ -367,12 +370,11 @@ Below is a simplified version of the ShapeImprover Wrapper that has been annotat
 
 \begin{lstlisting}[frame=single]
 
-void ShapeImprover::run_wrapper( Mesh* mesh,
-                                ParallelMesh* pmesh,
-                                MeshDomain* domain,
-                                Settings* settings,
-                                QualityAssessor* qa,
-                                MsqError& err )
+void ShapeImprover::run_wrapper( MeshDomainAssoc* mesh_and_domain,
+                                 ParallelMesh* pmesh,
+                                 Settings* settings,
+                                 QualityAssessor* qa,
+                                 MsqError& err )
 {
     // Quality Metrics
 
@@ -414,7 +416,7 @@ void ShapeImprover::run_wrapper( Mesh* mesh,
   InstructionQueue q;
   q.set_master_quality_improver( &improver, err ); MSQ_ERRRTN(err);
   q.add_quality_assessor( qa, err ); MSQ_ERRRTN(err);
-  q.run_common( mesh, pmesh, domain, settings, err ); MSQ_ERRRTN(err);
+  q.run_common( mesh_and_domain, pmesh, settings, err ); MSQ_ERRRTN(err);
 }
 
 \end{lstlisting}

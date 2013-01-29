@@ -147,8 +147,10 @@ algorithms and metrics (see Chapter
 \ref{sec:wrappers} for details).
 \begin{verbatim}
 Mesquite::LaplaceWrapper mesh_quality_algorithm;
-mesh_quality_algorithm.run_instructions(&my_mesh,
-                                        &my_mesh_plane,  err);
+
+MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&my_mesh, &my_mesh_plane);
+mesh_quality_algorithm.run_instructions(&mesh_and_domain, err);
+
 //Should check the error object after the instruction is ran
 // to see whether the instructions were all successful.
 if (err) 
@@ -164,12 +166,12 @@ file:
 \begin{verbatim}
   my_mesh.write_vtk("smoothed_mesh.vtk",err); 
 \end{verbatim}
-This completes the code necessary for the simple wrapper example.  Once
+This completes the code necessary for the simple wrapper example. Once
 the code has successfully compiled by typing the {\tt make} command given in
 section \ref{sec:tutfile}, 
 run it from the tutorial directory \texttt{mesquite/testSuite/tutorial/}
 with a mesh file name as a command line 
-argument by typing 
+argument by typing: 
 \begin{verbatim}
 ./tutorial ../../meshFiles/2D/VTK/square_quad_10_rand.vtk
 \end{verbatim}
@@ -284,7 +286,8 @@ the details of each class and the low-level API are not described here.
   queue.add_quality_assessor(&m_ratio_qa, err); 
 
     // do optimization of the mesh_set
-  queue.run_instructions(&my_mesh, &my_mesh_plane, err); 
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&my_mesh, &my_mesh_plane);
+  queue.run_instructions(&mesh_and_domain, err);
   if (err) {
     std::cout << err << std::endl;
     return 2;

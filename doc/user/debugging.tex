@@ -206,7 +206,8 @@ A simple example using the QualityAssessor class:
   qa.disable_printing_results();
 
     // run the QualityAssessor
-  qa.loop_over_mesh( &meshToAssess, &myDomain, &mySettings, err	 );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&meshToAssess, &myDomain);
+  qa.loop_over_mesh( &mesh_and_domain, &mySettings, err );
 
     // get results
   const QualityAssessor::Assessor* results = qa.get_results( &metric );
@@ -549,7 +550,8 @@ qa.add_quality_assessment(&metric,0,0,0,\<"InverseMeanRatio"\>);
 PlanarDomain plane(PlanarDomain::XY);
 InstructionQueue queue;
 queue.add_quality_assessor( &qa, err );
-queue.run_instructions( &mesh, &plane, err );
+MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &plane);
+queue.run_instructions( &mesh_and_domain, err );
 
 mesh.write_vtk( "meshqual.vtk", err );
 \end{lstlisting}
@@ -575,7 +577,8 @@ QualityAssessor qa;
 
 InstructionQueue queue;
 queue.add_quality_assessor( &qa, err );
-queue.run_instructions( &mesh, &plane, err );
+MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &plane);
+queue.run_instructions( &mesh_and_domain, err );
 
 mesh.write_vtk( "meshqual.vtk", err );
 \end{lstlisting}

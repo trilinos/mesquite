@@ -130,7 +130,9 @@ Mesquite a mesh containing four quadrilateral elements.
     exit (2);
   }
   
-  shape_wrapper.run_instructions( &mesh, &domain, err );
+
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &domain);
+  shape_wrapper.run_instructions( &mesh_and_domain, err );
   if (err) {
     std::cout << "Error smoothing mesh:" << std::endl
               << err << std::endl;
@@ -502,7 +504,8 @@ int shape_improve_2D( iMesh_Instance mesh_instance,
     // Finally, smooth the mesh
   ShapeImprover smoother;
   \<PlanarDomain xyplane(PlanarDomain::XY);\>
-  \<smoother.run_instructions( &mesh_adapter, &xyplane, err );\>
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh_adapter, &xyplane);
+  \<smoother.run_instructions( &mesh_and_domain, err );\>
   if (err) return err.error_code();
 
   return 0;
@@ -746,6 +749,7 @@ Assuming a mesh has already been created, the following code snippet calls the V
   Settings settings;
   settings.set_slaved_ho_node_mode( Settings::SLAVE_CALCULATED );
   SlaveBoundaryVertices determine_slaved_verts( depth, boundary );
-  determine_slaved_verts.loop_over_mesh( &mesh, &domain, &settings, err );
+  MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh, &domain);
+  determine_slaved_verts.loop_over_mesh( &mesh_and_domain, &settings, err );
 \end{lstlisting}
 
