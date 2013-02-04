@@ -99,7 +99,7 @@ int main()
 {     
   MsqPrintError err(cout);
   Mesquite::MeshImpl mesh;
-  mesh.read_vtk(MESH_FILES_DIR "2D/VTK/paraboloid.vtk", err); 
+  mesh.read_vtk(MESH_FILES_DIR "2D/vtk/quads/untangled/paraboloid.vtk", err); 
 //  mesh.read_vtk("/home/bktidwell/tmp/paraboloid.vtk", err);
   if (err) return 1;
   

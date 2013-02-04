@@ -72,7 +72,7 @@ using std::endl;
 
 using namespace Mesquite;
 
-#define VTK_2D_DIR MESH_FILES_DIR "2D/VTK/"
+#define VTK_2D_DIR MESH_FILES_DIR "2D/vtk/"
 
 const bool brief_output = true;
 const bool write_output = false;
@@ -81,7 +81,7 @@ int main( )
 {
   Mesquite::MeshImpl mesh;
   MsqPrintError err(cout);
-  mesh.read_vtk(VTK_2D_DIR "tangled_quad.vtk", err);
+  mesh.read_vtk(VTK_2D_DIR "quads/tangled/tangled_quad.vtk", err);
   if (err) return 1;
   
   // Set Domain Constraint

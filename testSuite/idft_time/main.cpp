@@ -59,7 +59,7 @@ using std::endl;
 #include "MsqTimer.hpp"
 using namespace Mesquite;
 
-const char* DEFAULT_INPUT = MESH_FILES_DIR "2D/VTK/equil_tri2.vtk";
+const char* DEFAULT_INPUT = MESH_FILES_DIR "2D/vtk/tris/untangled/equil_tri2.vtk";
 
 /* Print usage or help information: exits if err == true */
 void usage( const char* argv0 = 0, bool err = true )

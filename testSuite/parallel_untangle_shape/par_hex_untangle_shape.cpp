@@ -101,7 +101,7 @@ using std::endl;
 using namespace Mesquite;
 
 #define VTK_3D_DIR MESH_FILES_DIR "3D/vtk/hexes/tangled/"
-#define VTK_2D_DIR MESH_FILES_DIR "2D/VTK/"
+#define VTK_2D_DIR MESH_FILES_DIR "2D/vtk/quads/tangled/"
 
 using namespace std;
   

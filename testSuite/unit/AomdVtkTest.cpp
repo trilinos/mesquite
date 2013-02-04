@@ -92,7 +92,7 @@ public:
      
      /* Reads a TSTT Mesh file -- 10 triangles, 2 free vertices */
      TSTT::Mesh_Create(&tri10, &tstt_err); assert(!tstt_err);
-     strcpy(file_name, "../../meshFiles/2D/VTK/equil_tri2.vtk");
+     strcpy(file_name, "../../meshFiles/2D/vtk/tris/untangled/equil_tri2.vtk");
      std::cout << file_name << std::endl; // dbg
      TSTT::Mesh_Load(tri10, file_name, &tstt_err);
      std::cout << tstt_err << std::endl; // dbg

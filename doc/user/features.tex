@@ -28,7 +28,7 @@ Implements the Laplacian smoothing for a patch with one free vertex.  It moves t
 \begin{lstlisting}[frame=single]
 int main(int argc, char* argv[])
 {
-  const char input_file[] = MESH_FILES_DIR "2D/VTK/square_quad_2.vtk";
+  const char input_file[] = MESH_FILES_DIR "2D/vtk/quads/untangled/square_quad_2.vtk";
 
     /* Read a VTK Mesh file */
   MsqPrintError err(cout);
@@ -89,7 +89,7 @@ int main( )
 {
   Mesquite::MeshImpl mesh;
   MsqPrintError err(cout);
-  mesh.read_vtk(VTK_2D_DIR "tangled_quad.vtk", err);
+  mesh.read_vtk(VTK_2D_DIR "quads/untangled/tangled_quad.vtk", err);
   if (err) return 1;
   
   // Set Domain Constraint
@@ -132,7 +132,7 @@ int main( )
 {
   Mesquite::MeshImpl mesh;
   MsqPrintError err(cout);
-  mesh.read_vtk(VTK_2D_DIR "tangled_quad.vtk", err);
+  mesh.read_vtk(VTK_2D_DIR "quads/untangled/tangled_quad.vtk", err);
   if (err) return 1;
   
     // Set Domain Constraint

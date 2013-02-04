@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 
   Mesquite::MeshImpl mesh;
     //mesh->read_exodus("transformed_mesh.exo", err);
-  mesh.read_vtk(MESH_FILES_DIR "2D/VTK/tfi_horse10x4-12.vtk", err);
+  mesh.read_vtk(MESH_FILES_DIR "2D/vtk/quads/untangled/tfi_horse10x4-12.vtk", err);
   if (err) return 1;
   
     // Get all vertex coordinates from mesh

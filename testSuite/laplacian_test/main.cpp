@@ -69,7 +69,7 @@ using std::endl;
 #include "EdgeLengthQualityMetric.hpp"
 using namespace Mesquite;
 
-const char DEFAULT_INPUT[] = MESH_FILES_DIR "2D/VTK/square_quad_2.vtk";
+const char DEFAULT_INPUT[] = MESH_FILES_DIR "2D/vtk/quads/untangled/square_quad_2.vtk";
 
 void help(const char* argv0)
 {

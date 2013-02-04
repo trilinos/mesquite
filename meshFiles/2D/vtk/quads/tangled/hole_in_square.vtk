@@ -1,5 +1,5 @@
 # vtk DataFile Version 2.0
-Mesquite Mesh ../../meshFiles/2D/VTK/hole_in_square.vtk .
+Mesquite Mesh ../../meshFiles/2D/vtk/quads/tangled/hole_in_square.vtk .
 ASCII
 DATASET UNSTRUCTURED_GRID
 POINTS 168 float

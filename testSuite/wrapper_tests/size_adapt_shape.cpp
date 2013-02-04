@@ -51,7 +51,7 @@ using std::endl;
 
 using namespace Mesquite;
 
-const char DEFAULT_INPUT[] = MESH_FILES_DIR "2D/VTK/bias-sphere-quads.vtk";
+const char DEFAULT_INPUT[] = MESH_FILES_DIR "2D/vtk/quads/untangled/bias-sphere-quads.vtk";
 
 void help(const char* argv0)
 {

@@ -126,7 +126,7 @@ public:
       // exceptions ourself.
      MsqFPE fpe_trap( true );
      
-     mesh.read_vtk(MESH_FILES_DIR "2D/VTK/tangled_tri.vtk", err);
+     mesh.read_vtk(MESH_FILES_DIR "2D/vtk/tris/tangled/tangled_tri.vtk", err);
      CPPUNIT_ASSERT(!err);
      
        //create geometry: plane z=5, normal (0,0,1)
@@ -223,7 +223,7 @@ public:
      {
        Mesquite::MeshImpl mesh;
        MsqPrintError err(cout); 
-       mesh.read_vtk(MESH_FILES_DIR "2D/VTK/tangled_quad.vtk", err);
+       mesh.read_vtk(MESH_FILES_DIR "2D/vtk/quads/tangled/tangled_quad.vtk", err);
        CPPUNIT_ASSERT(!err);
 
          //create geometry: plane z=5, normal (0,0,1)
@@ -317,7 +317,7 @@ public:
      {
        MsqPrintError err(cout); 
        Mesquite::MeshImpl mesh;
-       mesh.read_vtk(MESH_FILES_DIR "2D/VTK/tri_5_xz.vtk", err);
+       mesh.read_vtk(MESH_FILES_DIR "2D/vtk/tris/untangled/tri_5_xz.vtk", err);
        CPPUNIT_ASSERT(!err);
 
          //create geometry: plane y=5, normal (0,1,0)
@@ -389,7 +389,7 @@ void PlanarGeometryTest::test_fit_plane()
   const double epsilon = 1e-8;
   
   MeshImpl mesh1;
-  mesh1.read_vtk(MESH_FILES_DIR "2D/VTK/bad_circle_tri.vtk", err);
+  mesh1.read_vtk(MESH_FILES_DIR "2D/vtk/tris/untangled/bad_circle_tri.vtk", err);
   ASSERT_NO_ERROR(err);
   plane.fit_vertices( &mesh1, err, epsilon );
   ASSERT_NO_ERROR(err);
@@ -397,7 +397,7 @@ void PlanarGeometryTest::test_fit_plane()
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 5, plane.get_coeff(), epsilon );
   
   MeshImpl mesh2;
-  mesh2.read_vtk(MESH_FILES_DIR "2D/VTK/equil_tri.vtk", err);
+  mesh2.read_vtk(MESH_FILES_DIR "2D/vtk/tris/untangled/equil_tri.vtk", err);
   ASSERT_NO_ERROR(err);
   plane.fit_vertices( &mesh2, err, epsilon );
   ASSERT_NO_ERROR(err);
@@ -405,7 +405,7 @@ void PlanarGeometryTest::test_fit_plane()
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, plane.get_coeff(), epsilon );
   
   MeshImpl mesh3;
-  mesh3.read_vtk(MESH_FILES_DIR "2D/VTK/quads_4by2.vtk", err);
+  mesh3.read_vtk(MESH_FILES_DIR "2D/vtk/quads/untangled/quads_4by2.vtk", err);
   ASSERT_NO_ERROR(err);
   plane.fit_vertices( &mesh3, err, epsilon );
   ASSERT_NO_ERROR(err);
@@ -413,7 +413,7 @@ void PlanarGeometryTest::test_fit_plane()
   CPPUNIT_ASSERT_DOUBLES_EQUAL( -2, plane.get_coeff(), epsilon );
   
   MeshImpl mesh4;
-  mesh4.read_vtk(MESH_FILES_DIR "2D/VTK/tri_5_xz.vtk", err);
+  mesh4.read_vtk(MESH_FILES_DIR "2D/vtk/tris/untangled/tri_5_xz.vtk", err);
   ASSERT_NO_ERROR(err);
   plane.fit_vertices( &mesh4, err, epsilon );
   ASSERT_NO_ERROR(err);

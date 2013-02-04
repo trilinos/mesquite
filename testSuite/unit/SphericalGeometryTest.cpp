@@ -118,7 +118,7 @@ public:
    {
      Mesquite::MeshImpl mesh;
      Mesquite::MsqPrintError err(cout);
-     mesh.read_vtk(MESH_FILES_DIR "2D/VTK/quads_on_sphere_529.vtk", err);
+     mesh.read_vtk(MESH_FILES_DIR "2D/vtk/quads/untangled/quads_on_sphere_529.vtk", err);
      CPPUNIT_ASSERT(!err);
      
        //create geometry: sphere, center (2,2,0), radius 3
@@ -175,7 +175,7 @@ public:
      {
        Mesquite::MeshImpl mesh;
        Mesquite::MsqPrintError err(cout); 
-       mesh.read_vtk(MESH_FILES_DIR "2D/VTK/quads_on_sphere_529.vtk", err);
+       mesh.read_vtk(MESH_FILES_DIR "2D/vtk/quads/untangled/quads_on_sphere_529.vtk", err);
        
          //create geometry sphere:  ratius 1, centered at (0,0,0)
        Vector3D center(2,2,0);
@@ -225,7 +225,7 @@ public:
        Mesquite::MeshImpl mesh;
        Mesquite::MsqPrintError err(cout);
        
-       mesh.read_vtk(MESH_FILES_DIR "2D/VTK/Mesquite_geo_10242.vtk", err);
+       mesh.read_vtk(MESH_FILES_DIR "2D/vtk/tris/untangled/Mesquite_geo_10242.vtk", err);
        
          //create geometry sphere:  ratius 1, centered at (0,0,0)
        Vector3D center(0,0,0);

@@ -90,7 +90,7 @@ public:
   {
       // Read a VTK file -- 1 triangle flanked by 1 quad on each side (1 tri + 3 quads)
     mMesh = new Mesquite::MeshImpl;
-    mMesh->read_vtk(MESH_FILES_DIR "2D/VTK/hybrid_3quad_1tri.vtk", mErr);
+    mMesh->read_vtk(MESH_FILES_DIR "2D/vtk/mixed/untangled/hybrid_3quad_1tri.vtk", mErr);
     CPPUNIT_ASSERT(!mErr);
 
       // Get mesh data

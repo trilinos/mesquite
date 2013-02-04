@@ -1151,7 +1151,7 @@ public:
   {
     Mesquite::MsqPrintError err(cout);
     MeshImpl mMesh;
-    mMesh.read_vtk(MESH_FILES_DIR "2D/VTK/equil_tri2.vtk", err);
+    mMesh.read_vtk(MESH_FILES_DIR "2D/vtk/tris/untangled/equil_tri2.vtk", err);
     ASSERT_NO_ERROR(err);
     Mesquite::MeshDomainAssoc mesh_and_domain = Mesquite::MeshDomainAssoc(&mMesh, 0);
     Mesquite::Instruction::initialize_vertex_byte( &mesh_and_domain, 0, err );

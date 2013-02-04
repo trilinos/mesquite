@@ -224,83 +224,83 @@ ADD_SUBDIRECTORY(utils)
 
 IF(NOT WIN32 AND NOT WIN64)
 TRIBITS_EXCLUDE_FILES(
-  meshFiles/5D/CUBIT/bad_circle.cbt
+  meshFiles/2D/CUBIT/bad_circle.cbt
   meshFiles/2D/CUBIT/bad_circle.g
   meshFiles/2D/CUBIT/circle.g
   meshFiles/2D/CUBIT/cube-clip-corner.exo
   meshFiles/2D/CUBIT/hexagon.g
   meshFiles/2D/CUBIT/MesquiteGeo.g
-  meshFiles/2D/VTK/copy-morph-for-ricoh.cub.vtk
-  meshFiles/2D/VTK/four_more_quads.vtk
-  meshFiles/2D/VTK/halfCirc.vtk
-  meshFiles/2D/VTK/hole_scheme_opp_bias.vtk
-  meshFiles/2D/VTK/hole_scheme.vtk
-  meshFiles/2D/VTK/horse20x10_2_4.vtk
-  meshFiles/2D/VTK/horseshoe.vtk
-  meshFiles/2D/VTK/hybrid_3quad_1tri_tangled.vtk
-  meshFiles/2D/VTK/overt_hyb_1.vtk
-  meshFiles/2D/VTK/overt_hyb_2.vtk
-  meshFiles/2D/VTK/polarMesh.vtk
-  meshFiles/2D/VTK/quad_2_not_xy.vtk
-  meshFiles/2D/VTK/rotsq.vtk
-  meshFiles/2D/VTK/shashkov_opt.vtk
-  meshFiles/2D/VTK/shashkov_quad_opt.vtk
-  meshFiles/2D/VTK/shashkov.vtk
-  meshFiles/2D/VTK/square_tri_2.vtk
-  meshFiles/2D/VTK/subdiv4x4_3_2_3x3.vtk
-  meshFiles/2D/VTK/tfi_chevron24x24.vtk
-  meshFiles/2D/VTK/tfi_horse10x4-14.vtk
-  meshFiles/2D/VTK/tri_5_not_xy.vtk
-  meshFiles/2D/VTK/unstrquad.vtk
-  meshFiles/2D/VTK/vtk_to_gnu.cc
-  meshFiles/2D/VTK/ybiasqr24x24.vtk
-  meshFiles/2D/VTK/N-Polygonal/poly2.vtk
-  meshFiles/2D/VTK/N-Polygonal/poly3.vtk
-  meshFiles/2D/VTK/quadratic/homogeneousPart.vtk
-  meshFiles/2D/VTK/quadratic/horseShoe0.vtk
-  meshFiles/2D/VTK/quadratic/horseShoe1.vtk
-  meshFiles/2D/VTK/quadratic/quadPart.vtk
-  meshFiles/2D/VTK/quadratic/triPart.vtk
-  meshFiles/2D/VTK/quadratic/triPatch_0_0.vtk
-  meshFiles/2D/VTK/quadratic/triPatch_0_7.vtk
-  meshFiles/2D/VTK/quadratic/triPatch_0_8.vtk
-  meshFiles/2D/VTK/quadratic/triPatch_1_0.vtk
-  meshFiles/2D/VTK/quadratic/triPatch_1_1.vtk
-  meshFiles/2D/VTK/quadratic/triPatch_1_2.vtk
+  meshFiles/2D/vtk/quads/untangled/copy-morph-for-ricoh.cub.vtk
+  meshFiles/2D/vtk/quads/untangled/four_more_quads.vtk
+  meshFiles/2D/vtk/quads/untangled/halfCirc.vtk
+  meshFiles/2D/vtk/quads/untangled/hole_scheme_opp_bias.vtk
+  meshFiles/2D/vtk/quads/untangled/hole_scheme.vtk
+  meshFiles/2D/vtk/quads/untangled/horse20x10_2_4.vtk
+  meshFiles/2D/vtk/tris/tangled/horseshoe.vtk
+  meshFiles/2D/vtk/mixed/untangled/hybrid_3quad_1tri_tangled.vtk
+  meshFiles/2D/vtk/mixed/untangled/overt_hyb_1.vtk
+  meshFiles/2D/vtk/mixed/untangled/overt_hyb_2.vtk
+  meshFiles/2D/vtk/quads/untangled/polarMesh.vtk
+  meshFiles/2D/vtk/quads/untangled/quad_2_not_xy.vtk
+  meshFiles/2D/vtk/quads/tangled/rotsq.vtk
+  meshFiles/2D/vtk/tris/untangled//shashkov_opt.vtk
+  meshFiles/2D/vtk/quads/untangled/shashkov_quad_opt.vtk
+  meshFiles/2D/vtk/tris/untangled//shashkov.vtk
+  meshFiles/2D/vtk/tris/untangled/square_tri_2.vtk
+  meshFiles/2D/vtk/quads/untangled/subdiv4x4_3_2_3x3.vtk
+  meshFiles/2D/vtk/quads/untangled/tfi_chevron24x24.vtk
+  meshFiles/2D/vtk/quads/untangled/tfi_horse10x4-14.vtk
+  meshFiles/2D/vtk/tris/untangled/tri_5_not_xy.vtk
+  meshFiles/2D/vtk/quads/untangled/unstrquad.vtk
+  meshFiles/2D/vtk/vtk_to_gnu.cc
+  meshFiles/2D/vtk/quads/untangled/ybiasqr24x24.vtk
+  meshFiles/2D/vtk/N-Polygonal/poly2.vtk
+  meshFiles/2D/vtk/N-Polygonal/poly3.vtk
+  meshFiles/2D/vtk/quadratic/homogeneousPart.vtk
+  meshFiles/2D/vtk/quadratic/horseShoe0.vtk
+  meshFiles/2D/vtk/quadratic/horseShoe1.vtk
+  meshFiles/2D/vtk/quadratic/quadPart.vtk
+  meshFiles/2D/vtk/quadratic/triPart.vtk
+  meshFiles/2D/vtk/quadratic/triPatch_0_0.vtk
+  meshFiles/2D/vtk/quadratic/triPatch_0_7.vtk
+  meshFiles/2D/vtk/quadratic/triPatch_0_8.vtk
+  meshFiles/2D/vtk/quadratic/triPatch_1_0.vtk
+  meshFiles/2D/vtk/quadratic/triPatch_1_1.vtk
+  meshFiles/2D/vtk/quadratic/triPatch_1_2.vtk
   meshFiles/3D/CUBIT/brick_with_tet.cbt
   meshFiles/3D/CUBIT/cube_tets_2.tet
   meshFiles/3D/CUBIT/equilateral_tet_4.tet
-  meshFiles/3D/VTK/6-pyramid-brick.vtk
-  meshFiles/3D/VTK/cube-clip-12.vtk
-  meshFiles/3D/VTK/cube-clip-5.vtk
-  meshFiles/3D/VTK/cube_hex_2.vtk
-  meshFiles/3D/VTK/cube_hex_im.vtk
-  meshFiles/3D/VTK/cube_hex_rm.vtk
-  meshFiles/3D/VTK/cub_fru_scaled_100.vtk
-  meshFiles/3D/VTK/cub_fru.vtk
-  meshFiles/3D/VTK/cub_wedge_like.vtk
-  meshFiles/3D/VTK/hex_2_with_bound.vtk
-  meshFiles/3D/VTK/hex_5_tangled.vtk
-  meshFiles/3D/VTK/pave1.e.vtk
-  meshFiles/3D/VTK/pave2.e.vtk
-  meshFiles/3D/VTK/pave3.e.vtk
-  meshFiles/3D/VTK/pave_cyl.e.vtk
-  meshFiles/3D/VTK/quad_sphere_ref.vtk
-  meshFiles/3D/VTK/quad_sphere.vtk
-  meshFiles/3D/VTK/roshan.vtk
-  meshFiles/3D/VTK/single_hex.vtk
-  meshFiles/3D/VTK/small_box_hex_1000.vtk
-  meshFiles/3D/VTK/tet_2_with_bound.vtk
-  meshFiles/3D/VTK/tet_4_tangled.vtk
-  meshFiles/3D/VTK/two_tets_shape.vtk
-  meshFiles/3D/VTK/two_tets.vtk
-  meshFiles/3D/VTK/quadratic/cutCube.vtk
-  meshFiles/3D/VTK/quadratic/hex3Dpart.vtk
-  meshFiles/3D/VTK/quadratic/hexCyl.vtk
-  meshFiles/3D/VTK/quadratic/sphereCube.vtk
-  meshFiles/3D/VTK/quadratic/sphereCylinder_1194_inv.vtk
-  meshFiles/3D/VTK/quadratic/sphereCylinder_22492_inv.vtk
-  meshFiles/3D/VTK/quadratic/sphereCylinder_22492.vtk
+  meshFiles/3D/vtk/pyramids/untangled/6-pyramid-brick.vtk
+  meshFiles/3D/vtk/tets/untangled/cube-clip-12.vtk
+  meshFiles/3D/vtk/tets/untangled/cube-clip-5.vtk
+  meshFiles/3D/vtk/hexes/untangled/cube_hex_2.vtk
+  meshFiles/3D/vtk/hexes/untangled/cube_hex_im.vtk
+  meshFiles/3D/vtk/hexes/untangled/cube_hex_rm.vtk
+  meshFiles/3D/vtk/hexes/untangled/cub_fru_scaled_100.vtk
+  meshFiles/3D/vtk/hexes/untangled/cub_fru.vtk
+  meshFiles/3D/vtk/hexes/untangled/cub_wedge_like.vtk
+  meshFiles/3D/vtk/hexes/untangled/hex_2_with_bound.vtk
+  meshFiles/3D/vtk/hexes/tangled/hex_5_tangled.vtk
+  meshFiles/3D/vtk/hexes/tangled/pave1.e.vtk
+  meshFiles/3D/vtk/hexes/tangled/pave2.e.vtk
+  meshFiles/3D/vtk/hexes/tangled/pave3.e.vtk
+  meshFiles/3D/vtk/hexes/tangled/pave_cyl.e.vtk
+  meshFiles/3D/vtk/to-do/quad_sphere_ref.vtk
+  meshFiles/3D/vtk/to-do/quad_sphere.vtk
+  meshFiles/3D/vtk/hexes/tangled/roshan.vtk
+  meshFiles/3D/vtk/hexes/untangled/single_hex.vtk
+  meshFiles/3D/vtk/hexes/untangled/small_box_hex_1000.vtk
+  meshFiles/3D/vtk/tets/untangled/tet_2_with_bound.vtk
+  meshFiles/3D/vtk/tets/untangled/tet_4_tangled.vtk
+  meshFiles/3D/vtk/tets/untangled/two_tets_shape.vtk
+  meshFiles/3D/vtk/tets/tangled/two_tets.vtk
+  meshFiles/3D/vtk/quadratic/cutCube.vtk
+  meshFiles/3D/vtk/quadratic/hex3Dpart.vtk
+  meshFiles/3D/vtk/quadratic/hexCyl.vtk
+  meshFiles/3D/vtk/quadratic/sphereCube.vtk
+  meshFiles/3D/vtk/quadratic/sphereCylinder_1194_inv.vtk
+  meshFiles/3D/vtk/quadratic/sphereCylinder_22492_inv.vtk
+  meshFiles/3D/vtk/quadratic/sphereCylinder_22492.vtk
   )
 ENDIF()
 

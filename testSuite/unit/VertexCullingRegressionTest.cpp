@@ -102,7 +102,7 @@ public:
         /* Read a VTK Mesh file */
       MsqPrintError err(cout);
       Mesquite::MeshImpl mesh;
-      mesh.read_vtk(MESH_FILES_DIR "2D/VTK/square_quad_10_rand.vtk", err);
+      mesh.read_vtk(MESH_FILES_DIR "2D/vtk/quads/untangled/square_quad_10_rand.vtk", err);
       CPPUNIT_ASSERT(!err);
       
       Vector3D pnt(0,0,5);

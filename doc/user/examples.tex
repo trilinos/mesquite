@@ -173,7 +173,7 @@ run it from the tutorial directory \texttt{mesquite/testSuite/tutorial/}
 with a mesh file name as a command line 
 argument by typing: 
 \begin{verbatim}
-./tutorial ../../meshFiles/2D/VTK/square_quad_10_rand.vtk
+./tutorial ../../meshFiles/2D/quads/untangled/square_quad_10_rand.vtk
 \end{verbatim}
 The code creates the files original\_mesh.vtk
 and improved\_mesh.vtk in the current directory.  These two meshes, the
@@ -303,7 +303,7 @@ been degraded by moving the disk from the right side of the square to
 the left while keeping the mesh topology fixed.
 The mesh file
 \newline
-\texttt{mesquite/meshFiles/2D/VTK/hole\_in\_square.vtk} contains the
+\texttt{mesquite/meshFiles/2D/vtk/quads/tangled/hole\_in\_square.vtk} contains the
 information for this mesh.  If you plan to run this example, note that
 the normal direction that defines the geometry is now $(0,0,-1)$.
 This change must be made in the tutorial example code
@@ -322,7 +322,7 @@ Because we changed the normal, the driver code must be recompiled;
 otherwise the code and executable are as before.
 Once the code is recompiled, type 
 \begin{verbatim}
-./tutorial ../../meshFiles/2D/VTK/hole_in_square.vtk
+./tutorial ../../meshFiles/2D/vtk/quads/tangled/hole_in_square.vtk
 \end{verbatim}
 to improve this mesh.
 The smoothed mesh is shown in the right image of figure

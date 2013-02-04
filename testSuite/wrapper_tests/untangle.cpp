@@ -47,7 +47,7 @@ using std::endl;
 
 using namespace Mesquite;
 
-#define VTK_2D_DIR MESH_FILES_DIR "2D/VTK/"
+#define VTK_2D_DIR MESH_FILES_DIR "2D/vtk/"
 
 // Test untangle wrapper
 // Assumes all meshes lie in a plane for which the normal is [0,0,1].
@@ -135,20 +135,20 @@ int main( int argc, char* argv[] )
 
   int result = 0;
   
-  result += uwt( skip_beta||skip_horse, UntangleWrapper::BETA, "tangled_horse1.vtk",         0 );
-  result += uwt( skip_beta||skip_hole , UntangleWrapper::BETA, "hole_in_square_tanglap.vtk", 0, true );
-  result += uwt( skip_beta||skip_invrt, UntangleWrapper::BETA, "inverted-hole-2.vtk",        0 );
-  result += uwt( skip_beta||skip_shest, UntangleWrapper::BETA, "shest_grid32.vtk",           0 );
+  result += uwt( skip_beta||skip_horse, UntangleWrapper::BETA, "quads/tangled/tangled_horse1.vtk", 0 );
+  result += uwt( skip_beta||skip_hole , UntangleWrapper::BETA, "quads/tangled/hole_in_square_tanglap.vtk", 0, true );
+  result += uwt( skip_beta||skip_invrt, UntangleWrapper::BETA, "quads/tangled/inverted-hole-2.vtk", 0 );
+  result += uwt( skip_beta||skip_shest, UntangleWrapper::BETA, "quads/untangled/shest_grid32.vtk", 0 );
 
-  result += uwt( skip_size||skip_horse, UntangleWrapper::SIZE, "tangled_horse1.vtk",         0 );
-  result += uwt( skip_size||skip_hole , UntangleWrapper::SIZE, "hole_in_square_tanglap.vtk", 6, true );
-  result += uwt( skip_size||skip_invrt, UntangleWrapper::SIZE, "inverted-hole-2.vtk",        0  );
-  result += uwt( skip_size||skip_shest, UntangleWrapper::SIZE, "shest_grid32.vtk",           0 );
+  result += uwt( skip_size||skip_horse, UntangleWrapper::SIZE, "quads/tangled/tangled_horse1.vtk", 0 );
+  result += uwt( skip_size||skip_hole , UntangleWrapper::SIZE, "quads/tangled/hole_in_square_tanglap.vtk", 6, true );
+  result += uwt( skip_size||skip_invrt, UntangleWrapper::SIZE, "quads/tangled/inverted-hole-2.vtk", 0  );
+  result += uwt( skip_size||skip_shest, UntangleWrapper::SIZE, "quads/untangled/shest_grid32.vtk", 0 );
 
-  result += uwt( skip_shape||skip_horse, UntangleWrapper::SHAPESIZE, "tangled_horse1.vtk",         0 );
-  result += uwt( skip_shape||skip_hole , UntangleWrapper::SHAPESIZE, "hole_in_square_tanglap.vtk", 0, true );
-  result += uwt( skip_shape||skip_invrt, UntangleWrapper::SHAPESIZE, "inverted-hole-2.vtk",        8  );
-  result += uwt( skip_shape||skip_shest, UntangleWrapper::SHAPESIZE, "shest_grid32.vtk",           0 );
+  result += uwt( skip_shape||skip_horse, UntangleWrapper::SHAPESIZE, "quads/tangled/tangled_horse1.vtk", 0 );
+  result += uwt( skip_shape||skip_hole , UntangleWrapper::SHAPESIZE, "quads/tangled/hole_in_square_tanglap.vtk", 0, true );
+  result += uwt( skip_shape||skip_invrt, UntangleWrapper::SHAPESIZE, "quads/tangled/inverted-hole-2.vtk", 8  );
+  result += uwt( skip_shape||skip_shest, UntangleWrapper::SHAPESIZE, "quads/untangled/shest_grid32.vtk", 0 );
   
   return result;
 }

@@ -43,6 +43,7 @@ int main(int argc, char* argv[])
   my_mesh.read_vtk(argv[1], err);
   if (err)
   {
+
     std::cout << err << std::endl;
     return 1;
   }

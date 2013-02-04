@@ -61,7 +61,7 @@ bool chk_igeom_error( int ierr, const char* file, int line )
   return true;
 }
 
-const char* const default_file_name = MESH_FILES_DIR "2D/VTK/quads_on_sphere_529.vtk";
+const char* const default_file_name = MESH_FILES_DIR "2D/vtk/quads/untangled/quads_on_sphere_529.vtk";
 
 void usage()
 {

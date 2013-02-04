@@ -65,7 +65,7 @@ int main()
 {
   Mesquite::MeshImpl mesh;
   MsqPrintError err(cout);
-  mesh.read_vtk(MESH_FILES_DIR "2D/VTK/square_quad_2.vtk", err);
+  mesh.read_vtk(MESH_FILES_DIR "2D/vtk/quads/untangled/square_quad_2.vtk", err);
   if (err) return 1;
   
      //create geometry: plane z=0, normal (0,0,1)

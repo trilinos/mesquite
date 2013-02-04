@@ -49,7 +49,7 @@
 using namespace Mesquite;
 
 
-const char DEFAULT_INPUT[] = MESH_FILES_DIR "/2D/VTK/inverted-hole-1.vtk";
+const char DEFAULT_INPUT[] = MESH_FILES_DIR "/2D/vtk/quads/tangled/inverted-hole-1.vtk";
 
 void usage( const char* argv0, bool help = false ) {
   std::ostream& str = help ? std::cout : std::cerr;
