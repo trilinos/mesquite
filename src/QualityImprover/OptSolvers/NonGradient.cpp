@@ -185,6 +185,7 @@ NonGradient::evaluate( double *point,  PatchData &pd, MsqError &err )
 
   double value;
   bool feasible = obj_func.evaluate( pd, value, err ); MSQ_ERRZERO(err);
+  term_crit->accumulate_patch( pd, err ); //MSQ_ERRRTN(err);
   term_crit->accumulate_inner( pd, value, 0, err );  //MSQ_CHKERR(err);
   pd.set_vertex_coordinates( originalVec, vertexIndex, err ); 
   if( !feasible && mUseExactPenaltyFunction )  

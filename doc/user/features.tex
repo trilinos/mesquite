@@ -186,7 +186,7 @@ int main()
 {     
   MsqPrintError err(cout);
   Mesquite::MeshImpl mesh;
-  mesh.read_vtk(MESH_FILES_DIR "3D/vtk/tets/untangled/3D/tire.vtk", err);
+  mesh.read_vtk(MESH_FILES_DIR "3D/vtk/tets/untangled/tire.vtk", err);
   if (err) return 1;
   
     // creates an intruction queue
@@ -227,7 +227,8 @@ int main()
 {
   MsqPrintError err(std::cout);
   Mesquite::MeshImpl mesh;
-  mesh.read_vtk(MESH_FILES_DIR "3D/vtk/hexes/untangled/hexes_4by2by2.vtk", err);
+  mesh.read_vtk(MESH_FILES_DIR 
+            "3D/vtk/hexes/untangled/hexes_4by2by2.vtk", err);
   
     // creates an instruction queue
   InstructionQueue queue1;
@@ -273,6 +274,70 @@ int main()
 }
 \end{lstlisting}
 
+\subsubsection{NonGradient}
+The NonGradient class is a concrete vertex mover which performs derivative free minimization based on the Amoeba Method, as implemented in Numerical Recipes in C.  It can be used with any Objective Function template and metric, but is particularly helpful when the OF is non-differentiable, as in the MAX template.
+
+The NonGradient class can be used with both Non-barrier and Barrier metrics. The code sample below shows how it is used with a Barrier metric.  An example of using it with a Non-barrier metric can be found in the nongradient\_test in the Mesquite testSuite.
+
+\begin{lstlisting}[frame=single]
+int main()
+{
+  MsqPrintError err(std::cout);
+  PlanarDomain xyPlane(PlanarDomain::XY, -5);
+
+  #define FILE_NAME "bad_circle_tri.vtk"
+  const char file_name[] = MESH_FILES_DIR "2D/vtk/tris/untangled/" FILE_NAME;
+
+    // Barrier / Max Objective Function Test
+
+  Mesquite::MeshImpl mesh_max;
+  mesh_max.read_vtk(file_name, err);
+  if (err)
+  {
+    std::cerr << "Failed to read file." << std::endl;
+    return 1;
+  }
+
+  IdealShapeTarget target_max;
+  TShapeB1 mu;
+  TQualityMetric tqMetric_max( &target_max, &mu );
+
+  ElementQM* metricPtr_max;
+  ObjectiveFunctionTemplate* objFunctionPtr_max;
+
+  ElementMaxQM maxMetric( &tqMetric_max );
+  MaxTemplate maxObjFunction(&maxMetric);  // max(max)
+
+  LPtoPTemplate PtoPObjMaxfunction(&maxMetric, 1.0, err);  // max(max)
+
+  // Processing for Max Objective Function
+
+  NonGradient max_opt( &maxObjFunction ); // optimization procedure 
+
+  max_opt.setSimplexDiameterScale(0);
+  max_opt.use_element_on_vertex_patch(); // local patch
+  max_opt.set_debugging_level(0);
+
+  // Construct and register the Quality Assessor instances
+  QualityAssessor max_initial_qa=QualityAssessor(&maxMetric, 10);
+  QualityAssessor maxObj_max_optimal_qa=QualityAssessor(&maxMetric, 10);
+
+  //**************Set stopping criterion****************
+  TerminationCriterion innerTC, outerTC;
+
+  outerTC.add_iteration_limit(40);
+  innerTC.add_iteration_limit(20);
+  max_opt.set_outer_termination_criterion(&outerTC);
+  max_opt.set_inner_termination_criterion(&innerTC);
+  Mesquite::MeshDomainAssoc mesh_and_domain 
+                               = MeshDomainAssoc(&mesh_max, &xyPlane);
+  queue1.run_instructions(&mesh_and_domain, err);
+  if (err) return 1;
+
+  return 0;
+}
+
+\end{lstlisting}
 
 \subsubsection{QuasiNewton}
 Port of Todd Munson's quasi-Newton solver to Mesquite.

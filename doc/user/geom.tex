@@ -110,6 +110,8 @@ where:
 
 Only the first two parameters are required when calling the constructor.  All other parameters only need to be specified when something other than the default behavior is desired.
 
+The MeshDomainAssoc class is designed to work with planar surface (2D) meshes only.  When using volume (3D) meshes that require a MeshDomainAssoc instance to be created in order to call a function or method, the domain parameter in the constructor should be specified as a NULL. 
+
  In a given program, many different instances of the \texttt{MeshDomainAssoc} class can be created; one for each combination of a specific mesh, domain, and different values for the optional parameters.
 
 An example of how \texttt{MeshDomainAssoc} is used can be found in the paraboloid\_domain\_test located in the testSuite directory.
