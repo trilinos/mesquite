@@ -76,13 +76,10 @@ int main()
   TShapeB1 mu;
   TQualityMetric tqMetric_max( &target_max, &mu );
 
-  ElementQM* metricPtr_max;
-  ObjectiveFunctionTemplate* objFunctionPtr_max;
-
   ElementMaxQM maxMetric( &tqMetric_max );
   MaxTemplate maxObjFunction(&maxMetric);  // max(max)
 
-  LPtoPTemplate PtoPObjMaxfunction(&maxMetric, 1.0, err);  // max(max)
+  LPtoPTemplate PtoPObjMaxfunction(&maxMetric, (short int)1.0, err);  // max(max)
 
   // Processing for Max Objective Function
 
