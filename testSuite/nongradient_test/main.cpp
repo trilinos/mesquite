@@ -111,21 +111,9 @@ int main()
   queue1.add_quality_assessor(&maxObj_max_optimal_qa,err);
   if (err) return 1;
 
-  const char* outputFile;
-  outputFile = "initialMeshMaxBarrier.vtk";
-  mesh_max.write_vtk(outputFile, err); 
-  if (err)
-    std::cerr << outputFile << " : NonGradient Barrier test: failed to write file." << std::endl;
- 
   Mesquite::MeshDomainAssoc mesh_and_domain = MeshDomainAssoc(&mesh_max, &xyPlane);
   queue1.run_instructions(&mesh_and_domain, err);
   if (err) return 1;
-
-  outputFile = "optimizedMeshMaxBarrier.vtk";  
-  mesh_max.write_vtk(outputFile, err); 
-  if (err)
-    std::cerr << outputFile << " : NonGradient Barrier test: failed to write file." << std::endl;
-
 
     // Non-Barrier / Ave Objective Function Test
 
@@ -172,21 +160,8 @@ int main()
   queue2.add_quality_assessor(&mean_qa, err);
   if (err) return 1;
 
-  const char* outputFile_mean;
-  outputFile_mean = "initialMeshMeanNB.vtk";
-  mesh_mean.write_vtk(outputFile_mean, err); 
-
-  if (err)
-    std::cerr << outputFile_mean << " : NonGradient Non-barrier test: failed to write file." << std::endl;
-  
   queue2.run_instructions(&mesh_and_domain, err);
   if (err) return 1;
   
-   outputFile = "optimizedMeshMeanNB.vtk";  
-   mesh_mean.write_vtk(outputFile_mean, err); 
-
-  if (err)
-    std::cerr << outputFile_mean << " : NonGradient Non-barrier test: failed to write file." << std::endl;
-   
   return 0;
 }
