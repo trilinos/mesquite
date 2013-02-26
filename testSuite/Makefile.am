@@ -48,6 +48,7 @@ SUBDIRS = test_1 \
 	  laplacian_polygon_test\
 	  $(PARALLEL_SMOOTH_LAPLACE) \
 	  $(PARALLEL_UNTANGLE_SHAPE) \
+	  nongradient_test\
 	  pyramid \
 	  simple_hybrid_test\
           slaved \
