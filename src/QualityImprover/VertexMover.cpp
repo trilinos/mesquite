@@ -168,6 +168,12 @@ double VertexMover::loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
     MSQ_SETERR(err)("Termination Criterion pointer for inner loop is Null", MsqError::INVALID_STATE);
     return 0.;
   }
+
+    // Set Termination Criterion defaults if no other Criterion is set
+  if ( !outer_crit->criterion_is_set() )
+    outer_crit->add_iteration_limit(1);
+  if ( !inner_crit->criterion_is_set() )
+    inner_crit->add_iteration_limit(10);
   
     // If using a local patch, suppress output of inner termination criterion
   if (patch_list.size() > 1) 
