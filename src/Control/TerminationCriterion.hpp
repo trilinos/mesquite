@@ -331,6 +331,9 @@ namespace MESQUITE_NS
     
       //! Check if termination criterion has been met
     MESQUITE_EXPORT bool terminate();
+
+      //! Check if at least one termination criterion is set
+    MESQUITE_EXPORT bool criterion_is_set();
     
     
       //!Function which determines whether this patch should be 'culled'

@@ -185,7 +185,6 @@ NonGradient::evaluate( double *point,  PatchData &pd, MsqError &err )
 
   double value;
   bool feasible = obj_func.evaluate( pd, value, err ); MSQ_ERRZERO(err);
-  term_crit->accumulate_patch( pd, err ); //MSQ_ERRRTN(err);
   term_crit->accumulate_inner( pd, value, 0, err );  //MSQ_CHKERR(err);
   pd.set_vertex_coordinates( originalVec, vertexIndex, err ); 
   if( !feasible && mUseExactPenaltyFunction )  
@@ -332,8 +331,8 @@ void NonGradient::initialize_mesh_iteration(PatchData &pd, MsqError &err)
   setMaxNumEval(maxNumEval);
   double threshold = 1.e-10; // avoid division by zero
   setThreshold(threshold);
-  double minEdgeLen;
-  double maxEdgeLen;
+  double minEdgeLen = 0.0;
+  double maxEdgeLen = 0.0;
   double ftol = 0.;
   if( dimension > 0 )
   {
@@ -403,9 +402,9 @@ void NonGradient::optimize_vertex_positions(PatchData &pd,
   int maxNumEval = getMaxNumEval();
   double threshold = getThreshold();
   double ftol = getTolerance();
-  int ilo;  //height[ilo]<=...
-  int inhi; //...<=height[inhi]<=
-  int ihi;  //<=height[ihi] 
+  int ilo = 0;  //height[ilo]<=...
+  int inhi = 0; //...<=height[inhi]<=
+  int ihi = 0;  //<=height[ihi] 
   double rtol = 2.*ftol;
   double ysave;
   double ytry;

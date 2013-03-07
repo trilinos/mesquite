@@ -890,6 +890,14 @@ bool TerminationCriterion::terminate( )
   return return_flag;
 }
 
+bool TerminationCriterion::criterion_is_set()
+{
+  if (!terminationCriterionFlag)
+    return false;
+  else
+    return true;
+}
+
 
 /*!This function checks the culling method criterion supplied to the object
   by the user.  If the user does not supply a culling method criterion,
