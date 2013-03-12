@@ -411,7 +411,7 @@ void NonGradient::optimize_vertex_positions(PatchData &pd,
   bool afterEvaluation = false;
   std::vector<double> rowSum(numRow);
   getRowSum( numRow, numCol, simplex, rowSum);
-  while( rtol >= ftol && !( term_crit->terminate() ) )
+  while( !( term_crit->terminate() ) )
   {
 
     if(mNonGradDebug > 0)
