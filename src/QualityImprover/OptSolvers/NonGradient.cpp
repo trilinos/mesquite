@@ -333,7 +333,7 @@ void NonGradient::initialize_mesh_iteration(PatchData &pd, MsqError &err)
   setThreshold(threshold);
   double minEdgeLen = 0.0;
   double maxEdgeLen = 0.0;
-  double ftol = 0.;
+//  double ftol = 0.;
   if( dimension > 0 )
   {
     pd.get_minmax_edge_length( minEdgeLen, maxEdgeLen );
@@ -344,7 +344,7 @@ void NonGradient::initialize_mesh_iteration(PatchData &pd, MsqError &err)
     }      
     MSQ_PRINT(3)("minimum edge length %e    maximum edge length %e\n", minEdgeLen,  maxEdgeLen);
   }
-  setTolerance(ftol);
+//  setTolerance(ftol);
   int numRow = dimension;
   int numCol = numRow+1;  
   if( numRow*numCol <= simplex.max_size() )
@@ -401,11 +401,11 @@ void NonGradient::optimize_vertex_positions(PatchData &pd,
   TerminationCriterion* term_crit=get_inner_termination_criterion();
   int maxNumEval = getMaxNumEval();
   double threshold = getThreshold();
-  double ftol = getTolerance();
+//  double ftol = getTolerance();
   int ilo = 0;  //height[ilo]<=...
   int inhi = 0; //...<=height[inhi]<=
   int ihi = 0;  //<=height[ihi] 
-  double rtol = 2.*ftol;
+//  double rtol = 2.*ftol;
   double ysave;
   double ytry;
   bool afterEvaluation = false;
@@ -503,8 +503,8 @@ void NonGradient::optimize_vertex_positions(PatchData &pd,
       else  // height[ihi] >= height[col]
         if (col != ihi && height[col] > height[inhi] ) inhi=col;
     }
-    rtol=2.0*fabs( height[ihi]-height[ilo] )/
-         ( fabs(height[ihi])+fabs(height[ilo])+threshold );
+//    rtol=2.0*fabs( height[ihi]-height[ilo] )/
+//         ( fabs(height[ihi])+fabs(height[ilo])+threshold );
     afterEvaluation = true;
   } //  while not converged 
 

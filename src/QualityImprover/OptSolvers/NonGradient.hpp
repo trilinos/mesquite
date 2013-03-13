@@ -82,10 +82,10 @@ namespace MESQUITE_NS
     { 
       return(mThreshold);
     }
-    double getTolerance()
-    { 
-      return(mTolerance);
-    }
+//    double getTolerance()
+//    { 
+//      return(mTolerance);
+//    }
     int getMaxNumEval()
     { 
       return(mMaxNumEval);
@@ -102,10 +102,10 @@ namespace MESQUITE_NS
     { 
       mThreshold = threshold;
     }
-    void setTolerance(double ftol)
-    { 
-      mTolerance = ftol;
-    }
+//    void setTolerance(double ftol)
+//    { 
+//      mTolerance = ftol;
+//    }
     void setMaxNumEval(int maxNumEval)
     { 
       mMaxNumEval = maxNumEval;
