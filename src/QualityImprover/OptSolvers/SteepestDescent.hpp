@@ -50,8 +50,7 @@ namespace MESQUITE_NS
   /*! \class SteepestDescent
 
       This is a very basic implementation of the steepest descent optimization algorythm.
-      It works on patches of any size but the step size is hard-wired.
-      Obvisouly, this is for testing purposed only. */ 
+   */ 
   class SteepestDescent : public VertexMover, public PatchSetUser
   {
   public:

@@ -36,6 +36,9 @@
 
 
 #include "VertexMover.hpp"
+#include "NonGradient.hpp"
+#include "ObjectiveFunctionTemplate.hpp"
+#include "MaxTemplate.hpp"
 #include "MsqTimer.hpp"
 #include "MsqDebug.hpp"
 #include "PatchSet.hpp"
@@ -135,7 +138,17 @@ double VertexMover::loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
 
     // Get the patch data to use for the first iteration
   OFEvaluator& obj_func = get_objective_function_evaluator();
-  
+ 
+    // Check for MaxTemplate used with something other than NonGradient
+  QualityImprover* qi_ptr = dynamic_cast<NonGradient*>(this);
+  if (!qi_ptr)
+  {
+    ObjectiveFunctionTemplate* of_ptr = dynamic_cast<MaxTemplate*>(obj_func.get_objective_function());
+    if (of_ptr)
+      std::cout << "Warning: MaxTemplate being used with a solver other than NonGradient." << std::endl <<
+                   "         This is not reccommened." << std::endl;
+  }
+
   PatchData patch;
   patch.set_mesh( mesh );
   patch.set_domain( domain );
@@ -174,7 +187,7 @@ double VertexMover::loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
     outer_crit->add_iteration_limit(1);
   if ( !inner_crit->criterion_is_set() )
     inner_crit->add_iteration_limit(10);
-  
+
     // If using a local patch, suppress output of inner termination criterion
   if (patch_list.size() > 1) 
     inner_crit->set_debug_output_level(3);
