@@ -275,7 +275,9 @@ int main()
 \end{lstlisting}
 
 \subsubsection{NonGradient}
-The NonGradient class is a concrete vertex mover which performs derivative free minimization based on the Amoeba Method, as implemented in Numerical Recipes in C.  It can be used with any Objective Function template and metric, but is particularly helpful when the OF is non-differentiable, as in the MAX template.
+The NonGradient class is a concrete vertex mover which performs derivative free minimization based on the Amoeba Method, as implemented in Numerical Recipes in C.  It can be used with any Objective Function template and metric, but is particularly helpful when the Objective Function is non-differentiable, as in the MAX template. In fact, it is strongly reccommended that the MaxTemplate class only be used with the NonGradient solver.  Using the MaxTemplate class with any other solver class can produce less than optimal results. Mesquite will issue a warning if the MaxTemplate class is used with any solver other than NonGradient.  
+
+NonGradient can only handle patches containing exactly one free vertex. To create a PatchSet with one free vertex per patch, call the 'use\_element\_on\_vertex\_patch()' member function of the NonGradient class as shown in the example below. 
 
 The NonGradient class can be used with both Non-barrier and Barrier metrics. The code sample below shows how it is used with a Barrier metric.  An example of using it with a Non-barrier metric can be found in the nongradient\_test in the Mesquite testSuite.
 
