@@ -34,14 +34,14 @@
 #define MSQ_T_SHAPE_SIZE_NB3_HPP
 
 #include "Mesquite.hpp"
-#include "TMetric.hpp"
+#include "TMetricNonBarrier.hpp"
 
 namespace MESQUITE_NS {
 
 /** 2D: \f$ |T - adj T^t|^2 + \gamma (\tau - 1)^2 = 2 |T|^2 - 4 \tau + \gamma (\tau - 1)^2 \f$
  *  3D: \f$ 2 |T|^3 - 3 \sqrt{3} \tau + \gamma (\tau - 1)^2 \f$
  */
-class TShapeSizeNB3 : public TMetric
+class TShapeSizeNB3 : public TMetricNonBarrier
 {
   public:
   

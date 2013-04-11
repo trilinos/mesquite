@@ -34,13 +34,13 @@
 #define MSQ_T_SHAPE_2D_NB_2_HPP
 
 #include "Mesquite.hpp"
-#include "TMetric.hpp"
+#include "TMetricNonBarrier.hpp"
 
 namespace MESQUITE_NS {
 
 
 /** \f$ |T^t T - \tau I|^2  \f$ */
-class TShape2DNB2 : public TMetric2D
+class TShape2DNB2 : public TMetricNonBarrier2D
 {
   public:
 

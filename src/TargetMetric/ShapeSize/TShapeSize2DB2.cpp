@@ -44,11 +44,14 @@ TShapeSize2DB2::~TShapeSize2DB2() {}
 
 bool TShapeSize2DB2::evaluate( const MsqMatrix<2,2>& T, 
                                double& result, 
+                               bool barrier_violated,
                                MsqError&  )
 {
+  barrier_violated = false;
   const double two_det = 2.0 * det(T);
   if (invalid_determinant(two_det)) { // barrier
     result = 0.0;
+    barrier_violated = true;
     return false;
   }
     
@@ -60,11 +63,14 @@ bool TShapeSize2DB2::evaluate( const MsqMatrix<2,2>& T,
 bool TShapeSize2DB2::evaluate_with_grad( const MsqMatrix<2,2>& T, 
                                          double& result, 
                                          MsqMatrix<2,2>& deriv_wrt_T,
+                                         bool barrier_violated,
                                          MsqError& err )
 {
+  barrier_violated = false;
   const double d = det(T);
   if (invalid_determinant(d)) { // barrier
     result = 0.0;
+    barrier_violated = true;
     return false;
   }
   const double frob_sqr = sqr_Frobenius(T);
@@ -91,11 +97,14 @@ bool TShapeSize2DB2::evaluate_with_hess( const MsqMatrix<2,2>& T,
                                          double& result, 
                                          MsqMatrix<2,2>& deriv_wrt_T,
                                          MsqMatrix<2,2> second[3],
+                                         bool barrier_violated,
                                          MsqError& err )
 {
+  barrier_violated = false;
   const double d = det(T);
   if (invalid_determinant(d)) { // barrier
     result = 0.0;
+    barrier_violated = true;
     return false;
   }
   const double frob_sqr = sqr_Frobenius(T);

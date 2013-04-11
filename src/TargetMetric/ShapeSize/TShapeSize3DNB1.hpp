@@ -34,7 +34,7 @@
 #define MSQ_T_SHAPE_SIZE_3D_NB_1_HPP
 
 #include "Mesquite.hpp"
-#include "TMetric.hpp"
+#include "TMetricNonBarrier.hpp"
 
 namespace MESQUITE_NS {
 
@@ -43,7 +43,7 @@ namespace MESQUITE_NS {
  * A target metric for volume elements that optimizes
  * element shape and size
  */
-class TShapeSize3DNB1 : public TMetric3D
+class TShapeSize3DNB1 : public TMetricNonBarrier3D
 {
 private:
   double mGamma;

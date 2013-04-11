@@ -43,11 +43,14 @@ TInverseMeanRatio::~TInverseMeanRatio() {}
 
 bool TInverseMeanRatio::evaluate( const MsqMatrix<2,2>& T, 
                                    double& result, 
+                                   bool barrier_violated,
                                    MsqError& err )
 {
+  barrier_violated = false;
   const double d = det( T );
   if (invalid_determinant(d)) {
     result = 0.0;
+    barrier_violated = true;
     return false;
   }
   else {
@@ -60,12 +63,15 @@ bool TInverseMeanRatio::evaluate( const MsqMatrix<2,2>& T,
 bool TInverseMeanRatio::evaluate_with_grad( const MsqMatrix<2,2>& T,
                                              double& result,
                                              MsqMatrix<2,2>& deriv_wrt_T,
+                                             bool barrier_violated,
                                              MsqError& err )
 {
+  barrier_violated = false;
   const double d = det( T );
   if (invalid_determinant(d)) {
     result = 0.0;
     deriv_wrt_T = MsqMatrix<2,2>(0.0);
+    barrier_violated = true;
     return false;
   }
   else {
@@ -84,12 +90,15 @@ bool TInverseMeanRatio::evaluate_with_hess( const MsqMatrix<2,2>& T,
                                              double& result,
                                              MsqMatrix<2,2>& dA,
                                              MsqMatrix<2,2> d2A[3],
+                                             bool barrier_violated,
                                              MsqError& err )
 {
+  barrier_violated = false;
   const double d = det( T );
   if (invalid_determinant(d)) {
     result = 0.0;
     dA = d2A[0] = d2A[1] = d2A[2] = MsqMatrix<2,2>(0.0);
+    barrier_violated = true;
     return false;
   }
   else {
@@ -130,11 +139,14 @@ bool TInverseMeanRatio::evaluate_with_hess( const MsqMatrix<2,2>& T,
 
 bool TInverseMeanRatio::evaluate( const MsqMatrix<3,3>& T, 
                                    double& result, 
+                                   bool barrier_violated,
                                    MsqError& err )
 {
+  barrier_violated = false;
   const double d = det( T );
   if (invalid_determinant(d)) {
     result = 0.0;
+    barrier_violated = true;
     return false;
   }
   else {
@@ -148,12 +160,15 @@ bool TInverseMeanRatio::evaluate( const MsqMatrix<3,3>& T,
 bool TInverseMeanRatio::evaluate_with_grad( const MsqMatrix<3,3>& T,
                                              double& result,
                                              MsqMatrix<3,3>& deriv_wrt_T,
+                                             bool barrier_violated,
                                              MsqError& err )
-{
+{  
+  barrier_violated = false;
   const double d = det( T );
   if (invalid_determinant(d)) {
     result = 0.0;
     deriv_wrt_T = MsqMatrix<3,3>(0.0);
+    barrier_violated = true;
     return false;
   }
 
@@ -174,12 +189,15 @@ bool TInverseMeanRatio::evaluate_with_hess( const MsqMatrix<3,3>& T,
                                              double& result,
                                              MsqMatrix<3,3>& dA,
                                              MsqMatrix<3,3> d2A[6],
+                                             bool barrier_violated,
                                              MsqError& err )
 {
+  barrier_violated = false;
   const double d = det( T );
   if (invalid_determinant(d)) {
     result = 0.0;
     dA = MsqMatrix<3,3>(0.0);
+    barrier_violated = true;
     return false;
   }
 

@@ -34,7 +34,7 @@
 #define MSQ_T_SHAPE_NB_1_HPP
 
 #include "Mesquite.hpp"
-#include "TMetric.hpp"
+#include "TMetricNonBarrier.hpp"
 
 namespace MESQUITE_NS {
 
@@ -45,7 +45,7 @@ namespace MESQUITE_NS {
  *
  * For 3D: \f$ |T|^3 - 3 \sqrt{3} det(T) \f$
  */
-class TShapeNB1 : public TMetric
+class TShapeNB1 : public TMetricNonBarrier
 {
   public:
   

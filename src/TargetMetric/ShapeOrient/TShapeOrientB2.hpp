@@ -34,7 +34,7 @@
 #define MSQ_T_SHAPE_ORIENT_B_2_HPP
 
 #include "Mesquite.hpp"
-#include "TMetric.hpp"
+#include "TMetricBarrier.hpp"
 
 namespace MESQUITE_NS {
 
@@ -43,7 +43,7 @@ namespace MESQUITE_NS {
  *
  * Section 3.3.3 of derivs.tex (7/2009)
  */
-class TShapeOrientB2 : public TMetric
+class TShapeOrientB2 : public TMetricBarrier
 {
   public:
 
@@ -54,12 +54,16 @@ class TShapeOrientB2 : public TMetric
   ~TShapeOrientB2();
 
   MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<2,2>& T, double& result, MsqError& err );
+  bool evaluate( const MsqMatrix<2,2>& T, 
+                 double& result, 
+                 bool barrier_violated,
+                 MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate_with_grad( const MsqMatrix<2,2>& T, 
                            double& result, 
                            MsqMatrix<2,2>& deriv_wrt_T,
+                           bool barrier_violated,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
@@ -67,17 +71,20 @@ class TShapeOrientB2 : public TMetric
                            double& result, 
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqMatrix<2,2> second_wrt_T[3],
+                           bool barrier_violated,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& T, 
                  double& result, 
+                 bool barrier_violated,
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate_with_grad( const MsqMatrix<3,3>& T,
                            double& result,
                            MsqMatrix<3,3>& deriv_wrt_T,
+                           bool barrier_violated,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
@@ -85,6 +92,7 @@ class TShapeOrientB2 : public TMetric
                            double& result,
                            MsqMatrix<3,3>& deriv_wrt_T,
                            MsqMatrix<3,3> second_wrt_T[6],
+                           bool barrier_violated,
                            MsqError& err );
 };
 

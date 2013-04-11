@@ -34,13 +34,13 @@
 #define MSQ_AW_SHAPE_ORIENT_NB_1_HPP
 
 #include "Mesquite.hpp"
-#include "AWMetric.hpp"
+#include "AWMetricNonBarrier.hpp"
 
 namespace MESQUITE_NS {
 
 
 /** \f$ (|A||W| - A \cdot W)^2 \f$ */
-class AWShapeOrientNB1 : public AWMetric
+class AWShapeOrientNB1 : public AWMetricNonBarrier
 {
   public:
 

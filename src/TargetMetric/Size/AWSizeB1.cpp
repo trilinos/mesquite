@@ -43,16 +43,21 @@ std::string AWSizeB1::get_name() const
 
 AWSizeB1::~AWSizeB1() {}
 
-template <unsigned DIM> static inline
-bool eval( const MsqMatrix<DIM,DIM>& A, 
-           const MsqMatrix<DIM,DIM>& W, 
-           double& result)
+bool AWSizeB1::evaluate( const MsqMatrix<2,2>& A, 
+                         const MsqMatrix<2,2>& W, 
+                         double& result, 
+                         bool barrier_violated,
+                         MsqError& err )
 {
+  barrier_violated = false;
   const double alpha = det(A);
   const double omega = det(W);
   const double prod = alpha * omega;
   if (AWMetric::invalid_determinant( prod ))
+  {
+    barrier_violated = true;
     return false;
+  }
   
   result = (alpha - omega);
   result *= result;
@@ -60,26 +65,76 @@ bool eval( const MsqMatrix<DIM,DIM>& A,
   return true;
 }
 
-template <unsigned DIM> static inline
-bool grad( const MsqMatrix<DIM,DIM>& A, 
-           const MsqMatrix<DIM,DIM>& W, 
-           double& result, 
-           MsqMatrix<DIM,DIM>& deriv )
+bool AWSizeB1::evaluate_with_grad( const MsqMatrix<2,2>& A,
+                                   const MsqMatrix<2,2>& W,
+                                   double& result,
+                                   MsqMatrix<2,2>& deriv_wrt_A,
+                                   bool barrier_violated,
+                                   MsqError& err )
 {
+  barrier_violated = false;
   const double alpha = det(A);
   const double omega = det(W);
   const double prod = alpha * omega;
   if (AWMetric::invalid_determinant( prod ))
+  {
+    barrier_violated = true;
     return false;
+  }
 
   result = (alpha - omega);
   result *= result;
   result /= prod;
-  deriv = transpose_adj(A);
-  deriv *= (alpha*alpha - omega*omega)/(alpha*prod);
+  deriv_wrt_A = transpose_adj(A);
+  deriv_wrt_A *= (alpha*alpha - omega*omega)/(alpha*prod);
   return true;
 }
 
-TMP_AW_TEMPL_IMPL_COMMON_NO2ND(AWSizeB1)
+bool AWSizeB1::evaluate( const MsqMatrix<3,3>& A, 
+                         const MsqMatrix<3,3>& W, 
+                         double& result, 
+                         bool barrier_violated,
+                         MsqError& err )
+{
+  barrier_violated = false;
+  const double alpha = det(A);
+  const double omega = det(W);
+  const double prod = alpha * omega;
+  if (AWMetric::invalid_determinant( prod ))
+  {
+    barrier_violated = true;
+    return false;
+  };
+  
+  result = (alpha - omega);
+  result *= result;
+  result /= prod;
+  return true;
+}
+
+bool AWSizeB1::evaluate_with_grad( const MsqMatrix<3,3>& A,
+                                   const MsqMatrix<3,3>& W,
+                                   double& result,
+                                   MsqMatrix<3,3>& deriv_wrt_A,
+                                   bool barrier_violated,
+                                   MsqError& err )
+{
+  barrier_violated = false;
+  const double alpha = det(A);
+  const double omega = det(W);
+  const double prod = alpha * omega;
+  if (AWMetric::invalid_determinant( prod ))
+  {
+    barrier_violated = true;
+    return false;
+  }
+
+  result = (alpha - omega);
+  result *= result;
+  result /= prod;
+  deriv_wrt_A = transpose_adj(A);
+  deriv_wrt_A *= (alpha*alpha - omega*omega)/(alpha*prod);
+  return true;
+}
 
 } // namespace Mesquite

@@ -1,4 +1,4 @@
-IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
+
 
   INCLUDE(TribitsLibraryMacros)
 
@@ -543,6 +543,10 @@ APPEND_SET(SOURCES
 APPEND_SET(HEADERS
   TargetMetric/AWMetric.hpp
   TargetMetric/TMetric.hpp
+  TargetMetric/TMetricBarrier.hpp
+  TargetMetric/TMetricNonBarrier.hpp
+  TargetMetric/AWMetricBarrier.hpp
+  TargetMetric/AWMetricNonBarrier.hpp
   )
 
 APPEND_SET(SOURCES
@@ -550,6 +554,10 @@ APPEND_SET(SOURCES
   TargetMetric/TMPDerivs.hpp
   TargetMetric/AWMetric.cpp
   TargetMetric/TMetric.cpp
+  TargetMetric/TMetricBarrier.cpp
+  TargetMetric/TMetricNonBarrier.cpp
+  TargetMetric/AWMetricBarrier.cpp
+  TargetMetric/AWMetricNonBarrier.cpp
   )
 
 

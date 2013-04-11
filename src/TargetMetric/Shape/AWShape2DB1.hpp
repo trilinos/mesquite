@@ -34,13 +34,13 @@
 #define MSQ_AW_SHAPE_2D_B_1_HPP
 
 #include "Mesquite.hpp"
-#include "AWMetric.hpp"
+#include "AWMetricBarrier.hpp"
 
 namespace MESQUITE_NS {
 
 
 /** \f$ \frac{1}{4 \alpha \omega}|A(adj\,W)-[W(adj\,A)]^t|^2 \f$ */
-class AWShape2DB1 : public AWMetric2D
+class AWShape2DB1 : public AWMetricBarrier2D
 {
   public:
 
@@ -54,6 +54,7 @@ class AWShape2DB1 : public AWMetric2D
   bool evaluate( const MsqMatrix<2,2>& A, 
                  const MsqMatrix<2,2>& W, 
                  double& result, 
+                 bool barrier_violated,
                  MsqError& err );
 /*
   MESQUITE_EXPORT virtual

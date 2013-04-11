@@ -34,12 +34,12 @@
 #define MSQ_T_SHAPE_SIZE_3D_B_2_HPP
 
 #include "Mesquite.hpp"
-#include "TMetric.hpp"
+#include "TMetricBarrier.hpp"
 
 namespace MESQUITE_NS {
 
 /** 3.3.12: (|T|^2 + |adj(T)|^2)/6\tau - 1 */
-class TShapeSize3DB2 : public TMetric3D
+class TShapeSize3DB2 : public TMetricBarrier3D
 {
   public:
   
@@ -51,13 +51,15 @@ class TShapeSize3DB2 : public TMetric3D
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& T, 
-                 double& result, 
+                 double& result,
+                 bool barrier_violated,
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate_with_grad( const MsqMatrix<3,3>& T,
                            double& result,
                            MsqMatrix<3,3>& deriv_wrt_T,
+                           bool barrier_violated,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
@@ -65,6 +67,7 @@ class TShapeSize3DB2 : public TMetric3D
                            double& result,
                            MsqMatrix<3,3>& deriv_wrt_T,
                            MsqMatrix<3,3> second_wrt_T[6],
+                           bool barrier_violated,
                            MsqError& err );
 
 };

@@ -34,13 +34,13 @@
 #define MSQ_T_SHAPE_ORIENT_NB_1_HPP
 
 #include "Mesquite.hpp"
-#include "TMetric.hpp"
+#include "TMetricNonBarrier.hpp"
 
 namespace MESQUITE_NS {
 
 
 /** |T| - tr(T)/sqrt(n) */
-class TShapeOrientNB1 : public TMetric
+class TShapeOrientNB1 : public TMetricNonBarrier
 {
   public:
 

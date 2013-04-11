@@ -34,12 +34,12 @@
 #define MSQ_T_SHAPE_SIZE_B_1_HPP
 
 #include "Mesquite.hpp"
-#include "TMetric.hpp"
+#include "TMetricBarrier.hpp"
 
 namespace MESQUITE_NS {
 
 /** |T - T^-t|^2 */
-class TShapeSizeB1 : public TMetric
+class TShapeSizeB1 : public TMetricBarrier
 {
   public:
 
@@ -52,12 +52,14 @@ class TShapeSizeB1 : public TMetric
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<2,2>& T, 
                  double& result, 
+                 bool barrier_violated,
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate_with_grad( const MsqMatrix<2,2>& T,
                            double& result,
                            MsqMatrix<2,2>& deriv_wrt_T,
+                           bool barrier_violated,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
@@ -65,17 +67,20 @@ class TShapeSizeB1 : public TMetric
                            double& result,
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqMatrix<2,2> second_wrt_T[3],
+                           bool barrier_violated,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& T, 
                  double& result, 
+                 bool barrier_violated,
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate_with_grad( const MsqMatrix<3,3>& T,
                            double& result,
                            MsqMatrix<3,3>& deriv_wrt_T,
+                           bool barrier_violated,
                            MsqError& err );
   
   MESQUITE_EXPORT virtual
@@ -83,6 +88,7 @@ class TShapeSizeB1 : public TMetric
                            double& result,
                            MsqMatrix<3,3>& deriv_wrt_T,
                            MsqMatrix<3,3> second_wrt_T[6],
+                           bool barrier_violated,
                            MsqError& err );
 };
 

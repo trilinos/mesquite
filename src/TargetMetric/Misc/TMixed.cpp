@@ -31,6 +31,7 @@
  */
 
 #include "Mesquite.hpp"
+#include "TMetricBarrier.hpp"
 #include "TMixed.hpp"
 #include "MsqMatrix.hpp"
 #include <sstream>
@@ -51,14 +52,28 @@ bool TMixed::evaluate( const MsqMatrix<2,2>& T,
                        double& result, 
                        MsqError& err )
 {
-  return mu2D->evaluate( T, result, err );
+  bool rval;
+  bool barrier_violated = false;
+  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mu2D);
+  if (barrier_ptr) //  A TMetricBarrier class is being used
+    rval = mu2D->evaluate( T, result, barrier_violated, err );
+  else
+    rval = mu2D->evaluate( T, result, err );
+  return rval;
 }
 
 bool TMixed::evaluate( const MsqMatrix<3,3>& T, 
                        double& result, 
                        MsqError& err )
 {
-  return mu3D->evaluate( T, result, err );
+  bool rval;
+  bool barrier_violated = false;
+  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mu3D);
+  if (barrier_ptr) //  A TMetricBarrier class is being used
+    rval = mu3D->evaluate( T, result, barrier_violated, err );
+  else
+    rval = mu3D->evaluate( T, result, err );
+  return rval;
 }
 
 bool TMixed::evaluate_with_grad( const MsqMatrix<2,2>& T,
@@ -66,7 +81,14 @@ bool TMixed::evaluate_with_grad( const MsqMatrix<2,2>& T,
                                  MsqMatrix<2,2>& deriv_wrt_T,
                                  MsqError& err )
 {
-  return mu2D->evaluate_with_grad( T, result, deriv_wrt_T, err );
+  bool rval;
+  bool barrier_violated = false;
+  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mu2D);
+  if (barrier_ptr) //  A TMetricBarrier class is being used
+    rval = mu2D->evaluate_with_grad( T, result, deriv_wrt_T, barrier_violated, err );
+  else
+    rval = mu2D->evaluate_with_grad( T, result, deriv_wrt_T, err );
+  return rval;
 }
 
 bool TMixed::evaluate_with_grad( const MsqMatrix<3,3>& T,
@@ -74,7 +96,14 @@ bool TMixed::evaluate_with_grad( const MsqMatrix<3,3>& T,
                                  MsqMatrix<3,3>& deriv_wrt_T,
                                  MsqError& err )
 {
-  return mu3D->evaluate_with_grad( T, result, deriv_wrt_T, err );
+  bool rval;
+  bool barrier_violated = false;
+  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mu3D);
+  if (barrier_ptr) //  A TMetricBarrier class is being used
+    rval = mu3D->evaluate_with_grad( T, result, deriv_wrt_T, barrier_violated, err );
+  else
+    rval = mu3D->evaluate_with_grad( T, result, deriv_wrt_T, err );
+  return rval;
 }
 
 bool TMixed::evaluate_with_hess( const MsqMatrix<2,2>& T,
@@ -83,7 +112,14 @@ bool TMixed::evaluate_with_hess( const MsqMatrix<2,2>& T,
                                  MsqMatrix<2,2> second_wrt_T[3],
                                  MsqError& err )
 {
-  return mu2D->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );
+  bool rval;
+  bool barrier_violated = false;
+  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mu2D);
+  if (barrier_ptr) //  A TMetricBarrier class is being used
+    rval = mu2D->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, barrier_violated, err );
+  else
+    rval = mu2D->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );
+  return rval;
 }
 
 bool TMixed::evaluate_with_hess( const MsqMatrix<3,3>& T,
@@ -92,7 +128,14 @@ bool TMixed::evaluate_with_hess( const MsqMatrix<3,3>& T,
                                  MsqMatrix<3,3> second_wrt_T[3],
                                  MsqError& err )
 {
-  return mu3D->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );
+  bool rval;
+  bool barrier_violated = false;
+  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mu3D);
+  if (barrier_ptr) //  A TMetricBarrier class is being used
+    rval = mu3D->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, barrier_violated, err );
+  else
+    rval = mu3D->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );
+  return rval;
 }
 
 

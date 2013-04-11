@@ -35,12 +35,13 @@
 
 #include "Mesquite.hpp"
 #include "AWMetric.hpp"
+#include "AWMetricBarrier.hpp"
 
 namespace MESQUITE_NS {
 
 
 /** \f$ \frac{\alpha}{\omega} - \frac{\omega}{\alpha} - 2 \f$ */
-class AWSizeB1 : public AWMetric
+class AWSizeB1 : public AWMetricBarrier
 {
   public:
 
@@ -54,6 +55,7 @@ class AWSizeB1 : public AWMetric
   bool evaluate( const MsqMatrix<2,2>& A, 
                  const MsqMatrix<2,2>& W, 
                  double& result, 
+                 bool barrier_violated,
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
@@ -61,12 +63,14 @@ class AWSizeB1 : public AWMetric
                            const MsqMatrix<2,2>& W,
                            double& result,
                            MsqMatrix<2,2>& deriv_wrt_A,
+                           bool barrier_violated,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& A, 
                  const MsqMatrix<3,3>& W, 
                  double& result, 
+                 bool barrier_violated,
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
@@ -74,6 +78,7 @@ class AWSizeB1 : public AWMetric
                            const MsqMatrix<3,3>& W,
                            double& result,
                            MsqMatrix<3,3>& deriv_wrt_A,
+                           bool barrier_violated,
                            MsqError& err );
 };
 

@@ -31,6 +31,7 @@
  */
 
 #include "Mesquite.hpp"
+#include "TMetricBarrier.hpp"
 #include "TSum.hpp"
 #include "MsqMatrix.hpp"
 #include "MsqError.hpp"
@@ -49,8 +50,20 @@ bool TSum::eval( const MsqMatrix<DIM,DIM>& T,
                  MsqError& err )
 {
   double val2;
-  bool rval = mu1->evaluate( T, result, err );  MSQ_ERRZERO(err);
-  bool rval2 = mu2->evaluate( T, val2, err ); MSQ_ERRZERO(err);
+  bool rval, rval2;
+  bool barrier_violated = false;
+  TMetricBarrier* barrier_ptr_1 = dynamic_cast<TMetricBarrier*>(mu1);
+  TMetricBarrier* barrier_ptr_2 = dynamic_cast<TMetricBarrier*>(mu2);
+  if (barrier_ptr_1)
+    rval = mu1->evaluate( T, result, barrier_violated, err );
+  else
+   rval = mu1->evaluate( T, result, err );
+  MSQ_ERRZERO(err);
+  if (barrier_ptr_2)
+    rval2 = mu2->evaluate( T, val2, barrier_violated, err );
+  else
+    rval2 = mu2->evaluate( T, val2, err );
+  MSQ_ERRZERO(err);
   result += val2;
   return rval && rval2;
 }
@@ -63,8 +76,20 @@ bool TSum::grad( const MsqMatrix<DIM,DIM>& T,
 {
   double val2;
   MsqMatrix<DIM,DIM> grad2;
-  bool rval = mu1->evaluate_with_grad( T, result, deriv, err );  MSQ_ERRZERO(err);
-  bool rval2 = mu2->evaluate_with_grad( T, val2, grad2, err ); MSQ_ERRZERO(err);
+  bool rval, rval2;
+  bool barrier_violated = false;
+  TMetricBarrier* barrier_ptr_1 = dynamic_cast<TMetricBarrier*>(mu1);
+  TMetricBarrier* barrier_ptr_2 = dynamic_cast<TMetricBarrier*>(mu2);
+  if (barrier_ptr_1)
+    rval = mu1->evaluate_with_grad( T, result, deriv, barrier_violated, err );
+  else
+    rval = mu1->evaluate_with_grad( T, result, deriv, err );
+  MSQ_ERRZERO(err);
+  if (barrier_ptr_2)
+    rval2 = mu2->evaluate_with_grad( T, val2, grad2, barrier_violated, err );
+  else
+    rval2 = mu2->evaluate_with_grad( T, val2, grad2, err );
+  MSQ_ERRZERO(err);
   result += val2;
   deriv += grad2;
   return rval && rval2;
@@ -80,8 +105,21 @@ bool TSum::hess( const MsqMatrix<DIM,DIM>& T,
   const int HL = (DIM*(DIM+1))/2;
   double val2;
   MsqMatrix<DIM,DIM> grad2, hess2[HL];
-  bool rval = mu1->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );  MSQ_ERRZERO(err);
-  bool rval2 = mu2->evaluate_with_hess( T, val2, grad2, hess2, err ); MSQ_ERRZERO(err);
+
+  bool rval, rval2;
+  bool barrier_violated = false;
+  TMetricBarrier* barrier_ptr_1 = dynamic_cast<TMetricBarrier*>(mu1);
+  TMetricBarrier* barrier_ptr_2 = dynamic_cast<TMetricBarrier*>(mu2);
+  if (barrier_ptr_1)
+    rval = mu1->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, barrier_violated, err );  
+  else
+    rval = mu1->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );
+  MSQ_ERRZERO(err);
+  if (barrier_ptr_2)
+    rval2 = mu2->evaluate_with_hess( T, val2, grad2, hess2, barrier_violated, err ); 
+  else
+    rval2 = mu2->evaluate_with_hess( T, val2, grad2, hess2, err );
+  MSQ_ERRZERO(err);
   result += val2;
   deriv_wrt_T += grad2;
   for (int i = 0; i < HL; ++i)

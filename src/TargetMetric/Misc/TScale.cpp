@@ -32,6 +32,7 @@
 
 #include "Mesquite.hpp"
 #include "TScale.hpp"
+#include "TMetricBarrier.hpp"
 #include "MsqMatrix.hpp"
 
 namespace MESQUITE_NS {
@@ -45,7 +46,13 @@ bool TScale::evaluate( const MsqMatrix<2,2>& T,
                        double& result, 
                        MsqError& err )
 {
-  bool rval = mMetric->evaluate( T, result, err );
+  bool rval;
+  bool barrier_violated = false;
+  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mMetric);
+  if (barrier_ptr) //  A TMetricBarrier class is being used
+    rval = mMetric->evaluate( T, result, barrier_violated, err );
+  else
+    rval = mMetric->evaluate( T, result, err );
   result *= mAlpha;
   return rval;
 }
@@ -54,7 +61,13 @@ bool TScale::evaluate( const MsqMatrix<3,3>& T,
                        double& result, 
                        MsqError& err )
 {
-  bool rval = mMetric->evaluate( T, result, err );
+  bool rval;
+  bool barrier_violated = false;
+  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mMetric);
+  if (barrier_ptr) //  A TMetricBarrier class is being used
+    rval = mMetric->evaluate( T, result, barrier_violated, err );
+  else
+    rval = mMetric->evaluate( T, result, err );
   result *= mAlpha;
   return rval;
 }
@@ -64,7 +77,13 @@ bool TScale::evaluate_with_grad( const MsqMatrix<2,2>& T,
                                  MsqMatrix<2,2>& deriv_wrt_T,
                                  MsqError& err )
 {
-  bool rval = mMetric->evaluate_with_grad( T, result, deriv_wrt_T, err );
+  bool rval;
+  bool barrier_violated = false;
+  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mMetric);
+  if (barrier_ptr) //  A TMetricBarrier class is being used
+    rval = mMetric->evaluate_with_grad( T, result, deriv_wrt_T, barrier_violated, err );
+  else
+    rval = mMetric->evaluate_with_grad( T, result, deriv_wrt_T, err );
   result *= mAlpha;
   deriv_wrt_T *= mAlpha;
   return rval;
@@ -75,7 +94,13 @@ bool TScale::evaluate_with_grad( const MsqMatrix<3,3>& T,
                                  MsqMatrix<3,3>& deriv_wrt_T,
                                  MsqError& err )
 {
-  bool rval = mMetric->evaluate_with_grad( T, result, deriv_wrt_T, err );
+  bool rval;
+  bool barrier_violated = false;
+  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mMetric);
+  if (barrier_ptr) //  A TMetricBarrier class is being used
+    rval = mMetric->evaluate_with_grad( T, result, deriv_wrt_T, barrier_violated, err );
+  else
+    rval = mMetric->evaluate_with_grad( T, result, deriv_wrt_T, err );
   result *= mAlpha;
   deriv_wrt_T *= mAlpha;
   return rval;
@@ -87,7 +112,13 @@ bool TScale::evaluate_with_hess( const MsqMatrix<2,2>& T,
                                  MsqMatrix<2,2> second_wrt_T[3],
                                  MsqError& err )
 {
-  bool rval = mMetric->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );
+  bool rval;
+  bool barrier_violated = false;
+  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mMetric);
+  if (barrier_ptr) //  A TMetricBarrier class is being used
+    rval = mMetric->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, barrier_violated, err );
+  else
+    rval = mMetric->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );
   result *= mAlpha;
   deriv_wrt_T *= mAlpha;
   second_wrt_T[0] *= mAlpha;
@@ -102,7 +133,13 @@ bool TScale::evaluate_with_hess( const MsqMatrix<3,3>& T,
                                  MsqMatrix<3,3> second_wrt_T[3],
                                  MsqError& err )
 {
-  bool rval = mMetric->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );
+  bool rval;
+  bool barrier_violated = false;
+  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mMetric);
+  if (barrier_ptr) //  A TMetricBarrier class is being used
+    rval = mMetric->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, barrier_violated, err );
+  else
+    rval = mMetric->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );
   result *= mAlpha;
   deriv_wrt_T *= mAlpha;
   second_wrt_T[0] *= mAlpha;

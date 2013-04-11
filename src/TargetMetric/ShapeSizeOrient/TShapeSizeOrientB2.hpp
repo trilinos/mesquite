@@ -34,7 +34,7 @@
 #define MSQ_T_SHAPE_SIZE_ORIENT_B_2_HPP
 
 #include "Mesquite.hpp"
-#include "TMetric.hpp"
+#include "TMetricBarrier.hpp"
 
 namespace MESQUITE_NS {
 
@@ -43,7 +43,7 @@ namespace MESQUITE_NS {
  *
  * Section 3.3.2 of derivs.tex
  */
-class TShapeSizeOrientB2 : public TMetric
+class TShapeSizeOrientB2 : public TMetricBarrier
 {
   public:
 
@@ -55,13 +55,15 @@ class TShapeSizeOrientB2 : public TMetric
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<2,2>& T, 
-                 double& result, 
+                 double& result,
+                 bool barrier_violated,
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate_with_grad( const MsqMatrix<2,2>& T,
                            double& result,
                            MsqMatrix<2,2>& deriv_wrt_T,
+                           bool barrier_violated,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
@@ -69,18 +71,21 @@ class TShapeSizeOrientB2 : public TMetric
                            double& result,
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqMatrix<2,2> second_wrt_T[3],
+                           bool barrier_violated,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& T, 
-                 double& result, 
+                 double& result,
+                 bool barrier_violated,
                  MsqError& err );
   
   
   MESQUITE_EXPORT virtual
   bool evaluate_with_grad( const MsqMatrix<3,3>& T, 
                            double& result, 
-                           MsqMatrix<3,3>& wrt_T, 
+                           MsqMatrix<3,3>& wrt_T,
+                           bool barrier_violated,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
@@ -88,6 +93,7 @@ class TShapeSizeOrientB2 : public TMetric
                            double& result,
                            MsqMatrix<3,3>& deriv_wrt_T,
                            MsqMatrix<3,3> second_wrt_T[6],
+                           bool barrier_violated,
                            MsqError& err );
 };
 

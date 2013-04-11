@@ -45,13 +45,17 @@ AWShape2DB1::~AWShape2DB1() {}
 bool AWShape2DB1::evaluate( const MsqMatrix<2,2>& A, 
                             const MsqMatrix<2,2>& W, 
                             double& result, 
+                            bool barrier_violated,
                             MsqError&  )
 {
   const double alpha = det(A);
   const double omega = det(W);
   const double prod = alpha * omega;
   if (AWMetric::invalid_determinant( prod ))
+  {
+    barrier_violated = true;
     return false;
+  }
   
   result =  sqr_Frobenius(A * adj(W));
   result += sqr_Frobenius(W * adj(A));

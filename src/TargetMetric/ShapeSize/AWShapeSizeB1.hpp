@@ -35,12 +35,13 @@
 
 #include "Mesquite.hpp"
 #include "AWMetric.hpp"
+#include "AWMetricBarrier.hpp"
 
 namespace MESQUITE_NS {
 
 
 /** \f$ | A - A^{-t} W^t W |^2  \f$ */
-class AWShapeSizeB1 : public AWMetric
+class AWShapeSizeB1 : public AWMetricBarrier
 {
   public:
 
@@ -54,12 +55,14 @@ class AWShapeSizeB1 : public AWMetric
   bool evaluate( const MsqMatrix<2,2>& A, 
                  const MsqMatrix<2,2>& W, 
                  double& result, 
+                 bool barrier_violated,
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& A, 
                  const MsqMatrix<3,3>& W, 
                  double& result, 
+                 bool barrier_violated,
                  MsqError& err );
 };
 

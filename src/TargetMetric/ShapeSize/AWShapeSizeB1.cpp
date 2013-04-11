@@ -43,30 +43,41 @@ std::string AWShapeSizeB1::get_name() const
 
 AWShapeSizeB1::~AWShapeSizeB1() {}
 
-template <unsigned DIM> static inline
-bool eval( const MsqMatrix<DIM,DIM>& A, 
-           const MsqMatrix<DIM,DIM>& W, 
-           double& result)
-{
+bool AWShapeSizeB1::evaluate( const MsqMatrix<2,2>& A, 
+                              const MsqMatrix<2,2>& W, 
+                              double& result, 
+                              bool barrier_violated,
+                              MsqError&  )
+{ 
+  barrier_violated = false;
   const double alpha = det(A);
   if (AWMetric::invalid_determinant( alpha ))
+  {
+    barrier_violated = true;
     return false;
+  }
   
   result = sqr_Frobenius( A - 1/alpha * transpose_adj(A) * transpose(W) * W );
   return true;
 }
 
-bool AWShapeSizeB1::evaluate( const MsqMatrix<2,2>& A, 
-                              const MsqMatrix<2,2>& W, 
-                              double& result, 
-                              MsqError&  )
-{ return eval(A,W,result); }
-
 bool AWShapeSizeB1::evaluate( const MsqMatrix<3,3>& A, 
                               const MsqMatrix<3,3>& W, 
                               double& result, 
+                              bool barrier_violated,
                               MsqError&  )
-{ return eval(A,W,result); }
+{
+  barrier_violated = false;
+  const double alpha = det(A);
+  if (AWMetric::invalid_determinant( alpha ))
+  {
+    barrier_violated = true;
+    return false;
+  }
+  
+  result = sqr_Frobenius( A - 1/alpha * transpose_adj(A) * transpose(W) * W );
+  return true;
+}
 
 
 } // namespace Mesquite
