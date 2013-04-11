@@ -1,4 +1,4 @@
-
+IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
 
   INCLUDE(TribitsLibraryMacros)
 
