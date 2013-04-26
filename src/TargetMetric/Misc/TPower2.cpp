@@ -50,14 +50,8 @@ bool TPower2::eval( const MsqMatrix<DIM,DIM>& T,
                     double& result,
                     MsqError& err )
 {
-  bool rval;
-  bool barrier_violated = false;
-  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mMetric);
-  if (barrier_ptr) //  A TMetricBarrier class is being used
-    rval = mMetric->evaluate( T, result, barrier_violated, err );
-  else
-    rval = mMetric->evaluate( T, result, err );
-
+  bool rval = mMetric->evaluate( T, result, err );
+  MSQ_ERRZERO(err);
   result *= result;
   return rval;
 }
@@ -68,14 +62,9 @@ bool TPower2::grad( const MsqMatrix<DIM,DIM>& T,
                     MsqMatrix<DIM,DIM>& deriv_wrt_T,
                     MsqError& err )
 {
-  bool rval;
-  bool barrier_violated = false;
-  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mMetric);//
-  if (barrier_ptr) //  A TMetricBarrier class is being used
-    rval = mMetric->evaluate_with_grad( T, result, deriv_wrt_T, barrier_violated, err );
-  else
-    rval = mMetric->evaluate_with_grad( T, result, deriv_wrt_T, err );
- deriv_wrt_T *= 2 * result;
+  bool rval = mMetric->evaluate_with_grad( T, result, deriv_wrt_T, err );
+  MSQ_ERRZERO(err);
+  deriv_wrt_T *= 2 * result;
   result *= result;
   return rval;
 }
@@ -87,13 +76,8 @@ bool TPower2::hess( const MsqMatrix<DIM,DIM>& T,
                     MsqMatrix<DIM,DIM>* second_wrt_T,
                     MsqError& err )
 {
-  bool rval;
-  bool barrier_violated = false;
-  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mMetric);
-  if (barrier_ptr) //  A TMetricBarrier class is being used
-    rval = mMetric->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, barrier_violated, err );
-  else
-    rval = mMetric->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );//
+  bool rval = mMetric->evaluate_with_hess( T, result, deriv_wrt_T, second_wrt_T, err );//
+  MSQ_ERRZERO(err);
   hess_scale( second_wrt_T, 2*result );
   pluseq_scaled_outer_product( second_wrt_T, 2.0, deriv_wrt_T );
   deriv_wrt_T *= 2 * result;

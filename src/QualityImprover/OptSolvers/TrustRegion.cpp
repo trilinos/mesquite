@@ -271,7 +271,11 @@ void TrustRegion::optimize_vertex_positions( PatchData& pd, MsqError& err )
     /* Put the new point into the locations */
     pd.move_free_vertices_constrained( d, nn, 1.0, err ); MSQ_ERRRTN(err);
 
-    valid = func.evaluate( pd, objn, err ); MSQ_ERRRTN(err); 
+    valid = func.evaluate( pd, objn, err ); 
+    if (err.error_code() == err.BARRIER_VIOLATED)
+      err.clear();  // barrier violated does not represent an actual error here
+    MSQ_ERRRTN(err);
+
     if (!valid) {
       /* Function not defined at trial point */
       radius *= tr_decr_undef;

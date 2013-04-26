@@ -644,7 +644,9 @@ double QualityAssessor::loop_over_mesh_internal( MeshDomainAssoc* mesh_and_domai
           for (std::vector<size_t>::iterator j = metric_handles.begin(); 
                j != metric_handles.end(); ++j) 
           {
-            bool valid = (*iter)->get_metric()->evaluate( patch, *j, value, err ); MSQ_ERRZERO(err);
+            bool valid = (*iter)->get_metric()->evaluate( patch, *j, value, err ); // MSQ_ERRZERO(err);
+            if (err.error_code() == err.BARRIER_VIOLATED)
+              err.clear();
             (*iter)->add_value(value);
             if (!valid) 
               (*iter)->add_invalid_value();

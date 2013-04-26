@@ -237,7 +237,11 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       //         functions.
 
       pd.move_free_vertices_constrained(arrptr(d), nv, beta, err); MSQ_ERRRTN(err);
-      fn_bool = objFunc.evaluate(pd, new_value, grad, err); MSQ_ERRRTN(err);
+      fn_bool = objFunc.evaluate(pd, new_value, grad, err); 
+      if (err.error_code() == err.BARRIER_VIOLATED)
+        err.clear();  // barrier violated does not represent an actual error here
+      MSQ_ERRRTN(err);
+
       if ((fn_bool && (original_value - new_value >= -alpha*beta - epsilon)) ||
           (fn_bool && (length(arrptr(grad), nv) < 100*convTol))) {
         // Armijo linesearch rules passed.
@@ -265,7 +269,11 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
           //    (a) trial = x + beta*d
           pd.move_free_vertices_constrained(arrptr(d), nv, beta, err); MSQ_ERRRTN(err);
           //    (b) function evaluation
-          fn_bool = objFunc.evaluate(pd, new_value, err);  MSQ_ERRRTN(err);
+          fn_bool = objFunc.evaluate(pd, new_value, err); 
+          if (err.error_code() == err.BARRIER_VIOLATED)
+            err.clear();  // barrier violated does not represent an actual error here
+          MSQ_ERRRTN(err);
+
           //    (c) check for sufficient decrease and stop
           if (!fn_bool) { 
 	    // function not defined at trial point
@@ -319,7 +327,11 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 	    //    (a) trial = x + beta*d
 	    pd.move_free_vertices_constrained(arrptr(d), nv, beta, err); MSQ_ERRRTN(err);
 	    //    (b) function evaluation
-	    fn_bool = objFunc.evaluate(pd, new_value, err);  MSQ_ERRRTN(err);
+	    fn_bool = objFunc.evaluate(pd, new_value, err);
+            if (err.error_code() == err.BARRIER_VIOLATED)
+              err.clear();  // barrier violated does not represent an actual error here
+            MSQ_ERRRTN(err);
+
 	    //    (c) check for sufficient decrease and stop
 	    if (!fn_bool) { 
 	      // function not defined at trial point

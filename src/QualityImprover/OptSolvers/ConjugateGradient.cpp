@@ -317,7 +317,10 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
   while (j<jmax && !feasible && alp>MSQ_MIN) {
     ++j;
     pd.set_free_vertices_constrained(pMemento,arrptr(pGrad),num_vertices,alp,err);
-    feasible=objFunc.evaluate(pd,f,err); MSQ_ERRZERO(err);
+    feasible=objFunc.evaluate(pd,f,err);
+    if(err.error_code() == err.BARRIER_VIOLATED)
+      err.clear();  // barrier violation does not represent an actual error here
+    MSQ_ERRZERO(err);
       //if not feasible, try a smaller alp (take smaller step)
     if(!feasible){
       alp*=rho;
@@ -396,13 +399,15 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       //step alp in search direction from original positions
       pd.set_free_vertices_constrained(pMemento,arrptr(pGrad),num_vertices,alp,err);MSQ_ERRZERO(err);
 
-      feasible = objFunc.evaluate(pd,fnew, err);MSQ_ERRZERO(err);
+      feasible = objFunc.evaluate(pd,fnew, err);
+      if(err.error_code() == err.BARRIER_VIOLATED)
+        err.clear();  // evaluate() error does not represent an actual problem here
+      MSQ_ERRZERO(err);
       if ( ! feasible ){
-         alp *= rho;
-	 
-	 //Reset the vertices to original position and return alp
-	 pd.set_to_vertices_memento(pMemento,err);MSQ_ERRZERO(err);
-         return alp;
+        alp *= rho;
+          //Reset the vertices to original position and return alp
+        pd.set_to_vertices_memento(pMemento,err);MSQ_ERRZERO(err);
+        return alp;
       }
       if (fnew<f) { 
           f = fnew; 

@@ -227,7 +227,10 @@ void QuasiNewton::optimize_vertex_positions( PatchData& pd, MsqError& err )
     beta = 1.0;
     
     pd.move_free_vertices_constrained( arrptr(d), nn, -beta, err ); MSQ_ERRRTN(err);
-    valid = func.evaluate( pd, objn, v[QNVEC], err ); MSQ_ERRRTN(err);
+    valid = func.evaluate( pd, objn, v[QNVEC], err ); 
+    if (err.error_code() == err.BARRIER_VIOLATED)             
+      err.clear();  // barrier violated does not represent an actual error here
+    MSQ_ERRRTN(err);
     if (!valid ||
         (obj - objn < -alpha*beta - epsilon &&
          length( &(v[QNVEC][0]), nn ) >= tol1)) {
@@ -245,7 +248,10 @@ void QuasiNewton::optimize_vertex_positions( PatchData& pd, MsqError& err )
         }
       
         pd.set_free_vertices_constrained( mMemento, arrptr(d), nn, -beta, err ); MSQ_ERRRTN(err);
-        valid = func.evaluate( pd, objn, err ); MSQ_ERRRTN(err);
+        valid = func.evaluate( pd, objn, err );
+        if (err.error_code() == err.BARRIER_VIOLATED)             
+          err.clear();  // barrier violated does not represent an actual error here
+        MSQ_ERRRTN(err);
         if (!valid) // function undefined at trial point
           beta *= beta0;
         else if (obj - objn < -alpha*beta - epsilon) // unacceptlable iterate

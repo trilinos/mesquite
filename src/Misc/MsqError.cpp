@@ -63,6 +63,7 @@ const char* MsqError::error_message() const
    "Tag not found",
    "Unsupported element type",
    "Parallel Error - error occurred on at least one processor",
+   "barruer violated when processing barrier Target Metric",
    "Invalid Error Code"
   };
   

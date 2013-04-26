@@ -48,21 +48,11 @@ do_finite_difference( int r, int c, AWMetric* metric,
   const double INITAL_STEP = std::max( 1e-6, fabs(1e-14*value) );
   const double init = A(r,c);
   bool valid;
-  bool barrier_violated = false;
   double diff_value;
   for (double step = INITAL_STEP; step > std::numeric_limits<double>::epsilon(); step *= 0.1) {
     A(r,c) = init + step;
-    TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(metric);
-    if (barrier_ptr) //  A TMetricBarrier class is being used
-    {
-      valid = metric->evaluate( A, W, diff_value, barrier_violated, err ); 
-      MSQ_ERRZERO(err);
-    }
-    else
-    {
-      valid = metric->evaluate( A, W, diff_value, err );
-      MSQ_ERRZERO(err);
-    }
+    valid = metric->evaluate( A, W, diff_value, err );
+    MSQ_ERRZERO(err);
     if (valid)
       return (diff_value - value) / step;
   }
@@ -71,17 +61,8 @@ do_finite_difference( int r, int c, AWMetric* metric,
     // direciton
   for (double step = INITAL_STEP; step > std::numeric_limits<double>::epsilon(); step *= 0.1) {
     A(r,c) = init - step;
-    TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(metric);
-    if (barrier_ptr) //  A TMetricBarrier class is being used
-    {
-      valid = metric->evaluate( A, W, diff_value, barrier_violated, err ); 
-      MSQ_ERRZERO(err);
-    }
-    else
-    {
-      valid = metric->evaluate( A, W, diff_value, err );
-      MSQ_ERRZERO(err);
-    }
+    valid = metric->evaluate( A, W, diff_value, err );
+    MSQ_ERRZERO(err);
     if (valid)
       return (value - diff_value) / step;
   }
@@ -102,18 +83,8 @@ do_numerical_gradient( AWMetric* mu,
                        MsqError& err )
 {
   bool valid;
-  bool barrier_violated = false;
-  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(mu);
-  if (barrier_ptr) //  A TMetricBarrier class is being used
-  {
-    valid = mu->evaluate( A, W, result, barrier_violated, err ); 
-    MSQ_ERRZERO(err);
-  }
-  else
-  {
-    valid = mu->evaluate( A, W, result, err );
-    MSQ_ERRZERO(err);
-  }
+  valid = mu->evaluate( A, W, result, err );
+  MSQ_ERRZERO(err);
   if (MSQ_CHKERR(err) || !valid)
     return valid;
   
@@ -155,12 +126,7 @@ do_numerical_hessian( AWMetric* metric,
 
     // evaluate gradient for input values
   bool valid;
-  bool barrier_violated = false;
-  TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(metric);
-  if (barrier_ptr) //  A TMetricBarrier class is being used
-    valid = metric->evaluate_with_grad( A, W, value, grad, barrier_violated, err );
-  else
-    valid = metric->evaluate_with_grad( A, W, value, grad, err );
+  valid = metric->evaluate_with_grad( A, W, value, grad, err );
   if (MSQ_CHKERR(err) || !valid)
     return false;
   
@@ -174,16 +140,8 @@ do_numerical_hessian( AWMetric* metric,
       double step;
       for (step = INITAL_STEP; step > std::numeric_limits<double>::epsilon(); step *= 0.1) {
         A(r,c) = in_val + step;
-        if (barrier_ptr) //  A TMetricBarrier class is being used
-        {
-          valid = metric->evaluate_with_grad( A, W, value2, grad2, barrier_violated, err );
-           MSQ_ERRZERO(err);
-        }
-        else
-        {
-          valid = metric->evaluate_with_grad( A, W, value2, grad2, err );
-          MSQ_ERRZERO(err);
-        }
+        valid = metric->evaluate_with_grad( A, W, value2, grad2, err );
+        MSQ_ERRZERO(err);
         if (valid)
           break;
       }
@@ -192,16 +150,8 @@ do_numerical_hessian( AWMetric* metric,
       if (!valid) {
         for (step = -INITAL_STEP; step < -std::numeric_limits<double>::epsilon(); step *= 0.1) {
           A(r,c) = in_val + step;
-          if (barrier_ptr) //  A TMetricBarrier class is being used
-          {
-            valid = metric->evaluate_with_grad( A, W, value2, grad2, barrier_violated, err );
-            MSQ_ERRZERO(err);
-          }
-          else
-          {
-            valid = metric->evaluate_with_grad( A, W, value2, grad2, err );
-            MSQ_ERRZERO(err);
-          }
+          valid = metric->evaluate_with_grad( A, W, value2, grad2, err );
+          MSQ_ERRZERO(err);
           if (valid)
             break;
         }
@@ -250,31 +200,11 @@ bool AWMetric::evaluate( const MsqMatrix<2,2>& A,
   return false;
 }
 
-bool AWMetric::evaluate( const MsqMatrix<2,2>& A, 
-                         const MsqMatrix<2,2>& W,
-                         double& result, 
-                         bool barrier_violated,
-                         MsqError& err )
-{
-  barrier_violated = false;
-  return false;
-}
-
 bool AWMetric::evaluate( const MsqMatrix<3,3>& A, 
                          const MsqMatrix<3,3>& W,
                          double& result, 
                          MsqError& err )
 {
-  return false;
-}
-
-bool AWMetric::evaluate( const MsqMatrix<3,3>& A, 
-                         const MsqMatrix<3,3>& W,
-                         double& result, 
-                         bool barrier_violated,
-                         MsqError& err )
-{
-  barrier_violated = false;
   return false;
 }
 
@@ -285,18 +215,6 @@ bool AWMetric::evaluate_with_grad( const MsqMatrix<2,2>& A,
                                    MsqError& err )
 {
   return do_numerical_gradient( this, A, W, result, wrt_A, err );
-}
-
-bool AWMetric::evaluate_with_grad( const MsqMatrix<2,2>& A,
-                                   const MsqMatrix<2,2>& W,
-                                   double& result,
-                                   MsqMatrix<2,2>& wrt_A,
-                                   bool barrier_violated,
-                                   MsqError& err )
-{
-    // this version of evaluate_with_grad() not valid in base class
-  barrier_violated = false;
-  return false;
 }
 
 bool AWMetric::evaluate_with_grad( const MsqMatrix<3,3>& A,
@@ -308,19 +226,6 @@ bool AWMetric::evaluate_with_grad( const MsqMatrix<3,3>& A,
   return do_numerical_gradient( this, A, W, result, wrt_A, err );
 }
 
-bool AWMetric::evaluate_with_grad( const MsqMatrix<3,3>& A,
-                                  const MsqMatrix<3,3>& W,
-                                  double& result,
-                                  MsqMatrix<3,3>& wrt_A,
-                                  bool barrier_violated,
-                                  MsqError& err )
-{
-    // this version of evaluate_with_grad() not valid in base class
-  barrier_violated = false;
-  return false;
-}
-
-
 bool AWMetric::evaluate_with_hess( const MsqMatrix<2,2>& A,
                                    const MsqMatrix<2,2>& W,
                                    double& result,
@@ -331,20 +236,6 @@ bool AWMetric::evaluate_with_hess( const MsqMatrix<2,2>& A,
   return do_numerical_hessian( this, A, W, result, deriv_wrt_A, hess_wrt_A, err );
 }
 
-bool AWMetric::evaluate_with_hess( const MsqMatrix<2,2>& A,
-                                   const MsqMatrix<2,2>& W,
-                                   double& result,
-                                   MsqMatrix<2,2>& deriv_wrt_A,
-                                   MsqMatrix<2,2> hess_wrt_A[3],
-                                   bool barrier_violated,
-                                   MsqError& err )
-{
-    // this version of evaluate_with_grad() not valid in base class
-  barrier_violated = false;
-  return false;
-}
-
-
 bool AWMetric::evaluate_with_hess( const MsqMatrix<3,3>& A,
                                    const MsqMatrix<3,3>& W,
                                    double& result,
@@ -354,21 +245,6 @@ bool AWMetric::evaluate_with_hess( const MsqMatrix<3,3>& A,
 {
   return do_numerical_hessian( this, A, W, result, deriv_wrt_A, hess_wrt_A, err );
 }
-
-bool AWMetric::evaluate_with_hess( const MsqMatrix<3,3>& A,
-                                   const MsqMatrix<3,3>& W,
-                                   double& result,
-                                   MsqMatrix<3,3>& deriv_wrt_A,
-                                   MsqMatrix<3,3> hess_wrt_A[6],
-                                   bool barrier_violated,
-                                   MsqError& err )
-{
-    // this version of evaluate_with_grad() not valid in base class
-  barrier_violated = false;
-  return false;
-}
-
-
 
 AWMetric2D::~AWMetric2D() {}
 AWMetric3D::~AWMetric3D() {}

@@ -33,6 +33,7 @@
 #include "Mesquite.hpp"
 #include "AWSizeB1.hpp"
 #include "MsqMatrix.hpp"
+#include "MsqError.hpp"
 #include "TMPDerivs.hpp"
 #include "TMPCommon.hpp"
 
@@ -46,16 +47,14 @@ AWSizeB1::~AWSizeB1() {}
 bool AWSizeB1::evaluate( const MsqMatrix<2,2>& A, 
                          const MsqMatrix<2,2>& W, 
                          double& result, 
-                         bool barrier_violated,
                          MsqError& err )
 {
-  barrier_violated = false;
   const double alpha = det(A);
   const double omega = det(W);
   const double prod = alpha * omega;
   if (AWMetric::invalid_determinant( prod ))
   {
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg_aw, MsqError::BARRIER_VIOLATED );
     return false;
   }
   
@@ -69,16 +68,14 @@ bool AWSizeB1::evaluate_with_grad( const MsqMatrix<2,2>& A,
                                    const MsqMatrix<2,2>& W,
                                    double& result,
                                    MsqMatrix<2,2>& deriv_wrt_A,
-                                   bool barrier_violated,
                                    MsqError& err )
 {
-  barrier_violated = false;
   const double alpha = det(A);
   const double omega = det(W);
   const double prod = alpha * omega;
   if (AWMetric::invalid_determinant( prod ))
   {
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg_aw, MsqError::BARRIER_VIOLATED );
     return false;
   }
 
@@ -93,16 +90,14 @@ bool AWSizeB1::evaluate_with_grad( const MsqMatrix<2,2>& A,
 bool AWSizeB1::evaluate( const MsqMatrix<3,3>& A, 
                          const MsqMatrix<3,3>& W, 
                          double& result, 
-                         bool barrier_violated,
                          MsqError& err )
 {
-  barrier_violated = false;
   const double alpha = det(A);
   const double omega = det(W);
   const double prod = alpha * omega;
   if (AWMetric::invalid_determinant( prod ))
   {
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg_aw, MsqError::BARRIER_VIOLATED );
     return false;
   };
   
@@ -116,16 +111,14 @@ bool AWSizeB1::evaluate_with_grad( const MsqMatrix<3,3>& A,
                                    const MsqMatrix<3,3>& W,
                                    double& result,
                                    MsqMatrix<3,3>& deriv_wrt_A,
-                                   bool barrier_violated,
                                    MsqError& err )
 {
-  barrier_violated = false;
   const double alpha = det(A);
   const double omega = det(W);
   const double prod = alpha * omega;
   if (AWMetric::invalid_determinant( prod ))
   {
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg_aw, MsqError::BARRIER_VIOLATED );
     return false;
   }
 

@@ -148,7 +148,10 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       // to that of the initial vertex coordinates.  However, for block
       // coordinate decent to work correctly, we will need to call an
       // 'update' form if we decide to keep the new vertex coordinates.
-      feasible = obj_func.evaluate( pd, new_value, err ); MSQ_ERRRTN(err);
+      feasible = obj_func.evaluate( pd, new_value, err ); 
+      if (err.error_code() == err.BARRIER_VIOLATED) 
+        err.clear();  // barrier violated does not represent an actual error here
+      MSQ_ERRRTN(err);
       MSQ_DBGOUT(3) << "    o  step_size: " << step_size << std::endl;
       MSQ_DBGOUT(3) << "    o  new_value: " << new_value << std::endl;
 

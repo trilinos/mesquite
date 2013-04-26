@@ -55,14 +55,12 @@ class AWShapeSizeB1 : public AWMetricBarrier
   bool evaluate( const MsqMatrix<2,2>& A, 
                  const MsqMatrix<2,2>& W, 
                  double& result, 
-                 bool barrier_violated,
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& A, 
                  const MsqMatrix<3,3>& W, 
                  double& result, 
-                 bool barrier_violated,
                  MsqError& err );
 };
 

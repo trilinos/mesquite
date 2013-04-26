@@ -55,7 +55,6 @@ class AWSizeB1 : public AWMetricBarrier
   bool evaluate( const MsqMatrix<2,2>& A, 
                  const MsqMatrix<2,2>& W, 
                  double& result, 
-                 bool barrier_violated,
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
@@ -63,14 +62,12 @@ class AWSizeB1 : public AWMetricBarrier
                            const MsqMatrix<2,2>& W,
                            double& result,
                            MsqMatrix<2,2>& deriv_wrt_A,
-                           bool barrier_violated,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& A, 
                  const MsqMatrix<3,3>& W, 
                  double& result, 
-                 bool barrier_violated,
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
@@ -78,7 +75,6 @@ class AWSizeB1 : public AWMetricBarrier
                            const MsqMatrix<3,3>& W,
                            double& result,
                            MsqMatrix<3,3>& deriv_wrt_A,
-                           bool barrier_violated,
                            MsqError& err );
 };
 

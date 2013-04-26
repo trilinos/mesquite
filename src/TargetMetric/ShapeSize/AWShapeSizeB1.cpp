@@ -33,6 +33,7 @@
 #include "Mesquite.hpp"
 #include "AWShapeSizeB1.hpp"
 #include "MsqMatrix.hpp"
+#include "MsqError.hpp"
 #include "TMPDerivs.hpp"
 #include "TMPCommon.hpp"
 
@@ -46,14 +47,12 @@ AWShapeSizeB1::~AWShapeSizeB1() {}
 bool AWShapeSizeB1::evaluate( const MsqMatrix<2,2>& A, 
                               const MsqMatrix<2,2>& W, 
                               double& result, 
-                              bool barrier_violated,
-                              MsqError&  )
+                              MsqError& err )
 { 
-  barrier_violated = false;
   const double alpha = det(A);
   if (AWMetric::invalid_determinant( alpha ))
   {
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg_aw, MsqError::BARRIER_VIOLATED );
     return false;
   }
   
@@ -64,14 +63,12 @@ bool AWShapeSizeB1::evaluate( const MsqMatrix<2,2>& A,
 bool AWShapeSizeB1::evaluate( const MsqMatrix<3,3>& A, 
                               const MsqMatrix<3,3>& W, 
                               double& result, 
-                              bool barrier_violated,
-                              MsqError&  )
+                              MsqError& err )
 {
-  barrier_violated = false;
   const double alpha = det(A);
   if (AWMetric::invalid_determinant( alpha ))
   {
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg_aw, MsqError::BARRIER_VIOLATED );
     return false;
   }
   

@@ -34,12 +34,12 @@
 #define MSQ_INV_TRANS_BARRIER_HPP
 
 #include "Mesquite.hpp"
-#include "TMetric.hpp"
+#include "TMetricBarrier.hpp"
 
 namespace MESQUITE_NS {
 
 /** Make a non-barrier metric into a barrier metric by passing it T^-t */
-class InvTransBarrier : public TMetric
+class InvTransBarrier : public TMetricBarrier
 {
   public:
   InvTransBarrier( TMetric* metric ) : metricPtr(metric) {}

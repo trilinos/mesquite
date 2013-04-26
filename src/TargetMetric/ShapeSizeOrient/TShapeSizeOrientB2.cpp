@@ -33,6 +33,7 @@
 #include "Mesquite.hpp"
 #include "TShapeSizeOrientB2.hpp"
 #include "MsqMatrix.hpp"
+#include "MsqError.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
@@ -44,14 +45,11 @@ TShapeSizeOrientB2::~TShapeSizeOrientB2() {}
 
 bool TShapeSizeOrientB2::evaluate( const MsqMatrix<2,2>& T, 
                                    double& result,
-                                   bool barrier_violated,
-                                   MsqError& )
+                                   MsqError& err )
 {
-  barrier_violated = false;
   double d = det(T);
   if (TMetric::invalid_determinant(d)) {
-    result = 0.0;
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg, MsqError::BARRIER_VIOLATED );
     return false;
   }
   MsqMatrix<2,2> T_inv = 1/d * adj(T);
@@ -62,14 +60,11 @@ bool TShapeSizeOrientB2::evaluate( const MsqMatrix<2,2>& T,
 
 bool TShapeSizeOrientB2::evaluate( const MsqMatrix<3,3>& T, 
                                    double& result,
-                                   bool barrier_violated,
-                                   MsqError& )
+                                   MsqError& err)
 {
-  barrier_violated = false;
   double d = det(T);
   if (TMetric::invalid_determinant(d)) {
-    result = 0.0;
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg, MsqError::BARRIER_VIOLATED );
     return false;
   }
   MsqMatrix<3,3> T_inv = 1/d * adj(T);
@@ -82,14 +77,11 @@ bool TShapeSizeOrientB2::evaluate( const MsqMatrix<3,3>& T,
 bool TShapeSizeOrientB2::evaluate_with_grad( const MsqMatrix<2,2>& T,
                                              double& result,
                                              MsqMatrix<2,2>& deriv_wrt_T,
-                                             bool barrier_violated,
                                              MsqError& err )
 {
-  barrier_violated = false;
   const double tau = det(T);
   if (invalid_determinant(tau)) {
-    result = 0.0;
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg, MsqError::BARRIER_VIOLATED );
     return false;
   }
   
@@ -109,14 +101,11 @@ bool TShapeSizeOrientB2::evaluate_with_grad( const MsqMatrix<2,2>& T,
 bool TShapeSizeOrientB2::evaluate_with_grad( const MsqMatrix<3,3>& T,
                                              double& result,
                                              MsqMatrix<3,3>& deriv_wrt_T,
-                                             bool barrier_violated,
                                              MsqError& err )
 {
-  barrier_violated = false;
   const double tau = det(T);
   if (invalid_determinant(tau)) {
-    result = 0.0;
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg, MsqError::BARRIER_VIOLATED );
     return false;
   }
   
@@ -146,14 +135,11 @@ bool TShapeSizeOrientB2::evaluate_with_hess( const MsqMatrix<2,2>& T,
                                              double& result,
                                              MsqMatrix<2,2>& deriv_wrt_T,
                                              MsqMatrix<2,2> second[3],
-                                             bool barrier_violated,
                                              MsqError& err )
 {
-  barrier_violated = false;
   const double tau = det(T);
   if (invalid_determinant(tau)) {
-    result = 0.0;
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg, MsqError::BARRIER_VIOLATED );
     return false;
   }
   
@@ -180,14 +166,11 @@ bool TShapeSizeOrientB2::evaluate_with_hess( const MsqMatrix<3,3>& T,
                                              double& result,
                                              MsqMatrix<3,3>& deriv_wrt_T,
                                              MsqMatrix<3,3> second[6],
-                                             bool barrier_violated,
                                              MsqError& err )
 {
-  barrier_violated = false;
   const double tau = det(T);
   if (invalid_determinant(tau)) {
-    result = 0.0;
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg, MsqError::BARRIER_VIOLATED );
     return false;
   }
   

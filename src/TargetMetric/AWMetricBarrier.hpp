@@ -39,6 +39,9 @@
 
 namespace MESQUITE_NS {
 
+static const std::string& barrier_violated_msg_aw = "Barrier of barrier metric has been violated because det(T) is negative.\n \
+             Hint: Barrier metrics should not be given initial meshes that are tangled or inverted.";
+
 class MsqError;
 template <unsigned R, unsigned C> class MsqMatrix;
 
@@ -55,215 +58,6 @@ public:
   MESQUITE_EXPORT virtual
   std::string get_name() const {return "AWMetricBarrier";}
 
-    /**\brief Evaluate \f$\mu(A,W)\f$
-     *
-     *\param A 2x2 active matrix
-     *\param W 2x2 target matrix
-     *\param result Output: value of function
-     *\return false if function cannot be evaluated for given A and W
-     *          (e.g. division by zero, etc.), true otherwise.
-     */
-  MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<2,2>& A, 
-                 const MsqMatrix<2,2>& W, 
-                 double& result,
-                 bool barrier_violated,
-                 MsqError& err );
-
-    /**\brief Evaluate \f$\mu(A,W)\f$
-     *
-     *\param A 3x3 active matrix
-     *\param W 3x3 target matrix
-     *\param result Output: value of function
-     *\return false if function cannot be evaluated for given A and W
-     *          (e.g. division by zero, etc.), true otherwise.
-     */
-  MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<3,3>& A, 
-                 const MsqMatrix<3,3>& W, 
-                 double& result,
-                 bool barrier_violated,
-                 MsqError& err );
-  
-    /**\brief Gradient of \f$\mu(A,W)\f$ with respect to components of A
-     *
-     *\param A 2x2 active matrix
-     *\param W 2x2 target matrix
-     *\param result Output: value of function
-     *\param deriv_wrt_A Output: partial deriviatve of \f$\mu\f$ wrt each term of A,
-     *                           evaluated at passed A.
-     *                           \f[\left[\begin{array}{cc} 
-     *                            \frac{\partial\mu}{\partial A_{0,0}} & 
-     *                            \frac{\partial\mu}{\partial A_{0,1}} \\ 
-     *                            \frac{\partial\mu}{\partial A_{1,0}} & 
-     *                            \frac{\partial\mu}{\partial A_{1,1}} \\ 
-     *                            \end{array}\right]\f]
-     *\return false if function cannot be evaluated for given A and W
-     *          (e.g. division by zero, etc.), true otherwise.
-     */
-  MESQUITE_EXPORT virtual
-  bool evaluate_with_grad( const MsqMatrix<2,2>& A,
-                           const MsqMatrix<2,2>& W,
-                           double& result,
-                           MsqMatrix<2,2>& deriv_wrt_A,
-                           bool barrier_violated,
-                           MsqError& err );
-  
-    /**\brief Gradient of \f$\mu(A,W)\f$ with respect to components of A
-     *
-     *\param A 3x3 active matrix
-     *\param W 3x3 target matrix
-     *\param result Output: value of function
-     *\param deriv_wrt_A Output: partial deriviatve of \f$\mu\f$ wrt each term of A,
-     *                           evaluated at passed A.
-     *                           \f[\left[\begin{array}{ccc} 
-     *                            \frac{\partial\mu}{\partial A_{0,0}} & 
-     *                            \frac{\partial\mu}{\partial A_{0,1}} & 
-     *                            \frac{\partial\mu}{\partial A_{0,2}} \\ 
-     *                            \frac{\partial\mu}{\partial A_{1,0}} & 
-     *                            \frac{\partial\mu}{\partial A_{1,1}} & 
-     *                            \frac{\partial\mu}{\partial A_{1,2}} \\ 
-     *                            \frac{\partial\mu}{\partial A_{2,0}} & 
-     *                            \frac{\partial\mu}{\partial A_{2,1}} & 
-     *                            \frac{\partial\mu}{\partial A_{2,2}}
-     *                            \end{array}\right]\f]
-     *\return false if function cannot be evaluated for given A and W
-     *          (e.g. division by zero, etc.), true otherwise.
-     */
-  MESQUITE_EXPORT virtual
-  bool evaluate_with_grad( const MsqMatrix<3,3>& A,
-                           const MsqMatrix<3,3>& W,
-                           double& result,
-                           MsqMatrix<3,3>& deriv_wrt_A,
-                           bool barrier_violated,
-                           MsqError& err );
-
-    /**\brief Hessian of \f$\mu(A,W)\f$ with respect to components of A
-     *
-     *\param A 2x2 active matrix
-     *\param W 2x2 target matrix
-     *\param result Output: value of function
-     *\param deriv_wrt_A Output: partial deriviatve of \f$\mu\f$ wrt each term of A,
-     *                           evaluated at passed A.
-     *\param second_wrt_A Output: 4x4 matrix of second partial deriviatve of \f$\mu\f$ wrt 
-     *                           each term of A, in row-major order.  The symmetric 
-     *                           matrix is decomposed into 2x2 blocks and only the upper diagonal
-     *                           blocks, in row-major order, are returned.
-     *                           \f[\left[\begin{array}{cc|cc}
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}^2} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}\partial A_{0,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}\partial A_{1,0}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}\partial A_{1,1}} \\
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}\partial A_{0,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,1}^2} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,1}\partial A_{1,0}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,1}\partial A_{1,1}} \\
-     *                           \hline & &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,0}^2} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,0}\partial A_{1,1}} \\
-     *                           & &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,0}\partial A_{1,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,1}^2} \\
-     *                            \end{array}\right]\f]
-     *        
-     *\return false if function cannot be evaluated for given A and W
-     *          (e.g. division by zero, etc.), true otherwise.
-     */
-  MESQUITE_EXPORT virtual
-  bool evaluate_with_hess( const MsqMatrix<2,2>& A,
-                           const MsqMatrix<2,2>& W,
-                           double& result,
-                           MsqMatrix<2,2>& deriv_wrt_A,
-                           MsqMatrix<2,2> second_wrt_A[3],
-                           bool barrier_violated,
-                           MsqError& err );
-  
-    /**\brief Hessian of \f$\mu(A,W)\f$ with respect to components of A
-     *
-     *\param A 3x3 active matrix
-     *\param W 3x3 target matrix
-     *\param result Output: value of function
-     *\param deriv_wrt_A Output: partial deriviatve of \f$\mu\f$ wrt each term of A,
-     *                           evaluated at passed A.
-     *\param second_wrt_A Output: 9x9 matrix of second partial deriviatve of \f$\mu\f$ wrt 
-     *                           each term of A, in row-major order.  The symmetric 
-     *                           matrix is decomposed into 3x3 blocks and only the upper diagonal
-     *                           blocks, in row-major order, are returned.
-     *                           \f[\left[\begin{array}{ccc|ccc|ccc}
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}^2} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}\partial A_{0,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}\partial A_{0,2}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}\partial A_{1,0}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}\partial A_{1,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}\partial A_{1,2}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}\partial A_{2,0}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}\partial A_{2,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}\partial A_{2,2}} \\
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}\partial A_{0,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,1}^2} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,1}\partial A_{0,2}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,1}\partial A_{1,0}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,1}\partial A_{1,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,1}\partial A_{1,2}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,1}\partial A_{2,0}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,1}\partial A_{2,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,1}\partial A_{2,2}} \\
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,0}\partial A_{0,2}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,1}\partial A_{0,2}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,2}^2} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,2}\partial A_{1,0}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,2}\partial A_{1,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,2}\partial A_{1,2}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,2}\partial A_{2,0}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,2}\partial A_{2,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{0,2}\partial A_{2,2}} \\
-     *                           \hline & & &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,0}^2} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,0}\partial A_{1,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,0}\partial A_{1,2}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,0}\partial A_{2,0}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,0}\partial A_{2,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,0}\partial A_{2,2}} \\
-     *                           & & &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,0}\partial A_{1,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,1}^2} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,1}\partial A_{1,2}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,1}\partial A_{2,0}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,1}\partial A_{2,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,1}\partial A_{2,2}} \\
-     *                           & & &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,0}\partial A_{1,2}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,1}\partial A_{1,2}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,2}^2} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,2}\partial A_{2,0}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,2}\partial A_{2,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{1,2}\partial A_{2,2}} \\
-     *                           \hline & & & & & &
-     *                           \frac{\partial^{2}\mu}{\partial A_{2,0}^2} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{2,0}\partial A_{2,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{2,0}\partial A_{2,2}} \\
-     *                           & & & & & &
-     *                           \frac{\partial^{2}\mu}{\partial A_{2,0}\partial A_{2,1}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{2,1}^2} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{2,1}\partial A_{2,2}} \\
-     *                           & & & & & &
-     *                           \frac{\partial^{2}\mu}{\partial A_{2,0}\partial A_{2,2}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{2,1}\partial A_{2,2}} &
-     *                           \frac{\partial^{2}\mu}{\partial A_{2,2}^2} \\
-     *                            \end{array}\right]\f]
-     *        
-     *\return false if function cannot be evaluated for given A and W
-     *          (e.g. division by zero, etc.), true otherwise.
-     */
-  MESQUITE_EXPORT virtual
-  bool evaluate_with_hess( const MsqMatrix<3,3>& A,
-                           const MsqMatrix<3,3>& W,
-                           double& result,
-                           MsqMatrix<3,3>& deriv_wrt_A,
-                           MsqMatrix<3,3> second_wrt_A[6],
-                           bool barrier_violated,
-                           MsqError& err );
-                           
   static inline bool invalid_determinant( double d )
     { return d < 1e-12; }
 };
@@ -283,7 +77,6 @@ public:
   bool evaluate( const MsqMatrix<3,3>& A, 
                  const MsqMatrix<3,3>& W, 
                  double& result, 
-                 bool barrier_violated,
                  MsqError& err );
 };
 
@@ -302,7 +95,6 @@ public:
   bool evaluate( const MsqMatrix<2,2>& A, 
                  const MsqMatrix<2,2>& W, 
                  double& result, 
-                 bool barrier_violated,
                  MsqError& err );
 };
 

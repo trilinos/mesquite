@@ -33,6 +33,7 @@
 #include "Mesquite.hpp"
 #include "AWShape2DB1.hpp"
 #include "MsqMatrix.hpp"
+#include "MsqError.hpp"
 #include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
@@ -45,15 +46,14 @@ AWShape2DB1::~AWShape2DB1() {}
 bool AWShape2DB1::evaluate( const MsqMatrix<2,2>& A, 
                             const MsqMatrix<2,2>& W, 
                             double& result, 
-                            bool barrier_violated,
-                            MsqError&  )
+                            MsqError& err )
 {
   const double alpha = det(A);
   const double omega = det(W);
   const double prod = alpha * omega;
   if (AWMetric::invalid_determinant( prod ))
   {
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg_aw, MsqError::BARRIER_VIOLATED );
     return false;
   }
   

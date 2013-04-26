@@ -261,53 +261,26 @@ template <class Metric,unsigned DIM> class TMetricTest : public CppUnit::TestFix
   inline bool eval( TMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
                     double& value, MsqError& err )
     {
-      bool barrier_violated = false;
-      TMetric* metric_ptr = &metric;
-      TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(metric_ptr);
-      if (barrier_ptr) //  A TMetricBarrier class is being used
-        return metric.evaluate( A*inverse(W), value, barrier_violated, err ); 
-      else
-        return metric.evaluate( A*inverse(W), value, err );
+      return metric.evaluate( A*inverse(W), value, err );
     }
   inline bool grad( TMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
                     double& value, MsqMatrix<DIM,DIM>& dmdA, MsqError& err )
     {
-      bool barrier_violated = false;
-      bool rval;
-      TMetric* metric_ptr = &metric;
-      TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(metric_ptr);
-      if (barrier_ptr) //  A TMetricBarrier class is being used
-        rval = metric.evaluate_with_grad( A*inverse(W), value, dmdA, barrier_violated, err );
-      else
-        rval = metric.evaluate_with_grad( A*inverse(W), value, dmdA, err );
+      bool rval = metric.evaluate_with_grad( A*inverse(W), value, dmdA, err );
       dmdA = dmdA * transpose(inverse(W)); 
       return rval; 
     }
   inline bool num_grad( TMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
                         double& value, MsqMatrix<DIM,DIM>& dmdA, MsqError& err )
     {
-      bool barrier_violated = false;
-      bool rval;
-      TMetric* metric_ptr = &metric;
-      TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(metric_ptr);
-      if (barrier_ptr) //  A TMetricBarrier class is being used
-        rval = metric.evaluate_with_grad( A*inverse(W), value, dmdA, barrier_violated, err );
-      else
-        rval = metric.evaluate_with_grad( A*inverse(W), value, dmdA, err );
+      bool rval = metric.evaluate_with_grad( A*inverse(W), value, dmdA, err );
       dmdA = dmdA * transpose(inverse(W)); 
       return rval; 
     }
   inline bool hess( TMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
                     double& value, MsqMatrix<DIM,DIM>& dmdA, MsqMatrix<DIM,DIM> d2mdA2[3], MsqError& err )
     {
-      bool barrier_violated = false;
-      bool rval;
-      TMetric* metric_ptr = &metric;
-      TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(metric_ptr);
-      if (barrier_ptr) //  A TMetricBarrier class is being used
-        rval = metric.evaluate_with_hess( A*inverse(W), value, dmdA, d2mdA2, barrier_violated, err );
-      else
-        rval = metric.evaluate_with_hess( A*inverse(W), value, dmdA, d2mdA2, err );
+      bool rval = metric.evaluate_with_hess( A*inverse(W), value, dmdA, d2mdA2, err );
       dmdA = dmdA * transpose(inverse(W)); 
       for (unsigned i = 0; i < DIM*(DIM+1)/2; ++i) d2mdA2[i] = inverse(W) * d2mdA2[i] * transpose(inverse(W));
       return rval; 
@@ -315,14 +288,7 @@ template <class Metric,unsigned DIM> class TMetricTest : public CppUnit::TestFix
   inline bool num_hess( TMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
                         double& value, MsqMatrix<DIM,DIM>& dmdA, MsqMatrix<DIM,DIM> d2mdA2[3], MsqError& err )
     {
-      bool barrier_violated = false;
-      bool rval;
-      TMetric* metric_ptr = &metric;
-      TMetricBarrier* barrier_ptr = dynamic_cast<TMetricBarrier*>(metric_ptr);
-      if (barrier_ptr) //  A TMetricBarrier class is being used      
-        rval = metric.evaluate_with_hess( A*inverse(W), value, dmdA, d2mdA2, barrier_violated, err );
-      else
-        rval = metric.evaluate_with_hess( A*inverse(W), value, dmdA, d2mdA2, err );
+      bool rval = metric.evaluate_with_hess( A*inverse(W), value, dmdA, d2mdA2, err );
       dmdA = dmdA * transpose(inverse(W)); 
       for (unsigned i = 0; i < DIM*(DIM+1)/2; ++i) d2mdA2[i] = inverse(W) * d2mdA2[i] * transpose(inverse(W));
       return rval;
@@ -332,66 +298,31 @@ template <class Metric,unsigned DIM> class TMetricTest : public CppUnit::TestFix
   inline bool eval( AWMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
                     double& value, MsqError& err )
     { 
-      bool barrier_violated = false;
-      bool rval;
-      AWMetric* metric_ptr = &metric;
-      AWMetricBarrier* barrier_ptr = dynamic_cast<AWMetricBarrier*>(metric_ptr);
-      if (barrier_ptr) //  A AWMetricBarrier class is being used      
-        rval = metric.evaluate( A, W, value, barrier_violated, err ); 
-      else
-        rval = metric.evaluate( A, W, value, err );  
+      bool rval = metric.evaluate( A, W, value, err );  
       return rval;
     }
   inline bool grad( AWMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
                     double& value, MsqMatrix<DIM,DIM>& dmdA, MsqError& err )
     { 
-      bool barrier_violated = false;
-      bool rval;
-      AWMetric* metric_ptr = &metric;
-      AWMetricBarrier* barrier_ptr = dynamic_cast<AWMetricBarrier*>(metric_ptr);
-      if (barrier_ptr) //  A AWMetricBarrier class is being used      
-        rval = metric.evaluate_with_grad( A, W, value, dmdA, barrier_violated, err ); 
-      else
-        rval = metric.evaluate_with_grad( A, W, value, dmdA, err );   
+      bool rval = metric.evaluate_with_grad( A, W, value, dmdA, err );   
       return rval;
     }
   inline bool num_grad( AWMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
                     double& value, MsqMatrix<DIM,DIM>& dmdA, MsqError& err )
     { 
-      bool barrier_violated = false;
-      bool rval;
-      AWMetric* metric_ptr = &metric;
-      AWMetricBarrier* barrier_ptr = dynamic_cast<AWMetricBarrier*>(metric_ptr);
-      if (barrier_ptr) //  A AWMetricBarrier class is being used      
-        rval = metric.evaluate_with_grad( A, W, value, dmdA, barrier_violated, err );
-      else
-        rval = metric.evaluate_with_grad( A, W, value, dmdA, err );
+      bool rval = metric.evaluate_with_grad( A, W, value, dmdA, err );
       return rval;  
     }
   inline bool hess( AWMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
                     double& value, MsqMatrix<DIM,DIM>& dmdA, MsqMatrix<DIM,DIM> d2mdA2[3], MsqError& err )
     { 
-      bool barrier_violated = false;
-      bool rval;
-      AWMetric* metric_ptr = &metric;
-      AWMetricBarrier* barrier_ptr = dynamic_cast<AWMetricBarrier*>(metric_ptr);
-      if (barrier_ptr) //  A AWMetricBarrier class is being used      
-        rval = metric.evaluate_with_hess( A, W, value, dmdA, d2mdA2, barrier_violated, err );
-      else
-        rval = metric.evaluate_with_hess( A, W, value, dmdA, d2mdA2, err );
+      bool rval = metric.evaluate_with_hess( A, W, value, dmdA, d2mdA2, err );
       return rval;  
     }      
   inline bool num_hess( AWMetric& metric, MsqMatrix<DIM,DIM> A, MsqMatrix<DIM,DIM> W, 
                     double& value, MsqMatrix<DIM,DIM>& dmdA, MsqMatrix<DIM,DIM> d2mdA2[3], MsqError& err )
     { 
-      bool barrier_violated = false;
-      bool rval;
-      AWMetric* metric_ptr = &metric;
-      AWMetricBarrier* barrier_ptr = dynamic_cast<AWMetricBarrier*>(metric_ptr);
-      if (barrier_ptr) //  A AWMetricBarrier class is being used      
-        rval = metric.evaluate_with_hess( A, W, value, dmdA, d2mdA2, barrier_violated, err ); 
-      else
-        rval = metric.evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); 
+      bool  rval = metric.evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); 
       return rval;  
     }            
  };
@@ -458,14 +389,20 @@ TMETRIC_FUNC::test_inverted()
   
   if (Barrier) {
     valid = eval( testMetric, V, W, val, err );
+    if (err.error_code() == err.BARRIER_VIOLATED)
+      err.clear();
     ASSERT_NO_ERROR(err);
     CPPUNIT_ASSERT(!valid);
     
     valid = grad( testMetric, V, W, val, g, err );
+    if (err.error_code() == err.BARRIER_VIOLATED)
+      err.clear();
     ASSERT_NO_ERROR(err);
     CPPUNIT_ASSERT(!valid);
     
     valid = hess( testMetric, V, W, val, g, h, err );
+    if (err.error_code() == err.BARRIER_VIOLATED)
+      err.clear();
     ASSERT_NO_ERROR(err);
     CPPUNIT_ASSERT(!valid);
   }

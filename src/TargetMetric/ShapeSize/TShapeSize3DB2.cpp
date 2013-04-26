@@ -33,6 +33,7 @@
 #include "Mesquite.hpp"
 #include "TShapeSize3DB2.hpp"
 #include "TMPDerivs.hpp"
+#include "MsqError.hpp"
 
 namespace MESQUITE_NS {
 
@@ -43,14 +44,11 @@ TShapeSize3DB2::~TShapeSize3DB2() {}
 
 bool TShapeSize3DB2::evaluate( const MsqMatrix<3,3>& T, 
                                double& result, 
-                               bool barrier_violated,
-                               MsqError&  )
+                               MsqError& err )
 {
-  barrier_violated = false;
   const double tau = det(T);
   if (invalid_determinant(tau)) { // barrier
-    result = 0.0;
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg, MsqError::BARRIER_VIOLATED );
     return false;
   }
   
@@ -63,14 +61,11 @@ bool TShapeSize3DB2::evaluate( const MsqMatrix<3,3>& T,
 bool TShapeSize3DB2::evaluate_with_grad( const MsqMatrix<3,3>& T,
                                          double& result,
                                          MsqMatrix<3,3>& deriv_wrt_T,
-                                         bool barrier_violated,
                                          MsqError& err )
 {
-  barrier_violated = false;
   const double tau = det(T);
   if (invalid_determinant(tau)) { // barrier
-    result = 0.0;
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg, MsqError::BARRIER_VIOLATED );
     return false;
   }
   
@@ -95,14 +90,11 @@ bool TShapeSize3DB2::evaluate_with_hess( const MsqMatrix<3,3>& T,
                                          double& result,
                                          MsqMatrix<3,3>& wrt_T,
                                          MsqMatrix<3,3> second[6],
-                                         bool barrier_violated,
                                          MsqError& err )
 {
-  barrier_violated = false;
   const double tau = det(T);
   if (invalid_determinant(tau)) { // barrier
-    result = 0.0;
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg, MsqError::BARRIER_VIOLATED );
     return false;
   }
   

@@ -54,7 +54,6 @@ class AWShape2DB1 : public AWMetricBarrier2D
   bool evaluate( const MsqMatrix<2,2>& A, 
                  const MsqMatrix<2,2>& W, 
                  double& result, 
-                 bool barrier_violated,
                  MsqError& err );
 /*
   MESQUITE_EXPORT virtual

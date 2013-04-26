@@ -34,6 +34,7 @@
 #include "Mesquite.hpp"
 #include "TShapeOrientB1.hpp"
 #include "MsqMatrix.hpp"
+#include "MsqError.hpp"
 #include "TMPDerivs.hpp"
 #include "TMPCommon.hpp"
 
@@ -46,14 +47,11 @@ TShapeOrientB1::~TShapeOrientB1() {}
 
 bool TShapeOrientB1::evaluate( const MsqMatrix<2,2>& T, 
                                double& result, 
-                               bool barrier_violated,
                                MsqError& err )
 {
-  barrier_violated = false;
   const double tau = det(T);
   if (TMetric::invalid_determinant(tau)) { // barrier
-    result = 0.0;
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg, MsqError::BARRIER_VIOLATED );
     return false;
   }
   result = 0.5/tau * (Frobenius( T ) - trace(T)/MSQ_SQRT_TWO);
@@ -63,16 +61,13 @@ bool TShapeOrientB1::evaluate( const MsqMatrix<2,2>& T,
 bool TShapeOrientB1::evaluate_with_grad( const MsqMatrix<2,2>& T,
                                          double& result,
                                          MsqMatrix<2,2>& deriv_wrt_T,
-                                         bool barrier_violated,
                                          MsqError& err )
 {
-  barrier_violated = false;
   const double norm = Frobenius(T);
   const double invroot = 1.0/MSQ_SQRT_TWO;
   const double tau = det(T);
   if (TMetric::invalid_determinant(tau)) { // barrier
-    result = 0.0;
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg, MsqError::BARRIER_VIOLATED );
     return false;
   }
   const double inv_tau = 1.0/tau;
@@ -92,16 +87,13 @@ bool TShapeOrientB1::evaluate_with_hess( const MsqMatrix<2,2>& T,
                                          double& result,
                                          MsqMatrix<2,2>& deriv_wrt_T,
                                          MsqMatrix<2,2> second_wrt_T[3],
-                                         bool barrier_violated,
                                          MsqError& err )
 {
-  barrier_violated = false;
   const double norm = Frobenius(T);
   const double invroot = 1.0/MSQ_SQRT_TWO;
   const double tau = det(T);
   if (TMetric::invalid_determinant(tau)) { // barrier
-    result = 0.0;
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg, MsqError::BARRIER_VIOLATED );
     return false;
   }
   const double inv_tau = 1.0/tau;
@@ -129,14 +121,11 @@ bool TShapeOrientB1::evaluate_with_hess( const MsqMatrix<2,2>& T,
 
 bool TShapeOrientB1::evaluate( const MsqMatrix<3,3>& T, 
                                double& result, 
-                               bool barrier_violated,
                                MsqError& err )
 {
-  barrier_violated = false;
   const double tau = det(T);
   if (TMetric::invalid_determinant(tau)) { // barrier
-    result = 0.0;
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg, MsqError::BARRIER_VIOLATED );
     return false;
   }
   result = 0.5/tau * (Frobenius( T ) - trace(T)/MSQ_SQRT_THREE);
@@ -147,16 +136,13 @@ bool TShapeOrientB1::evaluate( const MsqMatrix<3,3>& T,
   bool TShapeOrientB1::evaluate_with_grad( const MsqMatrix<3,3>& T,
                                            double& result,
                                            MsqMatrix<3,3>& deriv_wrt_T,
-                                           bool barrier_violated,
                                            MsqError& err )
 {
-  barrier_violated = false;
   const double norm = Frobenius(T);
   const double invroot = 1.0/MSQ_SQRT_THREE;
   const double tau = det(T);
   if (TMetric::invalid_determinant(tau)) { // barrier
-    result = 0.0;
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg, MsqError::BARRIER_VIOLATED );
     return false;
   }
   const double inv_tau = 1.0/tau;
@@ -176,16 +162,13 @@ bool TShapeOrientB1::evaluate( const MsqMatrix<3,3>& T,
                                            double& result,
                                            MsqMatrix<3,3>& deriv_wrt_T,
                                            MsqMatrix<3,3> second_wrt_T[6],
-                                           bool barrier_violated,
                                            MsqError& err )
 {
-  barrier_violated = false;
   const double norm = Frobenius(T);
   const double invroot = 1.0/MSQ_SQRT_THREE;
   const double tau = det(T);
   if (TMetric::invalid_determinant(tau)) { // barrier
-    result = 0.0;
-    barrier_violated = true;
+    MSQ_SETERR(err)( barrier_violated_msg, MsqError::BARRIER_VIOLATED );
     return false;
   }
   const double inv_tau = 1.0/tau;

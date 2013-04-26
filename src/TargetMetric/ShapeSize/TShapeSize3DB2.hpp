@@ -52,14 +52,12 @@ class TShapeSize3DB2 : public TMetricBarrier3D
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& T, 
                  double& result,
-                 bool barrier_violated,
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate_with_grad( const MsqMatrix<3,3>& T,
                            double& result,
                            MsqMatrix<3,3>& deriv_wrt_T,
-                           bool barrier_violated,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
@@ -67,7 +65,6 @@ class TShapeSize3DB2 : public TMetricBarrier3D
                            double& result,
                            MsqMatrix<3,3>& deriv_wrt_T,
                            MsqMatrix<3,3> second_wrt_T[6],
-                           bool barrier_violated,
                            MsqError& err );
 
 };

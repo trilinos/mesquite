@@ -52,7 +52,6 @@ public:
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<2,2>& T, 
                  double& result, 
-                 bool barrier_violated,
                  MsqError& err );
 
   /** \f$ \frac{1}{det(T)} [ T - \frac{|T|^2}{2 det(T)}adj(T) ] \f$ */
@@ -60,7 +59,6 @@ public:
   bool evaluate_with_grad( const MsqMatrix<2,2>& T,
                            double& result,
                            MsqMatrix<2,2>& deriv_wrt_T,
-                           bool barrier_violated,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
@@ -68,20 +66,17 @@ public:
                            double& result,
                            MsqMatrix<2,2>& deriv_wrt_T,
                            MsqMatrix<2,2> second_wrt_T[3],
-                           bool barrier_violated,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& T, 
                  double& result,
-                 bool barrier_violated,
                  MsqError& err );
 
   MESQUITE_EXPORT virtual
   bool evaluate_with_grad( const MsqMatrix<3,3>& T,
                            double& result,
                            MsqMatrix<3,3>& deriv_wrt_T,
-                           bool barrier_violated,
                            MsqError& err );
   
   MESQUITE_EXPORT virtual
@@ -89,7 +84,6 @@ public:
                            double& result,
                            MsqMatrix<3,3>& deriv_wrt_T,
                            MsqMatrix<3,3> second_wrt_T[6],
-                           bool barrier_violated,
                            MsqError& err );
 };
 

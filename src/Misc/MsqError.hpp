@@ -126,6 +126,7 @@ public:
     TAG_NOT_FOUND,         /**< Specified tag does not exist */
     UNSUPPORTED_ELEMENT,   /**< the element type is not supported. */
     PARALLEL_ERROR,        /**< an error occurred in parallel > */
+    BARRIER_VIOLATED,      /**< barruer violated when processing barrier Target Metric */
     LAST_ERROR_CODE
   };
   
