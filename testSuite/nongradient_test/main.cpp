@@ -59,13 +59,15 @@ int main()
   MsqPrintError err(std::cout);
   PlanarDomain xyPlane(PlanarDomain::XY, -5);
 
-  #define FILE_NAME "bad_circle_tri.vtk"
-  const char file_name[] = MESH_FILES_DIR "2D/vtk/tris/untangled/" FILE_NAME;
+  #define FILE_NAME1 "bad_circle_tri.vtk"
+  #define FILE_NAME2 "tangled_tri.vtk"
+  const char file_name1[] = MESH_FILES_DIR "2D/vtk/tris/untangled/" FILE_NAME1;
+  const char file_name2[] = MESH_FILES_DIR "2D/vtk/tris/tangled/" FILE_NAME2;
 
     // Barrier / Max Objective Function Test
 
   Mesquite::MeshImpl mesh_max;
-  mesh_max.read_vtk(file_name, err);
+  mesh_max.read_vtk(file_name1, err);
   if (err)
   {
     std::cerr << "NonGradient Barrier test: failed to read file." << std::endl;
@@ -118,7 +120,7 @@ int main()
     // Non-Barrier / Ave Objective Function Test
 
   Mesquite::MeshImpl mesh_mean;
-  mesh_mean.read_vtk(file_name, err);
+  mesh_mean.read_vtk(file_name1, err);
   if (err)
   {
     std::cerr << "NonGradient Non-barrier test: failed to read file." << std::endl;
@@ -163,5 +165,26 @@ int main()
   queue2.run_instructions(&mesh_and_domain, err);
   if (err) return 1;
   
+  // test for barrier violation
+  PlanarDomain xyPlane2 (PlanarDomain::XY, 5);
+  Mesquite::MeshImpl mesh_bv;
+  mesh_bv.read_vtk(file_name2, err);
+  if (err)
+  {
+    std::cerr << "NonGradient Barrier Violation test: failed to read file." << std::endl;
+    return 1;
+  }
+
+  InstructionQueue queue3; 
+  queue3.add_quality_assessor(&max_initial_qa,err);
+  if (err) return 1;
+  queue3.set_master_quality_improver(&max_opt, err); 
+  if (err) return 1;
+
+  Mesquite::MeshDomainAssoc mesh_and_domain2 = MeshDomainAssoc(&mesh_bv, &xyPlane2);
+  queue3.run_instructions(&mesh_and_domain2, err);
+  if (!err.error_code() == err.BARRIER_VIOLATED)
+    return 1;
+
   return 0;
 }
