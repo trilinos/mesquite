@@ -479,6 +479,7 @@ double QualityAssessor::loop_over_mesh_internal( MeshDomainAssoc* mesh_and_domai
 
   Mesh* mesh = mesh_and_domain->get_mesh();
   MeshDomain* domain = mesh_and_domain->get_domain();
+  invalid_values = false;
 
   PatchData patch;
   patch.set_mesh( mesh );
@@ -646,7 +647,10 @@ double QualityAssessor::loop_over_mesh_internal( MeshDomainAssoc* mesh_and_domai
           {
             bool valid = (*iter)->get_metric()->evaluate( patch, *j, value, err ); // MSQ_ERRZERO(err);
             if (err.error_code() == err.BARRIER_VIOLATED)
+            {
               err.clear();
+              invalid_values = true;
+            }
             (*iter)->add_value(value);
             if (!valid) 
               (*iter)->add_invalid_value();
@@ -692,7 +696,7 @@ double QualityAssessor::loop_over_mesh_internal( MeshDomainAssoc* mesh_and_domai
 //          else
 //            (*iter)->haveHistRange = true;
         }
-  } while (first_pass && need_second_pass_for_elements);
+  } while (first_pass && need_second_pass_for_elements && !invalid_values);
       
     
       // Do vertex-based metrics
@@ -771,7 +775,7 @@ double QualityAssessor::loop_over_mesh_internal( MeshDomainAssoc* mesh_and_domai
 //          else
 //            (*iter)->haveHistRange = true;
           }
-    } while (first_pass && need_second_pass_for_vertices);
+    } while (first_pass && need_second_pass_for_vertices && !invalid_values);
   }  
   
   if (helper) {
@@ -1386,135 +1390,144 @@ void QualityAssessor::print_summary( std::ostream& stream ) const
            << std::endl << std::endl;
   }
 
-    // Check if a user-define power-mean was calculated for any of the metrics
-  std::set<double> pmeans;
-  for (iter = assessList.begin(); iter != assessList.end(); ++iter)
-    if ((*iter)->have_power_mean())
-      pmeans.insert( (*iter)->get_power() );
-      
-    // If power-mean of 1 or 2 was requested, change titles rather
-    // than printing redundant values
-  std::string average_str("average"), rms_str("rms");
-  if (pmeans.find(1.0) != pmeans.end()) {
-    pmeans.erase( pmeans.find(1.0) );
-    average_str = "1-mean";
-  }
-  if (pmeans.find(2.0) != pmeans.end()) {
-    pmeans.erase( pmeans.find(2.0) );
-    rms_str = "2-mean";
-  }
-  
-    // Number of values in table
-  unsigned num_values = pmeans.size() + 5;
-  
-    // Decide how wide of a table field should be used for the metric name
-  unsigned twidth = get_terminal_width();
-  unsigned maxnwidth = NAMEW;
-  if (twidth) {
-    unsigned valwidth = NUMW*num_values;
-    maxnwidth = valwidth < twidth ? twidth - valwidth : 0;
-  }
-  unsigned namewidth = 0;
-  for (iter = assessList.begin(); iter != assessList.end(); ++iter)
-    if ((*iter)->get_label().size() > namewidth)
-      namewidth = (*iter)->get_label().size();
-  if (namewidth > maxnwidth)
-    namewidth = maxnwidth;
-  if (namewidth < 7)  // at least enough width for the column header
-    namewidth = 7;
-
-  int number_of_assessments = 0;
-
-    // print metric values
-  for (iter = assessList.begin(); iter != assessList.end(); ++iter)
+  if (!invalid_values)
   {
-    if (number_of_assessments > 0)
-      stream <<"    -------------------------------------------" << std::endl;
-     
-      // print assessment method used to calculate the statistics
-    if ( (*iter)->assessScheme == TMP_QUALITY_METRIC)
-      stream << "     Sample Point Quality Statistics" 
-             << std::endl << std::endl;
-    else
-      stream << "     Element Quality Statistics" 
-             << std::endl << std::endl;
-     
-      // print comlumn label line
-    std::set<double>::const_iterator piter;
-    stream << std::setw(NUMW)      << "minimum";
-    for (piter = pmeans.begin(); piter != pmeans.end() && *piter < 1.0; ++piter)
-      stream << std::setw(NUMW-6) << *piter << "-mean ";
-    stream << std::setw(NUMW)      << average_str;
-    for (; piter != pmeans.end() && *piter < 2.0; ++piter)
-      stream << std::setw(NUMW-6) << *piter << "-mean ";
-    stream << std::setw(NUMW)      << rms_str;
-    for (; piter != pmeans.end(); ++piter)
-      stream << std::setw(NUMW-6) << *piter << "-mean ";
-    stream << std::setw(NUMW)      << "maximum";
-    stream << std::setw(NUMW)      << "std.dev.";
-    stream << std::endl;
+      // Check if a user-define power-mean was calculated for any of the metrics
+    std::set<double> pmeans;
+    for (iter = assessList.begin(); iter != assessList.end(); ++iter)
+      if ((*iter)->have_power_mean())
+        pmeans.insert( (*iter)->get_power() );
+      
+      // If power-mean of 1 or 2 was requested, change titles rather
+      // than printing redundant values
+    std::string average_str("average"), rms_str("rms");
+    if (pmeans.find(1.0) != pmeans.end()) {
+      pmeans.erase( pmeans.find(1.0) );
+      average_str = "1-mean";
+    }
+    if (pmeans.find(2.0) != pmeans.end()) {
+      pmeans.erase( pmeans.find(2.0) );
+      rms_str = "2-mean";
+    }
   
-    stream << std::setw(NUMW) << (*iter)->get_minimum();
-      // print power-means with P less than 1.0
-    for (piter = pmeans.begin(); piter != pmeans.end() && *piter < 1.0; ++piter) {
-      if ((*iter)->have_power_mean() && (*iter)->get_power() == *piter) 
-        stream << std::setw(NUMW) << (*iter)->get_power_mean();
-      else
-        stream << std::setw(NUMW) << " ";
+      // Number of values in table
+    unsigned num_values = pmeans.size() + 5;
+  
+      // Decide how wide of a table field should be used for the metric name
+    unsigned twidth = get_terminal_width();
+    unsigned maxnwidth = NAMEW;
+    if (twidth) {
+      unsigned valwidth = NUMW*num_values;
+      maxnwidth = valwidth < twidth ? twidth - valwidth : 0;
     }
-      // print average
-    stream << std::setw(NUMW) << (*iter)->get_average();
-      // print power-means with P less than 2.0
-    for ( ; piter != pmeans.end() && *piter < 2.0; ++piter) {
-      if ((*iter)->have_power_mean() && (*iter)->get_power() == *piter) 
-        stream << std::setw(NUMW) << (*iter)->get_power_mean();
-      else
-        stream << std::setw(NUMW) << " ";
-    }
-      // print RMS
-    stream << std::setw(NUMW) << (*iter)->get_rms();
-      // print power-means with P greater than 2.0
-    for ( ; piter != pmeans.end(); ++piter) {
-      if ((*iter)->have_power_mean() && (*iter)->get_power() == *piter) 
-        stream << std::setw(NUMW) << (*iter)->get_power_mean();
-      else
-        stream << std::setw(NUMW) << " ";
-    }
-      // print maximum and standard deviation
-    stream << std::setw(NUMW) << (*iter)->get_maximum();
-    stream << std::setw(NUMW) << (*iter)->get_stddev();
-    stream << std::endl << std::endl;
+    unsigned namewidth = 0;
+    for (iter = assessList.begin(); iter != assessList.end(); ++iter)
+      if ((*iter)->get_label().size() > namewidth)
+        namewidth = (*iter)->get_label().size();
+    if (namewidth > maxnwidth)
+      namewidth = maxnwidth;
+    if (namewidth < 7)  // at least enough width for the column header
+      namewidth = 7;
 
-    stream << "     Number of statistics = " << (*iter)->get_count() << std::endl;
+    int number_of_assessments = 0;
 
-      // print name
-    stream << "     Metric = "  << (*iter)->get_label() << std::endl;
-    
-      // Output the method used to calcualte the quality values
-    switch ( (*iter)->assessScheme )
+      // print metric values
+    for (iter = assessList.begin(); iter != assessList.end(); ++iter)
     {
-    case ELEMENT_AVG_QM:
-      stream << "     Element Quality = average over metric values at the elements' sample points" 
-             << std::endl << std::endl;
-      break;
-    case ELEMENT_MAX_QM:
-      stream << "     Element Quality = maximum over metric values at the elements' sample points" 
-             << std::endl << std::endl;
-      break;
-    case TMP_QUALITY_METRIC:
+      if (number_of_assessments > 0)
+        stream <<"    -------------------------------------------" << std::endl;
+     
+        // print assessment method used to calculate the statistics
+      if ( (*iter)->assessScheme == TMP_QUALITY_METRIC)
+        stream << "     Sample Point Quality Statistics" 
+               << std::endl << std::endl;
+      else
+        stream << "     Element Quality Statistics" 
+               << std::endl << std::endl;
+     
+        // print comlumn label line
+      std::set<double>::const_iterator piter;
+      stream << std::setw(NUMW)      << "minimum";
+      for (piter = pmeans.begin(); piter != pmeans.end() && *piter < 1.0; ++piter)
+        stream << std::setw(NUMW-6) << *piter << "-mean ";
+      stream << std::setw(NUMW)      << average_str;
+      for (; piter != pmeans.end() && *piter < 2.0; ++piter)
+        stream << std::setw(NUMW-6) << *piter << "-mean ";
+      stream << std::setw(NUMW)      << rms_str;
+      for (; piter != pmeans.end(); ++piter)
+        stream << std::setw(NUMW-6) << *piter << "-mean ";
+      stream << std::setw(NUMW)      << "maximum";
+      stream << std::setw(NUMW)      << "std.dev.";
+      stream << std::endl;
+  
+      stream << std::setw(NUMW) << (*iter)->get_minimum();
+        // print power-means with P less than 1.0
+      for (piter = pmeans.begin(); piter != pmeans.end() && *piter < 1.0; ++piter) {
+        if ((*iter)->have_power_mean() && (*iter)->get_power() == *piter) 
+          stream << std::setw(NUMW) << (*iter)->get_power_mean();
+        else
+          stream << std::setw(NUMW) << " ";
+      }
+        // print average
+      stream << std::setw(NUMW) << (*iter)->get_average();
+        // print power-means with P less than 2.0
+      for ( ; piter != pmeans.end() && *piter < 2.0; ++piter) {
+        if ((*iter)->have_power_mean() && (*iter)->get_power() == *piter) 
+          stream << std::setw(NUMW) << (*iter)->get_power_mean();
+        else
+          stream << std::setw(NUMW) << " ";
+      }
+        // print RMS
+      stream << std::setw(NUMW) << (*iter)->get_rms();
+        // print power-means with P greater than 2.0
+      for ( ; piter != pmeans.end(); ++piter) {
+        if ((*iter)->have_power_mean() && (*iter)->get_power() == *piter) 
+          stream << std::setw(NUMW) << (*iter)->get_power_mean();
+        else
+          stream << std::setw(NUMW) << " ";
+      }
+        // print maximum and standard deviation
+      stream << std::setw(NUMW) << (*iter)->get_maximum();
+      stream << std::setw(NUMW) << (*iter)->get_stddev();
       stream << std::endl << std::endl;
-      break;
-    case QUALITY_METRIC:
-      stream << "     Element Quality not based on sample points." 
-             << std::endl << std::endl;
-      break;
-    default: 
-      stream << "     Scheme used for deriving qualitiy values unknown" 
-             << std::endl << std::endl;
+
+      stream << "     Number of statistics = " << (*iter)->get_count() << std::endl;
+
+        // print name
+      stream << "     Metric = "  << (*iter)->get_label() << std::endl;
+    
+        // Output the method used to calcualte the quality values
+      switch ( (*iter)->assessScheme )
+      {
+      case ELEMENT_AVG_QM:
+        stream << "     Element Quality = average over metric values at the elements' sample points" 
+               << std::endl << std::endl;
+        break;
+      case ELEMENT_MAX_QM:
+        stream << "     Element Quality = maximum over metric values at the elements' sample points" 
+               << std::endl << std::endl;
+        break;
+      case TMP_QUALITY_METRIC:
+        stream << std::endl << std::endl;
+        break;
+      case QUALITY_METRIC:
+        stream << "     Element Quality not based on sample points." 
+               << std::endl << std::endl;
+        break;
+      default: 
+        stream << "     Scheme used for deriving qualitiy values unknown" 
+               << std::endl << std::endl;
+      }
+      if ((*iter)->have_histogram())
+        (*iter)->print_histogram( stream, get_terminal_width() );
+      number_of_assessments++;
     }
-    if ((*iter)->have_histogram())
-      (*iter)->print_histogram( stream, get_terminal_width() );
-    number_of_assessments++;
+  }
+  else
+  {
+    stream << "  Element Quality Statistics are Undefined for this Metric because"  << std::endl
+           << "  there are Inverted Elements" << std::endl << std::endl;
+
   }
 }
 

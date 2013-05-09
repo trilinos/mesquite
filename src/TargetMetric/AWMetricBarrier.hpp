@@ -39,8 +39,9 @@
 
 namespace MESQUITE_NS {
 
-static const std::string& barrier_violated_msg_aw = "Barrier of barrier metric has been violated because det(T) is negative.\n \
-             Hint: Barrier metrics should not be given initial meshes that are tangled or inverted.";
+static const std::string& barrier_violated_msg_aw = " Barrier of barrier metric has been violated due to negative volume.\n \
+  Hint: If your initial mesh is tangled, you must use a non-Barrier metric.\n \
+        If a Barrier metric is used, you can only use untangled initial meshes.\n";
 
 class MsqError;
 template <unsigned R, unsigned C> class MsqMatrix;

@@ -45,7 +45,11 @@
 #include "TQualityMetric.hpp"    
 #include "IdealShapeTarget.hpp"
 #include "MaxTemplate.hpp"
+#include "PMeanPTemplate.hpp"
 #include "ElementMaxQM.hpp"
+#include "ElementAvgQM.hpp"
+#include "ElementPMeanP.hpp"
+#include "ElemSampleQM.hpp"
 #include "TargetCalculator.hpp"   
 #include "PMeanPTemplate.hpp"
 #include "LPtoPTemplate.hpp"
@@ -75,17 +79,22 @@ int main()
   }
 
   IdealShapeTarget target_max;
+
   TShapeB1 mu;
   TQualityMetric tqMetric_max( &target_max, &mu );
-
+  ElemSampleQM* sampleMetric(&tqMetric_max);
   ElementMaxQM maxMetric( &tqMetric_max );
+  ElementPMeanP meanpMetric( 1.0, sampleMetric);
+
   MaxTemplate maxObjFunction(&maxMetric);  // max(max)
+  NonGradient max_opt( &maxObjFunction ); // optimization procedure 
+
+  PMeanPTemplate pmeanpObjFunction(1.0, sampleMetric);
+  NonGradient pmeanp_opt (&pmeanpObjFunction);
 
   LPtoPTemplate PtoPObjMaxfunction(&maxMetric, (short int)1.0, err);  // max(max)
 
   // Processing for Max Objective Function
-
-  NonGradient max_opt( &maxObjFunction ); // optimization procedure 
 
   max_opt.setSimplexDiameterScale(0); 
   max_opt.use_element_on_vertex_patch(); // local patch
@@ -102,6 +111,16 @@ int main()
   innerTC.add_iteration_limit(20);
   max_opt.set_outer_termination_criterion(&outerTC);
   max_opt.set_inner_termination_criterion(&innerTC);
+
+  // test for barrier violation
+  PlanarDomain xyPlane2 (PlanarDomain::XY, 5);
+  Mesquite::MeshImpl mesh_bv;
+  mesh_bv.read_vtk(file_name2, err);
+  if (err)
+  {
+    std::cerr << "NonGradient Barrier Violation test: failed to read file." << std::endl;
+    return 1;
+  }
 
   InstructionQueue queue1; 
   queue1.add_quality_assessor(&max_initial_qa,err);
@@ -164,26 +183,37 @@ int main()
 
   queue2.run_instructions(&mesh_and_domain, err);
   if (err) return 1;
-  
-  // test for barrier violation
-  PlanarDomain xyPlane2 (PlanarDomain::XY, 5);
-  Mesquite::MeshImpl mesh_bv;
-  mesh_bv.read_vtk(file_name2, err);
-  if (err)
-  {
-    std::cerr << "NonGradient Barrier Violation test: failed to read file." << std::endl;
-    return 1;
-  }
 
+
+
+    // Test barrier target metric using objective function MaxTemplate with inverted mesh
   InstructionQueue queue3; 
   queue3.add_quality_assessor(&max_initial_qa,err);
   if (err) return 1;
   queue3.set_master_quality_improver(&max_opt, err); 
   if (err) return 1;
-
   Mesquite::MeshDomainAssoc mesh_and_domain2 = MeshDomainAssoc(&mesh_bv, &xyPlane2);
   queue3.run_instructions(&mesh_and_domain2, err);
-  if (!err.error_code() == err.BARRIER_VIOLATED)
+  if (err.error_code() == err.BARRIER_VIOLATED)
+  {
+    std::cerr << std::endl << "MaxTemplate OF with inverted mesh test passed" << std::endl;
+    err.clear();
+  }
+  else
+    return 1;
+
+
+    // Test barrier target metric using objective function PMeanPTemplate with inverted mesh
+  InstructionQueue queue4; 
+  queue4.set_master_quality_improver(&pmeanp_opt, err); 
+  if (err) return 1;
+  queue4.run_instructions(&mesh_and_domain2, err);
+  if (err.error_code() == err.BARRIER_VIOLATED)
+  {
+    std::cerr << std::endl << "PMeanPTemplate OF with inverted mesh test passed" << std::endl << std::endl;
+    err.clear();
+  }
+  else
     return 1;
 
   return 0;

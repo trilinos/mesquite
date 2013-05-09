@@ -631,6 +631,8 @@ namespace MESQUITE_NS
 
     int elementTypeCount[MIXED - POLYGON+1];
 
+    bool invalid_values;  // set to true when a target metric contains inverted elements
+
   };
 
   
