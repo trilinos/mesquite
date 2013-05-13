@@ -149,14 +149,15 @@ double VertexMover::loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
     // Get the patch data to use for the first iteration
   OFEvaluator& obj_func = get_objective_function_evaluator();
  
-    // Check for MaxTemplate used with something other than NonGradient
-  QualityImprover* qi_ptr = dynamic_cast<NonGradient*>(this);
-  if (!qi_ptr)
+    // Check for impromer use of MaxTemplate
+  ObjectiveFunctionTemplate* maxt_ptr = dynamic_cast<MaxTemplate*>(obj_func.get_objective_function());
+  if (maxt_ptr)
   {
-    ObjectiveFunctionTemplate* of_ptr = dynamic_cast<MaxTemplate*>(obj_func.get_objective_function());
-    if (of_ptr)
-      std::cout << "Warning: MaxTemplate being used with a solver other than NonGradient." << std::endl <<
-                   "         This is not reccommened." << std::endl;
+  QualityImprover* ngqi_ptr = dynamic_cast<NonGradient*>(this);
+  if (!ngqi_ptr)
+      std::cout << "Warning: MaxTemplate results in non-differentiable objective function." << std::endl <<
+                   "   Therefore, it is best to use the NonGradient solver. Other Mesquite" << std::endl <<
+                   "   solvers require derivative information." << std::endl;
   }
 
   PatchData patch;
