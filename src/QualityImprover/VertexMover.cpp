@@ -42,6 +42,7 @@
 #include "TMetricBarrier.hpp"
 #include "AWMetricBarrier.hpp"
 #include "ElementMaxQM.hpp"
+#include "ElementAvgQM.hpp"
 #include "ElementPMeanP.hpp"
 #include "PlanarDomain.hpp"
 #include "ObjectiveFunctionTemplate.hpp"
@@ -188,7 +189,8 @@ double VertexMover::loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
   QualityMetric* qm_ptr = NULL;
   TQualityMetric* pmeanp_ptr = NULL;
   ElementMaxQM* elem_max_ptr = NULL;
-  ElementPMeanP* elem_pmeamp_ptr = NULL;
+  ElementAvgQM* elem_avg_ptr = NULL;
+  ElementPMeanP* elem_pmeanp_ptr = NULL;
 
   ObjectiveFunctionTemplate* of_ptr =  dynamic_cast<ObjectiveFunctionTemplate*>(obj_func.get_objective_function() );
   if (of_ptr)
@@ -197,10 +199,15 @@ double VertexMover::loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
   {
     pmeanp_ptr = dynamic_cast<TQualityMetric*>(qm_ptr);  // PMeanP case
     elem_max_ptr = dynamic_cast<ElementMaxQM*>(qm_ptr);
-    elem_pmeamp_ptr = dynamic_cast<ElementPMeanP*>(qm_ptr);
+    elem_avg_ptr = dynamic_cast<ElementAvgQM*>(qm_ptr);
+    elem_pmeanp_ptr = dynamic_cast<ElementPMeanP*>(qm_ptr);
   }
   if (elem_max_ptr)
     sample_qm_ptr = elem_max_ptr->get_quality_metric();
+  else if (elem_pmeanp_ptr)
+    sample_qm_ptr = elem_pmeanp_ptr->get_quality_metric();
+  else if (elem_avg_ptr)
+    sample_qm_ptr = elem_avg_ptr->get_quality_metric();
   else if (pmeanp_ptr)
   {
     tm_ptr =  dynamic_cast<TMetricBarrier*>(pmeanp_ptr->get_target_metric());
@@ -212,8 +219,11 @@ double VertexMover::loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
     if (!pmeanp_ptr)
     {
       tqm_ptr = dynamic_cast<TQualityMetric*>(sample_qm_ptr);
-      tm_ptr =  dynamic_cast<TMetricBarrier*>(tqm_ptr->get_target_metric());
-      awm_ptr =  dynamic_cast<AWMetricBarrier*>(tqm_ptr->get_target_metric());
+      if (tqm_ptr)
+      {
+        tm_ptr =  dynamic_cast<TMetricBarrier*>(tqm_ptr->get_target_metric());
+        awm_ptr =  dynamic_cast<AWMetricBarrier*>(tqm_ptr->get_target_metric());
+      }
     }
     else
     {
@@ -226,6 +236,7 @@ double VertexMover::loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
       this->initialize(patch, err); 
       std::vector<size_t> handles;
  
+        // set up patch data      
       std::vector<PatchSet::PatchHandle>::iterator patch_iter = patch_list.begin();
       while( patch_iter != patch_list.end() )
       {
@@ -241,14 +252,14 @@ double VertexMover::loop_over_mesh( MeshDomainAssoc* mesh_and_domain,
     
         qm_ptr->get_evaluations( patch, handles, true, err ); // MSQ_ERRFALSE(err);
   
-          // calculate OF value for just the patch
+          // do actual check for inverted elements
         std::vector<size_t>::const_iterator i;
         double tvalue;
         for (i = handles.begin(); i != handles.end(); ++i)
         {
           bool result = tqm_ptr->evaluate( patch, *i, tvalue, err );
           if (MSQ_CHKERR(err) || !result)
-            return false;
+            return false;    // inverted element detected
         }
       }
     }
