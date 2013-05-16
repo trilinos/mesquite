@@ -23,7 +23,7 @@ Inverse Mean Ratio           1     1.98838     2.06171     3.30804     0.54499
             metric     minimum     average         rms     maximum    std.dev.
 Inverse Mean Ratio           1           1           1           1 1.20137e-07
 
-ShapeImprovementWrapper small file optimization completed in 0.15 seconds
+ShapeImprovementWrapper small file optimization completed in 0.12 seconds
 
 ************** QualityAssessor(free only) Summary **************
 
@@ -45,7 +45,7 @@ Inverse Mean Ratio     1.00156     1.29802     1.35286     22.6413    0.381278
             metric     minimum     average         rms     maximum    std.dev.
 Inverse Mean Ratio     1.00486     1.25288     1.26806     3.52312    0.195566
 
-ShapeImprovementWrapper large file optimization completed in 0.29 seconds
+ShapeImprovementWrapper large file optimization completed in 0.28 seconds
 
 ************** QualityAssessor(free only) Summary **************
 
@@ -215,7 +215,7 @@ ElementPMeanP(untangle(TSizeNB1))
 ElementPMeanP(untangle(TSizeNB1))
                               0    0.876744     3.21674     23.8456     3.09495
 
-UntangleWrapper::SIZE small file optimization completed in 0.03 seconds
+UntangleWrapper::SIZE small file optimization completed in 0.02 seconds
 
 ************** QualityAssessor(free only) Summary **************
 
@@ -241,7 +241,7 @@ ElementPMeanP(untangle(TSizeNB1))
 ElementPMeanP(untangle(TSizeNB1))
                               0  0.00114261  0.00625363   0.0957252  0.00614836
 
-UntangleWrappe::SIZE large file (term crit=0.005) completed in 0.45 seconds
+UntangleWrappe::SIZE large file (term crit=0.005) completed in 0.42 seconds
 
 ************** QualityAssessor(free only) Summary **************
 
@@ -267,7 +267,7 @@ ElementPMeanP(untangle(TSizeNB1))
 ElementPMeanP(untangle(TSizeNB1))
                               0 0.000552593  0.00462354    0.131596   0.0045904
 
-UntangleWrappe::SIZE large file (term crit=0.1) completed in 0.44 seconds
+UntangleWrappe::SIZE large file (term crit=0.1) completed in 0.4 seconds
 
 ************** QualityAssessor(free only) Summary **************
 
@@ -293,7 +293,7 @@ ElementPMeanP(untangle(2D:TShapeSize2DNB1; 3D:TShapeSize3DNB1))
 ElementPMeanP(untangle(2D:TShapeSize2DNB1; 3D:TShapeSize3DNB1))
                               0      1.7009     6.12968     38.8727     5.88897
 
-UntangleWrapper::SHAPESIZE small file optimization completed in 0.02 seconds
+UntangleWrapper::SHAPESIZE small file optimization completed in 0.03 seconds
 
 ************** QualityAssessor(free only) Summary **************
 
@@ -319,7 +319,7 @@ ElementPMeanP(untangle(2D:TShapeSize2DNB1; 3D:TShapeSize3DNB1))
 ElementPMeanP(untangle(2D:TShapeSize2DNB1; 3D:TShapeSize3DNB1))
                               0     1.46636     23.8476     462.591     23.8025
 
-UntangleWrapper::SHAPESIZE large file optimization completed in 0.27 seconds
+UntangleWrapper::SHAPESIZE large file optimization completed in 0.26 seconds
 
 ************** QualityAssessor(free only) Summary **************
 
@@ -345,7 +345,7 @@ ElementPMeanP(TShapeSizeB1)
                      0.00558463   0.0591772   0.0767815    0.303106    0.048923
          EdgeLength    0.161144    0.562074    0.607611     1.11686    0.230789
 
-SizeAdaptShapeWrapper (term crit=0.01) completed in 2.49 seconds
+SizeAdaptShapeWrapper (term crit=0.01) completed in 2.51 seconds
 
 ************** QualityAssessor(free only) Summary **************
 
@@ -397,7 +397,7 @@ ElementPMeanP(TShapeSizeB1)
                        0.001721  0.00172101  0.00172101  0.00172102 6.16854e-09
          EdgeLength           1           1           1           1 4.47035e-08
 
-PaverMinEdgeLengthWrapper small file optimization completed in 0 seconds
+PaverMinEdgeLengthWrapper small file optimization completed in 0.01 seconds
 
 ************** QualityAssessor(free only) Summary **************
 
@@ -449,7 +449,7 @@ ElementPMeanP(TShapeSizeB1)
                        0.486098     41.0871     77.4863     1164.35     65.6961
          EdgeLength  0.00061057    0.014605   0.0210693    0.106232   0.0151858
 
-PaverMinEdgeLengthWrapper large file (term crit=0.1) completed in 0.35 seconds
+PaverMinEdgeLengthWrapper large file (term crit=0.1) completed in 0.36 seconds
 
 ************** QualityAssessor(free only) Summary **************
 
@@ -475,7 +475,7 @@ ElementPMeanP(TShapeNB1)
 ElementPMeanP(TShapeNB1)
                     0.000763758   0.0202682   0.0252805   0.0947676   0.0151097
 
-DeformingDomainWrapper file (term crit=0.01) completed in 1.49 seconds
+DeformingDomainWrapper file (term crit=0.01) completed in 1.32 seconds
 
 ************** QualityAssessor(free only) Summary **************
 
@@ -501,28 +501,900 @@ ElementPMeanP(TShapeNB1)
 ElementPMeanP(TShapeNB1)
                      0.00118729   0.0753342    0.119228    0.428625   0.0924119
 
-DeformingDomainWrapper file (term crit=0.1) completed in 0.54 seconds
+DeformingDomainWrapper file (term crit=0.1) completed in 0.49 seconds
 
 ********* Wrappers Timing Summary **********
 Version Mesquite 2.2.0
 
-ShapeImprovementWrapper small file optimization completed in 0.15 seconds
-ShapeImprovementWrapper large file optimization completed in 0.29 seconds
+ShapeImprovementWrapper small file optimization completed in 0.12 seconds
+ShapeImprovementWrapper large file optimization completed in 0.28 seconds
 LaplacianWrapper small file optimization completed in 0.01 seconds
 LaplacianWrapper large file optimization (term crit=0.001) in 0.78 seconds
 LaplacianWrapper large file optimization (term crit=0.1) in 0.75 seconds
 UntangleWrapper::BETA small file optimization completed in 0.01 seconds
 UntangleWrapper::BETA large file (term crit=0.005) completed in 0.03 seconds
 UntangleWrapper::BETA large file (term crit=0.1) completed in 0.03 seconds
-UntangleWrapper::SIZE small file optimization completed in 0.03 seconds
-UntangleWrapper::SIZE large file (term crit=0.005) completed in 0.45 seconds
-UntangleWrapper::SIZE large file (term crit=0.1) completed in 0.44 seconds
-UntangleWrapper::SHAPESIZE small file optimization completed in 0.02 seconds
-UntangleWrapper::SHAPESIZE large file optimization completed in 0.27 seconds
-SizeAdaptShapeWrapper (term crit=0.01) completed in 2.49 seconds
+UntangleWrapper::SIZE small file optimization completed in 0.02 seconds
+UntangleWrapper::SIZE large file (term crit=0.005) completed in 0.42 seconds
+UntangleWrapper::SIZE large file (term crit=0.1) completed in 0.4 seconds
+UntangleWrapper::SHAPESIZE small file optimization completed in 0.03 seconds
+UntangleWrapper::SHAPESIZE large file optimization completed in 0.26 seconds
+SizeAdaptShapeWrapper (term crit=0.01) completed in 2.51 seconds
 SizeAdaptShapeWrapper (term crit=0.1) completed in 1.11 seconds
+PaverMinEdgeLengthWrapper small file optimization completed in 0.01 seconds
+PaverMinEdgeLengthWrapper large file (term crit=0.005) completed in 0.65 seconds
+PaverMinEdgeLengthWrapper large file (term crit=0.1) completed in 0.36 seconds
+DeformingDomainWrapper file (term crit=0.01) completed in 1.32 seconds
+DeformingDomainWrapper file (term crit=0.1) completed in 0.49 seconds
+
+********* Wrappers Timing Tests **********
+Version Mesquite 2.3.0
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 1000 elements.
+  This mesh had 1000 hexahedron elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+-2.22045e-16     1.98531     2.35085     5.64025     1.25897
+
+     Number of statistics = 1000
+     Metric = ElementPMeanP(TShapeB1)
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 1000 elements.
+  This mesh had 1000 hexahedron elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+ 4.20037e-09 2.74578e-05 3.41102e-05 9.25165e-05  2.0238e-05
+
+     Number of statistics = 1000
+     Metric = ElementPMeanP(TShapeB1)
+     Element Quality not based on sample points.
+
+
+ShapeImprover small file optimization completed in 0.81 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 10920 free elements of 11098 total elements.
+  This mesh had 11098 tetrahedron elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+  0.00233783    0.511777     1.52792     106.734     1.43966
+
+     Number of statistics = 10920
+     Metric = ElementPMeanP(TShapeB1)
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 10920 free elements of 11098 total elements.
+  This mesh had 11098 tetrahedron elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+  0.00773793      0.4143    0.557589     6.36163    0.373176
+
+     Number of statistics = 10920
+     Metric = ElementPMeanP(TShapeB1)
+     Element Quality not based on sample points.
+
+
+ShapeImprover large file optimization completed in 1.83 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 100 elements.
+  This mesh had 100 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+     1.01013     1.16655      1.1738     1.79134    0.130322
+
+     Number of statistics = 100
+     Metric = Inverse Mean Ratio
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 100 elements.
+  This mesh had 100 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           1           1           1     1.00001 2.20663e-06
+
+     Number of statistics = 100
+     Metric = Inverse Mean Ratio
+     Element Quality not based on sample points.
+
+
+LaplacianWrapper small file optimization completed in 0.01 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 4096 elements.
+  This mesh had 4096 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+     1.00359     11.4156     20.1238     140.513     16.5727
+
+     Number of statistics = 4096
+     Metric = Inverse Mean Ratio
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 4096 elements.
+  This mesh had 4096 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+     1.03284     4.11566     4.72989     31.5808     2.33093
+
+     Number of statistics = 4096
+     Metric = Inverse Mean Ratio
+     Element Quality not based on sample points.
+
+
+LaplacianWrapper large file (term crit=0.001) completed in 0.76 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 4096 elements.
+  This mesh had 4096 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+     1.00359     11.4156     20.1238     140.513     16.5727
+
+     Number of statistics = 4096
+     Metric = Inverse Mean Ratio
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 4096 elements.
+  This mesh had 4096 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+     1.03414     4.11516     4.72705      30.545     2.32604
+
+     Number of statistics = 4096
+     Metric = Inverse Mean Ratio
+     Element Quality not based on sample points.
+
+
+LaplacianWrapper large file (term crit=0.1) completed in 0.73 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 200 elements.
+  This mesh had 200 quadrilateral elements.
+  THERE ARE 12 INVERTED ELEMENTS. 
+  (Elements invalid at 44 of 800 sample locations.)
+
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0  0.00016777 0.000862108   0.0057269 0.000845626
+
+     Number of statistics = 200
+     Metric = ElementPMeanP(untangle beta)
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 200 elements.
+  This mesh had 200 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0           0           0           0           0
+
+     Number of statistics = 200
+     Metric = ElementPMeanP(untangle beta)
+     Element Quality not based on sample points.
+
+
+UntangleWrapper::BETA small file optimization completed in 0.01 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 1024 elements.
+  This mesh had 1024 quadrilateral elements.
+  THERE ARE 9 INVERTED ELEMENTS. 
+  (Elements invalid at 9 of 4096 sample locations.)
+
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0   1.911e-05 0.000313328  0.00783511 0.000312745
+
+     Number of statistics = 1024
+     Metric = ElementPMeanP(untangle beta)
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 1024 elements.
+  This mesh had 1024 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0           0           0           0           0
+
+     Number of statistics = 1024
+     Metric = ElementPMeanP(untangle beta)
+     Element Quality not based on sample points.
+
+
+UntangleWrapper::BETA large file (term crit=0.005) completed in 0.03 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 1024 elements.
+  This mesh had 1024 quadrilateral elements.
+  THERE ARE 9 INVERTED ELEMENTS. 
+  (Elements invalid at 9 of 4096 sample locations.)
+
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0   1.911e-05 0.000313328  0.00783511 0.000312745
+
+     Number of statistics = 1024
+     Metric = ElementPMeanP(untangle beta)
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 1024 elements.
+  This mesh had 1024 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0           0           0           0           0
+
+     Number of statistics = 1024
+     Metric = ElementPMeanP(untangle beta)
+     Element Quality not based on sample points.
+
+
+UntangleWrapper::BETA large file (term crit=0.1) completed in 0.03 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 200 elements.
+  This mesh had 200 quadrilateral elements.
+  THERE ARE 12 INVERTED ELEMENTS. 
+  (Elements invalid at 44 of 800 sample locations.)
+
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0     18.6779     71.2738     358.632     68.7829
+
+     Number of statistics = 200
+     Metric = ElementPMeanP(untangle(TSizeNB1))
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 200 elements.
+  This mesh had 200 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0    0.876744     3.21674     23.8456     3.09495
+
+     Number of statistics = 200
+     Metric = ElementPMeanP(untangle(TSizeNB1))
+     Element Quality not based on sample points.
+
+
+UntangleWrapper::SIZE small file optimization completed in 0.03 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 1024 elements.
+  This mesh had 1024 quadrilateral elements.
+  THERE ARE 9 INVERTED ELEMENTS. 
+  (Elements invalid at 9 of 4096 sample locations.)
+
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0      1560.8     32423.2 1.01618e+06     32385.6
+
+     Number of statistics = 1024
+     Metric = ElementPMeanP(untangle(TSizeNB1))
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 1024 elements.
+  This mesh had 1024 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0  0.00114261  0.00625363   0.0957252  0.00614836
+
+     Number of statistics = 1024
+     Metric = ElementPMeanP(untangle(TSizeNB1))
+     Element Quality not based on sample points.
+
+
+UntangleWrappe::SIZE large file (term crit=0.005) completed in 0.44 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 1024 elements.
+  This mesh had 1024 quadrilateral elements.
+  THERE ARE 9 INVERTED ELEMENTS. 
+  (Elements invalid at 9 of 4096 sample locations.)
+
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0      1560.8     32423.2 1.01618e+06     32385.6
+
+     Number of statistics = 1024
+     Metric = ElementPMeanP(untangle(TSizeNB1))
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 1024 elements.
+  This mesh had 1024 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0 0.000552593  0.00462354    0.131596   0.0045904
+
+     Number of statistics = 1024
+     Metric = ElementPMeanP(untangle(TSizeNB1))
+     Element Quality not based on sample points.
+
+
+UntangleWrappe::SIZE large file (term crit=0.1) completed in 0.44 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 200 elements.
+  This mesh had 200 quadrilateral elements.
+  THERE ARE 12 INVERTED ELEMENTS. 
+  (Elements invalid at 44 of 800 sample locations.)
+
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0     2.05409     6.65407     37.9267     6.32908
+
+     Number of statistics = 200
+     Metric = ElementPMeanP(untangle(2D:TShapeSize2DNB1; 3D:TShapeSize3DNB1))
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 200 elements.
+  This mesh had 200 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0      1.7009     6.12968     38.8727     5.88897
+
+     Number of statistics = 200
+     Metric = ElementPMeanP(untangle(2D:TShapeSize2DNB1; 3D:TShapeSize3DNB1))
+     Element Quality not based on sample points.
+
+
+UntangleWrapper::SHAPESIZE small file optimization completed in 0.03 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 1024 elements.
+  This mesh had 1024 quadrilateral elements.
+  THERE ARE 9 INVERTED ELEMENTS. 
+  (Elements invalid at 9 of 4096 sample locations.)
+
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0     48.5379     210.965     2915.69     205.305
+
+     Number of statistics = 1024
+     Metric = ElementPMeanP(untangle(2D:TShapeSize2DNB1; 3D:TShapeSize3DNB1))
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 1024 elements.
+  This mesh had 1024 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           0     1.46636     23.8476     462.591     23.8025
+
+     Number of statistics = 1024
+     Metric = ElementPMeanP(untangle(2D:TShapeSize2DNB1; 3D:TShapeSize3DNB1))
+     Element Quality not based on sample points.
+
+
+UntangleWrapper::SHAPESIZE large file optimization completed in 0.29 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 3456 elements.
+  This mesh had 3456 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+  0.00447499     0.23505    0.288066    0.710249    0.166533
+
+     Number of statistics = 3456
+     Metric = ElementPMeanP(TShapeSizeB1)
+     Element Quality not based on sample points.
+
+    -------------------------------------------
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+    0.163072    0.574857     0.62062     1.01908      0.2339
+
+     Number of statistics = 13824
+     Metric = EdgeLength
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 3456 elements.
+  This mesh had 3456 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+  0.00558463   0.0591772   0.0767815    0.303106    0.048923
+
+     Number of statistics = 3456
+     Metric = ElementPMeanP(TShapeSizeB1)
+     Element Quality not based on sample points.
+
+    -------------------------------------------
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+    0.161144    0.562074    0.607611     1.11686    0.230789
+
+     Number of statistics = 13824
+     Metric = EdgeLength
+     Element Quality not based on sample points.
+
+
+SizeAdaptShapeWrapper (term crit=0.01) completed in 2.38 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 3456 elements.
+  This mesh had 3456 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+  0.00447499     0.23505    0.288066    0.710249    0.166533
+
+     Number of statistics = 3456
+     Metric = ElementPMeanP(TShapeSizeB1)
+     Element Quality not based on sample points.
+
+    -------------------------------------------
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+    0.163072    0.574857     0.62062     1.01908      0.2339
+
+     Number of statistics = 13824
+     Metric = EdgeLength
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 3456 elements.
+  This mesh had 3456 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+  0.00354719   0.0623513   0.0819362    0.328348   0.0531588
+
+     Number of statistics = 3456
+     Metric = ElementPMeanP(TShapeSizeB1)
+     Element Quality not based on sample points.
+
+    -------------------------------------------
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+    0.160093    0.563315    0.608081     1.11967    0.228996
+
+     Number of statistics = 13824
+     Metric = EdgeLength
+     Element Quality not based on sample points.
+
+
+SizeAdaptShapeWrapper (term crit=0.1) completed in 1.05 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 8 elements.
+  This mesh had 8 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+    0.357275    0.983461     1.33806     3.27555    0.907303
+
+     Number of statistics = 8
+     Metric = ElementPMeanP(TShapeSizeB1)
+     Element Quality not based on sample points.
+
+    -------------------------------------------
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+    0.538516     1.11317     1.15398     1.51327    0.304184
+
+     Number of statistics = 12
+     Metric = EdgeLength
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 8 elements.
+  This mesh had 8 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+    0.001721  0.00172101  0.00172101  0.00172102 6.16854e-09
+
+     Number of statistics = 8
+     Metric = ElementPMeanP(TShapeSizeB1)
+     Element Quality not based on sample points.
+
+    -------------------------------------------
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+           1           1           1           1 4.47035e-08
+
+     Number of statistics = 12
+     Metric = EdgeLength
+     Element Quality not based on sample points.
+
+
+PaverMinEdgeLengthWrapper small file optimization completed in 0 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 4096 elements.
+  This mesh had 4096 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+   0.0154931     43.0007     82.2069     582.296     70.0637
+
+     Number of statistics = 4096
+     Metric = ElementPMeanP(TShapeSizeB1)
+     Element Quality not based on sample points.
+
+    -------------------------------------------
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+ 0.000435372   0.0147297   0.0211422    0.106231   0.0151667
+
+     Number of statistics = 15876
+     Metric = EdgeLength
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 4096 elements.
+  This mesh had 4096 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+    0.138528     39.1322     69.9206     509.862     57.9445
+
+     Number of statistics = 4096
+     Metric = ElementPMeanP(TShapeSizeB1)
+     Element Quality not based on sample points.
+
+    -------------------------------------------
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+  0.00077114   0.0145053   0.0209926    0.106232   0.0151751
+
+     Number of statistics = 15876
+     Metric = EdgeLength
+     Element Quality not based on sample points.
+
+
+PaverMinEdgeLengthWrapper large file (term crit=0.005) completed in 0.65 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 4096 elements.
+  This mesh had 4096 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+   0.0154931     43.0007     82.2069     582.296     70.0637
+
+     Number of statistics = 4096
+     Metric = ElementPMeanP(TShapeSizeB1)
+     Element Quality not based on sample points.
+
+    -------------------------------------------
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+ 0.000435372   0.0147297   0.0211422    0.106231   0.0151667
+
+     Number of statistics = 15876
+     Metric = EdgeLength
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 4096 elements.
+  This mesh had 4096 quadrilateral elements.
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+    0.486098     41.0871     77.4863     1164.35     65.6961
+
+     Number of statistics = 4096
+     Metric = ElementPMeanP(TShapeSizeB1)
+     Element Quality not based on sample points.
+
+    -------------------------------------------
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+  0.00061057    0.014605   0.0210693    0.106232   0.0151858
+
+     Number of statistics = 15876
+     Metric = EdgeLength
+     Element Quality not based on sample points.
+
+
+PaverMinEdgeLengthWrapper large file (term crit=0.1) completed in 0.36 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 216 elements.
+  This mesh had 216 quadrilateral elements.
+  THERE ARE 56 INVERTED ELEMENTS. 
+  (Elements invalid at 220 of 864 sample locations.)
+
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+ 4.57621e-05     7.63416     20.8252     67.0217     19.3754
+
+     Number of statistics = 216
+     Metric = ElementPMeanP(TShapeNB1)
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 216 elements.
+  This mesh had 216 quadrilateral elements.
+  THERE ARE 78 INVERTED ELEMENTS. 
+  (Elements invalid at 294 of 864 sample locations.)
+
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+ 5.45248e-05     3.50802     8.23189     40.0835     7.44701
+
+     Number of statistics = 216
+     Metric = ElementPMeanP(TShapeNB1)
+     Element Quality not based on sample points.
+
+
+DeformingDomainWrapper file (term crit=0.01) completed in 0.03 seconds
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 216 elements.
+  This mesh had 216 quadrilateral elements.
+  THERE ARE 56 INVERTED ELEMENTS. 
+  (Elements invalid at 220 of 864 sample locations.)
+
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+ 4.57621e-05     7.63416     20.8252     67.0217     19.3754
+
+     Number of statistics = 216
+     Metric = ElementPMeanP(TShapeNB1)
+     Element Quality not based on sample points.
+
+
+************** QualityAssessor(free only) Summary **************
+
+  Evaluating quality for 216 elements.
+  This mesh had 216 quadrilateral elements.
+  THERE ARE 78 INVERTED ELEMENTS. 
+  (Elements invalid at 294 of 864 sample locations.)
+
+  No entities had undefined values for any computed metric.
+
+     Element Quality Statistics
+
+     minimum     average         rms     maximum    std.dev.
+ 5.45248e-05     3.50802     8.23189     40.0835     7.44701
+
+     Number of statistics = 216
+     Metric = ElementPMeanP(TShapeNB1)
+     Element Quality not based on sample points.
+
+
+DeformingDomainWrapper file (term crit=0.1) completed in 0.03 seconds
+
+********* Wrappers Timing Summary **********
+Version Mesquite 2.3.0
+
+ShapeImprover small file optimization completed in 0.81 seconds
+ShapeImprover large file optimization completed in 1.83 seconds
+LaplacianWrapper small file optimization completed in 0.01 seconds
+LaplacianWrapper large file optimization (term crit=0.001) in 0.76 seconds
+LaplacianWrapper large file optimization (term crit=0.1) in 0.73 seconds
+UntangleWrapper::BETA small file optimization completed in 0.01 seconds
+UntangleWrapper::BETA large file (term crit=0.005) completed in 0.03 seconds
+UntangleWrapper::BETA large file (term crit=0.1) completed in 0.03 seconds
+UntangleWrapper::SIZE small file optimization completed in 0.03 seconds
+UntangleWrapper::SIZE large file (term crit=0.005) completed in 0.44 seconds
+UntangleWrapper::SIZE large file (term crit=0.1) completed in 0.44 seconds
+UntangleWrapper::SHAPESIZE small file optimization completed in 0.03 seconds
+UntangleWrapper::SHAPESIZE large file optimization completed in 0.29 seconds
+SizeAdaptShapeWrapper (term crit=0.01) completed in 2.38 seconds
+SizeAdaptShapeWrapper (term crit=0.1) completed in 1.05 seconds
 PaverMinEdgeLengthWrapper small file optimization completed in 0 seconds
 PaverMinEdgeLengthWrapper large file (term crit=0.005) completed in 0.65 seconds
-PaverMinEdgeLengthWrapper large file (term crit=0.1) completed in 0.35 seconds
-DeformingDomainWrapper file (term crit=0.01) completed in 1.49 seconds
-DeformingDomainWrapper file (term crit=0.1) completed in 0.54 seconds
+PaverMinEdgeLengthWrapper large file (term crit=0.1) completed in 0.36 seconds
+DeformingDomainWrapper file (term crit=0.01) completed in 0.03 seconds
+DeformingDomainWrapper file (term crit=0.1) completed in 0.03 seconds
