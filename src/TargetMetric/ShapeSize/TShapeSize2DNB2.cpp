@@ -61,7 +61,8 @@ bool TShapeSize2DNB2::evaluate( const MsqMatrix<2,2>& T,
     a *= 2.0;
     frob_sqr = sqr_Frobenius(Tdelta);
     psi = sqrt( frob_sqr + 2.0*det(Tdelta) );
-    result = (frob_sqr+2) / 2*psi;
+    if (psi > 1e-50) 
+     result = (frob_sqr+2) / 2*psi;
   }
 
   result -= 1.0;
@@ -85,15 +86,19 @@ bool TShapeSize2DNB2::evaluate_with_grad( const MsqMatrix<2,2>& T,
     a *= 2.0;
     frob_sqr = sqr_Frobenius(Tdelta);
     psi = sqrt( frob_sqr + 2.0*det(Tdelta) );
-    result = (frob_sqr+2) / 2*psi;
+    if (psi > 1e-50) 
+      result = (frob_sqr+2) / 2*psi;
   }
   
   //MsqMatrix<2,2> d_psi = 1.0/psi * (T + transpose_adj(T));
   //deriv_wrt_T = (1.0/psi) * (T - result * d_psi);
-  const double f = result/(psi*psi);
-  deriv_wrt_T = transpose_adj(T);
-  deriv_wrt_T *= -f;
-  deriv_wrt_T += (1.0/psi - f) * T;
+  if (psi > 1e-50) 
+  {
+    const double f = result/(psi*psi);
+    deriv_wrt_T = transpose_adj(T);
+    deriv_wrt_T *= -f;
+    deriv_wrt_T += (1.0/psi - f) * T;
+  }
   
   result -= 1.0;
   
@@ -118,7 +123,8 @@ bool TShapeSize2DNB2::evaluate_with_hess( const MsqMatrix<2,2>& T,
     a *= 2.0;
     frob_sqr = sqr_Frobenius(Tdelta);
     psi = sqrt( frob_sqr + 2.0*det(Tdelta) );
-    result = (frob_sqr+2) / 2*psi;
+    if (psi > 1e-50) 
+      result = (frob_sqr+2) / 2*psi;
   }
   
   const double inv_psi = 1.0/psi;

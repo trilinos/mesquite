@@ -35,6 +35,8 @@
 #include "TMPDerivs.hpp"
 #include "TMPCommon.hpp"
 
+#include <iostream>
+
 namespace MESQUITE_NS {
 
 
@@ -61,11 +63,19 @@ bool TUntangle1::grad( const MsqMatrix<DIM,DIM>& T,
 {
   double tau = det(T);
   double g = sqrt(tau*tau + mFactor);
-  double f = tau/g - 1;
-  result = 0.5 * (g - tau);
-  deriv_wrt_T = transpose_adj(T);
-  deriv_wrt_T *= 0.5 * f;
-  return true;
+  if (g > 1e-50)
+  {
+    double f = tau/g - 1;
+    result = 0.5 * (g - tau);
+    deriv_wrt_T = transpose_adj(T);
+    deriv_wrt_T *= 0.5 * f;
+    return true;
+  }
+  else
+  {
+    std::cout << "Warning: Division by zero avoided in TUntangle1::grad()" << std::endl;
+    return false;
+  }
 }
 
 template <unsigned DIM> inline
@@ -77,6 +87,8 @@ bool TUntangle1::hess( const MsqMatrix<DIM,DIM>& T,
   const MsqMatrix<DIM,DIM> adjt = transpose_adj(T);
   double tau = det(T);
   double g = sqrt(tau*tau + mFactor);
+  if (g == 0)
+    return false;
   double f = 0.5 * (tau/g - 1);
   result = 0.5 * (g - tau);
   

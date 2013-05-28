@@ -35,6 +35,8 @@
 #include "MsqMatrix.hpp"
 #include "TMPDerivs.hpp"
 
+#include <iostream>
+
 namespace MESQUITE_NS {
 
 std::string TShapeNB1::get_name() const
@@ -122,7 +124,10 @@ bool TShapeNB1::evaluate_with_hess( const MsqMatrix<3,3>& T,
   deriv_wrt_T *= 3;
   
   set_scaled_2nd_deriv_of_det( second_wrt_T, -3 * MSQ_SQRT_THREE, T );
-  pluseq_scaled_outer_product( second_wrt_T, 3.0/f, T );
+  if (f > 1e-50)
+    pluseq_scaled_outer_product( second_wrt_T, 3.0/f, T );
+  else
+    std::cout << "Warning: Division by zero avoided in TShapeNB1::evaluate_with_hess()" << std::endl;
   pluseq_scaled_I( second_wrt_T, 3.0*f );
   return true;
 }

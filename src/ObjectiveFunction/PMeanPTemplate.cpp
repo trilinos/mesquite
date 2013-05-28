@@ -123,7 +123,7 @@ bool PMeanPTemplate::evaluate( EvalType type,
   }
   
     // get overall OF value, update member data, etc.
-  size_t global_count;
+  size_t global_count = 0;
   value_out = qm->get_negate_flag() 
             * get_value( working_sum, qmHandles.size(), type, global_count );
   return true;
@@ -166,13 +166,16 @@ bool PMeanPTemplate::evaluate_with_gradient( EvalType type,
   }
   
     // get overall OF value, update member data, etc.
-  size_t global_count;
+  size_t global_count = 0;
   value_out = qm->get_negate_flag() 
             * get_value( working_sum, qmHandles.size(), type, global_count );
-  const double inv_n = 1.0 / global_count;
-  std::vector<Vector3D>::iterator g;
-  for (g = grad_out.begin(); g != grad_out.end(); ++g)
-    *g *= inv_n;
+  if (global_count)
+  {
+    const double inv_n = 1.0 / global_count;
+    std::vector<Vector3D>::iterator g;
+    for (g = grad_out.begin(); g != grad_out.end(); ++g)
+      *g *= inv_n;
+  }
   return true;
 }
 
@@ -236,14 +239,17 @@ bool PMeanPTemplate::evaluate_with_Hessian_diagonal( EvalType type,
   }
   
     // get overall OF value, update member data, etc.
-  size_t global_count;
+  size_t global_count = 0;
   value_out = qm->get_negate_flag() 
             * get_value( working_sum, qmHandles.size(), type, global_count );
-  const double inv_n = 1.0 / global_count;
-  for (j = 0; j < s; ++j) {
-    grad_out[j] *= inv_n;
-    hess_diag_out[j] *= inv_n;
-  }
+  if (global_count)
+  {
+    const double inv_n = 1.0 / global_count;
+    for (j = 0; j < s; ++j) {
+      grad_out[j] *= inv_n;
+      hess_diag_out[j] *= inv_n;
+    }
+  }  
   return true;
 }
 
@@ -289,7 +295,7 @@ bool PMeanPTemplate::evaluate_with_Hessian( EvalType type,
           Hessian_out.add( mIndices[j], mIndices[k], mHessian[n], err );  MSQ_ERRFALSE(err);
           ++n;
         }
-     }
+      }
     }
     else {
       const double r2 = mPowerMinus2.raise( value );
@@ -315,14 +321,17 @@ bool PMeanPTemplate::evaluate_with_Hessian( EvalType type,
   }
   
     // get overall OF value, update member data, etc.
-  size_t global_count;
+  size_t global_count = 0;
   value_out = qm->get_negate_flag() 
             * get_value( working_sum, qmHandles.size(), type, global_count );
-  const double inv_n = 1.0 / global_count;
-  std::vector<Vector3D>::iterator g;
-  for (g = grad_out.begin(); g != grad_out.end(); ++g)
-    *g *= inv_n;
-  Hessian_out.scale( inv_n );
+  if (global_count)
+  {
+    const double inv_n = 1.0 / global_count;
+    std::vector<Vector3D>::iterator g;
+    for (g = grad_out.begin(); g != grad_out.end(); ++g)
+      *g *= inv_n;
+    Hessian_out.scale( inv_n );
+  }
   return true;
 }
 

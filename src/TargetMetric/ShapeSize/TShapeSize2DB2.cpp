@@ -36,6 +36,8 @@
 #include "MsqError.hpp"
 #include "TMPDerivs.hpp"
 
+#include <iostream>
+
 namespace MESQUITE_NS {
 
 std::string TShapeSize2DB2::get_name() const
@@ -76,9 +78,16 @@ bool TShapeSize2DB2::evaluate_with_grad( const MsqMatrix<2,2>& T,
     // deriv of V wrt T
   MsqMatrix<2,2> adjt = transpose_adj(T);
   MsqMatrix<2,2> v_wrt_T(T);
-  v_wrt_T *= (1.0 - 1.0/psi);
-  v_wrt_T -= 1.0/psi * adjt;
-  v_wrt_T *= 2;
+  if (psi > 1e-50)
+  {
+    v_wrt_T *= (1.0 - 1.0/psi);
+    v_wrt_T -= 1.0/psi * adjt;
+    v_wrt_T *= 2;
+  }
+  else
+  {
+    std::cout << "Warning: Division by zero avoided in TShapeSize2DB2::evaluate_with_grad()" << std::endl;
+  }
   
     // deriv of mu wrt T
   deriv_wrt_T = v_wrt_T;
@@ -107,9 +116,16 @@ bool TShapeSize2DB2::evaluate_with_hess( const MsqMatrix<2,2>& T,
     // deriv of V wrt T
   MsqMatrix<2,2> adjt = transpose_adj(T);
   MsqMatrix<2,2> v_wrt_T(T);
-  v_wrt_T *= (1.0 - 1.0/psi);
-  v_wrt_T -= 1.0/psi * adjt;
-  v_wrt_T *= 2;
+  if (psi > 1e-50) 
+  {
+    v_wrt_T *= (1.0 - 1.0/psi);
+    v_wrt_T -= 1.0/psi * adjt;
+    v_wrt_T *= 2;
+  }
+  else
+  {
+    std::cout << "Warning: Division by zero avoided in TShapeSize2DB2::evaluate_with_hess()" << std::endl;
+  }  
   
     // deriv of mu wrt T
   deriv_wrt_T = v_wrt_T;
