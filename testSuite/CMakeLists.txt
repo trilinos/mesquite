@@ -86,9 +86,19 @@ IF(${PACKAGE_NAME}_ENABLE_IGEOM)
   ADD_SUBDIRECTORY(igeom)
 ENDIF()
 
-# Check for libraries
-FIND_LIBRARY( CPPUNIT_LIBRARY NAMES cppunit )
-FIND_PATH( CPPUNIT_INCLUDES cppunit/extensions/HelperMacros.h )
+IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
+  IF(${PACKAGE_NAME}_ENABLE_CppUnit)
+    SET(CPPUNIT_LIBRARY ${TPL_CppUnit_LIBRARIES})
+    SET(CPPUNIT_INCLUDES ${TPL_CppUnit_INCLUDE_DIRS})
+  ELSE()
+    SET(CPPUNIT_LIBRARY "CPPUNIT_LIBRARY-NOTFOUND")
+    SET(CPPUNIT_INCLUDES "CPPUNIT_INCLUDES-NOTFOUND")
+  ENDIF()
+ELSE()
+  # Check for libraries
+  FIND_LIBRARY( CPPUNIT_LIBRARY NAMES cppunit )
+  FIND_PATH( CPPUNIT_INCLUDES cppunit/extensions/HelperMacros.h )
+ENDIF()
 
 # Cannot build unit tests with Windows DLL because
 # internal symbols are not exposed
