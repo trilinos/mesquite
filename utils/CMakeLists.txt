@@ -32,12 +32,13 @@ ENDIF()
 
 IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
 
-  ADD_LIBRARY( msqutil STATIC ${SOURCES} ${HEADERS} )
-#  TRIBITS_ADD_LIBRARY(
-#    msqutil
-#    HEADERS ${HEADERS}
-#    SOURCES ${SOURCES}
-#    )
+#  ADD_LIBRARY( msqutil STATIC ${SOURCES} ${HEADERS} )
+  TRIBITS_ADD_LIBRARY(
+    msqutil
+    HEADERS ${HEADERS}
+    SOURCES ${SOURCES}
+    DEPLIBS mesquite
+    )
 
   TRIBITS_ADD_EXECUTABLE(
     vtkrandom
