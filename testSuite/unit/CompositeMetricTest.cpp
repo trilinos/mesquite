@@ -31,19 +31,19 @@
  */
 
 #include "Mesquite.hpp"
-#include "IdealWeightInverseMeanRatio.hpp"
-#include "LocalSizeQualityMetric.hpp"
-#include "ConditionNumberQualityMetric.hpp"
-#include "cppunit/extensions/HelperMacros.h"
-#include "QualityMetricTester.hpp"
-#include "AddQualityMetric.hpp"
-#include "MultiplyQualityMetric.hpp"
-#include "PowerQualityMetric.hpp"
-#include "ScalarAddQualityMetric.hpp"
-#include "ScalarMultiplyQualityMetric.hpp"
-#include "MsqError.hpp"
-#include "PatchData.hpp"
-#include "UnitUtil.hpp"
+#include "Mesquite_IdealWeightInverseMeanRatio.hpp"
+#include "Mesquite_LocalSizeQualityMetric.hpp"
+#include "Mesquite_ConditionNumberQualityMetric.hpp"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
+#include "Mesquite_QualityMetricTester.hpp"
+#include "Mesquite_AddQualityMetric.hpp"
+#include "Mesquite_MultiplyQualityMetric.hpp"
+#include "Mesquite_PowerQualityMetric.hpp"
+#include "Mesquite_ScalarAddQualityMetric.hpp"
+#include "Mesquite_ScalarMultiplyQualityMetric.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_UnitUtil.hpp"
 
 using namespace Mesquite;
 

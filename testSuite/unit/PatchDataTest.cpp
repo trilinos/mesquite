@@ -45,21 +45,21 @@ Unit testing of various functions in the PatchData class.
 
 
 #include "Mesquite.hpp"
-#include "PatchData.hpp"
-#include "PatchDataInstances.hpp"
-#include "UnitUtil.hpp"
-#include "Settings.hpp"
-#include "Instruction.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_PatchDataInstances.hpp"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_Settings.hpp"
+#include "Mesquite_Instruction.hpp"
 
-#include "ArrayMesh.hpp"
-#include "DomainClassifier.hpp"
-#include "PlanarDomain.hpp"
-#include "MeshDomain1D.hpp"
-#include "MeshDecorator.hpp"
+#include "Mesquite_ArrayMesh.hpp"
+#include "Mesquite_DomainClassifier.hpp"
+#include "Mesquite_PlanarDomain.hpp"
+#include "Mesquite_MeshDomain1D.hpp"
+#include "Mesquite_MeshDecorator.hpp"
 
-//#include "TriLagrangeShape.hpp"
+//#include "Mesquite_TriLagrangeShape.hpp"
 
-#include "cppunit/extensions/HelperMacros.h"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
 
 #include <algorithm>
 #include <set>

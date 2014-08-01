@@ -31,17 +31,17 @@
  */
 
 #include "Mesquite.hpp"
-#include "UnitUtil.hpp"
+#include "Mesquite_UnitUtil.hpp"
 #include "meshfiles.h"
-#include "Settings.hpp"
-#include "MsqError.hpp"
-#include "SlaveBoundaryVertices.hpp"
+#include "Mesquite_Settings.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_SlaveBoundaryVertices.hpp"
 
-#include "MsqVertex.hpp"
-#include "DomainClassifier.hpp"
-#include "PlanarDomain.hpp"
-#include "MeshDomain1D.hpp"
-#include "MeshImpl.hpp"
+#include "Mesquite_MsqVertex.hpp"
+#include "Mesquite_DomainClassifier.hpp"
+#include "Mesquite_PlanarDomain.hpp"
+#include "Mesquite_MeshDomain1D.hpp"
+#include "Mesquite_MeshImpl.hpp"
 
 #include <vector>
 #include <set>

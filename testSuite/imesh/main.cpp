@@ -46,29 +46,29 @@ describe main.cpp here
 #include "meshfiles.h"
 
 #include "Mesquite.hpp"
-#include "MsqIMesh.hpp"
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
-#include "InstructionQueue.hpp"
-#include "TerminationCriterion.hpp"
-#include "QualityAssessor.hpp"
-#include "PlanarDomain.hpp"
-#include "MeshWriter.hpp"
+#include "Mesquite_MsqIMesh.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_InstructionQueue.hpp"
+#include "Mesquite_TerminationCriterion.hpp"
+#include "Mesquite_QualityAssessor.hpp"
+#include "Mesquite_PlanarDomain.hpp"
+#include "Mesquite_MeshWriter.hpp"
 
 // algorithms
-#include "IdealWeightInverseMeanRatio.hpp"
-#include "EdgeLengthQualityMetric.hpp"
-#include "LPtoPTemplate.hpp"
-#include "FeasibleNewton.hpp"
-#include "ConjugateGradient.hpp"
-#include "SmartLaplacianSmoother.hpp"
+#include "Mesquite_IdealWeightInverseMeanRatio.hpp"
+#include "Mesquite_EdgeLengthQualityMetric.hpp"
+#include "Mesquite_LPtoPTemplate.hpp"
+#include "Mesquite_FeasibleNewton.hpp"
+#include "Mesquite_ConjugateGradient.hpp"
+#include "Mesquite_SmartLaplacianSmoother.hpp"
 
 #include <iostream>
 using std::cerr;
 using std::cout;
 using std::endl;
 
-#include "iBase.h"
+#include "Mesquite_iBase.h"
 
 
 using namespace Mesquite;

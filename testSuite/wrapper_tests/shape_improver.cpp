@@ -31,15 +31,15 @@
  */
 
 #ifdef TEST_OLD_WRAPPER
-#  include "ShapeImprovementWrapper.hpp"
+#  include "Mesquite_ShapeImprovementWrapper.hpp"
 #else
-#  include "ShapeImprover.hpp"
+#  include "Mesquite_ShapeImprover.hpp"
 #endif
-#include "QualityAssessor.hpp"
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
-#include "PlanarDomain.hpp"
-#include "IdealWeightInverseMeanRatio.hpp"
+#include "Mesquite_QualityAssessor.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_PlanarDomain.hpp"
+#include "Mesquite_IdealWeightInverseMeanRatio.hpp"
 #include "meshfiles.h"
 
 #include <iostream>

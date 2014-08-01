@@ -50,10 +50,10 @@ using std::endl;
 #include <cstdlib>
 
 #include "Mesquite.hpp"
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
-#include "Vector3D.hpp"
-#include "MeshInterface.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_Vector3D.hpp"
+#include "Mesquite_MeshInterface.hpp"
 
 using namespace Mesquite;
 

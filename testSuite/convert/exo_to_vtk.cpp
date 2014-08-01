@@ -49,8 +49,8 @@ using std::endl;
 #include <cstdlib>
 
 #include "Mesquite.hpp"
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqError.hpp"
 
 using namespace Mesquite;
 

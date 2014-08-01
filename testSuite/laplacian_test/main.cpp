@@ -51,22 +51,22 @@ using std::endl;
 #include <cstdlib>
 
 #include "Mesquite.hpp"
-#include "MsqError.hpp"
-#include "MeshImpl.hpp"
-#include "Vector3D.hpp"
-#include "InstructionQueue.hpp"
-#include "PatchData.hpp"
-#include "TerminationCriterion.hpp"
-#include "QualityAssessor.hpp"
-#include "PlanarDomain.hpp"
-#include "MsqTimer.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_Vector3D.hpp"
+#include "Mesquite_InstructionQueue.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_TerminationCriterion.hpp"
+#include "Mesquite_QualityAssessor.hpp"
+#include "Mesquite_PlanarDomain.hpp"
+#include "Mesquite_MsqTimer.hpp"
 
 // algorythms
-#include "ConditionNumberQualityMetric.hpp"
-#include "LInfTemplate.hpp"
-#include "SteepestDescent.hpp"
-#include "LaplacianSmoother.hpp"
-#include "EdgeLengthQualityMetric.hpp"
+#include "Mesquite_ConditionNumberQualityMetric.hpp"
+#include "Mesquite_LInfTemplate.hpp"
+#include "Mesquite_SteepestDescent.hpp"
+#include "Mesquite_LaplacianSmoother.hpp"
+#include "Mesquite_EdgeLengthQualityMetric.hpp"
 using namespace Mesquite;
 
 const char DEFAULT_INPUT[] = MESH_FILES_DIR "2D/vtk/quads/untangled/square_quad_2.vtk";

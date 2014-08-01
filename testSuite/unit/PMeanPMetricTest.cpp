@@ -25,13 +25,13 @@
   ***************************************************************** */
 
 
-#include "ElementPMeanP.hpp"
-#include "VertexPMeanP.hpp"
+#include "Mesquite_ElementPMeanP.hpp"
+#include "Mesquite_VertexPMeanP.hpp"
 
-#include "cppunit/extensions/HelperMacros.h"
-#include "PatchDataInstances.hpp"
-#include "UnitUtil.hpp"
-#include "ElemSampleQM.hpp"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
+#include "Mesquite_PatchDataInstances.hpp"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_ElemSampleQM.hpp"
 
 using namespace Mesquite;
 using std::cout;

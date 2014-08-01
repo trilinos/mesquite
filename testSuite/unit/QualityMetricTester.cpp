@@ -24,14 +24,14 @@
    
   ***************************************************************** */
 
-#include "QualityMetricTester.hpp"
-#include "PatchData.hpp"
-#include "QualityMetric.hpp"
-#include "IdealElements.hpp"
-#include "UnitUtil.hpp"
-#include "ElemSampleQM.hpp"
-#include "TopologyInfo.hpp"
-#include "EdgeQM.hpp"
+#include "Mesquite_QualityMetricTester.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_QualityMetric.hpp"
+#include "Mesquite_IdealElements.hpp"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_ElemSampleQM.hpp"
+#include "Mesquite_TopologyInfo.hpp"
+#include "Mesquite_EdgeQM.hpp"
 
 #include <cppunit/extensions/HelperMacros.h>
 

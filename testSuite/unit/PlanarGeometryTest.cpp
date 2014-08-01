@@ -48,34 +48,34 @@ SimplifiedGeometryEngine.
 
 #include "meshfiles.h"
 
-#include "PatchDataInstances.hpp"
-#include "cppunit/extensions/HelperMacros.h"
+#include "Mesquite_PatchDataInstances.hpp"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
 #include <math.h>
 
 #include "Mesquite.hpp"
-#include "MsqError.hpp"
-#include "InstructionQueue.hpp"
-#include "PatchData.hpp"
-//#include "StoppingCriterion.hpp"
-#include "QualityAssessor.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_InstructionQueue.hpp"
+#include "Mesquite_PatchData.hpp"
+//#include "Mesquite_StoppingCriterion.hpp"
+#include "Mesquite_QualityAssessor.hpp"
 
-#include "ConditionNumberQualityMetric.hpp"
-#include "LPtoPTemplate.hpp"
-#include "EdgeLengthQualityMetric.hpp"
-#include "LaplacianSmoother.hpp"
-#include "LInfTemplate.hpp"
-#include "SteepestDescent.hpp"
-#include "ConjugateGradient.hpp"
-#include "AspectRatioGammaQualityMetric.hpp"
-#include "UntangleBetaQualityMetric.hpp"
-#include "MultiplyQualityMetric.hpp"
-#include "PlanarDomain.hpp"
+#include "Mesquite_ConditionNumberQualityMetric.hpp"
+#include "Mesquite_LPtoPTemplate.hpp"
+#include "Mesquite_EdgeLengthQualityMetric.hpp"
+#include "Mesquite_LaplacianSmoother.hpp"
+#include "Mesquite_LInfTemplate.hpp"
+#include "Mesquite_SteepestDescent.hpp"
+#include "Mesquite_ConjugateGradient.hpp"
+#include "Mesquite_AspectRatioGammaQualityMetric.hpp"
+#include "Mesquite_UntangleBetaQualityMetric.hpp"
+#include "Mesquite_MultiplyQualityMetric.hpp"
+#include "Mesquite_PlanarDomain.hpp"
 
-#include "MsqFPE.hpp"
+#include "Mesquite_MsqFPE.hpp"
 
-#include "UnitUtil.hpp"
+#include "Mesquite_UnitUtil.hpp"
 
-#include "MeshImpl.hpp"
+#include "Mesquite_MeshImpl.hpp"
 #include <iostream>
 using std::cout;
 using std::endl;

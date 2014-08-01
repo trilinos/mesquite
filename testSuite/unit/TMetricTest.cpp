@@ -31,9 +31,9 @@
  */
 
 #include "Mesquite.hpp"
-#include "TMetric.hpp"
-#include "UnitUtil.hpp"
-#include "MsqError.hpp"
+#include "Mesquite_TMetric.hpp"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_MsqError.hpp"
 
 using namespace Mesquite;
 

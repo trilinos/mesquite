@@ -31,10 +31,10 @@
  */
 
 #include "Mesquite.hpp"
-#include "AWQualityMetric.hpp"
-#include "TMPQualityMetricTest.hpp"
-#include "TShapeNB1.hpp"
-#include "AWMetric.hpp"
+#include "Mesquite_AWQualityMetric.hpp"
+#include "Mesquite_TMPQualityMetricTest.hpp"
+#include "Mesquite_TShapeNB1.hpp"
+#include "Mesquite_AWMetric.hpp"
 
 using namespace Mesquite;
 

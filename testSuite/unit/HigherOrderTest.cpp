@@ -35,33 +35,33 @@
 
 
 #include "Mesquite.hpp"
-#include "MsqError.hpp"
+#include "Mesquite_MsqError.hpp"
 
-#include "ArrayMesh.hpp"
-#include "DomainClassifier.hpp"
-#include "PlanarDomain.hpp"
-#include "MeshDomain1D.hpp"
+#include "Mesquite_ArrayMesh.hpp"
+#include "Mesquite_DomainClassifier.hpp"
+#include "Mesquite_PlanarDomain.hpp"
+#include "Mesquite_MeshDomain1D.hpp"
 
-#include "IdealShapeTarget.hpp"
-#include "TInverseMeanRatio.hpp"
-#include "TShapeSizeOrientNB1.hpp"
-#include "TShapeSizeNB3.hpp"
-#include "TQualityMetric.hpp"
-#include "PMeanPTemplate.hpp"
-#include "LPtoPTemplate.hpp"
-#include "SteepestDescent.hpp"
-#include "FeasibleNewton.hpp"
-#include "InstructionQueue.hpp"
-#include "TerminationCriterion.hpp"
+#include "Mesquite_IdealShapeTarget.hpp"
+#include "Mesquite_TInverseMeanRatio.hpp"
+#include "Mesquite_TShapeSizeOrientNB1.hpp"
+#include "Mesquite_TShapeSizeNB3.hpp"
+#include "Mesquite_TQualityMetric.hpp"
+#include "Mesquite_PMeanPTemplate.hpp"
+#include "Mesquite_LPtoPTemplate.hpp"
+#include "Mesquite_SteepestDescent.hpp"
+#include "Mesquite_FeasibleNewton.hpp"
+#include "Mesquite_InstructionQueue.hpp"
+#include "Mesquite_TerminationCriterion.hpp"
 
-//#include "TriLagrangeShape.hpp"
-//#include "TetLagrangeShape.hpp"
-//#include "QuadLagrangeShape.hpp"
+//#include "Mesquite_TriLagrangeShape.hpp"
+//#include "Mesquite_TetLagrangeShape.hpp"
+//#include "Mesquite_QuadLagrangeShape.hpp"
 #ifdef HAVE_HO_HEX
 # include "HexLagrangeShape.hpp"
 #endif
 
-#include "UnitUtil.hpp"
+#include "Mesquite_UnitUtil.hpp"
 
 using namespace Mesquite;
 

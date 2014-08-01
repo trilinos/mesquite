@@ -31,12 +31,12 @@
  */
 
 #include "Mesquite.hpp"
-#include "TagVertexMesh.hpp"
-#include "MsqError.hpp"
-#include "UnitUtil.hpp"
-#include "MeshImpl.hpp"
-#include "MsqVertex.hpp"
-#include "InstructionQueue.hpp"
+#include "Mesquite_TagVertexMesh.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqVertex.hpp"
+#include "Mesquite_InstructionQueue.hpp"
 #include <cppunit/extensions/HelperMacros.h>
 #include <stdio.h>
 

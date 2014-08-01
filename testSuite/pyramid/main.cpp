@@ -37,22 +37,22 @@ using std::endl;
 #include <stdlib.h>
 
 #include "Mesquite.hpp"
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
-#include "InstructionQueue.hpp"
-#include "TerminationCriterion.hpp"
-#include "QualityAssessor.hpp"
-#include "LPtoPTemplate.hpp"
-#include "LInfTemplate.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_InstructionQueue.hpp"
+#include "Mesquite_TerminationCriterion.hpp"
+#include "Mesquite_QualityAssessor.hpp"
+#include "Mesquite_LPtoPTemplate.hpp"
+#include "Mesquite_LInfTemplate.hpp"
 
 // algorithms
-#include "IdealWeightMeanRatio.hpp"
-#include "IdealWeightInverseMeanRatio.hpp"
-#include "UntangleBetaQualityMetric.hpp"
-#include "FeasibleNewton.hpp"
-#include "ConjugateGradient.hpp"
-#include "TrustRegion.hpp"
-#include "ConditionNumberQualityMetric.hpp"
+#include "Mesquite_IdealWeightMeanRatio.hpp"
+#include "Mesquite_IdealWeightInverseMeanRatio.hpp"
+#include "Mesquite_UntangleBetaQualityMetric.hpp"
+#include "Mesquite_FeasibleNewton.hpp"
+#include "Mesquite_ConjugateGradient.hpp"
+#include "Mesquite_TrustRegion.hpp"
+#include "Mesquite_ConditionNumberQualityMetric.hpp"
 using namespace Mesquite;
 
 // Use CPPUNIT_ASSERT in code so it's easy to convert to a unit test later.

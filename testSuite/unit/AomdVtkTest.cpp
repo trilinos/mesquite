@@ -49,14 +49,14 @@ Unit testing of the uploading of VTK format into AOMD.
 
 
 #include "Mesquite.hpp"
-#include "MeshSet.hpp"
-#include "PatchData.hpp"
+#include "Mesquite_MeshSet.hpp"
+#include "Mesquite_PatchData.hpp"
 
-#include "TSTT_Base.h"
-#include "MsqTSTTImpl.hpp"
+#include "Mesquite_TSTT_Base.h"
+#include "Mesquite_MsqTSTTImpl.hpp"
 
-#include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/SignalException.h"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
+#include "Mesquite_cppunit/SignalException.h"
 
 #include <list>
 #include <iterator>

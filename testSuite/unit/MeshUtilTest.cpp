@@ -30,10 +30,10 @@
  *  \author Jason Kraftcheck 
  */
 
-#include "ArrayMesh.hpp"
-#include "MeshUtil.hpp"
-#include "UnitUtil.hpp"
-#include "SimpleStats.hpp"
+#include "Mesquite_ArrayMesh.hpp"
+#include "Mesquite_MeshUtil.hpp"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_SimpleStats.hpp"
 
 using namespace Mesquite;
 

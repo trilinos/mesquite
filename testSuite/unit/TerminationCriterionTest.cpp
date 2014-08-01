@@ -34,21 +34,21 @@ Tests for the TerminationCriterion class..
 
 
 #include "Mesquite.hpp"
-#include "MsqError.hpp"
-#include "Vector3D.hpp"
-#include "OFEvaluator.hpp"
-#include "ObjectiveFunction.hpp"
-#include "PatchData.hpp"
-#include "TerminationCriterion.hpp"
-#include "VertexMover.hpp"
-#include "VertexPatches.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_Vector3D.hpp"
+#include "Mesquite_OFEvaluator.hpp"
+#include "Mesquite_ObjectiveFunction.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_TerminationCriterion.hpp"
+#include "Mesquite_VertexMover.hpp"
+#include "Mesquite_VertexPatches.hpp"
 
-#include "UnitUtil.hpp"
-#include "PatchDataInstances.hpp"
-#include "ArrayMesh.hpp"
-#include "MeshUtil.hpp"
-#include "SimpleStats.hpp"
-#include "InstructionQueue.hpp"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_PatchDataInstances.hpp"
+#include "Mesquite_ArrayMesh.hpp"
+#include "Mesquite_MeshUtil.hpp"
+#include "Mesquite_SimpleStats.hpp"
+#include "Mesquite_InstructionQueue.hpp"
 
 #include <iostream>
 #include <algorithm>

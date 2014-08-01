@@ -31,11 +31,11 @@
  */
 
 #include "Mesquite.hpp"
-#include "UnitUtil.hpp"
-#include "LinearTetrahedron.hpp"
-#include "LinearTriangle.hpp"
-#include "PatchData.hpp"
-#include "IdealElements.hpp"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_LinearTetrahedron.hpp"
+#include "Mesquite_LinearTriangle.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_IdealElements.hpp"
 #include <algorithm>
 
 using namespace Mesquite;

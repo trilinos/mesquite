@@ -31,12 +31,12 @@
  */
 
 #include "Mesquite.hpp"
-#include "StdDevTemplate.hpp"
-#include "VarianceTemplate.hpp"
-#include "MsqError.hpp"
-#include "PatchData.hpp"
-#include "ObjectiveFunctionTests.hpp"
-#include "MsqHessian.hpp"
+#include "Mesquite_StdDevTemplate.hpp"
+#include "Mesquite_VarianceTemplate.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_ObjectiveFunctionTests.hpp"
+#include "Mesquite_MsqHessian.hpp"
 
 using namespace Mesquite;
 using namespace std;

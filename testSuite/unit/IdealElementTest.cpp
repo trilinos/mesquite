@@ -31,11 +31,11 @@
  */
 
 #include "Mesquite.hpp"
-#include "IdealElements.hpp"
-#include "TopologyInfo.hpp"
-#include "MsqError.hpp"
-#include "Vector3D.hpp"
-#include "cppunit/extensions/HelperMacros.h"
+#include "Mesquite_IdealElements.hpp"
+#include "Mesquite_TopologyInfo.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_Vector3D.hpp"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
 
 using namespace Mesquite;
 

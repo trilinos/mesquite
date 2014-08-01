@@ -47,14 +47,14 @@ Unit testing of various functions in the MsqVertex class.
 //
 
 
-#include "MsqVertex.hpp"
-#include "PatchData.hpp"
-#include "PatchDataInstances.hpp"
+#include "Mesquite_MsqVertex.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_PatchDataInstances.hpp"
 
 #include <math.h>
 #include <iostream>
 
-#include "cppunit/extensions/HelperMacros.h"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
 
 using namespace Mesquite;
 using std::cout;

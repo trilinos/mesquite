@@ -31,11 +31,11 @@
  */
 
 #include "Mesquite.hpp"
-#include "LVQDTargetCalculator.hpp"
-#include "MsqError.hpp"
-#include "PatchData.hpp"
-#include "UnitUtil.hpp"
-#include "PatchDataInstances.hpp"
+#include "Mesquite_LVQDTargetCalculator.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_PatchDataInstances.hpp"
 
 #include <iostream>
 

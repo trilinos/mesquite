@@ -31,13 +31,13 @@
  */
 
 #include "Mesquite.hpp"
-#include "DeformingDomainWrapper.hpp"
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
-#include "MeshDomain1D.hpp"
-#include "PlanarDomain.hpp"
-#include "QualityAssessor.hpp"
-#include "MsqVertex.hpp"
+#include "Mesquite_DeformingDomainWrapper.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_MeshDomain1D.hpp"
+#include "Mesquite_PlanarDomain.hpp"
+#include "Mesquite_QualityAssessor.hpp"
+#include "Mesquite_MsqVertex.hpp"
 
 #include <iostream>
 #include <cstdlib>

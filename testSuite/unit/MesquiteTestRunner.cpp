@@ -25,12 +25,12 @@
    
   ***************************************************************** */
 #include "MesquiteTestRunner.hpp"
-#include "MsqTimer.hpp"
-#include "cppunit/Test.h"
-#include "cppunit/TestSuite.h"
-#include "cppunit/TestResult.h"
-#include "cppunit/TestFailure.h"
-#include "cppunit/Exception.h"
+#include "Mesquite_MsqTimer.hpp"
+#include "Mesquite_cppunit/Test.h"
+#include "Mesquite_cppunit/TestSuite.h"
+#include "Mesquite_cppunit/TestResult.h"
+#include "Mesquite_cppunit/TestFailure.h"
+#include "Mesquite_cppunit/Exception.h"
 
 #include <algorithm>
 

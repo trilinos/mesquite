@@ -27,8 +27,8 @@
 #ifndef __VECTOR3DTEST_H__
 #define __VECTOR3DTEST_H__
 
-#include "Vector3D.hpp"
-#include "cppunit/extensions/HelperMacros.h"
+#include "Mesquite_Vector3D.hpp"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
 #include <iostream>
 
 class Vector3DTest : public CppUnit::TestFixture

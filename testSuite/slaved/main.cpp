@@ -31,22 +31,22 @@
  */
 
 
-#include "MeshImpl.hpp"
-#include "PlanarDomain.hpp"
-#include "TriLagrangeShape.hpp"
-#include "QuadLagrangeShape.hpp"
-#include "IdealShapeTarget.hpp"
-#include "TShapeNB1.hpp"
-#include "TQualityMetric.hpp"
-#include "SteepestDescent.hpp"
-#include "SlaveBoundaryVertices.hpp"
-#include "PMeanPTemplate.hpp"
-#include "InstructionQueue.hpp"
-#include "MsqVertex.hpp"
-#include "MsqError.hpp"
-#include "IdealShapeTarget.hpp"
-#include "QualityAssessor.hpp"
-#include "PatchData.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_PlanarDomain.hpp"
+#include "Mesquite_TriLagrangeShape.hpp"
+#include "Mesquite_QuadLagrangeShape.hpp"
+#include "Mesquite_IdealShapeTarget.hpp"
+#include "Mesquite_TShapeNB1.hpp"
+#include "Mesquite_TQualityMetric.hpp"
+#include "Mesquite_SteepestDescent.hpp"
+#include "Mesquite_SlaveBoundaryVertices.hpp"
+#include "Mesquite_PMeanPTemplate.hpp"
+#include "Mesquite_InstructionQueue.hpp"
+#include "Mesquite_MsqVertex.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_IdealShapeTarget.hpp"
+#include "Mesquite_QualityAssessor.hpp"
+#include "Mesquite_PatchData.hpp"
 
 #include <iostream>
 #include <algorithm>

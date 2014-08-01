@@ -47,26 +47,26 @@ Regression testing using the vertex culling algorithms.
 
 #include "meshfiles.h"
 
-#include "PatchDataInstances.hpp"
-#include "cppunit/extensions/HelperMacros.h"
+#include "Mesquite_PatchDataInstances.hpp"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
 #include <math.h>
 
 #include "Mesquite.hpp"
-#include "MsqError.hpp"
-#include "Vector3D.hpp"
-#include "InstructionQueue.hpp"
-#include "PatchData.hpp"
-#include "QualityAssessor.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_Vector3D.hpp"
+#include "Mesquite_InstructionQueue.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_QualityAssessor.hpp"
 
-#include "EdgeLengthQualityMetric.hpp"
-#include "ConditionNumberQualityMetric.hpp"
-#include "LaplacianSmoother.hpp"
-#include "PlanarDomain.hpp"
-#include "TerminationCriterion.hpp"
-#include "MeshImpl.hpp"
+#include "Mesquite_EdgeLengthQualityMetric.hpp"
+#include "Mesquite_ConditionNumberQualityMetric.hpp"
+#include "Mesquite_LaplacianSmoother.hpp"
+#include "Mesquite_PlanarDomain.hpp"
+#include "Mesquite_TerminationCriterion.hpp"
+#include "Mesquite_MeshImpl.hpp"
 
-#include "IdealWeightInverseMeanRatio.hpp"
-#include "LPtoPTemplate.hpp"
+#include "Mesquite_IdealWeightInverseMeanRatio.hpp"
+#include "Mesquite_LPtoPTemplate.hpp"
 
 #include <iostream>
 using std::cout;

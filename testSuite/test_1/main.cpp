@@ -51,18 +51,18 @@ using std::endl;
 #include <cstdlib>
 
 #include "Mesquite.hpp"
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
-#include "InstructionQueue.hpp"
-#include "TerminationCriterion.hpp"
-#include "QualityAssessor.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_InstructionQueue.hpp"
+#include "Mesquite_TerminationCriterion.hpp"
+#include "Mesquite_QualityAssessor.hpp"
 
 // algorithms
-#include "IdealWeightInverseMeanRatio.hpp"
-#include "EdgeLengthQualityMetric.hpp"
-#include "LPtoPTemplate.hpp"
-#include "FeasibleNewton.hpp"
-#include "ConjugateGradient.hpp"
+#include "Mesquite_IdealWeightInverseMeanRatio.hpp"
+#include "Mesquite_EdgeLengthQualityMetric.hpp"
+#include "Mesquite_LPtoPTemplate.hpp"
+#include "Mesquite_FeasibleNewton.hpp"
+#include "Mesquite_ConjugateGradient.hpp"
 using namespace Mesquite;
 
 void usage()

@@ -37,10 +37,10 @@
   \date   2005-05-02
 */
 
-#include "NormSquaredSmoother.hpp"
-#include "LPtoPTemplate.hpp"
-#include "EdgeLengthQualityMetric.hpp"
-#include "MsqFreeVertexIndexIterator.hpp"
+#include "Mesquite_NormSquaredSmoother.hpp"
+#include "Mesquite_LPtoPTemplate.hpp"
+#include "Mesquite_EdgeLengthQualityMetric.hpp"
+#include "Mesquite_MsqFreeVertexIndexIterator.hpp"
 #include <vector>
 using std::vector;
 

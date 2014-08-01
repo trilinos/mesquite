@@ -31,7 +31,7 @@
  */
 
 #include "Mesquite.hpp"
-#include "ElemSampleQM.hpp"
+#include "Mesquite_ElemSampleQM.hpp"
 #include <cppunit/extensions/HelperMacros.h>
 
 using namespace Mesquite;

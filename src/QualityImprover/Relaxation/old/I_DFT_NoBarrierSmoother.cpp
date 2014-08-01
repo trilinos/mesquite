@@ -37,8 +37,8 @@
   \date   2005-05-02
 */
 
-#include "I_DFT_NoBarrierSmoother.hpp"
-#include "MsqFreeVertexIndexIterator.hpp"
+#include "Mesquite_I_DFT_NoBarrierSmoother.hpp"
+#include "Mesquite_MsqFreeVertexIndexIterator.hpp"
 #include <vector>
 using std::vector;
 

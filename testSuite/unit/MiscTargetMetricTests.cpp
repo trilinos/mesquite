@@ -1,16 +1,16 @@
 #define TARGET_TEST_GROUP "MiscTargetMetricTests"
-#include "TargetMetricTest.hpp"
+#include "Mesquite_TargetMetricTest.hpp"
 
 using namespace Mesquite;
 
-#include "TSizeNB1.hpp"
-#include "TSizeB1.hpp"
-#include "TSquared.hpp"
+#include "Mesquite_TSizeNB1.hpp"
+#include "Mesquite_TSizeB1.hpp"
+#include "Mesquite_TSquared.hpp"
 
-#include "TOffset.hpp"
-#include "TPower2.hpp"
-#include "TScale.hpp"
-#include "TSum.hpp"
+#include "Mesquite_TOffset.hpp"
+#include "Mesquite_TPower2.hpp"
+#include "Mesquite_TScale.hpp"
+#include "Mesquite_TSum.hpp"
 
 class TOffset_TSizeNB1_2 : public TOffset
 {

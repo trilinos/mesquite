@@ -36,11 +36,11 @@
   \date   2002-01-17
 */
 
-#include "SmartLaplacianSmoother.hpp"
-#include "LaplacianSmoother.hpp"
-#include "MsqDebug.hpp"
-#include "LInfTemplate.hpp"
-#include "IdealWeightInverseMeanRatio.hpp"
+#include "Mesquite_SmartLaplacianSmoother.hpp"
+#include "Mesquite_LaplacianSmoother.hpp"
+#include "Mesquite_MsqDebug.hpp"
+#include "Mesquite_LInfTemplate.hpp"
+#include "Mesquite_IdealWeightInverseMeanRatio.hpp"
 
 #include <vector>
 using std::vector;

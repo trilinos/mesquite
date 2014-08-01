@@ -33,12 +33,12 @@
 
 #include "meshfiles.h"
 
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
-#include "MsqVertex.hpp"
-#include "PlanarDomain.hpp"
-#include "UntangleWrapper.hpp"
-#include "QualityAssessor.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_MsqVertex.hpp"
+#include "Mesquite_PlanarDomain.hpp"
+#include "Mesquite_UntangleWrapper.hpp"
+#include "Mesquite_QualityAssessor.hpp"
 
 #include <iostream>
 using std::cout;

@@ -27,11 +27,11 @@
 #include <algorithm>
 #include <iostream>
 using std::cout;
-#include "cppunit/extensions/HelperMacros.h"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
 
 #include "Mesquite.hpp"
-#include "MsqError.hpp"
-#include "TopologyInfo.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_TopologyInfo.hpp"
 
 using namespace Mesquite;
 

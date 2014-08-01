@@ -31,13 +31,13 @@
  */
 
 #include "Mesquite.hpp"
-#include "TriLagrangeShape.hpp"
-#include "TopologyInfo.hpp"
-#include "MsqError.hpp"
-#include "IdealElements.hpp"
-#include "JacobianCalculator.hpp"
+#include "Mesquite_TriLagrangeShape.hpp"
+#include "Mesquite_TopologyInfo.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_IdealElements.hpp"
+#include "Mesquite_JacobianCalculator.hpp"
 
-#include "UnitUtil.hpp"
+#include "Mesquite_UnitUtil.hpp"
 
 #include <vector>
 #include <algorithm>

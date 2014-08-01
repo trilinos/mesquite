@@ -31,19 +31,19 @@
  */
 
 #include "Mesquite.hpp"
-#include "MappingFunction.hpp"
-#include "LinearHexahedron.hpp"
-#include "LinearQuadrilateral.hpp"
-#include "LinearTetrahedron.hpp"
-#include "LinearTriangle.hpp"
-#include "LinearPrism.hpp"
-#include "LinearPyramid.hpp"
-#include "TopologyInfo.hpp"
-#include "MsqError.hpp"
-#include "JacobianCalculator.hpp"
-#include "IdealElements.hpp"
+#include "Mesquite_MappingFunction.hpp"
+#include "Mesquite_LinearHexahedron.hpp"
+#include "Mesquite_LinearQuadrilateral.hpp"
+#include "Mesquite_LinearTetrahedron.hpp"
+#include "Mesquite_LinearTriangle.hpp"
+#include "Mesquite_LinearPrism.hpp"
+#include "Mesquite_LinearPyramid.hpp"
+#include "Mesquite_TopologyInfo.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_JacobianCalculator.hpp"
+#include "Mesquite_IdealElements.hpp"
 
-#include "UnitUtil.hpp"
+#include "Mesquite_UnitUtil.hpp"
 
 #include <vector>
 #include <algorithm>

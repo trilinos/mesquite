@@ -53,10 +53,10 @@ using std::endl;
 #include <algorithm>
 
 #include "Mesquite.hpp"
-#include "MsqError.hpp"
-#include "MeshImpl.hpp"
-#include "ViscousCFDTetShapeWrapper.hpp"
-#include "MsqVertex.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_ViscousCFDTetShapeWrapper.hpp"
+#include "Mesquite_MsqVertex.hpp"
 
 using namespace Mesquite;
 

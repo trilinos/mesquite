@@ -25,11 +25,11 @@
   ***************************************************************** */
 
 
-#include "SymMatrix3D.hpp"
+#include "Mesquite_SymMatrix3D.hpp"
 
 #include <math.h>
 
-#include "UnitUtil.hpp"
+#include "Mesquite_UnitUtil.hpp"
 
 using namespace Mesquite;
 

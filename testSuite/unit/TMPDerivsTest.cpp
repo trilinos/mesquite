@@ -28,8 +28,8 @@
  */
 
 
-#include "TMPDerivs.hpp"
-#include "UnitUtil.hpp"
+#include "Mesquite_TMPDerivs.hpp"
+#include "Mesquite_UnitUtil.hpp"
 
 using namespace Mesquite;
 

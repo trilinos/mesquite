@@ -31,18 +31,18 @@
 #include "meshfiles.h"
 
 #include "Mesquite.hpp"
-#include "MsqIGeom.hpp"
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
-#include "ShapeImprovementWrapper.hpp"
-#include "MsqVertex.hpp"
-#include "QualityAssessor.hpp"
-#include "SphericalDomain.hpp"
+#include "Mesquite_MsqIGeom.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_ShapeImprovementWrapper.hpp"
+#include "Mesquite_MsqVertex.hpp"
+#include "Mesquite_QualityAssessor.hpp"
+#include "Mesquite_SphericalDomain.hpp"
 
 #include <memory>
 #include <iostream>
 
-#include "MsqIBase.hpp"
+#include "Mesquite_MsqIBase.hpp"
 
 using namespace Mesquite;
 

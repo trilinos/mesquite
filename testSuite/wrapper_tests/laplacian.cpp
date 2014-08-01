@@ -46,11 +46,11 @@ describe main.cpp here
 #include "meshfiles.h"
 
 #include "Mesquite.hpp"
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
-#include "PlanarDomain.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_PlanarDomain.hpp"
 // algorythms
-#include "LaplaceWrapper.hpp"
+#include "Mesquite_LaplaceWrapper.hpp"
 
 
 #include <iostream>

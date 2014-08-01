@@ -30,7 +30,7 @@
  *  \author Jason Kraftcheck 
  */
 
-#include "ObjectiveFunctionTests.hpp"
+#include "Mesquite_ObjectiveFunctionTests.hpp"
 
 
 /** get a patchdata to use for testing */

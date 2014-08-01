@@ -39,11 +39,11 @@
 */
 
 #include "Mesquite.hpp"
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
-#include "MsqVertex.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_MsqVertex.hpp"
 
-#include "UnitUtil.hpp"
+#include "Mesquite_UnitUtil.hpp"
 
 #include <iostream>
 #include <stdio.h>

@@ -31,9 +31,9 @@
  */
 
 #include "Mesquite.hpp"
-#include "PatchData.hpp"
-#include "PatchDataInstances.hpp"
-#include "ExtraData.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_PatchDataInstances.hpp"
+#include "Mesquite_ExtraData.hpp"
 
 using namespace Mesquite;
 

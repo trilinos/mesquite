@@ -31,19 +31,19 @@
  */
 
 #include "Mesquite.hpp"
-#include "LPtoPTemplate.hpp"
-#include "PMeanPTemplate.hpp"
-#include "IdealWeightInverseMeanRatio.hpp"
-#include "InstructionQueue.hpp"
-#include "FeasibleNewton.hpp"
-#include "ConjugateGradient.hpp"
-#include "MeshImpl.hpp"
-#include "QualityAssessor.hpp"
-#include "TerminationCriterion.hpp"
+#include "Mesquite_LPtoPTemplate.hpp"
+#include "Mesquite_PMeanPTemplate.hpp"
+#include "Mesquite_IdealWeightInverseMeanRatio.hpp"
+#include "Mesquite_InstructionQueue.hpp"
+#include "Mesquite_FeasibleNewton.hpp"
+#include "Mesquite_ConjugateGradient.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_QualityAssessor.hpp"
+#include "Mesquite_TerminationCriterion.hpp"
 
-#include "UnitUtil.hpp"
+#include "Mesquite_UnitUtil.hpp"
 #include "meshfiles.h"
-#include "cppunit/extensions/HelperMacros.h"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
 #include <iostream>
 #include <vector>
 #include <string>

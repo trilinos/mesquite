@@ -43,12 +43,12 @@ Unit testing of various functions in the Matrix3D class.
 //
 
 
-#include "Vector3D.hpp"
-#include "Matrix3D.hpp"
+#include "Mesquite_Vector3D.hpp"
+#include "Mesquite_Matrix3D.hpp"
 
 #include <math.h>
 
-#include "cppunit/extensions/HelperMacros.h"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
 
 using namespace Mesquite;
 using std::cout;

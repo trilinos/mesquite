@@ -31,8 +31,8 @@
  */
 
 #include "Mesquite.hpp"
-#include "UnitUtil.hpp"
-#include "ConicDomain.hpp"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_ConicDomain.hpp"
 
 using namespace Mesquite;
 

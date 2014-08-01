@@ -31,16 +31,16 @@
  */
 
 #include "Mesquite.hpp"
-#include "TargetWriter.hpp"
-#include "TargetReader.hpp"
-#include "WeightReader.hpp"
-#include "MeshImpl.hpp"
-#include "PatchData.hpp"
-#include "Settings.hpp"
-#include "ElemSampleQM.hpp"
+#include "Mesquite_TargetWriter.hpp"
+#include "Mesquite_TargetReader.hpp"
+#include "Mesquite_WeightReader.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_Settings.hpp"
+#include "Mesquite_ElemSampleQM.hpp"
 
-#include "cppunit/extensions/HelperMacros.h"
-#include "UnitUtil.hpp"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
+#include "Mesquite_UnitUtil.hpp"
 
 #include <iostream>
 

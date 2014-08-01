@@ -31,12 +31,12 @@
  */
 
 #include "Mesquite.hpp"
-#include "ObjectiveFunctionTemplate.hpp"
-#include "UnitUtil.hpp"
-#include "PatchData.hpp"
-#include "MsqHessian.hpp"
+#include "Mesquite_ObjectiveFunctionTemplate.hpp"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_MsqHessian.hpp"
 
-#include "cppunit/extensions/HelperMacros.h"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
 
 using namespace Mesquite;
 using namespace std;

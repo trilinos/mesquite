@@ -31,11 +31,11 @@
  */
 
 #include "Mesquite.hpp"
-#include "XYRectangle.hpp"
-#include "ArrayMesh.hpp"
-#include "MsqVertex.hpp"
-#include "UnitUtil.hpp"
-#include "MsqError.hpp"
+#include "Mesquite_XYRectangle.hpp"
+#include "Mesquite_ArrayMesh.hpp"
+#include "Mesquite_MsqVertex.hpp"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_MsqError.hpp"
 
 
 using namespace Mesquite;

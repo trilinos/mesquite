@@ -51,15 +51,15 @@ using std::endl;
 #include <cstdlib>
 
 #include "Mesquite.hpp"
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
-#include "TerminationCriterion.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_TerminationCriterion.hpp"
 
 // algorithms
-#include "MeshTransform.hpp"
-#include "Matrix3D.hpp"
-#include "Vector3D.hpp"
-#include "MsqVertex.hpp"
+#include "Mesquite_MeshTransform.hpp"
+#include "Mesquite_Matrix3D.hpp"
+#include "Mesquite_Vector3D.hpp"
+#include "Mesquite_MsqVertex.hpp"
 
 using namespace Mesquite;
 

@@ -31,15 +31,15 @@
  */
 
 #include "Mesquite.hpp"
-#include "ConditionNumberQualityMetric.hpp"
-#include "IdealWeightInverseMeanRatio.hpp"
-#include "LPtoPTemplate.hpp"
-#include "InstructionQueue.hpp"
-#include "ConjugateGradient.hpp"
-#include "FeasibleNewton.hpp"
-#include "MeshImpl.hpp"
-#include "QualityAssessor.hpp"
-#include "XYRectangle.hpp"
+#include "Mesquite_ConditionNumberQualityMetric.hpp"
+#include "Mesquite_IdealWeightInverseMeanRatio.hpp"
+#include "Mesquite_LPtoPTemplate.hpp"
+#include "Mesquite_InstructionQueue.hpp"
+#include "Mesquite_ConjugateGradient.hpp"
+#include "Mesquite_FeasibleNewton.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_QualityAssessor.hpp"
+#include "Mesquite_XYRectangle.hpp"
 
 #include <iostream>
 #include <fstream>

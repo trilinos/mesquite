@@ -35,17 +35,17 @@ Unit testing of various DistanceFromTarget (base *and* concrete classes) functio
 //
 
 #include "Mesquite.hpp"
-#include "PatchData.hpp"
-#include "PatchDataInstances.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_PatchDataInstances.hpp"
 
-#include "ConcreteTargetCalculators.hpp"
-#include "DistanceFromTarget.hpp"
-#include "I_DFT.hpp"
-#include "sI_DFT.hpp"
-#include "RI_DFT.hpp"
-#include "sRI_DFT.hpp"
+#include "Mesquite_ConcreteTargetCalculators.hpp"
+#include "Mesquite_DistanceFromTarget.hpp"
+#include "Mesquite_I_DFT.hpp"
+#include "Mesquite_sI_DFT.hpp"
+#include "Mesquite_RI_DFT.hpp"
+#include "Mesquite_sRI_DFT.hpp"
 
-#include "cppunit/extensions/HelperMacros.h"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
 
 #include <math.h>
 

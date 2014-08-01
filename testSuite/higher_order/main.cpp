@@ -49,26 +49,26 @@ using std::endl;
 #include <cstdlib>
 
 #include "Mesquite.hpp"
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
-#include "Vector3D.hpp"
-#include "InstructionQueue.hpp"
-#include "PatchData.hpp"
-#include "TerminationCriterion.hpp"
-#include "QualityAssessor.hpp"
-//#include "QuadLagrangeShape.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_Vector3D.hpp"
+#include "Mesquite_InstructionQueue.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_TerminationCriterion.hpp"
+#include "Mesquite_QualityAssessor.hpp"
+//#include "Mesquite_QuadLagrangeShape.hpp"
 
 // algorithms
-#include "IdealShapeTarget.hpp"
-#include "TQualityMetric.hpp"
-#include "TInverseMeanRatio.hpp"
-#include "ConditionNumberQualityMetric.hpp"
-#include "LPtoPTemplate.hpp"
-#include "LInfTemplate.hpp"
-#include "SteepestDescent.hpp"
-#include "ConjugateGradient.hpp"
+#include "Mesquite_IdealShapeTarget.hpp"
+#include "Mesquite_TQualityMetric.hpp"
+#include "Mesquite_TInverseMeanRatio.hpp"
+#include "Mesquite_ConditionNumberQualityMetric.hpp"
+#include "Mesquite_LPtoPTemplate.hpp"
+#include "Mesquite_LInfTemplate.hpp"
+#include "Mesquite_SteepestDescent.hpp"
+#include "Mesquite_ConjugateGradient.hpp"
 
-#include "PlanarDomain.hpp"
+#include "Mesquite_PlanarDomain.hpp"
 using namespace Mesquite;
 
 /* This is the input mesh topology

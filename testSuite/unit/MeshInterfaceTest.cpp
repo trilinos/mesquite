@@ -37,12 +37,12 @@
 #include "meshfiles.h"
 
 #include "Mesquite.hpp"
-#include "MsqError.hpp"
-#include "PatchData.hpp"
-#include "MeshImpl.hpp"
-#include "Vector3D.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_Vector3D.hpp"
 
-#include "cppunit/extensions/HelperMacros.h"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
 
 #include <iostream>
 #include <algorithm>

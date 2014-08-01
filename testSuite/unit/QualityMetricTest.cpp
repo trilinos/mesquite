@@ -30,14 +30,14 @@ Unit testing for the QualityMetric class
 \author Jason Kraftcheck
 */
 #include "Mesquite.hpp"
-#include "VertexQM.hpp"
-#include "ElementQM.hpp"
-#include "IdealElements.hpp"
-#include "UnitUtil.hpp"
-#include "TopologyInfo.hpp"
-#include "PatchData.hpp"
-#include "cppunit/extensions/HelperMacros.h"
-#include "TMPDerivs.hpp"
+#include "Mesquite_VertexQM.hpp"
+#include "Mesquite_ElementQM.hpp"
+#include "Mesquite_IdealElements.hpp"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_TopologyInfo.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
+#include "Mesquite_TMPDerivs.hpp"
 
 #include <string>
 

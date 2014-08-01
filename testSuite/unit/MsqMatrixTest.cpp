@@ -31,10 +31,10 @@
  */
 
 #include "Mesquite.hpp"
-#include "MsqMatrix.hpp"
+#include "Mesquite_MsqMatrix.hpp"
 #include <sstream>
-#include "cppunit/extensions/HelperMacros.h"
-#include "UnitUtil.hpp"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
+#include "Mesquite_UnitUtil.hpp"
 
 using namespace Mesquite;
 using namespace std;

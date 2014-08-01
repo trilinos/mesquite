@@ -31,10 +31,10 @@
  */
 
 #include "Mesquite.hpp"
-#include "CachingTargetCalculator.hpp"
-#include "PatchData.hpp"
-#include "UnitUtil.hpp"
-#include "PatchDataInstances.hpp"
+#include "Mesquite_CachingTargetCalculator.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_PatchDataInstances.hpp"
 #include <cppunit/extensions/HelperMacros.h>
 #include <algorithm>
 

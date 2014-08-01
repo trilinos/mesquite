@@ -31,14 +31,14 @@
  */
 
 #include "Mesquite.hpp"
-#include "UnitUtil.hpp"
-#include "TargetCalculator.hpp"
-#include "MsqError.hpp"
-#include "PatchData.hpp"
-#include "IdealElements.hpp"
-#include "LinearHexahedron.hpp"
-#include "LinearTriangle.hpp"
-#include "ReferenceMesh.hpp"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_TargetCalculator.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_IdealElements.hpp"
+#include "Mesquite_LinearHexahedron.hpp"
+#include "Mesquite_LinearTriangle.hpp"
+#include "Mesquite_ReferenceMesh.hpp"
 #include <iostream>
 
 using namespace Mesquite;

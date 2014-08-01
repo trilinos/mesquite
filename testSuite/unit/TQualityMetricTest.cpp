@@ -31,11 +31,11 @@
  */
 
 #include "Mesquite.hpp"
-#include "TQualityMetric.hpp"
-#include "TInverseMeanRatio.hpp"
-#include "IdealWeightInverseMeanRatio.hpp"
-#include "TMPQualityMetricTest.hpp"
-#include "TShapeNB1.hpp"
+#include "Mesquite_TQualityMetric.hpp"
+#include "Mesquite_TInverseMeanRatio.hpp"
+#include "Mesquite_IdealWeightInverseMeanRatio.hpp"
+#include "Mesquite_TMPQualityMetricTest.hpp"
+#include "Mesquite_TShapeNB1.hpp"
 
 template <> class TMPTypes<TQualityMetric> {
 public:

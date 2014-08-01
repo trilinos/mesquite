@@ -31,9 +31,9 @@
  */
 
 #include "Mesquite.hpp"
-#include "LocalSizeQualityMetric.hpp"
-#include "cppunit/extensions/HelperMacros.h"
-#include "QualityMetricTester.hpp"
+#include "Mesquite_LocalSizeQualityMetric.hpp"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
+#include "Mesquite_QualityMetricTester.hpp"
 
 using namespace Mesquite;
 

@@ -31,17 +31,17 @@
  */
 
 #include "Mesquite.hpp"
-#include "IdealShapeTarget.hpp"
-#include "MsqError.hpp"
-#include "Vector3D.hpp"
-#include "PatchData.hpp"
-#include "PlanarDomain.hpp"
-#include "MappingFunction.hpp"
-#include "Settings.hpp"
-#include "IdealElements.hpp"
-#include "ElemSampleQM.hpp"
-#include "cppunit/extensions/HelperMacros.h"
-#include "UnitUtil.hpp"
+#include "Mesquite_IdealShapeTarget.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_Vector3D.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_PlanarDomain.hpp"
+#include "Mesquite_MappingFunction.hpp"
+#include "Mesquite_Settings.hpp"
+#include "Mesquite_IdealElements.hpp"
+#include "Mesquite_ElemSampleQM.hpp"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
+#include "Mesquite_UnitUtil.hpp"
 
 using namespace Mesquite;
 

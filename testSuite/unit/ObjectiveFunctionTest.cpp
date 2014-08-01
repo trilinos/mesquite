@@ -48,16 +48,16 @@ Unit testing of various functions in the ObjectiveFunction class.
 
 
 #include "Mesquite.hpp"
-#include "LPtoPTemplate.hpp"
-#include "MaxTemplate.hpp"
-#include "LInfTemplate.hpp"
-#include "IdealWeightInverseMeanRatio.hpp"
-#include "MsqHessian.hpp"
+#include "Mesquite_LPtoPTemplate.hpp"
+#include "Mesquite_MaxTemplate.hpp"
+#include "Mesquite_LInfTemplate.hpp"
+#include "Mesquite_IdealWeightInverseMeanRatio.hpp"
+#include "Mesquite_MsqHessian.hpp"
 
-#include "PatchDataInstances.hpp"
-#include "ObjectiveFunctionTests.hpp"
-#include "cppunit/extensions/HelperMacros.h"
-#include "UnitUtil.hpp"
+#include "Mesquite_PatchDataInstances.hpp"
+#include "Mesquite_ObjectiveFunctionTests.hpp"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
+#include "Mesquite_UnitUtil.hpp"
 #include <iterator>
 #include <algorithm>
 

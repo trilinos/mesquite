@@ -45,8 +45,8 @@ Calls the Mesquite wrappers. First command line argument is the mesh file.
 #include "meshfiles.h"
 
 #include "Mesquite.hpp"
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqError.hpp"
 
 #include <iostream>
 using std::cout;
@@ -54,8 +54,8 @@ using std::endl;
 #include <cstdlib>
 
 // algorythms
-#include "ShapeImprovementWrapper.hpp"
-#include "MsqTimer.hpp"
+#include "Mesquite_ShapeImprovementWrapper.hpp"
+#include "Mesquite_MsqTimer.hpp"
 
 using namespace Mesquite;
 

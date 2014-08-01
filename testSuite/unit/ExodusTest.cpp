@@ -38,13 +38,13 @@ static bool create_exodus_file( const char* filename );
 #endif
 
 #include "Mesquite.hpp"
-#include "MeshImpl.hpp"
-#include "MsqVertex.hpp"
-#include "MsqError.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqVertex.hpp"
+#include "Mesquite_MsqError.hpp"
 
 using Mesquite::arrptr;
 
-#include "cppunit/extensions/HelperMacros.h"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
 
 #include <iostream>
 #include <algorithm>

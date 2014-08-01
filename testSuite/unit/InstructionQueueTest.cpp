@@ -49,17 +49,17 @@ Unit testing of various functions in the InstructionQueue class.
 
 
 #include "Mesquite.hpp"
-#include "InstructionQueue.hpp"
-#include "QualityAssessor.hpp"
-#include "QualityImprover.hpp"
-#include "IdealWeightInverseMeanRatio.hpp"
-#include "LPtoPTemplate.hpp"
-#include "SteepestDescent.hpp"
-#include "Vector3D.hpp"
-#include "PatchData.hpp"
-#include "VertexSlaver.hpp"
+#include "Mesquite_InstructionQueue.hpp"
+#include "Mesquite_QualityAssessor.hpp"
+#include "Mesquite_QualityImprover.hpp"
+#include "Mesquite_IdealWeightInverseMeanRatio.hpp"
+#include "Mesquite_LPtoPTemplate.hpp"
+#include "Mesquite_SteepestDescent.hpp"
+#include "Mesquite_Vector3D.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_VertexSlaver.hpp"
 
-#include "UnitUtil.hpp"
+#include "Mesquite_UnitUtil.hpp"
 
 #include <iostream>
 using std::cout;

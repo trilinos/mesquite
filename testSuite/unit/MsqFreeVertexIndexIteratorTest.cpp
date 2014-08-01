@@ -47,13 +47,13 @@ Unit testing of various functions in the MsqFreeVertexIndexIterator class.
 //
 
 
-#include "MsqFreeVertexIndexIterator.hpp"
-#include "PatchDataInstances.hpp"
+#include "Mesquite_MsqFreeVertexIndexIterator.hpp"
+#include "Mesquite_PatchDataInstances.hpp"
 
 #include <math.h>
 #include <iostream>
 
-#include "cppunit/extensions/HelperMacros.h"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
 
 using namespace Mesquite;
 using std::cout;

@@ -45,25 +45,25 @@ describe main.cpp here
 
 #include "meshfiles.h"
 
-#include "MeshImpl.hpp"
-#include "MsqTimer.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqTimer.hpp"
 #include "Mesquite.hpp"
-#include "MsqError.hpp"
-#include "Vector3D.hpp"
-#include "InstructionQueue.hpp"
-#include "PatchData.hpp"
-#include "TerminationCriterion.hpp"
-#include "QualityAssessor.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_Vector3D.hpp"
+#include "Mesquite_InstructionQueue.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_TerminationCriterion.hpp"
+#include "Mesquite_QualityAssessor.hpp"
 
 // algorithms
-#include "Randomize.hpp"
-#include "ConditionNumberQualityMetric.hpp"
-#include "UntangleBetaQualityMetric.hpp"
-#include "LPtoPTemplate.hpp"
-#include "LInfTemplate.hpp"
-#include "SteepestDescent.hpp"
-#include "ConjugateGradient.hpp"
-#include "PlanarDomain.hpp"
+#include "Mesquite_Randomize.hpp"
+#include "Mesquite_ConditionNumberQualityMetric.hpp"
+#include "Mesquite_UntangleBetaQualityMetric.hpp"
+#include "Mesquite_LPtoPTemplate.hpp"
+#include "Mesquite_LInfTemplate.hpp"
+#include "Mesquite_SteepestDescent.hpp"
+#include "Mesquite_ConjugateGradient.hpp"
+#include "Mesquite_PlanarDomain.hpp"
 
 #include <iostream>
 using std::cout;

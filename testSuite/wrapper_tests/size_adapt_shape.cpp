@@ -43,11 +43,11 @@ using std::endl;
 #include <algorithm>
 
 #include "Mesquite.hpp"
-#include "MsqError.hpp"
-#include "MeshImpl.hpp"
-#include "SizeAdaptShapeWrapper.hpp"
-#include "SphericalDomain.hpp"
-#include "MsqVertex.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_SizeAdaptShapeWrapper.hpp"
+#include "Mesquite_SphericalDomain.hpp"
+#include "Mesquite_MsqVertex.hpp"
 
 using namespace Mesquite;
 

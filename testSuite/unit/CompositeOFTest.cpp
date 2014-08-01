@@ -33,19 +33,19 @@
 
 
 #include "Mesquite.hpp"
-#include "CompositeOFAdd.hpp"
-#include "CompositeOFMultiply.hpp"
-#include "CompositeOFScalarAdd.hpp"
-#include "CompositeOFScalarMultiply.hpp"
-#include "MsqHessian.hpp"
-#include "IdealWeightInverseMeanRatio.hpp"
-#include "LPtoPTemplate.hpp"
+#include "Mesquite_CompositeOFAdd.hpp"
+#include "Mesquite_CompositeOFMultiply.hpp"
+#include "Mesquite_CompositeOFScalarAdd.hpp"
+#include "Mesquite_CompositeOFScalarMultiply.hpp"
+#include "Mesquite_MsqHessian.hpp"
+#include "Mesquite_IdealWeightInverseMeanRatio.hpp"
+#include "Mesquite_LPtoPTemplate.hpp"
 
-#include "ObjectiveFunctionTests.hpp"
-#include "PatchDataInstances.hpp"
-#include "cppunit/extensions/HelperMacros.h"
-#include "UnitUtil.hpp"
-#include "Matrix3D.hpp"
+#include "Mesquite_ObjectiveFunctionTests.hpp"
+#include "Mesquite_PatchDataInstances.hpp"
+#include "Mesquite_cppunit/extensions/HelperMacros.h"
+#include "Mesquite_UnitUtil.hpp"
+#include "Mesquite_Matrix3D.hpp"
 #include <iterator>
 
 using namespace Mesquite;

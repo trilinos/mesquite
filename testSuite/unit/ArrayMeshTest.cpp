@@ -31,10 +31,10 @@
  */
 
 #include "Mesquite.hpp"
-#include "ArrayMesh.hpp"
-#include "MsqVertex.hpp"
-#include "MsqError.hpp"
-#include "UnitUtil.hpp"
+#include "Mesquite_ArrayMesh.hpp"
+#include "Mesquite_MsqVertex.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_UnitUtil.hpp"
 
 using namespace Mesquite;
 

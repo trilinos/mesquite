@@ -39,7 +39,7 @@
 #include <iostream>
 using namespace std;
 
-#include "MsqFPE.hpp"
+#include "Mesquite_MsqFPE.hpp"
 
 class CPPUNIT_API SummaryOutput : public CppUnit::Outputter 
 {

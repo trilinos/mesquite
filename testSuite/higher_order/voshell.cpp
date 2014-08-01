@@ -31,19 +31,19 @@
  *  \author Nick Voshell
  */
 
-#include "ShapeImprover.hpp"
-#include "UntangleWrapper.hpp"
-#include "MeshImpl.hpp"
-#include "MsqError.hpp"
-#include "QualityAssessor.hpp"
+#include "Mesquite_ShapeImprover.hpp"
+#include "Mesquite_UntangleWrapper.hpp"
+#include "Mesquite_MeshImpl.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_QualityAssessor.hpp"
 
-#include "PlanarDomain.hpp"
-#include "CylinderDomain.hpp"
-#include "SphericalDomain.hpp"
-#include "MeshDomain1D.hpp"
-#include "DomainClassifier.hpp"
+#include "Mesquite_PlanarDomain.hpp"
+#include "Mesquite_CylinderDomain.hpp"
+#include "Mesquite_SphericalDomain.hpp"
+#include "Mesquite_MeshDomain1D.hpp"
+#include "Mesquite_DomainClassifier.hpp"
 
-#include "HexLagrangeShape.hpp"
+#include "Mesquite_HexLagrangeShape.hpp"
 
 #include <iostream>
 #include <string>

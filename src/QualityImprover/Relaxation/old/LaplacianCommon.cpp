@@ -27,7 +27,7 @@
 #ifndef MSQ_LAPLACIAN_COMMON_CPP
 #define MSQ_LAPLACIAN_COMMON_CPP
 
-#include "LaplacianCommon.hpp"
+#include "Mesquite_LaplacianCommon.hpp"
 
 namespace MESQUITE_NS {
 
