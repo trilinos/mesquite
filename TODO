@@ -64,3 +64,7 @@ o Get rid of top-level include/ directory.  The whole build system gets
   to src/include or just split the contents between src/Mesh and src/Misc
   as appropriate.
 
+o If you want to get the autotools build process running, the configuration
+  files will need to be updated. For example, all header and source files have
+  been namespaced with "Mesquite_" to avoid conflicts with other packages. This
+  change is not yet reflected in the configure files (2014-08-22).
