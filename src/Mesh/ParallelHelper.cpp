@@ -209,7 +209,7 @@ static double generate_random_number(int generate_random_numbers, int proc_id, s
     } 
     xsubi[2] = proc_id;
     
-#if (defined WIN32 || defined WIN64)
+#if (defined WIN32 || defined _MSC_VER || defined WIN64)
     time_t seed = (gid + xsubi[1]) / ((time(NULL) % 10)+1);
     srand((int)seed);
     return rand() / (RAND_MAX+1.0);
@@ -240,7 +240,7 @@ static double generate_random_number(int generate_random_numbers, int proc_id, s
     }
     xsubi[2] = proc_id ^ xsubi[1];
 
-#if (defined WIN32 || defined WIN64)
+#if (defined WIN32 || defined _MSC_VER || defined WIN64)
     time_t seed = (gid + xsubi[1]) / ((time(NULL) % 10)+1);
     srand((int)seed);
     return rand() / (RAND_MAX+1.0);
@@ -266,7 +266,7 @@ static double generate_random_number(int generate_random_numbers, int proc_id, s
     xsubi[1] = (unsigned short)(key >> 32);
     xsubi[2] = (unsigned short)(key >> 16);
 
-#if (defined WIN32 || defined WIN64)
+#if (defined WIN32 || defined _MSC_VER || defined WIN64)
     time_t seed = (gid + xsubi[1]) / ((time(NULL) % 10)+1);
     srand((int)seed);
     return rand() / (RAND_MAX+1.0);
