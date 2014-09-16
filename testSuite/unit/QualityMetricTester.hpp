@@ -28,8 +28,8 @@
 #define QUALITY_METRIC_TESTER_HPP
 
 #include "Mesquite.hpp"
-#include "PlanarDomain.hpp"
-#include "Settings.hpp"
+#include "Mesquite_PlanarDomain.hpp"
+#include "Mesquite_Settings.hpp"
 #include <algorithm>
 
 using namespace Mesquite;

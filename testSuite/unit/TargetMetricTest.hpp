@@ -32,13 +32,13 @@
  */
 
 #include "UnitUtil.hpp"
-#include "MsqError.hpp"
-#include "MsqMatrix.hpp"
+#include "Mesquite_MsqError.hpp"
+#include "Mesquite_MsqMatrix.hpp"
 
-#include "TMetric.hpp"
-#include "TMetricBarrier.hpp"
-#include "AWMetric.hpp"
-#include "AWMetricBarrier.hpp"
+#include "Mesquite_TMetric.hpp"
+#include "Mesquite_TMetricBarrier.hpp"
+#include "Mesquite_AWMetric.hpp"
+#include "Mesquite_AWMetricBarrier.hpp"
 
 // NOTE: Caller must define TARGET_TEST_GROUP to be a quoted string,
 //       typically the base file name of the file containing the 

@@ -53,11 +53,11 @@ Unit testing of various functions in the MsqMeshEntity class.
 #include "Mesquite_MsqMeshEntity.hpp"
 #include "Mesquite_Vector3D.hpp"
 #include "Mesquite_PatchData.hpp"
-#include "Mesquite_PatchDataInstances.hpp"
+#include "PatchDataInstances.hpp"
 #include <math.h>
 #include <iostream>
 #include <sstream>
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 using namespace Mesquite;
 using std::cout;

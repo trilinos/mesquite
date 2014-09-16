@@ -32,7 +32,7 @@
 
 #include "Mesquite.hpp"
 #include "Mesquite_AWQualityMetric.hpp"
-#include "Mesquite_TMPQualityMetricTest.hpp"
+#include "TMPQualityMetricTest.hpp"
 #include "Mesquite_TShapeNB1.hpp"
 #include "Mesquite_AWMetric.hpp"
 

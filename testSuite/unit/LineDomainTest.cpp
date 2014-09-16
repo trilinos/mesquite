@@ -30,7 +30,7 @@
  *  \author Jason Kraftcheck 
  */
 
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include "Mesquite_MeshDomain1D.hpp"
 
 namespace MESQUITE_NS {

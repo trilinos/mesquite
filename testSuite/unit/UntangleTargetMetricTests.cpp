@@ -1,5 +1,5 @@
 #define TARGET_TEST_GROUP "UntangleTargetMetricTests"
-#include "Mesquite_TargetMetricTest.hpp"
+#include "TargetMetricTest.hpp"
 
 using namespace Mesquite;
 

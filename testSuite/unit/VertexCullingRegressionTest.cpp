@@ -47,7 +47,7 @@ Regression testing using the vertex culling algorithms.
 
 #include "meshfiles.h"
 
-#include "Mesquite_PatchDataInstances.hpp"
+#include "PatchDataInstances.hpp"
 #include "Mesquite_cppunit/extensions/HelperMacros.h"
 #include <math.h>
 

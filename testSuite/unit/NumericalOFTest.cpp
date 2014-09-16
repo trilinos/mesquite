@@ -32,7 +32,7 @@
 
 #include "Mesquite.hpp"
 #include "Mesquite_ObjectiveFunctionTemplate.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include "Mesquite_PatchData.hpp"
 #include "Mesquite_MsqHessian.hpp"
 

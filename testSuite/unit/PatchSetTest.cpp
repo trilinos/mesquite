@@ -30,7 +30,7 @@
 #include "Mesquite_MeshInterface.hpp"
 #include "Mesquite_Instruction.hpp"
 #include "Mesquite_MsqError.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 #include <assert.h>
 #include <vector>

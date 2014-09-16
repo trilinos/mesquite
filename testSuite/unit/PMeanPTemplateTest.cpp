@@ -34,11 +34,11 @@
 #include "Mesquite_PMeanPTemplate.hpp"
 #include "Mesquite_MsqError.hpp"
 #include "Mesquite_PatchData.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include "Mesquite_VertexQM.hpp"
 #include "Mesquite_MsqHessian.hpp"
 
-#include "Mesquite_ObjectiveFunctionTests.hpp"
+#include "ObjectiveFunctionTests.hpp"
 
 
 using namespace Mesquite;

@@ -31,7 +31,7 @@
  */
 
 #include "Mesquite.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include "Mesquite_LinearTetrahedron.hpp"
 #include "Mesquite_LinearTriangle.hpp"
 #include "Mesquite_PatchData.hpp"

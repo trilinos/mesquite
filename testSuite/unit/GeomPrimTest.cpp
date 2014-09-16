@@ -32,7 +32,7 @@
 
 #include "Mesquite.hpp"
 #include "Mesquite_MsqGeomPrim.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 using namespace Mesquite;
 using namespace std;

@@ -31,7 +31,7 @@
  */
 
 #include "Mesquite.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include "Mesquite_TargetCalculator.hpp"
 #include "Mesquite_MsqError.hpp"
 #include "Mesquite_PatchData.hpp"

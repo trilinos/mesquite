@@ -34,7 +34,7 @@
 #include "Mesquite_ArrayMesh.hpp"
 #include "Mesquite_MsqVertex.hpp"
 #include "Mesquite_MsqError.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 using namespace Mesquite;
 

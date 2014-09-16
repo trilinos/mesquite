@@ -35,10 +35,10 @@
 
 #include "Mesquite.hpp"
 #include "PatchDataInstances.hpp"
-#include "IdealWeightInverseMeanRatio.hpp"
-#include "ObjectiveFunctionTemplate.hpp"
+#include "Mesquite_IdealWeightInverseMeanRatio.hpp"
+#include "Mesquite_ObjectiveFunctionTemplate.hpp"
 #include "UnitUtil.hpp"
-#include "MsqHessian.hpp"
+#include "Mesquite_MsqHessian.hpp"
 
 #include <memory>
 

@@ -48,7 +48,7 @@ SimplifiedGeometryEngine.
 
 #include "meshfiles.h"
 
-#include "Mesquite_PatchDataInstances.hpp"
+#include "PatchDataInstances.hpp"
 #include "Mesquite_cppunit/extensions/HelperMacros.h"
 #include <math.h>
 
@@ -73,7 +73,7 @@ SimplifiedGeometryEngine.
 
 #include "Mesquite_MsqFPE.hpp"
 
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 #include "Mesquite_MeshImpl.hpp"
 #include <iostream>

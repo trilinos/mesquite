@@ -35,7 +35,7 @@
 #include "Mesquite_VarianceTemplate.hpp"
 #include "Mesquite_MsqError.hpp"
 #include "Mesquite_PatchData.hpp"
-#include "Mesquite_ObjectiveFunctionTests.hpp"
+#include "ObjectiveFunctionTests.hpp"
 #include "Mesquite_MsqHessian.hpp"
 
 using namespace Mesquite;

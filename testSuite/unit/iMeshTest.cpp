@@ -45,7 +45,7 @@ using std::string;
 #include "Mesquite_Vector3D.hpp"
 #include "Mesquite_MsqVertex.hpp"
 #include "Mesquite_MsqIMesh.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 using namespace Mesquite;
 

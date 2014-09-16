@@ -32,16 +32,16 @@ Unit testing for the TMPQualityMetric class
 */
 
 
-#include "IdealShapeTarget.hpp"
-#include "MsqMatrix.hpp"
+#include "Mesquite_IdealShapeTarget.hpp"
+#include "Mesquite_MsqMatrix.hpp"
 #include "QualityMetricTester.hpp"
-#include "Settings.hpp"
+#include "Mesquite_Settings.hpp"
 #include "UnitUtil.hpp"
-#include "PlanarDomain.hpp"
-#include "PatchData.hpp"
-#include "WeightCalculator.hpp"
-#include "ElementPMeanP.hpp"
-#include "ElemSampleQM.hpp"
+#include "Mesquite_PlanarDomain.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_WeightCalculator.hpp"
+#include "Mesquite_ElementPMeanP.hpp"
+#include "Mesquite_ElemSampleQM.hpp"
 
 #include <iostream>
 

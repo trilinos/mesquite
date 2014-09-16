@@ -27,7 +27,7 @@
 // -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 //
 /*!
-  \file   MeshInterface.hpp
+  \file   Mesquite_MeshInterface.hpp
   \brief  
 
   \author Thomas Leurent

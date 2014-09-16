@@ -40,7 +40,7 @@
 #include "Mesquite_ElemSampleQM.hpp"
 
 #include "Mesquite_cppunit/extensions/HelperMacros.h"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 #include <iostream>
 

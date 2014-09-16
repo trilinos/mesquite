@@ -33,7 +33,7 @@
 #include "Mesquite.hpp"
 #include "Mesquite_EdgeLengthMetric.hpp"
 #include "Mesquite_cppunit/extensions/HelperMacros.h"
-#include "Mesquite_QualityMetricTester.hpp"
+#include "QualityMetricTester.hpp"
 
 using namespace Mesquite;
 

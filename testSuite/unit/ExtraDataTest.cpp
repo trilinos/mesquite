@@ -32,7 +32,7 @@
 
 #include "Mesquite.hpp"
 #include "Mesquite_PatchData.hpp"
-#include "Mesquite_PatchDataInstances.hpp"
+#include "PatchDataInstances.hpp"
 #include "Mesquite_ExtraData.hpp"
 
 using namespace Mesquite;

@@ -35,7 +35,7 @@
 #include "Mesquite_LocalSizeQualityMetric.hpp"
 #include "Mesquite_ConditionNumberQualityMetric.hpp"
 #include "Mesquite_cppunit/extensions/HelperMacros.h"
-#include "Mesquite_QualityMetricTester.hpp"
+#include "QualityMetricTester.hpp"
 #include "Mesquite_AddQualityMetric.hpp"
 #include "Mesquite_MultiplyQualityMetric.hpp"
 #include "Mesquite_PowerQualityMetric.hpp"
@@ -43,7 +43,7 @@
 #include "Mesquite_ScalarMultiplyQualityMetric.hpp"
 #include "Mesquite_MsqError.hpp"
 #include "Mesquite_PatchData.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 using namespace Mesquite;
 

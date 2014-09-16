@@ -48,7 +48,7 @@ Unit testing of various functions in the MsqFreeVertexIndexIterator class.
 
 
 #include "Mesquite_MsqFreeVertexIndexIterator.hpp"
-#include "Mesquite_PatchDataInstances.hpp"
+#include "PatchDataInstances.hpp"
 
 #include <math.h>
 #include <iostream>

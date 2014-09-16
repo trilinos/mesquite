@@ -43,7 +43,7 @@
 #include "Mesquite_JacobianCalculator.hpp"
 #include "Mesquite_IdealElements.hpp"
 
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 #include <vector>
 #include <algorithm>

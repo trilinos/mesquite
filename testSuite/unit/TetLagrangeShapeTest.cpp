@@ -38,7 +38,7 @@
 #include "Mesquite_JacobianCalculator.hpp"
 #include <math.h>
 
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 #include <vector>
 #include <algorithm>

@@ -61,7 +61,7 @@
 # include "HexLagrangeShape.hpp"
 #endif
 
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 using namespace Mesquite;
 

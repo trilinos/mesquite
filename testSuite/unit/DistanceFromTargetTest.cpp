@@ -36,7 +36,7 @@ Unit testing of various DistanceFromTarget (base *and* concrete classes) functio
 
 #include "Mesquite.hpp"
 #include "Mesquite_PatchData.hpp"
-#include "Mesquite_PatchDataInstances.hpp"
+#include "PatchDataInstances.hpp"
 
 #include "Mesquite_ConcreteTargetCalculators.hpp"
 #include "Mesquite_DistanceFromTarget.hpp"

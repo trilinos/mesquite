@@ -41,7 +41,7 @@
 #include "Mesquite_QualityAssessor.hpp"
 #include "Mesquite_TerminationCriterion.hpp"
 
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include "meshfiles.h"
 #include "Mesquite_cppunit/extensions/HelperMacros.h"
 #include <iostream>

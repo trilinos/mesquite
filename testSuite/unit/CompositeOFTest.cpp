@@ -41,10 +41,10 @@
 #include "Mesquite_IdealWeightInverseMeanRatio.hpp"
 #include "Mesquite_LPtoPTemplate.hpp"
 
-#include "Mesquite_ObjectiveFunctionTests.hpp"
-#include "Mesquite_PatchDataInstances.hpp"
+#include "ObjectiveFunctionTests.hpp"
+#include "PatchDataInstances.hpp"
 #include "Mesquite_cppunit/extensions/HelperMacros.h"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include "Mesquite_Matrix3D.hpp"
 #include <iterator>
 

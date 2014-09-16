@@ -31,7 +31,7 @@
  */
 
 #include "Mesquite.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include "Mesquite_DomainClassifier.hpp"
 #include "Mesquite_MeshDomain1D.hpp"
 #include "Mesquite_MsqError.hpp"

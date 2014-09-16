@@ -34,7 +34,7 @@
 #include "Mesquite_XYRectangle.hpp"
 #include "Mesquite_ArrayMesh.hpp"
 #include "Mesquite_MsqVertex.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include "Mesquite_MsqError.hpp"
 
 

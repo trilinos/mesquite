@@ -50,11 +50,11 @@ Patches must be allocated and dealocated by the caller.
 #ifndef PatchDataInstances_hpp
 #define PatchDataInstances_hpp
 
-#include "MsqVertex.hpp"
-#include "PatchData.hpp"
-#include "PlanarDomain.hpp"
-#include "IdealElements.hpp"
-#include "TopologyInfo.hpp"
+#include "Mesquite_MsqVertex.hpp"
+#include "Mesquite_PatchData.hpp"
+#include "Mesquite_PlanarDomain.hpp"
+#include "Mesquite_IdealElements.hpp"
+#include "Mesquite_TopologyInfo.hpp"
 
 #include <math.h>
 #include <iostream>

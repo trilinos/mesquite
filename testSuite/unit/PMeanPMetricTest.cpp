@@ -29,8 +29,8 @@
 #include "Mesquite_VertexPMeanP.hpp"
 
 #include "Mesquite_cppunit/extensions/HelperMacros.h"
-#include "Mesquite_PatchDataInstances.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "PatchDataInstances.hpp"
+#include "UnitUtil.hpp"
 #include "Mesquite_ElemSampleQM.hpp"
 
 using namespace Mesquite;

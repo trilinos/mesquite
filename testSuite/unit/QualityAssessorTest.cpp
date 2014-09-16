@@ -46,7 +46,7 @@
 #include "Mesquite_ArrayMesh.hpp"
 #include "Mesquite_InstructionQueue.hpp"
 
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 #include <algorithm>
 #include <numeric>

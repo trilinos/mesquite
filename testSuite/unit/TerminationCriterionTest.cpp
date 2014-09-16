@@ -43,8 +43,8 @@ Tests for the TerminationCriterion class..
 #include "Mesquite_VertexMover.hpp"
 #include "Mesquite_VertexPatches.hpp"
 
-#include "Mesquite_UnitUtil.hpp"
-#include "Mesquite_PatchDataInstances.hpp"
+#include "UnitUtil.hpp"
+#include "PatchDataInstances.hpp"
 #include "Mesquite_ArrayMesh.hpp"
 #include "Mesquite_MeshUtil.hpp"
 #include "Mesquite_SimpleStats.hpp"

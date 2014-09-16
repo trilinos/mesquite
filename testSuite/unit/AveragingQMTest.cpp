@@ -32,7 +32,7 @@ Unit testing for the AveragingQM class
 #include "Mesquite.hpp"
 #include "Mesquite_AveragingQM.hpp"
 #include "Mesquite_IdealElements.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include "Mesquite_TopologyInfo.hpp"
 #include "Mesquite_PatchData.hpp"
 #include "Mesquite_cppunit/extensions/HelperMacros.h"

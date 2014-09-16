@@ -32,7 +32,7 @@
 
 #include "Mesquite_ArrayMesh.hpp"
 #include "Mesquite_MeshUtil.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include "Mesquite_SimpleStats.hpp"
 
 using namespace Mesquite;

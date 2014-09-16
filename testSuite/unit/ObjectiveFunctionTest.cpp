@@ -54,10 +54,10 @@ Unit testing of various functions in the ObjectiveFunction class.
 #include "Mesquite_IdealWeightInverseMeanRatio.hpp"
 #include "Mesquite_MsqHessian.hpp"
 
-#include "Mesquite_PatchDataInstances.hpp"
-#include "Mesquite_ObjectiveFunctionTests.hpp"
+#include "PatchDataInstances.hpp"
+#include "ObjectiveFunctionTests.hpp"
 #include "Mesquite_cppunit/extensions/HelperMacros.h"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include <iterator>
 #include <algorithm>
 

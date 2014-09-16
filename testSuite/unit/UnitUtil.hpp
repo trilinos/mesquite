@@ -34,10 +34,10 @@
 #define MSQ_UNIT_UTIL_HPP
 
 #include "Mesquite.hpp"
-#include "Vector3D.hpp"
-#include "Matrix3D.hpp"
-#include "MsqMatrix.hpp"
-#include "MsqError.hpp"
+#include "Mesquite_Vector3D.hpp"
+#include "Mesquite_Matrix3D.hpp"
+#include "Mesquite_MsqMatrix.hpp"
+#include "Mesquite_MsqError.hpp"
 
 #include <string>
 #include <stdio.h>

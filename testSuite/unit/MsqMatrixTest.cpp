@@ -34,7 +34,7 @@
 #include "Mesquite_MsqMatrix.hpp"
 #include <sstream>
 #include "Mesquite_cppunit/extensions/HelperMacros.h"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 using namespace Mesquite;
 using namespace std;

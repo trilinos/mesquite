@@ -59,7 +59,7 @@ Unit testing of various functions in the InstructionQueue class.
 #include "Mesquite_PatchData.hpp"
 #include "Mesquite_VertexSlaver.hpp"
 
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 #include <iostream>
 using std::cout;

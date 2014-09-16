@@ -34,13 +34,13 @@ using std::cout;
 
 #ifndef DEBUG
 #  include "Mesquite.hpp"
-#  include "PatchData.hpp"
-#  include "MeshImpl.hpp"
-#  include "MeshInterface.hpp"
-#  include "VertexPatches.hpp"
-#  include "PatchIterator.hpp"
+#  include "Mesquite_PatchData.hpp"
+#  include "Mesquite_MeshImpl.hpp"
+#  include "Mesquite_MeshInterface.hpp"
+#  include "Mesquite_VertexPatches.hpp"
+#  include "Mesquite_PatchIterator.hpp"
 #  include "UnitUtil.hpp"
-#  include "Instruction.hpp"
+#  include "Mesquite_Instruction.hpp"
    using Mesquite::Mesh;
    using Mesquite::MeshImpl;
    using Mesquite::Vector3D;

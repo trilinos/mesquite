@@ -49,7 +49,7 @@ Unit testing of various functions in the MsqVertex class.
 
 #include "Mesquite_MsqVertex.hpp"
 #include "Mesquite_PatchData.hpp"
-#include "Mesquite_PatchDataInstances.hpp"
+#include "PatchDataInstances.hpp"
 
 #include <math.h>
 #include <iostream>

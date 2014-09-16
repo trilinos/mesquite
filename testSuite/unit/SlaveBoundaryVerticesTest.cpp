@@ -31,7 +31,7 @@
  */
 
 #include "Mesquite.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include "meshfiles.h"
 #include "Mesquite_Settings.hpp"
 #include "Mesquite_MsqError.hpp"

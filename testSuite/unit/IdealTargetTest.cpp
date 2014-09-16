@@ -41,7 +41,7 @@
 #include "Mesquite_IdealElements.hpp"
 #include "Mesquite_ElemSampleQM.hpp"
 #include "Mesquite_cppunit/extensions/HelperMacros.h"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 using namespace Mesquite;
 

@@ -34,7 +34,7 @@
 #include "Mesquite_TQualityMetric.hpp"
 #include "Mesquite_TInverseMeanRatio.hpp"
 #include "Mesquite_IdealWeightInverseMeanRatio.hpp"
-#include "Mesquite_TMPQualityMetricTest.hpp"
+#include "TMPQualityMetricTest.hpp"
 #include "Mesquite_TShapeNB1.hpp"
 
 template <> class TMPTypes<TQualityMetric> {

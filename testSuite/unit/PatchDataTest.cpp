@@ -46,8 +46,8 @@ Unit testing of various functions in the PatchData class.
 
 #include "Mesquite.hpp"
 #include "Mesquite_PatchData.hpp"
-#include "Mesquite_PatchDataInstances.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "PatchDataInstances.hpp"
+#include "UnitUtil.hpp"
 #include "Mesquite_Settings.hpp"
 #include "Mesquite_Instruction.hpp"
 

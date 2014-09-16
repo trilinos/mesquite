@@ -31,7 +31,7 @@
  */
 
 #include "Mesquite.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include "Mesquite_SphericalDomain.hpp"
 #include "Mesquite_ArrayMesh.hpp"
 

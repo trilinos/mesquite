@@ -24,11 +24,11 @@
    
   ***************************************************************** */
 
-#include "Mesquite_QualityMetricTester.hpp"
+#include "QualityMetricTester.hpp"
 #include "Mesquite_PatchData.hpp"
 #include "Mesquite_QualityMetric.hpp"
 #include "Mesquite_IdealElements.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include "Mesquite_ElemSampleQM.hpp"
 #include "Mesquite_TopologyInfo.hpp"
 #include "Mesquite_EdgeQM.hpp"

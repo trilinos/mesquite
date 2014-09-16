@@ -43,7 +43,7 @@
 #include "Mesquite_MsqError.hpp"
 #include "Mesquite_MsqVertex.hpp"
 
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 
 #include <iostream>
 #include <stdio.h>

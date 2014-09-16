@@ -47,7 +47,7 @@ Unit testing of the MsqHessian class.
 //
 
 
-#include "Mesquite_PatchDataInstances.hpp"
+#include "PatchDataInstances.hpp"
 #include "Mesquite_MsqHessian.hpp"
 
 #include <math.h>

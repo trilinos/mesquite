@@ -33,7 +33,7 @@
 #include "Mesquite.hpp"
 #include "Mesquite_TagVertexMesh.hpp"
 #include "Mesquite_MsqError.hpp"
-#include "Mesquite_UnitUtil.hpp"
+#include "UnitUtil.hpp"
 #include "Mesquite_MeshImpl.hpp"
 #include "Mesquite_MsqVertex.hpp"
 #include "Mesquite_InstructionQueue.hpp"

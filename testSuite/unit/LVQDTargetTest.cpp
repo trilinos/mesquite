@@ -34,8 +34,8 @@
 #include "Mesquite_LVQDTargetCalculator.hpp"
 #include "Mesquite_MsqError.hpp"
 #include "Mesquite_PatchData.hpp"
-#include "Mesquite_UnitUtil.hpp"
-#include "Mesquite_PatchDataInstances.hpp"
+#include "UnitUtil.hpp"
+#include "PatchDataInstances.hpp"
 
 #include <iostream>
 
