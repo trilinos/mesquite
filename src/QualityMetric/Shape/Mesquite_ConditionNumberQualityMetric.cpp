@@ -204,7 +204,7 @@ bool ConditionNumberQualityMetric::evaluate( PatchData& pd,
         
     default:
        MSQ_SETERR(err)( MsqError::UNSUPPORTED_ELEMENT,
-                      "Unsupported cell type (%ld) for Condition Number quality metric.",
+                      "Unsupported cell type (%d) for Condition Number quality metric.",
                        type);
 
      fval=MSQ_MAX_CAP;

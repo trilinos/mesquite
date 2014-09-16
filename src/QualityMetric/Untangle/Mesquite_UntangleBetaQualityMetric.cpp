@@ -237,7 +237,7 @@ bool UntangleBetaQualityMetric::evaluate( PatchData& pd,
       break;
     default:
       MSQ_SETERR(err)( MsqError::UNSUPPORTED_ELEMENT,
-                       "Unsupported cell type (%ld) for Untangle quality metric.",
+                       "Unsupported cell type (%d) for Untangle quality metric.",
                        type);
 
 
