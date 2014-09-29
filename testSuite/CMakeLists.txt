@@ -1,8 +1,6 @@
 # Define Macro for adding tests
 
 IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
-    INCLUDE(TribitsAddTest)
-    INCLUDE(TribitsAddExecutable)
 ENDIF()
 
 
