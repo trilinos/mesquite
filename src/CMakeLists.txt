@@ -1,5 +1,6 @@
 IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
 
+  INCLUDE(TribitsLibraryMacros)
 
   #
   # A) Package-specific configuration options
