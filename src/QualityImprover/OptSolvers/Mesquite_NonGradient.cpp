@@ -72,8 +72,8 @@ NonGradient::NonGradient(ObjectiveFunction* of)
     mThreshold(0.0),
     mTolerance(0.0),
     mMaxNumEval(0),
-    mNonGradDebug(0),
     mUseExactPenaltyFunction(true),
+    mNonGradDebug(0),
     mScaleDiameter(0.1)
 {
   set_debugging_level(2);
@@ -95,8 +95,8 @@ NonGradient::NonGradient(ObjectiveFunction* of, MsqError &err)
     mThreshold(0.0),
     mTolerance(0.0),
     mMaxNumEval(0),
-    mNonGradDebug(0),
     mUseExactPenaltyFunction(true),
+    mNonGradDebug(0),
     mScaleDiameter(0.1)
 {
   set_debugging_level(2);
@@ -208,7 +208,7 @@ NonGradient::amotry( std::vector<double>& simplex,
                  double psum[], int ihi, double fac, PatchData &pd, MsqError &err)
 {
   int numRow = getDimension();
-  int numCol = numRow + 1;
+  //int numCol = numRow + 1;
   std::vector<double> ptry(numRow); // does this make sense?
   double fac1=(1.0-fac)/static_cast<double>(numRow);
   double fac2=fac1-fac;
@@ -255,7 +255,7 @@ void NonGradient::printPatch(const PatchData &pd, MsqError &err)
   MSQ_PRINT(3)("Number of Vertices: %d\n",(int)pd.num_nodes());
 
   std::cout << "Patch " << numNode << "  " << numVert << "  " << numSlaveVert << "  " << numCoin << std::endl;
-  MSQ_PRINT(3)("");
+  MSQ_PRINT(3)(" ");
   std::cout << "Coordinate ";
   std::cout << "         " << std::endl;
   for( size_t index = 0; index < numVert; index++ )
@@ -350,7 +350,7 @@ void NonGradient::initialize_mesh_iteration(PatchData &pd, MsqError &err)
 //  setTolerance(ftol);
   int numRow = dimension;
   int numCol = numRow+1;  
-  if( numRow*numCol <= simplex.max_size() )
+  if( numRow*numCol <= (int)(simplex.max_size()) )
   { 
     simplex.assign(numRow*numCol, 0.);  // guard against previous simplex value
     double scale = minEdgeLen * mScaleDiameter;; 
@@ -402,8 +402,8 @@ void NonGradient::optimize_vertex_positions(PatchData &pd,
 
   // standardization
   TerminationCriterion* term_crit=get_inner_termination_criterion();
-  int maxNumEval = getMaxNumEval();
-  double threshold = getThreshold();
+  //int maxNumEval = getMaxNumEval();
+  //double threshold = getThreshold();
 //  double ftol = getTolerance();
   int ilo = 0;  //height[ilo]<=...
   int inhi = 0; //...<=height[inhi]<=

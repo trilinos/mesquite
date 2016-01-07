@@ -315,7 +315,13 @@ void InstructionQueue::run_common( MeshDomainAssoc* mesh_and_domain,
   MsqInterrupt msq_interrupt;
 #endif
 
+  // mesh object will only be used in assert method below, but
+  // the assert method is defined to nothing in a release build
+  // where NDEBUG is defined, so we only define the mesh object
+  // if NDEBUG is not define.
+#ifndef NDEBUG
   Mesh* mesh = mesh_and_domain->get_mesh();
+#endif
   MeshDomain* domain = mesh_and_domain->get_domain();
 
     // Generate SIGFPE on floating point errors

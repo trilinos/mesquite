@@ -91,10 +91,11 @@ ConjugateGradient::~ConjugateGradient()
   
 void ConjugateGradient::initialize(PatchData &pd, MsqError &err)
 {
-  if (get_parallel_size())
+  if (get_parallel_size()) {
     MSQ_DBGOUT(2) << "\nP[" << get_parallel_rank() << "] " << "o   Performing Conjugate Gradient optimization.\n";
-  else
+  } else {
     MSQ_DBGOUT(2) << "\no   Performing Conjugate Gradient optimization.\n";
+  }
   pMemento=pd.create_vertices_memento(err);
 }
 
