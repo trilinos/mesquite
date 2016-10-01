@@ -751,7 +751,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
         if (one_patch) ++inner_iter;
 
           // Call optimizer - should loop on inner_crit->terminate()
-                size_t num_vert=patch.num_free_vertices();
+             //   size_t num_vert=patch.num_free_vertices();
                 //std::cout << "P[" << get_parallel_rank() << "] tmp srk VertexMover num_vert= " << num_vert << std::endl;
               
         this->optimize_vertex_positions( patch, err );

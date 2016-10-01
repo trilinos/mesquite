@@ -1036,7 +1036,6 @@ bool TerminationCriterion::cull_vertices_global(PatchData &global_patch,
   patch.set_domain( domain );
   patch.attach_settings( settings );
 
-  const MsqVertex* global_patch_vertex_array = global_patch.get_vertex_array( err );
   Mesh::VertexHandle* global_patch_vertex_handles = global_patch.get_vertex_handles_array();
 
   int num_culled = 0;
