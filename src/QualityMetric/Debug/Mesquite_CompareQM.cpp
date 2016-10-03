@@ -349,10 +349,10 @@ void CompareQM::check_hess( size_t handle,
                             const std::vector<Matrix3D>& hess2 )
 {
   const size_t n = index_map.size();
-  const size_t N = (n + 1) * n / 2;
+  #define defN ( (n + 1) * n / 2 ) // avoid warnings when assert is not compiled
   assert(n == indices.size());
-  assert(N == hess1.size());
-  assert(N == hess2.size());
+  assert(defN == hess1.size());
+  assert(defN == hess2.size());
   
   for (size_t r = 0; r < n; ++r) {
     const size_t r2 = index_map[r];

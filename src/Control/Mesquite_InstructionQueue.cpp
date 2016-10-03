@@ -346,7 +346,9 @@ void InstructionQueue::run_common( MeshDomainAssoc* mesh_and_domain,
     }
     
     if (pmesh) {
-      assert(!mesh || pmesh == mesh);
+      if(mesh) { // mesh will be unused warning when asserts are dropped
+        assert(!mesh || pmesh == mesh);
+      }
       (*instr)->loop_over_mesh( pmesh, domain, settings, err ); 
     }
     else {

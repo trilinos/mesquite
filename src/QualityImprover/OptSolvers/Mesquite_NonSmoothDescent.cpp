@@ -1014,7 +1014,7 @@ bool NonSmoothDescent::convex_hull_test(const std::vector<Vector3D>& vec, MsqErr
 {
 //    int ierr;
     bool equil = false;
-    Direction dir_done;
+    Direction dir_done = MSQ_XDIR; // can generate a warning for switch below if not set
     Status status = MSQ_CHECK_Z_COORD_DIRECTION;
     Vector3D pt1, pt2, pt3, normal;
 
