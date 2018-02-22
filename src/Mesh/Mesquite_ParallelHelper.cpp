@@ -464,18 +464,6 @@ void ParallelHelperImpl::smoothing_init(MsqError& err)
     }
   }    
 
-  // if (0)
-  // {
-  //   printf("[%d]i%d local %d remote %d ",rank,iteration,num_vtx_partition_boundary_local,num_vtx_partition_boundary_remote);
-  //   printf("[%d]i%d pb1 ",rank,iteration);
-  //   for (i=0;i<num_vertex;i++) if (vtx_in_partition_boundary[i] == 1) printf("%d,%Zu ",i,gid[i]);
-  //   printf("\n");
-  //   printf("[%d]i%d pb2 ",rank,iteration);
-  //   for (i=0;i<num_vertex;i++) if (vtx_in_partition_boundary[i] == 2) printf("%d,%Zu ",i,gid[i]);
-  //   printf("\n");
-  //   fflush(NULL);
-  // }
-
   num_vtx_partition_boundary = num_vtx_partition_boundary_local + num_vtx_partition_boundary_remote;
 
   /********************************************************************
