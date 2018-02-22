@@ -381,9 +381,6 @@ public:
 		}
 	      else
 		{
-		  int  msq_debug             = debug; // 1,2,3 for more debug info
-		  bool always_smooth_local   = false;
-
 		  bool do_untangle_only = false;
 		  ParShapeImprover::ParShapeImprovementWrapper siw(innerIter,0.0,gradNorm,100);
 		  siw.m_do_untangle_only = do_untangle_only;

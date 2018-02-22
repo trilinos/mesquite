@@ -349,7 +349,9 @@ void CompareQM::check_hess( size_t handle,
                             const std::vector<Matrix3D>& hess2 )
 {
   const size_t n = index_map.size();
+#ifndef NDEBUG // only used for the asserts
   const size_t N = (n + 1) * n / 2;
+  #endif
   assert(n == indices.size());
   assert(N == hess1.size());
   assert(N == hess2.size());
