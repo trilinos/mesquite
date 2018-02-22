@@ -186,7 +186,7 @@ bool ObjectiveFunction::evaluate_with_gradient( EvalType eval_type,
   }
   
   ObjectiveFunction* of = this;
-  std::auto_ptr<ObjectiveFunction> deleter;
+  std::shared_ptr<ObjectiveFunction> deleter;
   if (eval_type == CALCULATE) {
     of->clear();
     b = of->evaluate( ACCUMULATE, pd, OF_val, OF_FREE_EVALS_ONLY, err );
@@ -204,7 +204,7 @@ bool ObjectiveFunction::evaluate_with_gradient( EvalType eval_type,
     if (MSQ_CHKERR(err) || !b)
       return false;
     of = this->clone();
-    deleter = std::auto_ptr<ObjectiveFunction>(of);
+    deleter = std::shared_ptr<ObjectiveFunction>(of);
   }
 
     // Determine number of layers of adjacent elements based on metric type.

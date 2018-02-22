@@ -57,14 +57,14 @@ bool ObjectiveFunctionTemplate::initialize_block_coordinate_descent( MeshDomainA
                                                       PatchSet* ,
                                                       MsqError& err )
 {
-  std::auto_ptr<PatchSet> patch_set;
+  std::shared_ptr<PatchSet> patch_set;
   switch (get_quality_metric()->get_metric_type())
   {
     case QualityMetric::VERTEX_BASED:  
-      patch_set = std::auto_ptr<PatchSet>(new VertexPatches( 1, false ));
+      patch_set = std::shared_ptr<PatchSet>(new VertexPatches( 1, false ));
       break;
     case QualityMetric::ELEMENT_BASED: 
-      patch_set = std::auto_ptr<PatchSet>(new ElementPatches);
+      patch_set = std::shared_ptr<PatchSet>(new ElementPatches);
       break;
     default: 
       MSQ_SETERR(err)("Cannot initialize for BCD for unknown metric type", 

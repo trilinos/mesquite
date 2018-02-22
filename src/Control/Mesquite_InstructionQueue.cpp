@@ -315,7 +315,6 @@ void InstructionQueue::run_common( MeshDomainAssoc* mesh_and_domain,
   MsqInterrupt msq_interrupt;
 #endif
 
-  Mesh* mesh = mesh_and_domain->get_mesh();
   MeshDomain* domain = mesh_and_domain->get_domain();
 
     // Generate SIGFPE on floating point errors
