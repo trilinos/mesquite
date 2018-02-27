@@ -75,7 +75,11 @@ IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
 
 ELSE()
 
-  ADD_LIBRARY( msqutil STATIC ${SOURCES} ${HEADERS} )
+  IF(${PACKAGE_NAME}_ENABLE_SHARED)
+    ADD_LIBRARY( msqutil SHARED ${SOURCES} ${HEADERS} )
+  ELSE()
+    ADD_LIBRARY( msqutil STATIC ${SOURCES} ${HEADERS} )
+  ENDIF()
   ADD_EXECUTABLE( vtkrandom Mesquite_randomize.cpp Mesquite_domain.cpp )
   ADD_EXECUTABLE( msqshape  Mesquite_shape-improve.cpp Mesquite_domain.cpp )
   ADD_EXECUTABLE( vtkxform  Mesquite_transform.cpp )
