@@ -90,6 +90,11 @@ ELSE()
   TARGET_LINK_LIBRARIES( vtkxform   msqutil mesquite )
   TARGET_LINK_LIBRARIES( msqquality msqutil mesquite )
 
+  INSTALL(TARGETS vtkrandom msqshape vtkxform msqquality msqutil
+          RUNTIME DESTINATION bin
+          LIBRARY DESTINATION lib
+          ARCHIVE DESTINATION lib)
+
 ENDIF()
 
 IF(${PACKAGE_NAME}_ENABLE_SHARED)
