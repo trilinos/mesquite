@@ -75,15 +75,25 @@ IF (NOT ${PROJECT_NAME} STREQUAL "Mesquite")
 
 ELSE()
 
-  ADD_LIBRARY( msqutil STATIC ${SOURCES} ${HEADERS} )
+  IF(${PACKAGE_NAME}_ENABLE_SHARED)
+    ADD_LIBRARY( msqutil SHARED ${SOURCES} ${HEADERS} )
+  ELSE()
+    ADD_LIBRARY( msqutil STATIC ${SOURCES} ${HEADERS} )
+  ENDIF()
   ADD_EXECUTABLE( vtkrandom Mesquite_randomize.cpp Mesquite_domain.cpp )
   ADD_EXECUTABLE( msqshape  Mesquite_shape-improve.cpp Mesquite_domain.cpp )
   ADD_EXECUTABLE( vtkxform  Mesquite_transform.cpp )
   ADD_EXECUTABLE( msqquality Mesquite_quality.cpp )
+  TARGET_LINK_LIBRARIES( msqutil mesquite )
   TARGET_LINK_LIBRARIES( vtkrandom  msqutil mesquite )
   TARGET_LINK_LIBRARIES( msqshape   msqutil mesquite )
   TARGET_LINK_LIBRARIES( vtkxform   msqutil mesquite )
   TARGET_LINK_LIBRARIES( msqquality msqutil mesquite )
+
+  INSTALL(TARGETS vtkrandom msqshape vtkxform msqquality msqutil
+          RUNTIME DESTINATION bin
+          LIBRARY DESTINATION lib
+          ARCHIVE DESTINATION lib)
 
 ENDIF()
 
